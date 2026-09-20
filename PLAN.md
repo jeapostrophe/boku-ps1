@@ -144,11 +144,16 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       every file (CRC-16/CCITT-FALSE) and crashes on mismatch. Establish whether the PS1 game
       checks anything, before a reinsertion is blamed for a crash it did not cause. Harmed:
       whoever debugs `TXT-04`.
-- [ ] **[REC-08]** **Census of Japanese inside textures.** Extract every TIM (~2,600) to PNG under
-      `work/`, build contact sheets, and classify which contain Japanese text and what kind —
-      the picture diary, signage, title/menu art, the insect book. Output: a tracked list of
-      texture ids with a category and no pixels. This sizes `GFX` and tells `REC-06` which
-      "text" is really art. Harmed: the texture phase, which cannot be evaluated without it.
+- [x] **[REC-08]** **Census of Japanese inside textures.** DONE 2026-09-20:
+      `research/textures.md` + `research/data/texture-census.tsv` (from `work/rec08/extract.py`).
+      2,607 TIM occurrences = **824 distinct images**, every one looked at on a 1:1 sheet;
+      **180 carry Japanese, 17 maybe**: 94 picture-diary pages, 48 insect/fish/item book, 18
+      signage/labels in backgrounds, 17 title/menu/UI, one each calendar, font, credits.
+      Reconciles exactly with jPSXdec's index. **Diary text is baked into the pages** — each
+      a 240×192 8bpp TIM: crayon art on top, the day's entry typeset in ruled vertical columns
+      on flat paper below, the day numeral composited from 31 tiles in `NIKKI_W.BIN`.
+      Difficulty: 129 easy, 20 medium, 41 hard (signage painted into backgrounds, stylised
+      covers), 6 unknown.
 
 ## Text renderer — the central risk (README § "The central risk")
 
@@ -308,14 +313,22 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 ## Textures
 
 - [ ] **[GFX-01]** **TIM round trip.** No TIM library in any language round-trips with CLUT
-      preservation, so this is ours: decode → encode is byte-identical over **every** TIM on
+      preservation, so this is ours (`work/rec08/` has a working decoder to start from). From
+      the census: all TIMs are 4bpp/16 or 8bpp/256 with CLUTs; the CLUT block's VRAM origin is
+      non-zero in 758 of them and must be carried; 488 images have several CLUTs (up to 21)
+      assigned per screen region; and an edit must propagate to every duplicate (one minimap
+      has 287 copies). Requirements: decode → encode is byte-identical over **every** TIM on
       the disc (fixtures derived from the disc, never typed), depth/size/origin never change,
       shared palettes are not modified and edits map to existing entries, wired into
       extract/reinsert and covered by the `PIPE-05` gate. Harmed: `GFX-03`.
 - [ ] **[GFX-02]** **Evaluate the redraw path on a sample.** Three textures of different kinds
-      from `REC-08` (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
+      from `REC-08` — the census suggests `NIKKI_001`, `T_TITLE` `0x14`, `M_I18000` — (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
       the original style, quantise back to the original CLUT, and look at them in the game.
-      If that fails, the fallback is Claude-drawn subtitles composited onto the texture.
+      If that fails, the fallback is Claude-drawn subtitles composited onto the texture. A third
+      path to weigh for the 94 diary pages, which are over half the work: their text sits in
+      ruled columns on flat paper under the drawing, so a program can blank that panel, redraw
+      rules for horizontal lines and typeset the English — no image model, exact palette, and
+      the entry text lives in the translation files like any other line.
       `[MINE: product]` on which path, per texture category. Harmed: the player, by whichever
       path is chosen without looking.
 - [ ] **[GFX-03]** **Translate the textures** per `GFX-02`, category by category, recording for
