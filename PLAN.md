@@ -59,20 +59,24 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       fallback for images lacking the CD-XA extension (we patch in place, so the image the
       tools re-read always has it; reopen if `PIPE-04` ever rebuilds the filesystem).
 - [ ] **[ENV-03]** **A PS1 emulator with a debugger on this Mac, and the Mode One core beside
-      it.** Need: execution/read/write breakpoints, a VRAM viewer, GPU primitive logging. Jay's machine has no PS1 emulator with a debugger installed today. `RSH-01` §4: **PCSX-Redux** (native Apple Silicon build; mapping breakpoints, VRAM viewer,
-      GPU logger, Lua, GDB server, and `-run -testmode -lua_stdout` for a headless smoke gate) for
-      finding things, DuckStation for play-testing; no$psx is Win32-only. Separately,
-      a way to boot a built image on Beetle PSX (`mednafen_psx`, the core retro-trainer's
-      `cores.lock` pins), since that is where results are confirmed. Harmed: `TXT-01`, which
-      cannot be done from static analysis alone.
-- [ ] **[ENV-04]** **Disassembly project for `SCPS_100.88`.** Ghidra with `ghidra_psx_ldr` and its PsyQ
-      signature database (the executable links 1993–97 Sony libraries), load address
-      `0x80010000`, so file offset = RAM address − `0x8000F800`. On Apple Silicon Ghidra's
-      decompiler natives must be built locally (`support/gradle`, `buildNatives`). The
-      Ghidra database embeds the executable, so it lives in `work/`; what is *learned* — symbol
-      names, addresses, struct layouts — is exported to a tracked text file so the next agent
-      does not start from zero. psyouloveme's RAM map and Ghidra TIM/CD-XA labellers are the
-      starting labels. Harmed: every `TXT` and `REC` row.
+      it.** Debugger half DONE 2026-09-20 (`research/tooling-setup.md`, `tools/redux/`):
+      PCSX-Redux runs with no window (`-no-ui`), and Lua advances frames, reads RAM and
+      registers, sets breakpoints and dumps the framebuffer. Traps: breakpoints silently never
+      fire without `-debugger`; the arm64 dynarec crashes under a retail BIOS, so
+      `-interpreter`; the web server and GDB stub do not listen under `-no-ui`; OpenBIOS
+      never reaches the game, a retail JP BIOS (`scph5500.bin`) does. Also installed: armips,
+      mkpsxiso/dumpsxiso 2.30, xdelta 3.2.0. **Left to do:** a way to boot a built image on
+      Beetle PSX — the core is built (`mednafen_psx_libretro.dylib`, matches retro-trainer's
+      `cores.lock`) but this machine has no RetroArch, and retro-trainer boots registered
+      games, not a path. Harmed: `REL-01`, and every result that is "confirmed" only on Redux.
+- [x] **[ENV-04]** **Disassembly project for `SCPS_100.88`.** DONE 2026-09-20: Ghidra 12.1.3
+      with locally built arm64 natives and `ghidra_psx_ldr`; headless import detects **PsyQ
+      4.6.0**, 1,542 functions, 792 named (417 by PsyQ signatures). The database is disposable
+      (`work/ghidra/`); the durable artifact is `research/symbols/SCPS_100.88.symbols.tsv`,
+      written and re-applied by `tools/ghidra/ExportSymbols.java` / `ImportSymbols.java`, which
+      refuse a TSV whose program hash does not match. The setup note's closing claim that RAM
+      never matches the file is unresolved and probably a too-early sample (the BIOS shell
+      also runs from `0x8003xxxx`–`0x8004xxxx`); it is `TXT-01`'s question Q0.
 
 ## Recon — where every piece of Japanese lives
 

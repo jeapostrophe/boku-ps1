@@ -1,0 +1,353 @@
+# Reverse-engineering toolchain on Apple Silicon macOS
+
+Everything `PLAN` `ENV-03` and `ENV-04` asked for, as installed and verified on this machine
+(Darwin 24.3 / macOS 15.3.1, Apple Silicon, Homebrew, no sudo) on 2026-09-20. Every claim below
+was run from a command line with no GUI interaction; where something does **not** work, this file
+says so rather than leaving the next person to find out.
+
+Nothing here lives in the repo. Tools go under `~/Dev/dist/`, Ghidra projects under the
+gitignored `work/`. The only tracked outputs are `tools/ghidra/`, `tools/redux/` and
+`research/symbols/`.
+
+## What is installed
+
+| Tool | Version | Where | Proof it works |
+|---|---|---|---|
+| armips | `v0.11.0-219-g62adab4` (repo `62adab4`, 2026-08-01) | `~/Dev/dist/armips/build/armips` | assembles 3 instructions; `llvm-mc` decodes them back identically |
+| Ghidra | 12.1.3, build 20260817 | `~/Dev/dist/ghidra_12.1.3_PUBLIC` | arm64 natives built; headless import + analysis of `SCPS_100.88` succeeds |
+| ghidra_psx_ldr | release 2026.09.03, the 12.1.3 zip | `…/Ghidra/Extensions/ghidra_psx_ldr` | loader `PsxLoader` used; PsyQ **4.6.0** detected; 417 functions named by signature |
+| OpenJDK | 21.0.12.1 (Homebrew, keg-only) | `/opt/homebrew/opt/openjdk@21` | Ghidra's `application.properties` requires java min 21, compiler 21 |
+| Gradle | wrapper-provisioned 9.6.1 | `…/support/gradle/gradlew` | `buildNatives` green |
+| PCSX-Redux | dev-macos-arm `PCSX-Redux-e3e051ca-Arm.dmg` | `~/Dev/dist/pcsx-redux/PCSX-Redux.app` | boots `disc/image.cue` with no window; Lua reads RAM; breakpoint fires |
+| mkpsxiso / dumpsxiso | 2.30 (universal binary) | `~/Dev/dist/mkpsxiso/mkpsxiso-2.30-Darwin/bin` | dumps the whole image + XML; re-extracted `SCPS_100.88` is byte-identical to `disc/files/` |
+| xdelta | 3.2.0 (Homebrew) | `/opt/homebrew/bin/xdelta3` | — |
+| LLVM | 21.1.6 (Homebrew, pre-existing) | `/opt/homebrew/opt/llvm/bin` | `llvm-mc -triple=mipsel -disassemble` is our independent MIPS decoder |
+
+Download checksums, so a stranger can tell whether they fetched the same artifact:
+
+```
+93a5d11a9ad510622acaaf908c556a7b9b764d338e78a7567f3689bf5081fd54  ghidra_12.1.3_PUBLIC_20260817.zip
+04ddface00dd141f41924effa93a5dadb5630a24cdde36400bc703d25fcdec27  ghidra_12.1.3_PUBLIC_20260903_ghidra_psx_ldr.zip
+a64d4d57d78ce57cd810a6a044602ce3cf1b552ca7c7e8675518f554206e0b49  mkpsxiso-2.30-Darwin.zip
+b3737a580dfdeb2ea27e61a2cf7686bd830d04dd2ff1df302bfdc41f7835bcee  PCSX-Redux-e3e051ca-Arm.dmg
+```
+
+`ghidra_psx_ldr` ships one zip per Ghidra point release and the version must match exactly —
+the extension declares `version=12.1.3`. Upgrading Ghidra means re-fetching the loader.
+
+## Reproducing it on a fresh Mac
+
+```sh
+brew install openjdk@21 gradle xdelta llvm
+mkdir -p ~/Dev/dist
+
+# armips — no Homebrew formula, no macOS release asset; source only.
+git clone --recursive https://github.com/Kingcom/armips ~/Dev/dist/armips
+cmake -B ~/Dev/dist/armips/build -S ~/Dev/dist/armips -DCMAKE_BUILD_TYPE=Release
+cmake --build ~/Dev/dist/armips/build -j8
+
+# Ghidra. Strip quarantine BEFORE extracting, or every .jar inherits it.
+curl -L -o /tmp/ghidra.zip \
+  https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.3_build/ghidra_12.1.3_PUBLIC_20260817.zip
+xattr -d com.apple.quarantine /tmp/ghidra.zip
+unzip -q /tmp/ghidra.zip -d ~/Dev/dist/
+
+# The arm64 natives. See the PATH trap below — this line is the whole reason it is here.
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+PATH="$JAVA_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
+  sh -c 'cd ~/Dev/dist/ghidra_12.1.3_PUBLIC/support/gradle && ./gradlew --no-daemon buildNatives'
+
+# The PSX loader, unpacked where headless Ghidra finds it without a GUI install step.
+curl -L -o /tmp/psxldr.zip \
+  https://github.com/lab313ru/ghidra_psx_ldr/releases/download/2026.09.03/ghidra_12.1.3_PUBLIC_20260903_ghidra_psx_ldr.zip
+unzip -q /tmp/psxldr.zip -d ~/Dev/dist/ghidra_12.1.3_PUBLIC/Ghidra/Extensions/
+
+# mkpsxiso / dumpsxiso
+curl -L -o /tmp/mkpsxiso.zip \
+  https://github.com/Lameguy64/mkpsxiso/releases/download/v2.30/mkpsxiso-2.30-Darwin.zip
+unzip -q /tmp/mkpsxiso.zip -d ~/Dev/dist/mkpsxiso
+xattr -dr com.apple.quarantine ~/Dev/dist/mkpsxiso
+
+# PCSX-Redux. Unsigned; the xattr is what replaces the right-click-Open dance.
+mkdir -p ~/Dev/dist/pcsx-redux
+curl -L -o ~/Dev/dist/pcsx-redux/PCSX-Redux-Arm.dmg \
+  https://distrib.app/pub/org/pcsx-redux/project/dev-macos-arm/latest
+hdiutil attach ~/Dev/dist/pcsx-redux/PCSX-Redux-Arm.dmg -nobrowse -readonly -mountpoint /tmp/redux-dmg
+cp -R /tmp/redux-dmg/PCSX-Redux.app ~/Dev/dist/pcsx-redux/
+hdiutil detach /tmp/redux-dmg
+xattr -dr com.apple.quarantine ~/Dev/dist/pcsx-redux/PCSX-Redux.app
+```
+
+### The PATH trap that costs an hour
+
+`gradle buildNatives` fails to link the decompiler if Homebrew's LLVM is ahead of `/usr/bin` on
+`PATH`:
+
+```
+Undefined symbols for architecture arm64:
+  "std::__1::__hash_memory(void const*, unsigned long)", referenced from: … in marshal.o
+```
+
+Homebrew `clang++` 21 compiles against its own libc++ headers, which call an out-of-line
+`__hash_memory`, and then links against the macOS SDK's older `libc++.dylib`, which has no such
+symbol. Nothing in the message points at the compiler. Put `/usr/bin` first so Apple clang is
+used (verify with `which clang++` — it must be `/usr/bin/clang++`) and the build is green in
+about ten seconds. Homebrew LLVM is otherwise useful and should stay installed; it is what
+`llvm-mc` comes from.
+
+## armips
+
+Verified by assembling three instructions and decoding the bytes with a *different* tool, so the
+check does not consist of armips agreeing with itself:
+
+```sh
+printf '.psx\n.create "t.bin",0x80010000\n.org 0x80010000\n lui $t0,0x8002\n addiu $t0,$t0,0x37e0\n lbu $v0,0($t0)\n.close\n' > t.asm
+~/Dev/dist/armips/build/armips t.asm            # -> 12 bytes
+python3 -c "print(' '.join('0x%02x'%b for b in open('t.bin','rb').read()))" \
+  | /opt/homebrew/opt/llvm/bin/llvm-mc -triple=mipsel -disassemble
+#   lui   $8, 32770      (0x8002)
+#   addiu $8, $8, 14304  (0x37e0)
+#   lbu   $2, 0($8)
+```
+
+## Ghidra, headless
+
+The project directory is `work/ghidra/`, which is gitignored: a Ghidra database embeds the
+executable, so it is disc content and must never be tracked.
+
+```sh
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+export PATH="$JAVA_HOME/bin:$PATH"
+G=~/Dev/dist/ghidra_12.1.3_PUBLIC/support/analyzeHeadless
+
+# Import + full auto-analysis. ~2 minutes; the PsyQ Signatures analyzer is 95 s of it.
+$G work/ghidra boku -import disc/files/SCPS_100.88 -loader PsxLoader -overwrite
+```
+
+`-loader PsxLoader` is the only loader argument needed. The loader's own headless options are
+`-loader-ramStart` and `-loader-ramSize` (defaults 0x80000000 / 0x200000, which are right here);
+the PsyQ version is **detected**, not supplied, so there is no interactive prompt to answer.
+
+What that run produced on `SCPS_100.88`
+(sha256 `feac435d110c112ed83f9a84ceffd5902277a421cbca173939b9fcd92885f4a9`):
+
+* `Executable Format = PSX Executables Loader` — the loader was used, not the raw-binary fallback.
+* `PsyQ Version = 4.6.0` — detected from the `main()` prologue signature.
+* **1542 functions**, of which **750** keep Ghidra's default `FUN_xxxxxxxx` name.
+* **792 are named**: **417** by the PsyQ signature database, **375** by the loader itself
+  (the synthetic `GTEMAC` block at 0x20000000 and the hardware-register labels).
+* Memory blocks: `CODE` 0x80010000–0x8008f7ff initialised (the 0x7f800 of `.text` from the PS-X
+  EXE header), `RAM` either side uninitialised, plus the I/O and GTE macro blocks.
+
+The decompiler emits `Unable to resolve constructor at 80049200` for a handful of addresses —
+GTE opcodes the PSX sleigh spec does not model. Cosmetic; analysis still succeeds.
+
+### The symbol table is the durable artifact
+
+`tools/ghidra/ExportSymbols.java` writes `research/symbols/SCPS_100.88.symbols.tsv`:
+address, kind, name, size, source, namespace, for every function and label that is **not**
+default-named. `tools/ghidra/ImportSymbols.java` is the inverse. Both are Java GhidraScripts
+rather than Python: Ghidra 12 runs Python only through PyGhidra, which needs `pyghidra`
+pip-installed into a virtualenv it manages, and a Java script needs nothing that Ghidra does not
+already ship.
+
+```sh
+$G work/ghidra boku -process SCPS_100.88 -noanalysis -readOnly \
+   -scriptPath tools/ghidra -postScript ExportSymbols.java research/symbols/SCPS_100.88.symbols.tsv
+
+$G work/ghidra <proj> -process SCPS_100.88 -noanalysis \
+   -scriptPath tools/ghidra -postScript ImportSymbols.java research/symbols/SCPS_100.88.symbols.tsv
+```
+
+Deliberately not exported: bytes, the contents of strings, decompilation, comments. A comment can
+quote the Japanese script; a name and an address cannot. The header carries the executable's
+sha256 so a contributor with a different dump can tell that the names were derived elsewhere.
+
+**`ImportSymbols` expects an already-analysed program.** It renames what analysis found and adds
+what it missed; it does not rebuild a program from the TSV. On a truly `-noanalysis` import there
+is no disassembly, so Ghidra cannot derive a function body and every `FUNC` row fails. Two
+consequences worth stating plainly, because the opposite is easy to assume:
+
+* The **`size` column is not applied.** It is there for a human reading the file. A re-export
+  reproduces the sizes because the analyser regenerates them, not because the TSV carried them.
+* The round trip therefore closes over *names, kinds, sources and namespaces*, which is what we
+  actually learn and what analysis cannot re-derive.
+
+Verified, 2026-09-20, in this order:
+
+1. A second import + analysis of the same file into a separate project exported a TSV
+   **byte-identical** to the tracked one. Analysis is deterministic; the database really is
+   disposable.
+2. Red on purpose: `grep Boku_RoundTripProbe` on that fresh export found nothing, so the check
+   below can fail.
+3. The tracked TSV plus one row auto-analysis will never produce
+   (`80011b08 FUNC Boku_RoundTripProbe 396 USER_DEFINED Global`, over a function Ghidra had left
+   as `FUN_80011b08`) was applied with `ImportSymbols` and re-exported. The probe came back at
+   exactly that address, and the re-export matched the input in every line but the `# symbols`
+   count, which the hand-edited input had not been updated for. Re-exporting that project later
+   still shows the probe, so the name was really written to the database.
+4. The provenance guard, red and green. `ImportSymbols` compares the TSV's `# sha256` header
+   against `currentProgram.getExecutableSHA256()` and **throws before writing anything** on a
+   mismatch; with the hash edited to `deadbeef…` it refuses with both hashes in the message, and
+   with the real file it prints `sha256 matches this program` and applies all 2561 rows.
+
+That hash check is the guard that matters, and it replaced one that could not fail for its stated
+reason: refusing only when a row falls outside memory catches a truncated file, but a TSV from a
+*different regional build* has the same layout, so every address would land inside the image and
+2561 wrong names would apply silently.
+
+## PCSX-Redux, headless
+
+`tools/redux/run-headless.sh` is the launcher and `tools/redux/smoke.lua` the gate and the worked
+example. The flags that matter, all verified by running them:
+
+* `-no-ui` — no window and no GL context. With it, none of the font/OpenGL warnings a windowed
+  run prints appear.
+* `-testmode` — makes Lua's `PCSX.quit(n)` terminate the process with status `n`. Without it the
+  emulator keeps running and any gate hangs forever. There is no `pcsx_exit()` in the Lua global
+  table; `PCSX.quit` is the function.
+* `-dofile <script>`, `-lua_stdout`, `-stdout` — run our Lua and let both it and the emulator log
+  reach the shell.
+* `-loadiso <cue>` `-run` — mount and boot. (`-iso`/`-exe` from the online flag list are not the
+  spellings this build accepts; `-loadiso`/`-loadexe` are.)
+* **`-debugger`** — arms the breakpoint machinery. This one is a trap: *without* it
+  `PCSX.addBreakpoint` still returns a breakpoint object and the breakpoint simply never fires,
+  with no warning. Measured by arming at an address the PC had been *observed* to hold
+  (0x800588a8): no hit in 400 frames without the flag, hit at frame 81 with it.
+* **`-interpreter`** — the arm64 dynarec dies with `Illegal instruction: 4` (exit 132, no output
+  at all) on `-run` with a retail BIOS. The debugger wants the dynarec off anyway.
+
+### Answering "can an agent with no display drive this?"
+
+Yes, for everything the project needs:
+
+| Capability | Verdict | How it was shown |
+|---|---|---|
+| Run with no window | **yes** | `-no-ui`; the GL/font warnings a windowed run emits are absent |
+| Advance N frames | **yes** | `PCSX.Events.createEventListener('GPU::Vsync', …)` |
+| Read RAM | **yes** | `PCSX.getMemPtr()` → LuaJIT `uint8_t*` over the flat 2 MB; index by `addr & 0x1fffff` |
+| Read CPU state | **yes** | `PCSX.getRegisters()` → cdata with `.pc`, `.GPR.n.<reg>`, and `PCSX.getCPUCycles()` |
+| Execution breakpoints | **yes, with `-debugger`** | hit at 0x800588a8 on frame 81 and at 0x80049154 on frame 90 |
+| Dump the framebuffer | **yes** | `PCSX.GPU.takeScreenShot()` → `{data,width,height,bpp}`; saved 640×478×2 = 611840 bytes via `Support.File.open(path,'TRUNCATE'):write(shot.data)` |
+| Raw VRAM over HTTP | **no, not headless** | see below |
+| GDB stub on 3333 | **no, not headless** | see below |
+| Exit status for CI | **yes** | the gate returns 0, 2, 3, 4, 70 or 127 to the shell, one per failure mode |
+
+**The web server and the GDB stub do not come up under `-no-ui`.** Tried both ways: setting
+`emulator.Debug.WebServer`/`GdbServer` from Lua at runtime, and writing them into
+`~/.config/pcsx-redux/pcsx.json` before launch (`WebServerPort` 8080, `GdbServerPort` 3333,
+`Debug` true). In both cases `lsof -a -p <pid> -iTCP -sTCP:LISTEN` shows the process holding **no
+listening socket at all**, and `curl` gets a connection refusal. So `GET /api/v1/gpu/vram/raw` —
+the documented route to *raw* VRAM, which the Lua memory API does not expose — is out of reach
+without a GUI session, and so is driving the emulator from Ghidra over GDB. Anything needing raw
+VRAM must either go through `takeScreenShot` (the visible framebuffer only) or trap the transfer
+in main RAM. The config file was restored afterwards; this left no persistent change.
+
+### The BIOS question
+
+The bundled **OpenBIOS is not sufficient for this disc**. It reads the disc fine — the log shows
+`CD-ROM ID: SCPS10088`, `CD-ROM EXE Name: SCPS_100.88;1`, and `*** Data is acceptable, booting
+now. ***` — but a breakpoint on the executable's entry point at 0x80049154 never fires, and the PC
+sits in a loop at 0x8003xxxx indefinitely.
+
+With a retail Japanese BIOS (`SCPH-5500 (JP)`, which PCSX-Redux fingerprints as `ff3eeb8c`) the
+entry point is reached at frame 90 and the game runs. `run-headless.sh` takes the path in
+`REDUX_BIOS`. The disc is `SCPS-10088`, i.e. NTSC-J, so SCPH-5500 is the matching region; a copy
+lives at `~/Dev/retro-trainer/config/system/scph5500.bin` on this machine. A BIOS dump is not
+this repo's to ship.
+
+### The gate, red then green
+
+```sh
+export REDUX_BIOS=~/Dev/retro-trainer/config/system/scph5500.bin
+BOKU_FRAMES=1   ./tools/redux/run-headless.sh   # exit 3
+BOKU_FRAMES=300 ./tools/redux/run-headless.sh   # exit 0
+```
+
+The red case is the narrowest state in which the harm occurs: at frame 1 the BIOS has not handed
+over, the PC is `0xbfc02b68` in BIOS ROM, and the gate says
+`exit=3 the game's own code was not executing` — naming the harm, not just failing. At frame 300
+the PC is inside `0x80010000..0x8008f800` with a non-zero instruction stream under it, and the
+gate returns 0.
+
+Exit codes: 0 ok, 2 hang, 3 the PC was not in the executable's range, 4 the PC was in range but
+the instruction stream under it was all zero, 70 the disc image changed, 127 a missing file or a
+bad argument.
+
+**The wall clock lives in the shell, not in the Lua** (`REDUX_TIMEOUT`, default 300 s). The first
+version used a `PCSX.nextTick` watchdog inside the emulator; measured 2026-09-20, calling
+`PCSX.quit()` from a `nextTick` callback **segfaults the process** — exit 139, no output at all.
+So the one code path whose entire job was to report a hang was the least reliable in the gate. A
+`kill` from outside cannot be disabled by the thing it is watching.
+
+The launcher also hashes the disc image before and after and fails with status 70 if it changed;
+PCSX-Redux can write to a mounted ISO (that is how it generates PPF patches), and a silently
+rewritten dump is unrecoverable without re-ripping. That is detection, not prevention, and for an
+unrecoverable harm prevention would be better — making the track read-only for the run, or
+pointing the emulator at a copy under `work/`. Not done here because it means writing to `disc/`,
+which this repo's rules forbid from a tool; worth revisiting by whoever owns the import step.
+
+## dumpsxiso — the escape hatch
+
+```sh
+mkdir -p work/dumpsxiso-scratch && cd work/dumpsxiso-scratch
+~/Dev/dist/mkpsxiso/mkpsxiso-2.30-Darwin/bin/dumpsxiso -x ./files -s ./project.xml ../../disc/image.cue
+```
+
+Dumps `BOKU.BIN`, `SCPS_100.88`, `SYSTEM.CNF`, the 27-file `__STR/` tree of `.IKI` XA streams and
+`license_data.dat`, and writes an mkpsxiso project XML that rebuilds the image. The source image
+is untouched (sha256 identical before and after). Output goes under `work/`, never tracked.
+
+This is also how `disc/files/SCPS_100.88` was independently confirmed: a fresh dump produced a
+byte-identical file (same sha256). The extraction in `disc/` is correct.
+
+## Beetle PSX, as it stands on this machine
+
+Read-only survey of `~/Dev/retro-trainer`; nothing there was modified.
+
+* **The core exists and is built for arm64**:
+  `~/Dev/retro-trainer/config/cores/mednafen_psx_libretro.dylib`, sha256
+  `f53dabac7ceb17b3804f0e2dfe486488839f44dc69408390a6d4d5015d55333f`, which matches the
+  `macos-arm64` pin in `cores.lock` for `mednafen_psx` — source
+  `libretro/beetle-psx-libretro` at commit `c27ab27c05569575e04b25e03e87fe3220fde599`.
+* **There is no RetroArch binary on this machine.** `~/Dev/dist/RetroArch` is a source checkout
+  with no build output, and nothing is installed in `/Applications` or `~/Applications`.
+* **The only frontend is retro-trainer's own binary**,
+  `~/Dev/retro-trainer/target/release/retro-trainer`, and its CLI is
+  `retro-trainer [OPTIONS] <DATA_DIR> [GAME]` — it takes a *registered game name*, not a path.
+  Games live in `config/games.json` (126 entries) keyed by short name, with `rom` naming a file
+  under `config/roms/`; its README's platform table lists PS1 → `mednafen_psx` → `.cue`/`.bin`,
+  though every existing PS1 entry uses a `.chd`. **So booting an arbitrary `.cue` is not a
+  command line today** — it needs a `games.json` entry plus the image under `config/roms/`, or a
+  RetroArch build. Setting that up was explicitly out of scope here.
+* **BIOS**: `config/system/` holds `scph5500.bin` (Japanese, sha256
+  `9c0421858e217805f4abe18698afea8d5aa36ff0727eb8484944e00eb5e7eadb`) and `psxonpsp660.bin`.
+  Beetle PSX wants `scph5500/5501/5502.bin` for JP/US/EU; only the JP one is present, which is the
+  one SCPS-10088 needs.
+
+## Measured on the way, and unexplained
+
+Recorded here because it was measured with these tools and will otherwise cost the next person a
+day. **It is not a tooling problem** and belongs to whoever owns the executable-layout work.
+
+`disc/files/SCPS_100.88` is a correct extraction (byte-identical to a fresh `dumpsxiso` dump) and
+is genuine MIPS — Ghidra finds 1542 functions and the PsyQ 4.6.0 signature set matches 417 of
+them. The PS-X EXE header says load at 0x80010000, size 0x7f800, entry 0x80049154, and a
+breakpoint on 0x80049154 **does fire** under a retail BIOS, at frame 90.
+
+And yet **main RAM never contains this file's bytes**, at any point sampled:
+
+* at the instant the entry breakpoint fires, RAM at 0x80049154 reads `06 00 40 16 2c 00 b0 8f`
+  while the file's corresponding offset holds `07 80 02 3c 70 26 42 24`;
+* RAM 0x80010000 and 0x80010800 are zero at frames 5, 40, 200 and 300, where the file holds the
+  CD filename table (`\__STR\BOKU_XA.XAM;1` and similar);
+* searching the whole 2 MB for the file's entry-point byte sequence finds zero matches, and
+  searching the file for the RAM contents yields no consistent offset either.
+
+The RAM contents are valid MIPS and clearly the running program. So something between the file on
+disc and the code in RAM is not the identity mapping — self-relocation, a second `LoadExec`, or an
+overlay covering the EXE's address range. Research `ps1-translation-practice.md` §4.8 already
+names "does this game use overlays" as a top-three question; this is evidence that it does, and it
+means **the Ghidra database's addresses are file addresses, not necessarily runtime addresses.**
+Do not assume a symbol at 0x800xxxxx in the TSV is at 0x800xxxxx while the game runs until this is
+settled.
