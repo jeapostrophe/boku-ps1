@@ -409,7 +409,18 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       limits, the bible and glossary, the day's events from the walkthroughs, and neighbouring
       scenes' settled English. Err toward too much context — the model has the window for it.
       Harmed: translation quality.
-- [ ] **[TRN-03]** **Design and pilot the agent workflow.** Fable sub-agents under a dynamic
+- [ ] **[TRN-03]** **Design and pilot the agent workflow.** The PILOT is DONE (2026-09-20): all 27
+      day-1 scenes plus `E0001` translated by one Fable agent given the whole scene graph, the
+      bible, glossary and style guide (`translation/days/day01.txt`, 86 lines, 120 pages, no
+      overflow), then reviewed line by line against the Japanese by an independent Fable agent
+      (`~/.claude/session-notes/boku-ps1/2026-09-20-day01-review.md`): fidelity essentially
+      clean, structure exact, nine one-line problems, all applied. Verdict: the method produced
+      the charter's register. Lessons now in `translation/days/README.md`: keep the `# UNSURE`
+      flags (four of six drew a finding); the recurring defect is *additive* words the
+      Japanese lacks, so the review/lint pass checks for them. **Left to do:** the workflow as
+      a repeatable thing — translate → review → apply, per day, with the additive-word check —
+      rather than three hand-launched agents; and reading the result in the game (an image
+      built from a day file with the VWF prototype). Original row: Fable sub-agents under a dynamic
       workflow (needs Jay's opt-in at launch, `AGT-1`): translate → independent review against
       the source → consistency pass against glossary and neighbours → lint. Pilot on one
       in-game day, read the result in the game, fix the workflow before scaling. Apply what
