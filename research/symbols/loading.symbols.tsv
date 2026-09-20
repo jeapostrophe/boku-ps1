@@ -1,0 +1,134 @@
+# Symbols named by PLAN REC-02 / REC-06 / REC-07 (loading, memory, integrity, non-event text).
+# program	SCPS_100.88 (sha256 feac435d110c112ed83f9a84ceffd5902277a421cbca173939b9fcd92885f4a9) and its overlays
+# Overlay addresses assume the overlay base 0x80079A08 (g_overlay_base); the overlay is named in the note.
+# Names are ours. kind: FUNC, DATA, BSS (zero in the file, written at run time), CONST (rodata).
+# address	name	kind	note
+80049154	crt0_start	FUNC	clears bss 0x80072670..0x80079A08, sp = 0x801FFFF0, InitHeap(0x80079A0C, ...), main
+80072670	g_bss_start	BSS	first bss word (crt0 saves ra here)
+80079A08	g_bss_end	BSS	_end; also the overlay base and InitHeap's heap start
+80022144	main	FUNC	zeroes g_heap_top..0x801FFFC0, then game_main
+80011DD4	game_main	FUNC	sys_init, then the per-frame loop over g_modes
+80011E80	sys_init	FUNC	library init, anti-mod check, fixed arena part 1
+8001218C	boot_load_resident	FUNC	loads the resident files and lays out the rest of the arena
+80012088	onmem_init	FUNC	returns ONMEM.BIN child 2 as next free byte
+80042654	sub_init	FUNC	SUB.BIN init; returns its child 3 (TIM) as next free byte
+80021CD0	fs00_init	FUNC	FS00.BIN init; returns its child 2
+80043468	cage_init	FUNC	NUMBER.TIM, MITIM.BIN (transient), KAGO_UV.BIN, KAGO.BIN; saves lba[149] to g_nikki_lba
+8001ED9C	mdltim_init	FUNC	MDLTIM.RTM init; returns its child 1
+80068AF0	g_heap_top	DATA	bump pointer; 0x8008F3A4 in the file
+80068AF4	g_overlay_base	DATA	0x80079A08; destination of every .OVL load
+80068BA8	g_stack_size	DATA	0x8000; used only in InitHeap's size argument
+800236BC	g_modes	DATA	18 x {void (*update)(), void (*init)(), u32 vsync, void **arena_base}
+800237E0	g_mode	DATA	u8 current mode; +1 previous frame's, +4 requested
+80011A98	mode_set	FUNC	(u8 mode): g_arena_cur = *g_modes[mode].arena_base
+800258C4	g_scratch800	BSS	-> 0x800-byte scratch at 0x8008F3A4
+80025948	g_ot	BSS	[2] -> ordering tables, 0x8000 bytes each
+800258E8	g_prim_buf	BSS	[2] -> primitive buffers, 0x130B0 bytes each
+800258D0	g_map_live	BSS	-> "A": live map's first 0x6400 bytes (children 0-5); also g_arena_lvl_a's value
+800258D4	g_map_load	BSS	-> "B": destination of every map-pack load; also BGM-bank staging and g_arena_lvl_b's value
+800258C8	g_bg_clut_save	BSS	-> 0x8000 bytes after B + 0x6400: saved VRAM CLUT rows of the other map
+800258C0	g_bg_save	BSS	-> 0x32000 bytes: saved VRAM background of the other map (8 strips x 0x6000)
+80026C50	g_model_pool	BSS	-> 0x96000 bytes, 40 units of 0x3C00, H_FILES members (compacting allocator)
+80027808	g_ev_buf	BSS	[2] -> 0x4000-byte buffers for EV members, alternating per map
+800278EC	g_ev_cursor	BSS	next free byte in the current g_ev_buf
+800278E4	g_ev_loaded	BSS	count of demand-loaded events this map; capped at 10
+800278F8	g_slot4000	BSS	[10] -> 0x4000-byte slots (insect models MI%02d, demo keys)
+800258DC	g_arena_lvl_c_init	BSS	first byte after the fixed arena (0x801F41F4)
+800258E0	g_arena_cur	BSS	current mode's bump pointer; also used as raw scratch
+800258F4	g_arena_lvl_a	BSS	arena base for modes that discard the field (== *g_map_live)
+800258F8	g_arena_lvl_b	BSS	arena base for menu-type modes (== *g_map_load)
+800258FC	g_arena_lvl_c	BSS	arena base for field modes (== g_arena_lvl_c_init)
+80017450	map_select	FUNC	(REC-01)
+80017534	map_load	FUNC	file_load(144, *g_map_load)
+8001756C	map_load_async	FUNC	file_load_async(144, *g_map_load)
+8001770C	map_commit	FUNC	traps if pack[+0x34] > 0x6400; swaps VRAM bg with g_bg_save; swaps 0x6400 bytes A<->B
+8001E46C	bg_swap_in	FUNC	StoreImage old / LoadImage new, strip by strip, in place over the loaded pack
+8001E65C	bg_swap_back	FUNC	same with no pack loaded (return to the previous map)
+8001E628	mem_swap	FUNC	(a, b, n)
+800177F8	map_init	FUNC	reads children 0-5 from A; uses A + off6 as a work area
+8001727C	map_child0_parse	FUNC	walks child 0's sections
+8002A3A4	map_anim_init	FUNC	(work, 0, child2, x) work area = 12 bytes x child-0 anim count
+80019C54	ev_list_init	FUNC	child 0 placements of the pack at B; resets g_ev_cursor
+80019DEC	ev_list_step	FUNC	per placement: condition, then demand-load from EV.BIN; "event buffer over" check
+80030784	ev_placement_ok	FUNC	day = id / 100 filter, then the block's trigger script
+8001A0B4	insect_model_load_async	FUNC	file_load_async(54 + n, *g_map_load)
+80040690	insect_model_load	FUNC	file_load(54 + n, g_arena_cur) then copy to g_slot4000[k]
+8001DE0C	bgm_bank_load	FUNC	file_load(163 + n, *g_map_load), then copies into the sound buffers
+80020DA0	demo_start	FUNC	file_load(11 + n) DEMO_0n.KEY into g_slot4000[0]
+800191C4	kabu_load	FUNC	file_load(45 + n) KABU_0n.KBD, copies 1000 bytes to 0x80035F50
+80040DF8	pack_menu_load	FUNC	file_load(160 + n): PK_ITM / PK_PHO / PK_WAL
+80030CD0	map_variant_name	FUNC	EVVER.BIN lookup: area letter -> records {name[3], day mask, ..., suffix}
+800278E8	g_evver	BSS	-> EVVER.BIN
+800278F0	g_musidata	BSS	-> MUSIDATA.BIN, 60 x 10-byte insect records
+800287A0	g_mov_vol	BSS	-> MOV_VOL.BIN
+800286FC	g_vol_recs	BSS	-> 12-byte records: a MOV_VOL.BIN section or a map's child 5
+800477E0	g_kago_uv	BSS	-> KAGO_UV.BIN sprite UV table
+80035798	g_xa_clips	BSS	-> BOKU_XA.XCH + 4: 48 x 12-byte records
+80012DBC	cd_dir_attr	FUNC	dead: reads g_cd_dir's absent 4th array (NULL)
+800246AC	g_title_hold	DATA	not part of g_cd_dir; title mode skips its update while non-zero; no writer found
+80023830	g_pc_host	DATA	1 in the file, cleared by sys_init, never set again: PCload path is dead
+80048018	g_nikki_lba	BSS	boot copy of g_cd_dir_lba[149]
+8007A180	nikki_select	FUNC	ZUKAN.OVL: loads NIKKI.SEC, rewrites lba[149]/size[149]/name[149]
+8007A280	nikki_page_load	FUNC	ZUKAN.OVL: nikki_select(id) then file_load_async(149)
+8007A5BC	nikki_page_upload	FUNC	ZUKAN.OVL: page TIM -> VRAM (0x380,0), CLUT (0x100,0x10E)
+8007A53C	nikki_date_upload	FUNC	ZUKAN.OVL: NIKKI_W.BIN child [day] -> VRAM (0x360,0)
+80046130	g_diary_pages	DATA	u8[31]: page id written for each day (saved)
+8004612C	g_diary_today	DATA	u8 page id proposed for today
+80029890	g_diary_priority	CONST	u8[101] priority per page id
+80031CB0	diary_propose	FUNC	(s16 page): keeps the higher-priority page
+80031B50	diary_pick_generic	FUNC	next unused generic page, ids >= 0x48
+80049210	antimod_region	FUNC	reads BIOS byte 0xBFC7FF52: 'E' disables the check, 'A' English text, else Japanese
+8004927C	antimod_run	FUNC	stock SCE mod-chip check state machine; blocking call from sys_init
+80049BB4	antimod_cd_poll	FUNC	raw CD controller response reader
+80049D88	antimod_cd_send	FUNC	raw CD controller command writer
+80068B00	g_antimod_cmds	DATA	14 x {cmd, n_param, n_resp, n_irq}
+80068B58	g_antimod_state	DATA
+80049E78	antimod_fail	FUNC	stops everything, prints the warning with the BIOS font, exit()
+80049FE4	antimod_print	FUNC	Krom2RawAdd's second caller
+8002CA0C	sjis_panic_print	FUNC	(REC-04) only caller 0x8001A07C, "event buffer over"
+8007B100	save_build	FUNC	TITLE.OVL: builds the card file image in g_arena_cur
+8007AEF4	save_title_build	FUNC	TITLE.OVL: Shift-JIS title = prefix + slot + month + day + suffix
+8007B014	bytesum	FUNC	TITLE.OVL: (u8 *p, int n) additive checksum
+8007B044	save_summary_build	FUNC	TITLE.OVL: 12-byte slot summary with its own bytesum
+8007A9D4	save_verify	FUNC	TITLE.OVL: size and bytesum must match or the load is retried, then refused
+8007B95C	save_gather	FUNC	TITLE.OVL: copies the g_save_regions list into the buffer
+8007B8E8	save_scatter	FUNC	TITLE.OVL: inverse
+80081410	g_save_regions	DATA	TITLE.OVL: head of a {ptr, len, next} list continuing in the EXE; 21 regions, 3,717 bytes
+8008141C	g_save_title_digits	DATA	TITLE.OVL: char *[10], full-width Shift-JIS digits
+80081444	g_save_title_parts	DATA	TITLE.OVL: char *[3] prefix, month, suffix (Shift-JIS)
+80081400	g_save_name_prefix	DATA	TITLE.OVL: "BISCPS-10088-" (file name = prefix + slot number)
+800814C0	g_mc_msg	DATA	TITLE.OVL: 5-byte records {n_lines, layout, line[3]} into exe@8003D5F0
+8007CB54	mc_msg_draw	FUNC	TITLE.OVL
+8007FA94	config_draw	FUNC	TITLE.OVL
+80080680	extras_draw	FUNC	TITLE.OVL
+80080484	extras_numbers_draw	FUNC	TITLE.OVL: digits and "/31", "%" by glyph id
+8007BB60	save_date_draw	FUNC	TITLE.OVL: "8", month, day digits, day glyph by id
+8007C8EC	file_rows_draw	FUNC	TITLE.OVL: slot number digits + glyph 0x5B0
+8002D10C	select_open_ptr	FUNC	(u16 *text, type, variant, flag): select from a code-file array
+8002D00C	select_open	FUNC	(REC-03) select from the current event block
+80037BA8	sysname_draw	FUNC	insect name by id, horizontal
+800379EC	line_draw	FUNC	(u16 *array, line, x, y, vertical): n-th line of an L array
+80035674	help_draw	FUNC
+800353F8	help_line	FUNC
+800416E8	bag_draw	FUNC	item names, descriptions, captions
+80041FE4	kite_list_draw	FUNC
+8003C5EC	fish_name_draw	FUNC
+80043ED8	fish_msg_draw	FUNC
+80043F5C	fish_menu_draw	FUNC
+80043FAC	fish_word_draw	FUNC
+800437F4	text_draw	FUNC	one horizontal line
+8003A7A4	fortune_draw	FUNC	raw 4 x 3 glyph table exe@80036750
+80032030	ant_msg_open	FUNC	writes three random digit glyphs into exe@80029AFC
+80037544	caught_label_draw	FUNC	four glyph ids as immediates + sprite numbers
+80037698	specimen_label_draw	FUNC	six glyph ids as immediates; no caller found
+800377F8	winloss_draw	FUNC	two glyph ids as immediates + sprite numbers
+800400F8	number_draw	FUNC	sprite digits (not font glyphs)
+800402D8	number_draw2	FUNC	sprite digits (not font glyphs)
+80036700	g_smallkana_ids	CONST	3 glyph ids nudged by line_draw; copies in TITLE.OVL 0x80079BD4 and MUSI.OVL 0x8007A8B8 hold 4
+80036708	g_insect_name_remap	CONST	s16[4] ids, s16[4] name lines
+8007B410	hhon_page_draw	FUNC	HHON.OVL
+8007C278	hhon_entry_draw	FUNC	HHON.OVL: own vertical walker, x -= 14 per 0x8001
+80084F64	musi_move_draw	FUNC	MUSI.OVL
+8007C604	musi_hint_draw	FUNC	MUSI.OVL
+8007EDB0	musi_rank_draw	FUNC	MUSI.OVL
+8007C684	tako_crash_draw	FUNC	TAKO.OVL

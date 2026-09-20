@@ -31,8 +31,8 @@ The only other font path is the BIOS kanji font, and it is a developer fatal-err
 `sjis_panic_print(x, y, sjis)` (`0x8002CA0C`) walks a Shift-JIS string through `Krom2RawAdd`
 (`0x8004A55C`), `LoadImage`s each 16×16 glyph straight into the display area and stalls 600
 frames. Its one caller (`0x8001A07C`) passes the "event buffer over" message at `0x80011738`.
-`Krom2RawAdd`'s other caller is in the function at `0x80049FE4` — **not read** (*hypothesis:*
-the memory-card file title, which the BIOS requires in Shift-JIS). All glyph-id text goes
+`Krom2RawAdd`'s other caller, the function at `0x80049FE4`, is the stock mod-chip warning
+screen, not the memory-card title (read in [integrity.md](integrity.md)). All glyph-id text goes
 through `glyph_draw`. `NUMBER.TIM` (144×10, 4bpp) and the
 digits inside other TIMs are graphics, not part of this font (*not examined further*).
 
@@ -159,7 +159,6 @@ redrawn or re-spaced without touching untranslated lines.
   224…255 there are free — needs an emulator VRAM view.
 * `MDLTIM.RTM` TIM headers name (768, 0) and (640, 0); if its loader honours them they would
   collide with the font. *Hypothesis:* it relocates, as `tim_upload` does. Not read.
-* What the second `Krom2RawAdd` user at `0x80049FE4` draws.
 * The 23 `glyph_draw` sites with computed ids, and who sets `g_text_flags & 0x10` (`TXT-01`).
 * PsyQ identities `SetSprt`, `AddPrim`, `SetDrawTPage`, `LoadImage` are from the Ghidra
   signature export in `symbols/`, except `SetSprt`, recognised from its body.

@@ -91,13 +91,18 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       distinct strings**, in map packs' child 1 (4,119), `EV` scripts (1,341), `HHON.OVL` (58)
       and the executable itself. Seven members are **code overlays**. What it left open is in
       `REC-02` (unknown members, the `NIKKI.SEC` consumer) and `REC-03`/`REC-05`.
-- [ ] **[REC-02]** **What `REC-01` left unexplained in the containers.** Packs, the four
-      `.SEC`-indexed sub-archives and "no compression" are measured (`research/boku-bin.md`).
-      Still open: the 10 `unknown` members; the role of each child of a map pack (child 1 is
-      text — what are the rest, and do any hold offsets into child 1 that move when text
-      grows?); the `NIKKI.SEC` consumer; the two unknown words of `g_cd_dir`; the nine
-      `file_load` sites with a computed index. Harmed: the reinserter, which must rebuild
-      every table that encloses or points into text.
+- [x] **[REC-02]** **What `REC-01` left unexplained in the containers.** DONE 2026-09-20:
+      `research/loading-and-memory.md` + `research/symbols/loading.symbols.tsv`. The ten unknown
+      members, the two `g_cd_dir` words and the executable's nine computed-index loads are
+      identified. Map-pack siblings refer to child 1 **by event id only**, so growing text
+      means rewriting the pack table and nothing else inside the pack. RAM is a fixed bump
+      arena laid out once at boot, and it is full: a map pack loads at `0x801B3DF4` and
+      `map_commit` traps if child 6 starts past `0x6400` (tightest map `M_H06001`: 2,664 bytes
+      of head room; median 12,624); `EV` members share one `0x4000` buffer, up to 10 per map;
+      overlays load at `0x80079A08`–`0x8008F3A4` (`MUSI.OVL` has 10 bytes free). All arena
+      addresses are computed from pack offsets, not observed — `PIPE-03` carries the check.
+      Closed as *no*: the 18 computed-index load sites inside overlays (no text-bearing member
+      is unaccounted for; reopen if `PIPE-01`'s extractor finds a member nobody loads).
 - [x] **[REC-03]** **The text tables, completely.** DONE 2026-09-20: `research/text-format.md`
       + `research/data/text-sites.tsv` (from `work/rec03/text_sites.py`, whose `--selftest`
       breaks the walk three ways and sees the gate fire). All dialogue is in **event blocks**
@@ -134,20 +139,23 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `{start sector, end sector, channel, file}` into `BOKU_XA.XAM`, verified against the
       disc's XA subheaders for all 2,163 keys. Not in the data, so `TRN-02` needs it from the
       walkthroughs: which real place each map base is, and what individual flags mean.
-- [ ] **[REC-06]** **Text outside the tables.** Strings in the executable that a player can see
-      (its Shift-JIS load/save messages are PC dev-host debug printfs, not these — the real
-      failure path is still to be found), the memory-card save title (the BIOS
-      requires Shift-JIS), and anything drawn by a path other than the dialogue renderer —
-      menus, the insect list, item names, the clock/calendar. `REC-03` found the `u16` arrays in
-      the executable and the `HHON`/`ZUKAN`/`TAKO`/`MUSI` overlays, but arrays with no end word
-      were delimited by hand, and the code that reads the `ZUKAN`/`TAKO`/`MUSI` arrays is
-      untraced; code also writes digit glyphs (`0x34 + d`) into messages at run time. Harmed: a player who meets
-      Japanese in a menu of an otherwise finished patch.
-- [ ] **[REC-07]** **Is there tamper detection on data?** The executable's warning string is the
-      stock mod-chip check, not a data check — but the PS2 sequel CRCs the first `0x80` bytes of
-      every file (CRC-16/CCITT-FALSE) and crashes on mismatch. Establish whether the PS1 game
-      checks anything, before a reinsertion is blamed for a crash it did not cause. Harmed:
-      whoever debugs `TXT-04`.
+- [x] **[REC-06]** **Text outside the tables.** DONE 2026-09-20:
+      `research/text-outside-events.md` + `research/data/text-arrays.tsv`: **34 arrays, 301
+      strings, 4,492 glyphs**, each bounded by walking it the way its reader does (all 58
+      `glyph_draw` callers traced; `REC-03`'s 25 hand-set ends all reproduced; its 103-line
+      array is really five, three read by `TITLE.OVL`; five more raw arrays found — fortune
+      results, bug-sumo hints and ranks, the kite crash banner, yes/no). Six functions draw
+      labels from glyph ids hard-coded as **instruction immediates**, four write digits as
+      `0x34 + d`, the memory-card title is Shift-JIS assembled in `TITLE.OVL`, and the
+      PCload/PCsave strings are dead code. The picture diary's text is only in the page TIMs;
+      `nikki_select` (`ZUKAN.OVL`, `0x8007A180`) consumes `NIKKI.SEC`, and only the date strip
+      is composed at run time.
+- [x] **[REC-07]** **Is there tamper detection on data?** DONE 2026-09-20, `research/integrity.md`:
+      **no.** All 85 load sites hand raw reads straight to parsers; no CRC table or polynomial
+      exists in any code file; overlays are entered by fixed `jal`. The warning string is the
+      stock SCE mod-chip check (drive commands and TOC only, reads no file data). The save
+      body has an additive sum in `TITLE.OVL` that covers no text. A patch recomputes nothing.
+      Static analysis only — `TXT-04` is where this meets a modified disc.
 - [x] **[REC-08]** **Census of Japanese inside textures.** DONE 2026-09-20:
       `research/textures.md` + `research/data/texture-census.tsv` (from `work/rec08/extract.py`).
       2,607 TIM occurrences = **824 distinct images**, every one looked at on a 1:1 sheet;
@@ -236,7 +244,8 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       index>` for event text — one id, all its physical sites, since copies of an (event,
       index) pair are byte-identical in all 2,686 cases; **the extractor asserts that
       invariant** rather than assuming it — and `<file>@<original offset>.<item>` for the
-      code-file arrays. Ids survive translation edits and are the same on every machine. The import step writes the Japanese, with
+      code-file arrays, plus forms for labels built from instruction immediates and for the
+      Shift-JIS save title (proposal in `research/text-outside-events.md`). Ids survive translation edits and are the same on every machine. The import step writes the Japanese, with
       `REC-05`'s scene/order/speaker/choice/voiced context, under `disc/`. Harmed: contributors
       — an unstable id scheme invalidates every open PR.
 - [ ] **[PIPE-02]** **The committed translation format.** `[MINE: contract]` — English and
@@ -251,8 +260,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       (`REC-01`, `REC-02`), write every duplicated site, following the rewrite list in `research/text-format.md`
       (block offsets → child-1 table → pack offsets → `.SEC` sizes, `EV.SEC`'s being `u16` →
       sector spill into later `.SEC` fields and `g_cd_dir`). Known limit: an event block loads into a **`0x4000`-byte buffer** and overrunning it
-      panics ("event buffer over") — the cap on one event's translated text + bytecode. Map-pack
-      buffer sizes: see `research/loading-and-memory.md` when `REC-02` closes.
+      panics ("event buffer over") — the cap on one event's translated text + bytecode. Map packs:
+      child 6 must start below `0x6400` (2,664 bytes of head room on the tightest map). Both
+      limits were computed, not observed — confirm them in the emulator with the break
+      addresses listed in `research/loading-and-memory.md` before relying on them. When a
+      scene does not fit, that note's § "Making room" has four untested mechanisms (raise
+      `g_heap_top`; raise the `0x6400` constant, three sites; upload map child 3 before the
+      swap, ~8 KB on 483 maps; reclaim 5,120 bytes of dead dev path strings).
       Code-file arrays have no slack: relocate the array and patch its `lui`/`addiu` pairs.
       **Growth is this row's problem, never the translation's**
       (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new
