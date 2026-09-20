@@ -1,10 +1,10 @@
-# DRAFT sample — an emotional scene with the adult narrator.
+# Sample — an emotional scene with the adult narrator.
 # E2805: day 28 (August 28), night. Boku has come down with a fever at dinner (E2803); his aunt
 # sits by his futon in the upstairs room (maps I30 / G14). The "boy who used to live here" is
 # the Soranos' son, who died three years ago and is never given a name in the script: he is
 # only ever "onii-chan", the family's word for their eldest boy.
 # E3179-E3180: day 31, the front of the house. Boku's father has come to take him home.
-# Policies exercised: QUESTIONS Q1 (Onii-chan), Q3 (narrator's voice), style-guide § Invented
+# Policies exercised: QUESTIONS Q1 (Onii-chan), Q8 (narrator's voice), style-guide § Invented
 # mimetics, § Recurring phrases ("the rule at Auntie's house").
 
 E2805.0	Aunt	So you do have a fever, I wonder... Boku-kun, are you feeling bad right now?
@@ -53,7 +53,7 @@ E3180.0	Aunt	Now, now, none of that... Boys mustn't cry. // That's... the rule a
 # * "hohe-hohe" is not a Japanese word; Boku makes it up, and the aunt counts the syllables. A
 #   made-up sound stays as the sound (style-guide § Invented mimetics). A real mimetic word
 #   would be translated.
-# * "Hm-hm" is the aunt's closed-mouth laugh (fufu). See style-guide § Laughter for the table
-#   and the alternative.
+# * "Hm-hm" is the aunt's closed-mouth laugh (fufu). See style-guide § Laughter for the table;
+#   "Fufu" as heard was the rejected alternative (Q10.4, ruled 2026-09-20).
 # * "I love you too" — the aunt says daisuki, Boku answers with the plainer suki. "I like you
 #   too, Auntie" is the literal alternative; it reads colder in English than it is in Japanese.

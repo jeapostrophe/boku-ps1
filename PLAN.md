@@ -15,7 +15,7 @@ by dependency, and the project's pace is set by Fable throughput, which Jay has 
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-07` text renderer · `PIPE-01`–`PIPE-06`
-pipeline · `TRN-01`–`TRN-06` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
+pipeline · `TRN-01`–`TRN-07` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
 trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
@@ -310,7 +310,22 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       still plain enough that a person could write a whole translation in it by hand: the files
       are the build's only interface to the script (README § "How the translation is made"). No
       Japanese (README principles 2–3). Harmed: every contributor, and the agents that read and write it at scale.
-- [ ] **[PIPE-03]** **Reinsertion.** Encode English to glyph indices under the `TXT-05` renderer's
+- [ ] **[PIPE-03]** **Reinsertion.** The in-extent half is DONE (2026-09-20, `boku/reinsert.py`,
+      `boku/layout.py`, `boku/translation.py`): every physical copy of a changed line is
+      rebuilt bottom-up (message + pad → block → child-1 table → pack → `.SEC`), the original
+      build-tool pad bytes are carried back so the null round trip is exact, and the measured
+      limits refuse with numbers at the boundary (`0x4000` block, `0x6400` work area, sector
+      slack, array growth, SELECT line count). A pixel-width wrapper lays English into pages
+      keeping voiced lines' page count and timers. One real line grown by a few words at all
+      19 copies re-extracts correctly and boots on Beetle PSX. **Left to do — the hard half:**
+      growth past a member's sector allocation (move members, rewrite `.SEC` sector fields
+      and `g_cd_dir`). Estimate from the samples' expansion (2.6 chars per glyph, 5.85 px per
+      char): **150 of 632 text-bearing members (24%) would outgrow their sectors**, ~95
+      sectors in all, worst `M_G16101` at 6,028 bytes over; only 6 maps would also pass
+      `0x6400`, and no page needs more than 4 band lines — the container, not the box, is the
+      constraint. Also unchecked: the per-map EV budget (10 members in one `0x4000` buffer);
+      how English divides between the lines of the 113 array sites drawn as groups.
+      Original row: Encode English to glyph indices under the `TXT-05` renderer's
       table, rebuild text tables and every enclosing container and directory when sizes change
       (`REC-01`, `REC-02`), write every duplicated site, following the rewrite list in `research/text-format.md`
       (block offsets → child-1 table → pack offsets → `.SEC` sizes, `EV.SEC`'s being `u16` →
@@ -326,7 +341,11 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       **Growth is this row's problem, never the translation's**
       (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new
       packing/compression and its MIPS decoder. Harmed: the player.
-- [ ] **[PIPE-04]** **Image build.** The core exists (2026-09-20): `boku/edc.py` regenerates EDC/ECC —
+- [ ] **[PIPE-04]** **Image build.** The general builder exists (2026-09-20, `boku/build.py`,
+      `boku build` / `./make.sh build`): a translation source + encoder + verified byte edits
+      → an image under `build/`, atomic and deterministic; `boku trial` is now a configuration
+      of it. **Left to do:** growth beyond a member's extent (with `PIPE-03`), and the VWF
+      font/asm build moving in from `tools/vwf/` (with `TXT-05`). Earlier note — `boku/edc.py` regenerates EDC/ECC —
       gated by recomputing **all 280,170 sectors of the real disc** with 0 mismatches — and
       `DiscWriter.write_file_bytes` patches a byte range inside a file's extent, validating
       every sector before writing the first; `boku trial` builds atomically into `build/` and
@@ -349,8 +368,10 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       is byte-identical to `makeppf3`'s. Mode One's applier wants PPF3, ignores the
       blockcheck and reads records to EOF, so no FILE_ID.DIZ trailer. xdelta 3.2.0: `-A ""`
       *is* the armor switch (off; our applier supplies the hashes) and it no longer leaks
-      paths. **Left to do:** the whole-pipeline round-trip gate below, which needs `PIPE-03`.
-      Original row: Emit xdelta (what the scene expects; `xdelta3 -e -9 -S lzma -B <≥ image size> -A ""` —
+      paths. The whole-pipeline **round-trip gate is DONE** too: extract → reinsert every one of the
+      6,193 sites with its own words through the full rebuild (632 members) → build → image
+      byte-identical to the original; flipping one glyph makes it red. **Left to do:** nothing
+      but keeping it green as `PIPE-03` grows. Original row: Emit xdelta (what the scene expects; `xdelta3 -e -9 -S lzma -B <≥ image size> -A ""` —
       the default 64 MB window silently bloats the patch and the default header leaks build
       paths) and PPF3 (Mode One's patcher; DuckStation also applies a same-named `.ppf` beside
       a CHD), stating size, CRC32, MD5 and SHA-1 of base and result. None of the
@@ -369,32 +390,18 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Translation
 
-- [ ] **[TRN-01]** **The style guide and the story bible.** DRAFTED 2026-09-20 by an agent that
-      read the whole script, the 34 arrays, jooey's guide, the Action Button transcript
-      (delegated, spot-checked) and 26 gathered web sources (`reference/SOURCES.md`):
-      `translation/bible.md` (setting — August 1975, fictional Tsukiyono modelled on Dōshi,
-      Yamanashi; cast with registers; the month day by day; map bases → places),
-      `translation/style-guide.md`, three full sample scenes under `translation/samples/`
-      (English only, keyed by line id), and **`translation/QUESTIONS.md` — eleven rulings that
-      are Jay's, each with options, an example and a recommendation. This row is waiting on
-      those.** `translation/glossary.md` is written but uncommitted: it lists the Japanese of
-      57 insect names and 48 dinner dishes, and whether word lists count as game content is
-      Jay's call `[MINE: contract]` (the mechanical alternative is keying those rows by array
-      index). Facts that change engineering: pages auto-advance with the voice, so **page
-      count and order per message are fixed**; there is no name entry or substitution beyond
-      three ant-count digits; the opening narration and all five epilogues are **voice only,
-      with no text on the disc** (QUESTIONS Q11 — subtitling them would be new renderer
-      work). Original row: The charter is settled (README
-      § "Who this is for": translate, don't localize; Japanese-isms stay; "Boku" is "Boku"); this
-      row turns it into rulings — honorifics, name order and romanisation, how dialect and
-      children's speech are carried, food/insect/fish/item glossary, what is left in Japanese —
-      plus the bible: setting (rural Japan, August 1975, a nine-year-old and the adult narrator he
-      became), every character with voice and register. Sources, all under `reference/`: the
-      decoded script, jooey's walkthrough, the Action Button transcript (fetched), xneo.jp's
-      Japanese walkthrough (to fetch), and a search for more long-form Japanese accounts of the
-      story. Tracked, CC BY-SA, and the thing contributors argue with. `[MINE: product]` on
-      rulings the charter does not decide. Harmed: the player — consistency across
-      thousands of lines comes from this file or from nowhere.
+- [x] **[TRN-01]** **The style guide and the story bible.** DONE 2026-09-20. `translation/bible.md`
+      (setting: August 1975, fictional Tsukiyono modelled on Dōshi, Yamanashi; the cast with
+      registers; the month day by day; map bases → places), `translation/style-guide.md` — every
+      policy question is now a SETTLED ruling with Jay's words ("Basically, I agree with all
+      the recommendations"): Uncle/Auntie with some -kun; itadakimasu/gochisōsama kept; puns
+      rendered literally with the Japanese showing; a mix of English and Japanese insect
+      names; recommended place names and romanisation, no macrons; narrator per the
+      recommendation; "Showa 17" as written; labels parsed in the files, presentation in the
+      original's style as an early, revisitable default (the one open default, Q7).
+      `translation/QUESTIONS.md` is the record of the rulings; three sample scenes under
+      `translation/samples/`. `translation/glossary.md` is written but still uncommitted
+      pending Jay's ruling on committing its Japanese word lists (`[MINE: contract]`).
 - [ ] **[TRN-02]** **Scene assembly for the translator.** From `REC-05`: each unit of translation
       work is a whole scene as a flow graph (`work/rec05/scenes.py --dump` already renders one
       locally; the 83 dinner-quiz lines need "this is day d's question" as context; map base →
@@ -415,6 +422,16 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       through the files and the agents, so there is no second representation to keep in sync.
       Built when `TRN-03`'s pilot has output to read. Harmed: Jay, who otherwise can only judge
       the translation by playing to each line.
+- [ ] **[TRN-07]** **Subtitle the speech that has no text on the disc.** Ruled 2026-09-20 (Q11,
+      option b): the opening monologue (the FMV before `E0001`) and the five epilogues (from
+      `E3182`, `M27`/`M28.IKI`) are voice only. Translate them into tracked files
+      (`translation/voice-only.md` lists the sequences, with the secondary ones — radio
+      calisthenics, TV, the sutra, the dreams — for a later call), then deliver them: Jay,
+      "we'll figure out later whether we put subtitles in the FMV or do it within the engine.
+      Within engine is better." Engine subtitles mean a timed text overlay during FMV
+      playback — new renderer work on top of `TXT-05`; FMV subtitles mean re-encoding frames.
+      `[MINE: product]` on which, once `TXT-05` shows what the engine path costs. Harmed: the
+      player, who otherwise meets the game's first and last minutes untranslated.
 - [ ] **[TRN-04]** **The full translation run.** Everything `REC-03` and `REC-06` found, through
       the piloted workflow, committed scene by scene. Harmed: the player.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
@@ -423,15 +440,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Textures
 
-- [ ] **[GFX-01]** **TIM round trip.** No TIM library in any language round-trips with CLUT
-      preservation, so this is ours (`work/rec08/` has a working decoder to start from). From
-      the census: all TIMs are 4bpp/16 or 8bpp/256 with CLUTs; the CLUT block's VRAM origin is
-      non-zero in 758 of them and must be carried; 488 images have several CLUTs (up to 21)
-      assigned per screen region; and an edit must propagate to every duplicate (one minimap
-      has 287 copies). Requirements: decode → encode is byte-identical over **every** TIM on
-      the disc (fixtures derived from the disc, never typed), depth/size/origin never change,
-      shared palettes are not modified and edits map to existing entries, wired into
-      extract/reinsert and covered by the `PIPE-05` gate. Harmed: `GFX-03`.
+- [x] **[GFX-01]** **TIM round trip.** DONE 2026-09-20 (`boku/tim.py`, `boku/png.py`,
+      `boku/textures.py`; `boku textures export|import`): parse → serialise is the identity for
+      all 2,607 TIM occurrences (824 distinct, matching the census exactly); TIM → indexed PNG
+      (the CLUT as the palette) → TIM is byte-identical for every distinct image and for the
+      most multi-palette ones under each CLUT; an edited PNG imports only through existing
+      palette entries (nearest-entry mapping is a separate explicit helper that reports its
+      error) and never changes depth, size or VRAM origins; an edit propagates to every
+      occurrence (287 for the most-copied minimap) as verified byte edits the image builder
+      applies. PNG I/O is stdlib and checked against libpng.
 - [ ] **[GFX-02]** **Evaluate the redraw path on a sample.** Three textures of different kinds
       from `REC-08` — the census suggests `NIKKI_001`, `T_TITLE` `0x14`, `M_I18000` — (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
       the original style, quantise back to the original CLUT, and look at them in the game.

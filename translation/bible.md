@@ -1,4 +1,4 @@
-# Story bible — DRAFT (PLAN `TRN-01`)
+# Story bible (PLAN `TRN-01`)
 
 What a translator needs to know about *Boku no Natsuyasumi* (PS1, 2000) before touching a
 line: where and when it is, who everyone is and how they talk, what happens on which day, what
@@ -50,8 +50,9 @@ mother is about to give birth (`E0173.0`, `E2004.7`) [script]. The game is told 
 the child acts and speaks in the present, and **his adult self narrates in the past tense**
 (51 narration messages, bracketed 『 』, speaker slot 255) [script]. The narrator is looking back
 from about 2000 [review; web: ja-wikipedia-bokunatsu says "25 years on"]. His opening
-monologue and the five epilogues are in the FMVs and have **no text on the disc at all** — see
-§ 8 and QUESTIONS Q11.
+monologue and the five epilogues are in the FMVs and have **no text on the disc at all**; they
+are translated anyway, into tracked files, with delivery decided later (QUESTIONS Q11, ruled
+2026-09-20; the list is [voice-only.md](voice-only.md); see also § 8).
 
 Each day: rooster, **radio calisthenics** (an FMV), breakfast at 7, free time from 8, the
 uncle's call that playtime is over (`E0190.0`, `E3007.0`), dinner at 18, the living room, an
@@ -263,7 +264,8 @@ ending events [xneo].
 
 ## 6. Wordplay and language-dependent lines
 
-The working list for style guide § 8 (kinds 1–3) — every one needs a translator's note.
+The working list for style guide § 8 (kinds 1–3) — every one needs a translator's note. Kind 3
+is translated literally with the Japanese word showing in the line (Q3, ruled 2026-09-20).
 
 | ids | what | kind |
 |---|---|---|
@@ -406,7 +408,9 @@ today" · 251 sequencer for multi-map cutscenes (days 11, 29, 31) · 254 has hea
 10. **108 voice-only clips and every FMV have no text.** Some are wordless (the howl, laughs);
     some are speech: the narrator's opening and the five epilogues, radio calisthenics, the
     television (`E0305`, `E4052`, the August 15 broadcast `E1505`), the monk's sutra (`E1203`),
-    the whale and sunflower dreams. QUESTIONS Q11.
+    the whale and sunflower dreams. QUESTIONS Q11, ruled 2026-09-20: translated into tracked
+    files; delivery — engine-drawn subtitles preferred — is decided later. The list is
+    [voice-only.md](voice-only.md).
 11. `work/rec03/lib.py`'s `decode` leaves about sixty glyph ids undecoded that
     `research/data/glyph-table.tsv` does identify (e.g. 1029, 1198, 1199, 1239) — the dumps a
     translator is given should be made with the full table.

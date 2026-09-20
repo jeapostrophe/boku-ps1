@@ -1,4 +1,4 @@
-# DRAFT sample — everyday family scene. Day 4 (August 4), 19:00, the dining room (map G02),
+# Sample — everyday family scene. Day 4 (August 4), 19:00, the dining room (map G02),
 # then the living room and a close-up of the ice shaver (G01 / I06).
 # Policies exercised: QUESTIONS Q1 (kin terms and suffixes), Q2 (mealtime set phrases),
 # style-guide § Speaker labels, § Choice menus, § Laughter.
@@ -15,8 +15,8 @@ E0404.5	Boku	Ummm, let's see...
 E0404.6	[SEL]	Melon | Strawberry | Lemon | Mizore
 E0404.7	[SEL]	Melon | Strawberry | Lemon | Mizore | Rainbow Special
 E0404.8	Aunt	All right, I'll get started right away.
-# NOTE mizore: the clear sugar syrup. English has no everyday word for it; "Plain" is the
-#   alternative if Jay wants every menu row to be self-explanatory (glossary, Food).
+# NOTE mizore: the clear sugar syrup. English has no everyday word for it; "Plain" was the
+#   rejected alternative (Q10.7, ruled 2026-09-20; glossary, Food).
 
 # --- E0406: the shaved ice. lflag counts visits: .0 close-up, .1-.8 first serving,
 #     .9-.10 asking for seconds, .11-.14 the second serving.
@@ -43,10 +43,12 @@ E0406.14	Boku	Auntie, gochisosama deshita!
 #   talking to Boku. English does this with small children too, so it is kept (style-guide
 #   § Self-reference). The uncle switches to plain "I" (boku) when he talks to his wife — that
 #   contrast is worth keeping audible in the English.
-# * E0406.8 is the set reply to gochisosama (literally "it was a poor meal"). Recommended:
-#   translated, because unlike itadakimasu it is not something the player hears ten times a day
-#   and it has a transparent meaning. The alternative is "Osomatsusama deshita."
-# * The same three lines under the OTHER Q1 options, for comparison:
+# * E0406.8 is the set reply to gochisosama (literally "it was a poor meal"). Translated,
+#   because unlike itadakimasu it is not something the player hears ten times a day and it has
+#   a transparent meaning; Q2 keeps only the two mealtime phrases (ruled 2026-09-20).
+#   "Osomatsusama deshita." was the rejected alternative.
+# * The same three lines under the REJECTED Q1 options (C was ruled on 2026-09-20), for
+#   comparison:
 #     all-English:   Aunt: "Boku, there's as much ice as ..."  / Boku: "Okay, Uncle." / "Thanks for the food, Auntie!"
 #     all-Japanese:  Aunt: "Boku-kun, there's ..." / Boku: "Okay, Oji-chan." / "Oba-chan, gochisosama!"
 #                    Uncle: "When Oji-san was a little brat, he ..."

@@ -1,12 +1,15 @@
-# Style guide — DRAFT (PLAN `TRN-01`)
+# Style guide (PLAN `TRN-01`)
 
-**Status: draft, 2026-09-20. Nothing marked NEEDS JAY is in force until Jay rules on it**
-([QUESTIONS.md](QUESTIONS.md) lists those rulings in order of impact; `Qn` below points there).
-Everything marked SETTLED BY CHARTER follows from README § "Who this is for, and what kind of
-translation it is" and is not reopened here. The story, the cast and how each person talks are
+**Status: in force, 2026-09-20.** Everything marked SETTLED BY CHARTER follows from README
+§ "Who this is for, and what kind of translation it is". Everything marked **SETTLED (Qn)** was
+ruled by Jay on 2026-09-20; the question as put, the options and his words are recorded in
+[QUESTIONS.md](QUESTIONS.md), which is a record, not policy — this file is the policy, and a
+change to it is made here with a dated note. One ruling (Q7, § 9) is an early default that Jay
+marked revisitable; nothing else is open. The story, the cast and how each person talks are
 in [bible.md](bible.md); every term that must be rendered one way is in
-[glossary.md](glossary.md); three scenes translated under these recommendations are in
-[samples/](samples/). Licence: CC BY-SA 4.0 (`LICENSE-translation`).
+[glossary.md](glossary.md); three scenes translated under these rules are in
+[samples/](samples/); the speech that has no text on the disc is listed in
+[voice-only.md](voice-only.md). Licence: CC BY-SA 4.0 (`LICENSE-translation`).
 
 Line ids (`E0406.2`, `hhon@5328.13`) are the ones defined in `research/text-format.md` and
 `research/text-outside-events.md`. The Japanese for an id exists only in a local import;
@@ -25,8 +28,8 @@ everything below:
    strength they have in the Japanese. SETTLED BY CHARTER (§ 12).
 3. **What the ear can check, the eye should not contradict.** A name or a set phrase the player
    hears forty times should not be spelled as something else on screen without a reason. This
-   is the argument behind most "keep it" recommendations below, and it is a *recommendation*
-   — the charter says Japanese-isms stay, it does not say which.
+   is the argument behind most "keep it" rules below. The charter says Japanese-isms stay; it
+   does not say which — those are the rulings marked SETTLED (Qn).
 4. **The test for keeping a Japanese word** is the one the charter applies to "Boku": keep it
    when English has no natural word that does the same job; translate it when English does.
    "Uncle" is a natural English form of address; "big brother" used as a name is not.
@@ -47,15 +50,18 @@ everything below:
 * **The title phrase occurs in dialogue twice**, in the hiragana of the logo (`E1420.0`,
   `E2320.0`): the aunt tells him Boku's summer vacation is half over, then a week from over.
   Render it "Boku's summer vacation" in the sentence; the game's title itself stays
-  *Boku no Natsuyasumi* wherever it appears as a title. NEEDS JAY (Q10, "vacation" or "break").
+  *Boku no Natsuyasumi* wherever it appears as a title. SETTLED (Q10.1, 2026-09-20): "summer
+  vacation", not "summer break".
 
-## 2. Forms of address — NEEDS JAY (Q1)
+## 2. Forms of address — SETTLED (Q1, 2026-09-20)
 
 The script's forms of address, by count in the decoded dump: *Boku-kun* 171, *Oba-chan* 76,
 *Onee-chan* / *Moe-neechan* 73, *Oji-san* 49, *Oji-chan* 34, *anta* 50, *Onii-chan* 16,
 *Boku-chan* 12.
 
-**Recommendation (the hybrid):**
+**The rule is the hybrid** — Jay: *"It is good say 'Uncle/Auntie', but also very good to
+include a few -kun."* Kin terms that English has go into English; suffixes and kin terms used
+as names stay as heard:
 
 | Japanese | English | why |
 |---|---|---|
@@ -68,8 +74,8 @@ The script's forms of address, by count in the decoded dump: *Boku-kun* 171, *Ob
 | *anta*, *omae*, *kimi* | "you" — the rudeness or bookishness goes into the sentence | |
 | Saori's *kā-san* for the aunt | Kaa-san | she is not her mother; "Mom" would mislead. Glossary |
 
-The alternatives — every kin term in English, or every one as heard — are set out with the same
-lines rendered each way in Q1 and in the notes of
+The rejected alternatives — every kin term in English, or every one as heard — are set out
+with the same lines rendered each way in Q1 and in the notes of
 [samples/family-E0404-E0406.txt](samples/family-E0404-E0406.txt).
 
 **Self-reference by role stays.** Adults talking to Boku call themselves "Uncle" and "Auntie"
@@ -81,24 +87,27 @@ SETTLED BY CHARTER as a Japanese-ism that English can hold.
 
 **Name order and romanisation of names** — § 3.
 
-## 3. Romanisation — NEEDS JAY (Q9)
+## 3. Romanisation — SETTLED (Q9, 2026-09-20)
 
 * **System:** modified Hepburn. *Shirabe*, *Tsukiyono*, *Sagi-no-sato*; syllabic n as *n*
   (*kanpai*, not *kampai*); particle *no* hyphenated inside place names.
-* **Long vowels in game text: unmarked.** *Yusaku*, *Ryujin*, *Ken-bo*, *gochisosama*. The
-  game's font sheet has plain A–Z / a–z (`research/font.md`), no macron letters, and "ou"/"oo"
-  spellings misread in English (*Yuusaku*, *Oo-kuwagata*). Macrons **are** used in this
-  directory's documents, where they cost nothing: Yūsaku, Ryūjin, gochisōsama.
+* **Long vowels in game text: unmarked, and no macron glyphs are added to the font.** *Yusaku*,
+  *Ryujin*, *Ken-bo*, *gochisosama*. Jay: *"I don't think we need it if it isn't in the
+  text."* The game's font sheet has plain A–Z / a–z (`research/font.md`), no macron letters,
+  and "ou"/"oo" spellings misread in English (*Yuusaku*, *Oo-kuwagata*). Macrons **are** used
+  in this directory's documents, where they cost nothing: Yūsaku, Ryūjin, gochisōsama.
 * **Name order:** the script never gives a full name in one breath ("this house's name is
   Sorano; Uncle's name is Yusaku", `E0175.0`), so the question barely arises in game text. In
   documents: family name first with the Japanese, given name first in running English —
-  "Yūsaku Sorano (空野優作)". NEEDS JAY only if he wants family-name-first throughout.
+  "Yūsaku Sorano (空野優作)". This was not one of the eleven questions; it is the default and
+  Jay may reopen it.
 * Hyphens: suffixes (*Boku-kun*), place-name particles (*Sagi-no-sato*), compound animal names
   kept in Japanese (*min-min-zemi*). No apostrophes.
 
-## 4. Set phrases and greetings — NEEDS JAY (Q2)
+## 4. Set phrases and greetings — SETTLED (Q2, 2026-09-20)
 
-**Recommendation: keep the two mealtime phrases, translate the rest.**
+**Keep the two mealtime phrases, translate the rest.** Jay: *"Keep them, they are cute
+Japanese-isms."*
 
 * *Itadakimasu* and *gochisōsama (deshita)* are said in chorus at every meal — 124 occurrences in
   the dump, heard four times a day. English has no equivalent act, "Let's eat" /
@@ -139,18 +148,19 @@ Full portraits are in the bible. The rules:
   deadpan *naze deshō? / nan deshō?* (8 uses, and Moe throws it back at him, `E1632.13`–`.14`);
   the hiccup when he is frightened (*hikku!*, 8); Shirabe's *bayoyōn!*; the house-rule frame.
 
-## 6. The narrator — NEEDS JAY (Q8, minor)
+## 6. The narrator — SETTLED (Q8, 2026-09-20)
 
 Fifty-one narration messages, bracketed 『 』 in the Japanese, voiced by the adult Boku,
 speaker slot 255, first person *watashi*, past tense, written rather than spoken, fond of one
 long simile per passage. He calls the adults *my uncle*, *my aunt* (the plain kinship words),
 never "Uncle" and "Auntie"; he calls his young self "I", never "Boku".
 
-Recommendation: plain, composed, slightly literary past-tense English; full sentences; no
-contractions; keep the similes as similes and the sentence as one sentence across its pages;
-no "little did I know" padding that is not in the Japanese. Think of a man reading from his
-own memoir, not of a voice-over cracking wise. The child's lines next to it stay short and
-spoken; the contrast is the device.
+The rule (Jay: *"I agree"*): plain, composed, slightly literary past-tense English; full
+sentences; no contractions; keep the similes as similes and the sentence as one sentence
+across its pages; no "little did I know" padding that is not in the Japanese. Think of a man
+reading from his own memoir, not of a voice-over cracking wise. The child's lines next to it
+stay short and spoken; the contrast is the device. The same voice carries the opening
+monologue and the five epilogues, which have no text on the disc ([voice-only.md](voice-only.md)).
 
 ## 7. Sound: onomatopoeia, interjections, laughter, elongation
 
@@ -169,14 +179,14 @@ spoken; the contrast is the device.
 * **Laughter** is spelled so that it reads as a laugh in English *and* matches the ear where
   it can: *hahaha*, *ahaha*, *gahaha*, *gyahaha*, *hehe*, *ehehe*, *kyahaha*, *nihihi* as is;
   *fufu(fu)* → "Hm-hm" (it does not read as laughter to an English eye); *gehehe* →
-  "Geh-heh-heh". NEEDS JAY (Q10, batch): "Fufu" as heard is the alternative.
+  "Geh-heh-heh". SETTLED (Q10.4, 2026-09-20); "Fufu" as heard was the rejected alternative.
 * **Elongation.** The wave dash (263 uses) is not English punctuation. Stretch the vowel
   ("Nooo", "Hmmm", "smaaart"), or use a dash for a trailing call ("Boku-kuun!"). The wave dash
   is kept only on **sung** lines (§ 10).
 * **Syllable-by-syllable spelling** (`E1701.7`, `E3042.3`) → the English words said slowly:
   "Wolf... Girl."
 
-## 8. Wordplay and words a child gets wrong — NEEDS JAY (Q3)
+## 8. Wordplay and words a child gets wrong — SETTLED (Q3, 2026-09-20)
 
 The script has about twenty-five jokes that live in the Japanese language (listed in the
 bible § Wordplay). Three kinds, three treatments:
@@ -190,24 +200,32 @@ bible § Wordplay). Three kinds, three treatments:
 3. **The joke is a Japanese homophone** (*chō* = super / trillion / butterfly necktie,
    `E2205.3`–`.5`; *ame* = rain / candy, `E1840.0`–`.1`; *hana* = nose / flower, `E1920.2`–`.4`;
    *mashin* = measles / machine, `E1220.3`–`.6`; *chinpun-kanpun* "sounds like a panda's name",
-   `E2532.5`–`.6`). **Recommendation: translate literally and let the Japanese word show in
-   the line** — "A *chō*-necktie!" / "A trillion neckties?" / "Chō as in butterfly. A bow tie."
-   The player can hear the word being repeated, and the charter's reader would rather see
-   the joke than be handed a different one. The alternative (write a new English pun) is
-   localisation; the other alternative (translate straight, lose the joke) is what Google
-   Translate would do. Q3 shows all three on the same lines.
+   `E2532.5`–`.6`). **Translate literally and let the Japanese word show in the line** —
+   "A *chō*-necktie!" / "A trillion neckties?" / "Chō as in butterfly. A bow tie." Jay: *"Yes,
+   (a) is right."* The player can hear the word being repeated, and the charter's reader would
+   rather see the joke than be handed a different one. The rejected alternatives: a new
+   English pun (localisation), or translating straight and losing the joke (what Google
+   Translate would do). Q3 shows all three on the same lines.
 
 ## 9. Punctuation and typography
 
 * **The speaker label is data, not text.** In the Japanese it is inline (`おじ「…」`). It
   changes mid-scene when a stranger is named (*the boy* → Guts at `E0551.16`, *the woman* → Saori at
   `E1861.28`), is joint once (`E1304.10`), and is absent on choruses. Translation files carry
-  it as a field (as the samples do); how it is drawn is the renderer's business. English
-  labels: Boku, Uncle, Aunt, Moe, Shirabe, Guts, Fat, Megane, Father, Monk, Boy, Woman, Saori,
-  Narrator, All. NEEDS JAY (Q7) for whether dialogue keeps quotation marks after the label —
-  recommendation: **no quotation marks** on labelled dialogue (it reads as a script and saves
-  two cells a message); narration unlabelled and set apart by the renderer (colour or a rule),
-  not by brackets; system messages ("Got the fishing rod.") plain.
+  it as a **parsed field** (as the samples do), never inline in the English — Jay: *"We
+  definitely want to parse the label in our translation files, because that will be convenient
+  for the translation prompts."* English labels: Boku, Uncle, Aunt, Moe, Shirabe, Guts, Fat,
+  Megane, Father, Monk, Boy, Woman, Saori, Narrator, All.
+  **On screen — SETTLED (Q7, 2026-09-20) as an early default, explicitly revisitable:** the
+  renderer draws labelled dialogue in the original's style, label and marks — Jay: *"Ideally,
+  we'll retain the same style as the original, including labels and marks"* — and the
+  translation text itself carries **no quotation marks**, so that the marks are the renderer's
+  to draw, restyle or drop. It is revisitable because of the cell cost: Jay: *"Uncle + two
+  quotes is 4 characters in Japanese and much more in English, so it is expensive. I think we
+  may need to default to something early but be willing to go back to it."* Whether the marks
+  are the 「 」 glyphs or English quotation marks, and whether the label sits inside the box, is
+  the dialogue band's decision (PLAN § *Text renderer*). Narration (『 』 in the Japanese) is
+  unlabelled and set apart by the renderer; system messages ("Got the fishing rod.") plain.
 * **One utterance is sometimes split across two messages** with the closing bracket in the
   second (`E1405.1`–`.2`, `E2231.1`–`.2`, `E2303.3`–`.4`): a silent beat, then the speech. The
   pair is translated as one sentence and must stay in order.
@@ -241,9 +259,10 @@ bible § Wordplay). Three kinds, three treatments:
 * Dates: "August 1". The save title and diary date are digits + month + day composed by code
   (`research/text-outside-events.md` § "Text made at run time") — word order there is an
   engineering question, flagged in the bible § Engineering notes.
-* **Era year:** the letter is dated *Shōwa 17, spring*. Recommendation: "Spring, Showa 17" — the
-  letter itself says the country is at war with America, so the reader is not lost, and the
-  era year is how the writer dated his world. NEEDS JAY (Q10): "Spring 1942" is the alternative.
+* **Era year — SETTLED (Q10.2, 2026-09-20):** the letter is dated *Shōwa 17, spring* →
+  "Spring, Showa 17", no gloss. Jay: *"'Showa 17' is what someone back then would write and
+  the audience can Google it."* The letter itself says the country is at war with America, so
+  the reader is not lost. "Spring 1942" was the rejected alternative.
 * Kanji numerals → digits above ten and for measurements; words for small counts in speech.
 
 ## 12. Period attitudes and rough language — SETTLED BY CHARTER
@@ -251,10 +270,10 @@ bible § Wordplay). Three kinds, three treatments:
 Translated at full strength, without comment: "you build models even though you're a girl"
 (`E0113.2`), "boys mustn't cry" (`E3180.0`), stewardess / pilot (`E2820.3`), the bath scene
 and its aftermath (`E2104`–`E2109`), Saori's kiss and Boku's one-word question (`E6004.24`),
-the boys' taunts (`E2140.1`, `E2850.2`), "Mammoth Fatso". One word needs a decision because the
-honest rendering is a slur: Boku, told that Saori is "like a well-bred young man, but a
-beautiful young woman", asks "*...okama?*" (`E1720.4`). Recommendation: "...A drag queen?" —
-a nine-year-old's TV word in 1975, neither sanitised nor sharpened. NEEDS JAY (Q10).
+the boys' taunts (`E2140.1`, `E2850.2`), "Mammoth Fatso". One word needed a decision because
+the honest rendering is a slur: Boku, told that Saori is "like a well-bred young man, but a
+beautiful young woman", asks "*...okama?*" (`E1720.4`). SETTLED (Q10.3, 2026-09-20): "...A
+drag queen?" — a nine-year-old's TV word in 1975, neither sanitised nor sharpened.
 
 ## 13. Pages and lines — content level only
 
@@ -283,6 +302,7 @@ a nine-year-old's TV word in 1975, neither sanitised nor sharpened. NEEDS JAY (Q
   third-grader's sentences, short and declarative, correctly spelled — the Japanese is not
   misspelled, it is just young. "Mom is having a baby, so it's a big fuss! I'm staying at
   Uncle's house. I wonder if there'll be lots of fun things?" Hand-lettered, not typeset.
+  SETTLED (Q10.10, 2026-09-20).
 * **Insect book and kite book covers, the calendar, signs**: translated in place when redrawn.
 * **Signs read out by the narrator** (`E1707.0`) are translated in the narration; the sign
   texture itself can stay Japanese.
@@ -291,11 +311,15 @@ a nine-year-old's TV word in 1975, neither sanitised nor sharpened. NEEDS JAY (Q
 
 ## 15. What stays in Japanese with no gloss
 
-Names of people, animals and settlements; *-kun / -chan / -san*; *Onee-chan, Onii-chan,
--neechan*; *itadakimasu, gochisōsama*; dishes that English-language Japanese cooking already
-calls by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi,
-omurice, nikujaga, korokke*); *tanuki, tengu, oni, kappa* (as in *kappa-maki*), *jizō*,
-*yukata, futon, kotatsu, tanabata, tenkara*; invented words. Everything else is English.
+Names of people, animals and settlements (Q4, Q5); *-kun / -chan / -san*; *Onee-chan,
+Onii-chan, -neechan* (Q1); *itadakimasu, gochisōsama* (Q2); the cicadas and the singing insects
+by their Japanese names, while butterflies, beetles and dragonflies are English (Q6, glossary
+§ 4a); the fish *iwana* and *yamame* (Q10.11); real sumo techniques in the bug-sumo move list
+(Q10.9); *mizore* syrup (Q10.7); dishes that English-language Japanese cooking already calls
+by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi, omurice,
+nikujaga, korokke*); *tanuki, tengu, oni, kappa* (as in *kappa-maki*), *jizō*, *yukata, futon,
+kotatsu, tanabata, tenkara*; invented words. Everything else is English — including
+*satoyama* → "the village hills" (Q10.8). All SETTLED 2026-09-20.
 In-line glosses are allowed only for § 8 kind 3; there are no translator's footnotes on screen.
 A glossary screen or booklet for the player is an idea, not a plan (it would be a PLAN row,
 and is not proposed here).
@@ -304,10 +328,24 @@ and is not proposed here).
 
 * The monk's party-piece English and German (`E1203.8`, `E1204.0`) is written in katakana and
   he translates himself. Keep it visibly *his*: "HAU ŌRUDO ĀR YŪ?" is too much; "How-oldo...
-  are-you?" is the recommended weight — then his own translation follows as in the source.
+  are-you?" is the weight — then his own translation follows as in the source. SETTLED
+  (Q10.5, 2026-09-20; Jay: *"Yes, definite."*).
 * Loanwords used as ordinary Japanese (*chansu*, *purezento*) are just English.
-* **A Japanese gloss on an English word is dropped**, because it would gloss a word into
-  itself (`E0650.11`). This is the only deletion this guide allows; each instance carries a `#`
-  note in the translation file.
+* **A Japanese gloss on an English word is dropped by default**, because it would gloss a word
+  into itself (`E0650.11`). This is the only deletion this guide allows; each instance carries
+  a `#` note in the translation file. SETTLED (Q10.6, 2026-09-20) with one exception Jay
+  added: *"If the gloss is characteristic and funny for the character, it could stay"* — i.e.
+  when the gloss is the speaker's own words and the joke is in their saying it, translate it
+  as their line rather than deleting it. A player-aid gloss in the text (the `E0650.11` case)
+  is not that, and goes.
 * Moe reads the English letter aloud as a **voice-only** clip (`E2330.11`): there is no text to
   translate, and it is already English.
+
+## 17. Speech with no text on the disc — SETTLED (Q11, 2026-09-20)
+
+The opening monologue, the five epilogues and the other speech-bearing voice-only clips are
+translated into tracked files under this directory, in the narrator's voice where they are
+his (§ 6); how they reach the screen is decided later, with engine-drawn subtitles preferred
+over re-encoded FMV frames. Jay: *"let's go with (b); we'll figure out later whether we put
+subtitles in the FMV or do it within the engine. Within engine is better."* The list of
+sequences and their ids is [voice-only.md](voice-only.md).

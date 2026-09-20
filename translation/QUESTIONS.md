@@ -1,11 +1,19 @@
-# Rulings needed from Jay (PLAN `TRN-01`, `[MINE: product]`)
+# Record of rulings (PLAN `TRN-01`, `[MINE: product]` — closed 2026-09-20)
 
-The charter (README § "Who this is for") settles the kind of translation. These are the
-questions it does **not** settle and that genuinely change the script. They are listed **in
+**This file is the record of Jay's rulings, not the policy.** The living policy is
+[style-guide.md](style-guide.md); the fixed renderings are in [glossary.md](glossary.md). Each
+question below is kept as it was put, with the options and the recommendation, followed by a
+**RULED 2026-09-20** line quoting Jay's answer verbatim. Where a question is not named in a
+ruling, his closing sentence covers it: *"Basically, I agree with all the recommendations.
+Your taste and mine are matching so far."* Nothing here is reopened by editing this file —
+change the style guide and add a dated note there.
+
+The charter (README § "Who this is for") settles the kind of translation. These were the
+questions it did **not** settle and that genuinely change the script. They are listed **in
 order of impact**; the ids are stable labels used by [style-guide.md](style-guide.md),
 [glossary.md](glossary.md) and [samples/](samples/), so they are not in numerical order.
 Each has the options with the same line rendered under each, a recommendation, and what
-depends on the answer. The fastest way to decide most of them is to read the three samples.
+depends on the answer.
 
 Counts are occurrences in the decoded dump of this disc.
 
@@ -37,6 +45,9 @@ learn *oji-san / oji-chan / oba-chan* for words English simply has.
 **Depends on it:** every scene; speaker labels (Uncle / Aunt either way); the glossary's
 people table; Q4.
 
+**RULED 2026-09-20: C.** Jay: *"I like C as well. It is good say 'Uncle/Auntie', but also very
+good to include a few -kun."* Style guide § 2.
+
 ## Q2 — *Itadakimasu* and *gochisōsama*
 
 124 lines; four choruses a day; the first thing the player hears at every meal.
@@ -51,6 +62,8 @@ Every other greeting *is* translated (good morning, good night, nice to meet you
 two phrases, not a policy of leaving greetings in Japanese.
 
 **Depends on it:** 65 meal events; the shared lines `E0006`–`E0010`.
+
+**RULED 2026-09-20: Keep.** Jay: *"Keep them, they are cute Japanese-isms."* Style guide § 4.
 
 ## Q3 — Jokes that live in the Japanese language
 
@@ -71,6 +84,8 @@ what machine translation gives, and leaves lines that make no sense. The cost of
 occasional romanised word in dialogue with its meaning given by the next line.
 
 **Depends on it:** ~25 exchanges; several insect-book entries; the tone of Shirabe and Boku.
+
+**RULED 2026-09-20: a.** Jay: *"Yes, (a) is right."* Style guide § 8.
 
 ## Q11 — Speech that has no text on the disc
 
@@ -95,6 +110,11 @@ affordable is an engineering finding, not a style ruling.
 **Depends on it:** a new PLAN row if (b) or (c) — *this unit did not file one*; the narrator's
 voice (Q8) should be settled with the epilogues in view.
 
+**RULED 2026-09-20: b, with a stated preference for in-engine delivery.** Jay: *"Yes, let's go
+with (b); we'll figure out later whether we put subtitles in the FMV or do it within the
+engine. Within engine is better."* The sequences and what is owed are listed in
+[voice-only.md](voice-only.md); the PLAN row is the orchestrator's.
+
 ## Q6 — Insect names (57 names, 60 book entries, the boys' dialogue)
 
 The brief's test — keep what a Japanese child says only where English has no natural word —
@@ -118,6 +138,9 @@ into a vocabulary test; the all-English one breaks those fourteen entries.
 **Depends on it:** `exe@8003D2E0`, `hhon@5328`, bug-sumo dialogue; the redrawn insect-book
 textures.
 
+**RULED 2026-09-20: the per-class mix as recommended.** Jay: *"Yes, I agree that we want a
+mix."* Glossary § 4a.
+
 ## Q5 — Place names
 
 * **Recommended:** settlements stay (Tsukiyono, Sagi-no-sato, Okuzawa); descriptive landmarks
@@ -131,6 +154,8 @@ be shown "Firefly Creek". The ear/eye mismatch is real but small (28 occurrences
 
 **Depends on it:** glossary § 2; the map texture.
 
+**RULED 2026-09-20: as recommended.** Jay: *"Yes, recommended."* Glossary § 2.
+
 ## Q4 — The boys' names and the nicknames
 
 * **Recommended:** Guts, Fat, Megane as heard (two are English already; "Megane" is glossed by
@@ -142,6 +167,8 @@ be shown "Firefly Creek". The ear/eye mismatch is real but small (28 occurrences
 
 **Depends on it:** 163 labelled lines and the nickname uses; Q1 (whether "Gacchan" and "Boku-chan" keep their suffix).
 
+**RULED 2026-09-20: as recommended.** Jay: *"Yes, recommended."* Glossary § 1.
+
 ## Q7 — Speaker labels and quotation marks
 
 The Japanese draws `label「…」` inline. Recommended: the label is a **field** in the
@@ -152,11 +179,23 @@ costs two cells a message and looks like prose rather than a script. This one sh
 together with whoever does the dialogue band (PLAN § *Text renderer*), since the label may end
 up outside the text box altogether.
 
+**RULED 2026-09-20: the label is a parsed field in the translation files; on screen, the
+original's style — label and marks — is the early default, explicitly revisitable.** Jay: *"We
+definitely want to parse the label in our translation files, because that will be convenient
+for the translation prompts. On the subject of how they are presented and stored, Uncle + two
+quotes is 4 characters in Japanese and much more in English, so it is expensive. I think we may
+need to default to something early but be willing to go back to it. Ideally, we'll retain the
+same style as the original, including labels and marks."* Style guide § 9.
+
 ## Q9 — Macrons
 
 Recommended: **none in game text** ("Yusaku", "Ryujin", "gochisosama"), macrons in documents.
 The font has no macron letters; adding ā ī ū ē ō (both cases) is ten glyphs and is the
 alternative. "ou / oo / uu" spellings are not recommended under either.
+
+**RULED 2026-09-20: none in game text; no macron glyphs are added.** Jay: *"I don't think we
+need it if it isn't in the text."* Documents keep macrons (part of the recommendation, adopted
+by the closing sentence). Style guide § 3.
 
 ## Q8 — The narrator's voice
 
@@ -164,6 +203,8 @@ Recommended: composed, slightly literary, past tense, no contractions — a memo
 (sample: `E2805.12`). Alternative: a warmer, colloquial "Wonder Years" voice-over with
 contractions. The Japanese is the former: *watashi*, written forms, *oji / oba*. Best decided
 with the epilogues in hand (Q11).
+
+**RULED 2026-09-20: as recommended.** Jay: *"I agree."* Style guide § 6.
 
 ## Q10 — Small defaults (accept en bloc, or strike any)
 
@@ -183,3 +224,12 @@ with the epilogues in hand (Q11).
 10. The picture diary reads as a correctly-spelled third-grader: short declaratives, no
     deliberate misspellings, hand-lettered.
 11. Fish: Iwana, Rainbow Trout, Yamame. Alt. Char / Rainbow Trout / Masu Trout.
+
+**RULED 2026-09-20: all eleven adopted as recommended**, by the closing sentence (*"Basically,
+I agree with all the recommendations"*); three were named individually:
+
+* **10.2** — Jay: *"'Showa 17' is what someone back then would write and the audience can
+  Google it."* Style guide § 11.
+* **10.5** — Jay: *"Yes, definite."* Style guide § 16.
+* **10.6** — the deletion is the default, with one exception Jay added: *"If the gloss is
+  characteristic and funny for the character, it could stay."* Style guide § 16.

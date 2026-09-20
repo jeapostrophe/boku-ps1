@@ -1,4 +1,4 @@
-# DRAFT sample — a scene with the kids. The secret base under the expressway (map A18),
+# Sample — a scene with the kids. The secret base under the expressway (map A18),
 # daytime, the first visit after Guts has let Boku in (flag 25 == 2). Usually day 6.
 # Policies exercised: QUESTIONS Q1 (-chan / -kun), Q4 (nicknames), style-guide § Registers
 # (rough boys), § English inside the Japanese.
@@ -28,7 +28,9 @@ E0650.18	Boku	I would never do that!
 #   gloss for the player's benefit. Boku still doesn't get it (.13). In English the gloss would
 #   gloss a word into itself, so it is dropped: nothing is lost, the reader is simply already
 #   where the Japanese player was put. This is the one class of "cut" the style guide allows
-#   (§ English inside the Japanese) and it is flagged every time it happens.
+#   (§ English inside the Japanese) and it is flagged every time it happens. Jay's exception
+#   (Q10.6, 2026-09-20) — a gloss that is "characteristic and funny for the character" may
+#   stay — does not apply here: this gloss is a player aid in the text, not the boys' words.
 # * "yours truly" is Fat's pronoun: he says ore-sama ("my august self") every time. Guts is plain
 #   ore; Megane is a careful, bookish boku and calls people kimi. English has one "I", so the
 #   difference is carried by diction: Fat swaggers, Guts is curt, Megane talks like a book.
@@ -37,7 +39,8 @@ E0650.18	Boku	I would never do that!
 # * Guts and the monk call him Boku-chan; the family and Megane say Boku-kun; Saori coins
 #   "Boku-kun" as a joke when he introduces himself (E1861). The suffix is characterisation,
 #   and the player can hear it, so it stays.
-# * "Megane" means "glasses". Recommended: keep as heard (Q4). Alternative: "Specs".
+# * "Megane" means "glasses". Kept as heard (Q4, ruled 2026-09-20); "Specs" was the rejected
+#   alternative.
 # * .11 has no speaker label in the Japanese; its speaker operand is group 15 (Guts + Fat +
 #   Megane, research/event-scripts.md § Speakers) — all three deliver the punchline together, a
 #   story they have plainly heard many times. The label here is ours.

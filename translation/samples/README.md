@@ -1,9 +1,10 @@
-# Sample scenes — DRAFT, for Jay to react to
+# Sample scenes
 
-Three contrasting scenes translated in full under the *recommended* policies of
-[../style-guide.md](../style-guide.md). They exist so that the rulings in
-[../QUESTIONS.md](../QUESTIONS.md) can be made by reading English rather than by reading
-arguments. Nothing here is settled.
+Three contrasting scenes translated in full under the policies of
+[../style-guide.md](../style-guide.md). They were written so that the rulings in
+[../QUESTIONS.md](../QUESTIONS.md) could be made by reading English rather than by reading
+arguments; Jay ruled on 2026-09-20 and the samples were re-checked against the settled policy.
+Their `#` notes keep the rejected renderings for comparison.
 
 | file | events | what it exercises |
 |---|---|---|
