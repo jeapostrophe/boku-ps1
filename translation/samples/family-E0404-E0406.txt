@@ -1,0 +1,52 @@
+# DRAFT sample — everyday family scene. Day 4 (August 4), 19:00, the dining room (map G02),
+# then the living room and a close-up of the ice shaver (G01 / I06).
+# Policies exercised: QUESTIONS Q1 (kin terms and suffixes), Q2 (mealtime set phrases),
+# style-guide § Speaker labels, § Choice menus, § Laughter.
+
+# --- E0404: after dinner. .0/.1 are the shared after-dinner lines every evening event opens with.
+E0404.0	Uncle	Gochisosama deshita.
+E0404.1	All	Gochisosama deshita.
+E0404.2	Uncle	Whew, it's another hot one tonight.
+E0404.3	Aunt	Then shall I make us some shaved ice?
+E0404.4	Aunt	What syrup do you like on your shaved ice?
+E0404.5	Boku	Ummm, let's see...
+# .6 is shown on a first playthrough; .7 replaces it when the register R >= 1 (what sets it is
+# not established — research/event-scripts.md § Unknown, PROG 14).
+E0404.6	[SEL]	Melon | Strawberry | Lemon | Mizore
+E0404.7	[SEL]	Melon | Strawberry | Lemon | Mizore | Rainbow Special
+E0404.8	Aunt	All right, I'll get started right away.
+# NOTE mizore: the clear sugar syrup. English has no everyday word for it; "Plain" is the
+#   alternative if Jay wants every menu row to be self-explanatory (glossary, Food).
+
+# --- E0406: the shaved ice. lflag counts visits: .0 close-up, .1-.8 first serving,
+#     .9-.10 asking for seconds, .11-.14 the second serving.
+E0406.0	Boku	Whoa, that's amazing!
+E0406.1	Shirabe	You make sure you're properly, lots-and-lots grateful while you eat that.
+E0406.2	Aunt	Shirabe, honestly, you... // Boku-kun, there's as much ice as you could ever want, so eat plenty. // Living this deep in the mountains, with no doctor anywhere near... // if you catch a cold, or get stung by a bee, you can't just run off to a hospital. // So ice is something we keep ready at all times.
+E0406.3	Moe	And what with one thing and another, we've all turned out pretty sturdy.
+E0406.4	All	Hahaha.
+E0406.5	Uncle	That reminds me, Boku-kun. You mustn't go playing tricks on beehives. // When Uncle was a little brat, he once knocked a beehive down with a fishing rod... // and got chased by a whole cloud of bees. Oh, that was a terrible time.
+E0406.6	Boku	Okay, Uncle. I understand. // I would never, ever do a thing like that.
+E0406.7	Boku	Auntie, gochisosama!
+E0406.8	Aunt	You're welcome. It was nothing fancy.
+E0406.9	Aunt	Oh, Boku-kun. Seconds on the shaved ice, is it?
+E0406.10	Aunt	But don't eat so much that you upset your tummy.
+E0406.11	Shirabe	You make sure you're properly, lots-and-lots, grateful-to-DEATH while you eat that.
+E0406.12	Aunt	Shirabe, honestly, you...
+E0406.13	All	Hahaha.
+E0406.14	Boku	Auntie, gochisosama deshita!
+
+# NOTES
+# * E0406.5 is the game telling the player how to open the forest: the beehive really is knocked
+#   down with the fishing rod (E0205). Boku's solemn promise in .6 is the joke. Keep both literal.
+# * "When Uncle was a little brat, he..." — adults here refer to themselves by their role when
+#   talking to Boku. English does this with small children too, so it is kept (style-guide
+#   § Self-reference). The uncle switches to plain "I" (boku) when he talks to his wife — that
+#   contrast is worth keeping audible in the English.
+# * E0406.8 is the set reply to gochisosama (literally "it was a poor meal"). Recommended:
+#   translated, because unlike itadakimasu it is not something the player hears ten times a day
+#   and it has a transparent meaning. The alternative is "Osomatsusama deshita."
+# * The same three lines under the OTHER Q1 options, for comparison:
+#     all-English:   Aunt: "Boku, there's as much ice as ..."  / Boku: "Okay, Uncle." / "Thanks for the food, Auntie!"
+#     all-Japanese:  Aunt: "Boku-kun, there's ..." / Boku: "Okay, Oji-chan." / "Oba-chan, gochisosama!"
+#                    Uncle: "When Oji-san was a little brat, he ..."

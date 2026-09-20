@@ -299,7 +299,22 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Translation
 
-- [ ] **[TRN-01]** **The style guide and the story bible.** The charter is settled (README
+- [ ] **[TRN-01]** **The style guide and the story bible.** DRAFTED 2026-09-20 by an agent that
+      read the whole script, the 34 arrays, jooey's guide, the Action Button transcript
+      (delegated, spot-checked) and 26 gathered web sources (`reference/SOURCES.md`):
+      `translation/bible.md` (setting — August 1975, fictional Tsukiyono modelled on Dōshi,
+      Yamanashi; cast with registers; the month day by day; map bases → places),
+      `translation/style-guide.md`, three full sample scenes under `translation/samples/`
+      (English only, keyed by line id), and **`translation/QUESTIONS.md` — eleven rulings that
+      are Jay's, each with options, an example and a recommendation. This row is waiting on
+      those.** `translation/glossary.md` is written but uncommitted: it lists the Japanese of
+      57 insect names and 48 dinner dishes, and whether word lists count as game content is
+      Jay's call `[MINE: contract]` (the mechanical alternative is keying those rows by array
+      index). Facts that change engineering: pages auto-advance with the voice, so **page
+      count and order per message are fixed**; there is no name entry or substitution beyond
+      three ant-count digits; the opening narration and all five epilogues are **voice only,
+      with no text on the disc** (QUESTIONS Q11 — subtitling them would be new renderer
+      work). Original row: The charter is settled (README
       § "Who this is for": translate, don't localize; Japanese-isms stay; "Boku" is "Boku"); this
       row turns it into rulings — honorifics, name order and romanisation, how dialect and
       children's speech are carried, food/insect/fish/item glossary, what is left in Japanese —

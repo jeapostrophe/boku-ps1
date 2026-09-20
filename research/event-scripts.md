@@ -137,7 +137,8 @@ event's condition tree (below) or come through `PROG 4`/`12`.
 | 6 | `0x80031424` | `R =` approach side |
 | **15** | poll `0x800317F8` `ev_prog_dinner_quiz` | `select_open(msg, type, variant)` with **`msg = day + 1`** (`msg = 0` on day 15); box type 4.1 on days 10, 13, 16, 18, 23, 27, 4.2 on day 4, else 3.1 (switch table `0x80029F38`). Right answer = `g_dinner_answer[day−1]` (`0x80029454`); result → `g_flags[1]` |
 | **16** | `0x800318EC` `ev_prog_dinner_say` | voiced message **`msg = g_dinner_menu[day−1] + 7`** (`0x80029474`), speaker 2 |
-| 32 | `0x80032098` | opens the executable's ant-count message (text-format.md) |
+| 31 | `0x80032030` | opens the executable's ant-count message (text-format.md) — the `dialog_open` call at `0x80032078` is inside this routine |
+| 32 | `0x80032098` | fishing (per the scripts that call it; not read) |
 
 The callers of `msg_open`, `select_open` and `voice_start` are exactly the four opcode handlers
 plus `PROG 15`/`16` — nothing else opens a block message. Events `0221`, `1502`, `3023` (quiz)

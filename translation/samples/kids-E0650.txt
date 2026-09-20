@@ -1,0 +1,43 @@
+# DRAFT sample — a scene with the kids. The secret base under the expressway (map A18),
+# daytime, the first visit after Guts has let Boku in (flag 25 == 2). Usually day 6.
+# Policies exercised: QUESTIONS Q1 (-chan / -kun), Q4 (nicknames), style-guide § Registers
+# (rough boys), § English inside the Japanese.
+
+E0650.0	Megane	Here he comes, here he comes...
+E0650.1	Fat	I can smell it. The rotten wind of the big city.
+E0650.2	Guts	Hey, beansprout. Did you eat all your breakfast like a good boy?
+E0650.3	(voice only)
+E0650.4	Guts	Let me introduce you. This is Boku-chan.
+E0650.5	Boku	Nice to meet you...
+E0650.6	Guts	This one here is Mammoth Fatso.
+E0650.7	Fat	Shut up!
+E0650.8	Guts	We call him Fat. Be nice to him.
+E0650.9	Boku	What does that mean?
+E0650.10	Fat	Well, see, there was this foreign lady who came to help on a farm down in Sagi-no-sato... // and she gazed at yours truly, all dreamy, her eyes brimming over, and this is what she said:
+E0650.11	Guts, Fat, Megane	"Ohh! FAT!"
+E0650.12	(voice only)
+E0650.13	Boku	...So, what does it mean?
+E0650.14	Guts	And this is Megane. This guy is smaaart.
+E0650.15	Megane	Hi there, Boku-kun. You have beautiful eyes, you know.
+E0650.16	Boku	...Huh?
+E0650.17	Guts	He's kind of a weird one, but... // pick on him and you'll answer to me. Got that?
+E0650.18	Boku	I would never do that!
+
+# NOTES
+# * E0650.11 — in the Japanese the quoted English word is followed by a parenthesised Japanese
+#   gloss for the player's benefit. Boku still doesn't get it (.13). In English the gloss would
+#   gloss a word into itself, so it is dropped: nothing is lost, the reader is simply already
+#   where the Japanese player was put. This is the one class of "cut" the style guide allows
+#   (§ English inside the Japanese) and it is flagged every time it happens.
+# * "yours truly" is Fat's pronoun: he says ore-sama ("my august self") every time. Guts is plain
+#   ore; Megane is a careful, bookish boku and calls people kimi. English has one "I", so the
+#   difference is carried by diction: Fat swaggers, Guts is curt, Megane talks like a book.
+# * "beansprout" is moyashikko, the period insult for a pale, weedy city child. Literal, and it
+#   reads. Fat uses it again on day 29 (E2952.0) — glossary.
+# * Guts and the monk call him Boku-chan; the family and Megane say Boku-kun; Saori coins
+#   "Boku-kun" as a joke when he introduces himself (E1861). The suffix is characterisation,
+#   and the player can hear it, so it stays.
+# * "Megane" means "glasses". Recommended: keep as heard (Q4). Alternative: "Specs".
+# * .11 has no speaker label in the Japanese; its speaker operand is group 15 (Guts + Fat +
+#   Megane, research/event-scripts.md § Speakers) — all three deliver the punchline together, a
+#   story they have plainly heard many times. The label here is ours.

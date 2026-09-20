@@ -157,6 +157,7 @@ make.sh              every recurring command: import, test, lint
 boku/                the Python package (`boku import` so far; `boku/disc.py` reads raw sectors)
 tests/               pytest; the disc-dependent tests skip when there is no import
 tools/               helper scripts for external tools (Ghidra, PCSX-Redux)
+translation/         the English: story bible, style guide, open questions, samples (drafts so far)
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/
