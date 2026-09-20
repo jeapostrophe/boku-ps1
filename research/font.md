@@ -50,17 +50,25 @@ the TIM's own w/h. The TIM header's own coordinates (all zero here) are ignored.
 
 Result: **pixels at VRAM (768, 0)–(830, 223), CLUT at (256, 256)–(271, 263)**. `onmem_init`
 returns the address of child 2 as the next free byte, so the TIM is overwritten in RAM by the
-next load — after boot the font exists only in VRAM. *Hypothesis:* nothing re-uploads it or
-overwrites that region; the other 40 `tim_upload` sites' rects were not read.
+next load — after boot the font exists only in VRAM. **Nothing re-uploads or overwrites it**:
+measured across five sampled moments (title screen, intro FMV, just before and during the first
+line, Boku's room after two FMVs and six map loads), the sheet is byte-identical in all five and
+so is the CLUT — [renderer-runtime.md](renderer-runtime.md) § VRAM, which also says which screens
+were not sampled. The other 40 `tim_upload` sites' rects were still not read; the VRAM comparison
+is what makes that unnecessary for the screens it covers.
 
 `onmem_init` also uploads child 3 (48×88, 4bpp, 3 CLUTs — not font) with `tim_upload` to
 (608, 256), CLUT (624, 256); passes child 0 (64 bytes) with the same coordinates to `0x8002A500`
 (not read); keeps child 1 at `0x800258B8`; and hands children 1 and 4 to `0x8001C7BC` (sound).
 
 To replace the font a patch changes child 2 of `ONMEM.BIN` in place (same size: no directory
-change). To extend it: 24 blank slots exist already; the TIM could grow to 252 rows (21 sheet
-rows, 1764 slots) before `v` overflows a byte — but that needs VRAM rows 224…251 under the
-sheet to be free, which is unverified, and a larger `ONMEM.BIN` child.
+change). To extend it: 24 blank slots exist already, and the TIM could in principle grow to 252
+rows (21 sheet rows, 1764 slots) before `v` overflows a byte — but **only rows 224–239 below the
+sheet are actually free**. Row 240, x = 768–831, holds 64 non-zero 15-bit words in every sampled
+state (someone else's CLUT); rows 224–239 and 241–255 were zero throughout
+([renderer-runtime.md](renderer-runtime.md) § VRAM). So the ceiling is a **240-row TIM — 20 cell
+rows, 1680 slots, 168 new ones** — plus a larger `ONMEM.BIN` child; going to 252 rows means moving
+that CLUT.
 
 ## The draw code
 
@@ -155,8 +163,11 @@ redrawn or re-spaced without touching untranslated lines.
 
 ## Open doubts
 
-* Whether VRAM (768…831, 0…255) is exclusively the font's for the whole game, and whether rows
-  224…255 there are free — needs an emulator VRAM view.
+* VRAM (768…831, 0…255) is **not** exclusively the font's, and rows 224…255 are not all free:
+  row 240 is a CLUT and column 831 rows 0…69 is non-zero and constant (the sheet is 63 words wide,
+  so that column was never the font's). Both were the same in all five sampled states, as were the
+  sheet and its CLUT ([renderer-runtime.md](renderer-runtime.md) § VRAM). What that leaves open is
+  only the screens not sampled: the pause menu, item menu, insect book, sumo and the diary.
 * `MDLTIM.RTM` TIM headers name (768, 0) and (640, 0); if its loader honours them they would
   collide with the font. *Hypothesis:* it relocates, as `tim_upload` does. Not read.
 * The 23 `glyph_draw` sites with computed ids, and who sets `g_text_flags & 0x10` (`TXT-01`).

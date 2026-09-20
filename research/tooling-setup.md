@@ -231,7 +231,7 @@ Yes, for everything the project needs:
 | Dump the framebuffer | **yes** | `PCSX.GPU.takeScreenShot()` → `{data,width,height,bpp}`; saved 640×478×2 = 611840 bytes via `Support.File.open(path,'TRUNCATE'):write(shot.data)` |
 | Raw VRAM over HTTP | **no, not headless** | see below |
 | GDB stub on 3333 | **no, not headless** | see below |
-| Exit status for CI | **yes** | the gate returns 0, 2, 3, 4, 70 or 127 to the shell, one per failure mode |
+| Exit status for CI | **yes** | the gate returns 0, 2, 3, 4, 5, 6, 70 or 127 to the shell, one per failure mode |
 
 **The web server and the GDB stub do not come up under `-no-ui`.** Tried both ways: setting
 `emulator.Debug.WebServer`/`GdbServer` from Lua at runtime, and writing them into
@@ -251,7 +251,8 @@ now. ***` — but a breakpoint on the executable's entry point at 0x80049154 nev
 sits in a loop at 0x8003xxxx indefinitely.
 
 With a retail Japanese BIOS (`SCPH-5500 (JP)`, which PCSX-Redux fingerprints as `ff3eeb8c`) the
-entry point is reached at frame 90 and the game runs. `run-headless.sh` takes the path in
+executable is loaded at frame ~720, its entry point is reached at frame 835 and the game runs
+(the frame-90 hit this section used to claim was the BIOS shell — see the last section). `run-headless.sh` takes the path in
 `REDUX_BIOS`. The disc is `SCPS-10088`, i.e. NTSC-J, so SCPH-5500 is the matching region; a copy
 lives at `~/Dev/retro-trainer/config/system/scph5500.bin` on this machine. A BIOS dump is not
 this repo's to ship.
@@ -260,19 +261,26 @@ this repo's to ship.
 
 ```sh
 export REDUX_BIOS=~/Dev/retro-trainer/config/system/scph5500.bin
-BOKU_FRAMES=1   ./tools/redux/run-headless.sh   # exit 3
-BOKU_FRAMES=300 ./tools/redux/run-headless.sh   # exit 0
+BOKU_FRAMES=300 ./tools/redux/run-headless.sh   # exit 5
+                ./tools/redux/run-headless.sh   # exit 0 (default 1000 frames, ~17 s)
 ```
 
-The red case is the narrowest state in which the harm occurs: at frame 1 the BIOS has not handed
-over, the PC is `0xbfc02b68` in BIOS ROM, and the gate says
-`exit=3 the game's own code was not executing` — naming the harm, not just failing. At frame 300
-the PC is inside `0x80010000..0x8008f800` with a non-zero instruction stream under it, and the
-gate returns 0.
+The red case is the narrowest state in which the harm this gate exists to prevent occurs — not a
+disc that fails to boot, but a run that looks like the game and is the **BIOS shell**. At frame
+300 the PC is `0x800588a8`, inside `0x80010000..0x8008f800`, with a non-zero instruction stream
+under it, so the PC checks pass; the sampled bytes do not, and the gate says
+`ram @0x80012000 = 0000…` against the file's `b030c634…` before
+`exit=5 main RAM does not hold the executable — this is not the game`. At the default 1000
+frames the executable is in RAM, all six sampled offsets match `disc/files/SCPS_100.88`, the PC
+is `0x8004be50` and the gate returns 0.
+
+Exit code 6 was made red the same way, by launching the emulator with `BOKU_EXE_SAMPLES` unset:
+the gate refuses on the first frame rather than spending a minute and then asserting nothing.
 
 Exit codes: 0 ok, 2 hang, 3 the PC was not in the executable's range, 4 the PC was in range but
-the instruction stream under it was all zero, 70 the disc image changed, 127 a missing file or a
-bad argument.
+the instruction stream under it was all zero, 5 main RAM does not hold the executable, 6 no
+expected bytes were supplied so 5 could not be decided, 70 the disc image changed, 127 a missing
+file or a bad argument.
 
 **The wall clock lives in the shell, not in the Lua** (`REDUX_TIMEOUT`, default 300 s). The first
 version used a `PCSX.nextTick` watchdog inside the emulator; measured 2026-09-20, calling
@@ -325,29 +333,27 @@ Read-only survey of `~/Dev/retro-trainer`; nothing there was modified.
   Beetle PSX wants `scph5500/5501/5502.bin` for JP/US/EU; only the JP one is present, which is the
   one SCPS-10088 needs.
 
-## Measured on the way, and unexplained
+## "Main RAM never contains the file's bytes" — settled: it was sampled too early
 
-Recorded here because it was measured with these tools and will otherwise cost the next person a
-day. **It is not a tooling problem** and belongs to whoever owns the executable-layout work.
+An earlier version of this section reported that RAM never matched `SCPS_100.88` and warned that
+the Ghidra addresses might not be run-time addresses. **That was wrong**, and the measurement that
+replaces it is [renderer-runtime.md](renderer-runtime.md) § Q0 (`tools/redux/q0-exe-load.lua`):
 
-`disc/files/SCPS_100.88` is a correct extraction (byte-identical to a fresh `dumpsxiso` dump) and
-is genuine MIPS — Ghidra finds 1542 functions and the PsyQ 4.6.0 signature set matches 417 of
-them. The PS-X EXE header says load at 0x80010000, size 0x7f800, entry 0x80049154, and a
-breakpoint on 0x80049154 **does fire** under a retail BIOS, at frame 90.
+* While the logos play, the **BIOS shell runs from RAM at `0x8003xxxx–0x8005xxxx`**, the same
+  addresses the game will occupy. The PC passes `0x80049154` — numerically the EXE's entry — more
+  than 180,000 times in shell code before the game exists in memory, first at frame 90. That is
+  what the "entry breakpoint at frame 90" was, and why the bytes under it were not the file's.
+* The BIOS copies the executable in at **frame ~720**; the real entry is reached **once, at frame
+  835**. Every sample the old note took (frames 5–300) predates the load.
+* At frame 840 all of `0x80010000…0x8008F7FF` equals the file except 4 BSS bytes the program had
+  already written. **File addresses are run-time addresses**: no relocation, no second `LoadExec`,
+  no overlay over the image. (The seven `.OVL` files load *above* it, at `0x80079A08`.)
 
-And yet **main RAM never contains this file's bytes**, at any point sampled:
-
-* at the instant the entry breakpoint fires, RAM at 0x80049154 reads `06 00 40 16 2c 00 b0 8f`
-  while the file's corresponding offset holds `07 80 02 3c 70 26 42 24`;
-* RAM 0x80010000 and 0x80010800 are zero at frames 5, 40, 200 and 300, where the file holds the
-  CD filename table (`\__STR\BOKU_XA.XAM;1` and similar);
-* searching the whole 2 MB for the file's entry-point byte sequence finds zero matches, and
-  searching the file for the RAM contents yields no consistent offset either.
-
-The RAM contents are valid MIPS and clearly the running program. So something between the file on
-disc and the code in RAM is not the identity mapping — self-relocation, a second `LoadExec`, or an
-overlay covering the EXE's address range. Research `ps1-translation-practice.md` §4.8 already
-names "does this game use overlays" as a top-three question; this is evidence that it does, and it
-means **the Ghidra database's addresses are file addresses, not necessarily runtime addresses.**
-Do not assume a symbol at 0x800xxxxx in the TSV is at 0x800xxxxx while the game runs until this is
-settled.
+Two consequences for the rest of this file: wherever it says the entry point is "reached at frame
+90", read "the BIOS shell passes that address at frame 90; the game starts at 835"; and a probe
+that must mean "the game is running" has to compare RAM with the file, because no frame count and
+no PC test can tell the shell from the game. `smoke.lua`'s old default of 300 frames passed on
+**shell** code for exactly that reason; it now targets 1000 frames *and* compares six sampled
+windows of `0x80010000…` against `disc/files/SCPS_100.88`, which `run-headless.sh` reads at launch
+and passes in through `BOKU_EXE_SAMPLES` (no byte of the game is written into a tracked file). The
+OpenBIOS observation ("the PC sits at `0x8003xxxx` indefinitely") was not re-measured.

@@ -1,7 +1,10 @@
 # The text renderer — from a message id to pixels (PLAN `TXT-01`, static half)
 
-Read from the code of `SCPS_100.88` and the seven overlays; nothing here was run. **Measured** =
-read in the disassembly/decompilation of this dump; *hypothesis* = inferred, and says so. RAM
+Read from the code of `SCPS_100.88` and the seven overlays. **Measured** =
+read in the disassembly/decompilation of this dump; *hypothesis* = inferred, and says so. The
+static pass ran nothing; where a claim here has since been checked, corrected or sharpened against
+the game actually running, it says so and cites [renderer-runtime.md](renderer-runtime.md), which
+is that measurement's one home. § 8 says which questions are answered and which are still open. RAM
 addresses throughout (EXE file offset = RAM − `0x8000F800`; overlay file offset = RAM −
 `0x80079A08`); names are ours and are listed in
 [`symbols/text-renderer.symbols.tsv`](symbols/text-renderer.symbols.tsv). The font sheet and
@@ -52,7 +55,7 @@ code. **No overlay touches it.**
 | +0xC | `0x800359EC` | `u16*` | `g_text_page` | first word of the page on screen; `NULL` = no dialogue |
 | +0x10 | `0x800359F0` | `u16*` | `g_text_next` | first word after the page's terminator |
 | +0x14 | `0x800359F4` | `s16` | `g_text_wait` | frames until the page turns itself |
-| +0x16 | `0x800359F6` | `u8` | `g_voice_active` | set to 1 by `event_begin`; cleared when the XA clip ends (`0x8002B6EC`) or the player skips it (`0x8002D4DC`) |
+| +0x16 | `0x800359F6` | `u8` | `g_voice_active` | really **"auto-advance still on"**: set to 1 by `event_begin` once per event and cleared only by ○ (`0x8002D4DC`). A clip ending does **not** clear it — measured, [renderer-runtime.md](renderer-runtime.md) § Q7, where a write-breakpoint over 12,000 frames saw no other writer |
 
 There is **no** pen position in memory (it lives in `s1`/`s2` for the duration of one
 `dialog_draw`), no shadow switch, no pitch field, no glyph-width field, no box rectangle. Pitch
@@ -110,15 +113,22 @@ help). The cursor sprite goes at line origin `(−2, −0x18)`, i.e. *above* the
    * The `0x0000` after every `0x8001` and `0x8002 p` is an ordinary glyph: id 0, the blank cell,
      drawn (3 sprites of blank texels) and advanced over. It indents continuation columns by one
      cell. Removing it from English text is safe for the renderer.
-4. **Page turn / voice sync.** The operand of `0x8002` is a frame count that only runs while
-   `g_voice_active`; it is the whole synchronisation — the XA clip is started once per message and
-   the text pages flip on timers authored to match it. Pad (`0x80072766`): while `g_voice_active`, only bit `0x20` acts and it **stops the clip**
-   (`0x8002B560`, `g_voice_active = 0`, further conditions at `0x8002D488…0x8002D4CC`); once it is
-   inactive, bit `0x20` or `0x40` calls `dialog_next_page`. If flags
-   `& 3`, `dialog_cursor_draw` (`0x8002BFB0`) draws the arrow at `(0x10A + wobble, 0xDC/0xDF)`.
+4. **Page turn / voice sync.** The operand of `0x8002` is a count of **30 Hz game ticks**, not
+   vsyncs: `dialog_draw` decrements it once per game update, so operand 102 turns the page 204
+   vsyncs later (measured, [renderer-runtime.md](renderer-runtime.md) § Q7). It runs only while
+   `g_voice_active`, and it is the whole synchronisation — the XA clip is started once per message
+   and the text pages flip on timers authored to match it. The **last page of a message closes
+   itself when the clip ends**, with no press: `g_text_flags` goes `0x12 → 0` and the script
+   proceeds, so a voiced scene plays hands-off. Pad (`0x80072766`): while `g_voice_active`, only
+   bit `0x20` = ○ acts and it **stops the clip** (`0x8002B560`, `g_voice_active = 0`, further
+   conditions at `0x8002D488…0x8002D4CC`) while leaving the text up; from that press until the next
+   `event_begin`, page timers load but do not count, nothing closes itself and every page needs
+   ○ (`0x20`) or ✕ (`0x40`) to call `dialog_next_page`. If flags `& 3`, `dialog_cursor_draw`
+   (`0x8002BFB0`) draws the arrow at `(0x10A + wobble, 0xDC/0xDF)`.
    **Consequence for translation:** an English message may have a different number of pages than
-   the Japanese one, but each page's operand is *how long that page stays up while the voice
-   plays* — the reinserter must re-author them (sum ≈ the original sum), not copy them.
+   the Japanese one, but each page's operand is *how many thirtieths of a second that page stays
+   up while the voice plays* — the reinserter must re-author them in that unit (sum ≈ the original
+   sum), not copy them.
 5. **`glyph_draw(id, x, y)`** `0x8002BA2C` — [font.md](font.md). Three 12×12 `SPRT`s at
    `(x,y)`, `(x+1,y)`, `(x,y+1)`; `w`/`h` are the literal `0xC` (`0x8002BB4C`). No clipping, no
    range check on `id`.
@@ -182,10 +192,33 @@ All seven overlays load at `*g_overlay_base` = `0x80079A08` — measured at all 
 | `0x8002CFC4` | `0x1D7C4` | `29 01 04 24` `addiu a0,zero,0x129` | `addiu a0,zero,X0` | left margin |
 | `0x8002CFC8` | `0x1D7C8` | `16 00 05 24` `addiu a1,zero,0x16` | `addiu a1,zero,Y0` | first baseline |
 | `0x80032078`, `0x8003206C`, `0x80032074` | `0x22878`… | same three | same | the ant-count message |
-| `0x8002911C` | `0x1991C` | `04 01` (260) | `FB FF` (−5) | strip starts at x 0 (fade falls off-screen) |
-| `0x8002EA38` | `0x1F238` | `0A 00 00 A6` `sh zero,0xA(s0)` | `sh s1,0xA(s0)` = `0A 00 11 A6` | strip y = the value in `s1` |
-| `0x8002EA34` | `0x1F234` | `F0 00 11 24` `addiu s1,zero,0xF0` | `addiu s1,zero,H` | strip y **and** h (so y = h = 120 without new code; a free choice needs 2 more instructions) |
+| `0x8002911C` | `0x1991C` | `04 01` (260) | `FB FF` (−5) | `g_dlgbox_x`: the tile is 330 px wide (clipped to 320) and its 5-px gouraud fade falls off-screen to the left |
 | `0x8002C078`, `0x8002C088`, `0x8002C0E8` | | `addiu s1,s1,0x10A`; `0xDC`; `0xDF` | new position | next-page arrow |
+
+**`band2` — the recommended panel change**, four words, no new code, independent band top and
+height. `dialog_panel_draw`'s four store slots already carry every value the tile needs; band2
+just re-points two of them, so the immediate that used to be the height becomes `H` and the one
+that used to compute `x` becomes `Y`:
+
+| RAM | file | now | becomes | |
+|---|---|---|---|---|
+| `0x8002EA34` | `0x1F234` | `F0 00 11 24` `addiu s1,zero,0xF0` | `addiu s1,zero,H` (`48 00 11 24` for 72) | band height, still stored by the untouched `sh s1,0xE(s0)` |
+| `0x8002EA38` | `0x1F238` | `0A 00 00 A6` `sh zero,0xA(s0)` | `sh zero,8(s0)` = `08 00 00 A6` | tile x = 0 |
+| `0x8002EA44` | `0x1F244` | `05 00 62 24` `addiu v0,v1,5` | `addiu v0,zero,Y` (`A8 00 02 24` for 168) | band top |
+| `0x8002EA48` | `0x1F248` | `08 00 02 A6` `sh v0,8(s0)` | `sh v0,0xA(s0)` = `0A 00 02 A6` | tile y = `Y` |
+
+With `Y = 168, H = 72` and the pen at (24, 176) this looked right on screen: three lines fit with
+margin and the next-page arrow's stock position (266, 220) already falls inside the band, so the
+arrow row above needs no change. Evidence, and what it still costs — the band hides the actors'
+legs and the smallest children — is in [renderer-runtime.md](renderer-runtime.md) § Q2, which also
+records the alternative it replaces: driving y **and** h from the single immediate at `0x8002EA34`
+(y = h = 120) needs only two words but covers every character in the scene.
+
+**The translucent variant, two data words.** `g_dlgbox_fade`'s entries are
+`{s16 brightness, s16 semitrans+1}` and the panel draws with abr 1 (additive), so copying entry 5
+(brightness 168, semi-transparent) over entry 6 (224, opaque) leaves the scene visible as a pale
+wash under comfortably legible dark text; entry 4 (112) works but is busy. That is the cheapest
+way to stop the band hiding the actors, and it is a `[MINE: product]` look-and-feel choice.
 
 Capacity with the engine as it is (14 px pitch, 13 px lines): a 320-px line with 16-px margins is
 **20 glyphs**; 3 lines in the height the Japanese columns used horizontally is not meaningful —
@@ -254,20 +287,29 @@ Layout (measured in `start` `0x80049154`, `main` `0x80022144`, `sys_init`): the 
 `t_addr 0x80010000`, `t_size 0x7F800`, but the program's real image ends at `0x8007266A`. From
 there the file is zeros: BSS `0x80072670…0x80079A08` (cleared by `start`), then **the overlay
 area `0x80079A08…0x8008F3A4`** (the file's zeros there are overwritten by whichever `.OVL` is
-loaded; the largest, `MUSI`, ends at `0x8008F39A`), then the heap: `g_heap_base` (`0x80068AF0`)
-= `0x8008F3A4`, and `main` zeroes `[g_heap_base, 0x801FFFC0)` before `sys_init` starts
-bump-allocating OTs, primitive buffers and every loaded file from it. Stack at `0x801FFFF0`.
+loaded; the largest, `MUSI`, ends at `0x8008F39A`), then the heap. **`0x80068AF0` is the bump
+POINTER itself, not a constant base** — the word holds the next free byte and every allocation
+advances it, so `g_heap_base` names its *initial value*, `0x8008F3A4`, which is what the file
+carries and what `main` zeroes from (`[that, 0x801FFFC0)`) before `sys_init` starts allocating OTs,
+primitive buffers and every loaded file. Live it is an ordinary moving cursor: `0x800C6160` by the
+end of the arrival sequence (measured, [renderer-runtime.md](renderer-runtime.md) § Q5).
+Stack at `0x801FFFF0`.
 The zero runs *inside* the image (`0x800258B1`, `0x80035788`, `0x8003DB03`, `0x80046972`,
 `0x80068CE5` …) are per-module BSS — `g_text` is in one — **not free**.
 
 Candidates, cheapest first:
 
-1. **Raise `g_heap_base`: `0x8008F3A4 → 0x8008F800`** (one word, file `0x592F0`). The 1,116 bytes
+1. **Raise the heap's start: write `0x8008F800` into `0x80068AF0`'s initial word** (one word, file
+   `0x592F0`). Because that word is the bump pointer, raising the value it starts at is exactly
+   "allocate nothing below here", which is why the trick works at all. The 1,116 bytes
    `0x8008F3A4…0x8008F800` are already inside the file (`0x7FBA4…0x80000`), loaded by the BIOS,
    above every overlay, and after the change nothing clears or allocates them. Costs the heap
-   1.1 KB. *Hypotheses to confirm (§8 Q5):* no overlay keeps BSS past `0x8008F3A4` (`MUSI`
-   `lui 0x8009` references were checked — all resolve below its file end), and no map is within
-   1.1 KB of exhausting RAM. Going further (heap base higher **and** a larger `t_size`) is the
+   1.1 KB. **Measured** ([renderer-runtime.md](renderer-runtime.md) § Q5), not hypothesis: with the
+   word raised, the gap filled with a sentinel and 279 word write-breakpoints armed, boot, title,
+   two FMVs, six map loads and ten events over 12,000 frames produced **0 write hits and 0 changed
+   sentinel words**, and the game ran normally on the smaller heap; the same watch armed without
+   the raise logs 1,953 hits, so it can fire. Still unwatched: the `MUSI`/`HHON`/`ZUKAN`/`TAKO`
+   overlays, a save, and a full day. Going further (heap start higher **and** a larger `t_size`) is the
    same mechanism plus a longer file, which moves `BOKU.BIN`'s LBA and therefore all of
    `g_cd_dir_lba` — avoid unless needed.
 2. **Dead code, unreferenced by any `jal`, data word or `lui` pair in any image**
@@ -322,28 +364,39 @@ from Step A's screen, not from this file.
 
 ## 8. Known unknowns — for the emulator
 
-* **Q0.** [tooling-setup.md](tooling-setup.md) measured that RAM never matched the file. Every
-  address here assumes identity load at `0x80010000`, and the file is self-consistent with that
-  (every `lui` pair lands on the data it should). Break at `0x8002BA2C` during any dialogue: does
-  it hit, and do the 4 bytes there read `21 38 80 00`? If not, nothing below can be trusted as
-  written and the offset must be found first.
-* **Q1.** Break at `0x8002BD30`: confirm `a0=0x129 a1=0x16 a2=1` and that `a3` points at the
-  message. Count hits over ten minutes of play — any caller other than `0x8002CFD0`/`0x80032080`?
-* **Q2.** With Step A applied: is the horizontal text legible where it lands, and does the
-  one-cell indent appear after each newline (confirms id 0 is drawn blank)?
-* **Q3.** Read `g_dlgbox_level` and the framebuffer during a line: is the strip the pale opaque
-  band the fade table implies? Does anything else draw at x ≥ 260 during dialogue (portraits,
-  the clock) that a bottom band would collide with?
-* **Q4.** In the busiest scene with dialogue up, read `g_prim_next − g_prim_buf[frame]`
-  (`0x800258F0`, `0x800258E8`): how far below `0x130B0` is the peak?
-* **Q5.** With `g_heap_base` raised to `0x8008F800`: watch-write `0x8008F3A4…0x8008F7FF` through
-  boot, a map change, bug sumo (`MUSI`) and a save. Any hit kills candidate 1.
-* **Q6.** Break at `0x800229A4` (`dbg_vprintf`) and `0x80022C38` across boot, title, a day of play,
-  sumo: never hit?
-* **Q7.** Voiced line: watch `g_text_wait` and `g_voice_active`. Does the page turn exactly when the
-  operand runs out; what happens to the last page when the clip ends first; and what does the
-  first press do on an *unvoiced* message (`g_voice_active` is 1 from `event_begin` — *hypothesis:*
-  the first press is consumed clearing it)?
-* **Q8.** `MUSI 0x8008E8AC` / `0x8008EC7C`: value of `a3` at the `jal 0x80037BA8` (is any system
-  message ever drawn vertically?).
-* **Q9.** Pad bit names at `0x80072766` (`0x20`, `0x40`) — which buttons.
+**Eight of these ten are now answered** by running the retail image headlessly; the measurements
+live in [renderer-runtime.md](renderer-runtime.md), section by section under the same Q numbers,
+and the corrections they forced are already folded into the sections above. What is still open:
+**Q8** (not attempted), **Q4** only in cutscene-style scenes, and — inside Q7 — the first press on
+an **unvoiced `MSG`** line, which the arrival sequence contains none of. Per question:
+
+* **Q0 — answered.** Is the file identity-loaded at `0x80010000`, or was
+  [tooling-setup.md](tooling-setup.md) right that RAM never matches it? Identity-loaded: every
+  address in this file is a run-time address, `glyph_draw` reads `21 38 80 00` as written, and the
+  old alarm was a sample taken 420 frames before the BIOS copied the executable in.
+* **Q1 — answered.** `dialog_open`'s arguments are always `a0=0x129 a1=0x16 a2=1` with `a3` on the
+  message, and no caller but `msg_open` appeared; the opening event is `E0171`.
+* **Q2 — answered.** The three immediates work: horizontal text runs from the pen at 14-px pitch
+  with the one-cell indent after each newline, so id 0 really is drawn blank. Illegible without a
+  band, which is what `band2` in § 4a is for.
+* **Q3 — answered.** The strip is opaque flat grey, full height, x 265–319, and nothing else draws
+  at x ≥ 260 during dialogue: no portrait, name plate, clock or HUD, only the next-page arrow.
+* **Q4 — answered for cutscene-style scenes, open for the rest.** Peak `g_prim_next − g_prim_buf`
+  was 53,288 of 78,000 bytes over the whole arrival sequence — ≈ 24.7 KB of headroom, ≈ 410
+  glyphs, so three 40-glyph English lines fit. **Free-roam, bug sumo and the menus were not
+  sampled**, and a vsync sample can land mid-build.
+* **Q5 — answered.** With the heap start raised to `0x8008F800`, 12,000 frames of boot, title, two
+  FMVs, six map loads and ten events wrote nothing into `0x8008F3A4…0x8008F7FF`; § 6 candidate 1
+  carries the numbers and the overlays still unwatched.
+* **Q6 — answered.** `dbg_vprintf` and `dbg_printf` took 0 hits over the same 12,000 frames, in a
+  run where other breakpoints demonstrably fired. A full day of play and sumo are still not covered.
+* **Q7 — answered except for unvoiced `MSG`.** The `0x8002` operand counts 30 Hz ticks, the last
+  page closes itself when the clip ends, and `g_voice_active` is "auto-advance on" — cleared by ○
+  and by nothing else (§ 1, § 2 step 4). **Still open:** the first press on an *unvoiced* message.
+  The arrival sequence contains none, so the old hypothesis — that the press is consumed clearing
+  `g_voice_active` — is untested; it now looks unlikely, since nothing but ○ clears the byte.
+* **Q8 — open, not attempted.** `MUSI 0x8008E8AC` / `0x8008EC7C`: value of `a3` at the
+  `jal 0x80037BA8` (is any system message ever drawn vertically?). Bug sumo is days of play from a
+  new game and needs a captured insect; there is no headless shortcut short of a memory-card save
+  placed by hand.
+* **Q9 — answered.** `0x80072766` is active-high: `0x20` = ○, `0x40` = ✕, `0x10` = △, `0x80` = □.

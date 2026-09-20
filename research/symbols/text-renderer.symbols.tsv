@@ -83,7 +83,7 @@ address	image	name	kind	note
 80036340	exe	g_ev_pc	data	bytecode cursor
 80036538	exe	g_select_index	data	int
 80027808	exe	g_ev_buf	data	void*[2]: 0x4000-byte event buffers
-80068af0	exe	g_heap_base	data	0x8008F3A4 in the file; main() zeroes from here to 0x801FFFC0
+80068af0	exe	g_heap_base	data	the bump POINTER itself, named for its initial value (initial word 0x8008F3A4 in the file; observed advancing at run time); main() zeroes from its initial value to 0x801FFFC0
 80068af4	exe	g_overlay_base	data	0x80079A08; all seven .OVL load here (8 file_load sites read this word)
 800237f0	exe	g_debug	data	0 in the file; enables the dbg_printf overlays
 8003d2e0	exe	g_sysmsg_text	data	103-line L array; TITLE.OVL also points into its middle (0x8003D5F0, 0x8003D9BC, 0x8003DA00)

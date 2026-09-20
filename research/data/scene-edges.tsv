@@ -1078,7 +1078,7 @@ E0786	E0786.3@EE	E0786.4@108
 E0786	E0786.4@108	E0786.5@118	
 E0786	E0786.5@118	E0786.6@134	
 E0786	E0786.6@134	END	
-E0787	ENTRY	END	flag[148]==0 & flag[149]==0 & flag[150]==0 & flag[151]==0 | flag[148]==0 & flag[149]==0 & flag[151]>=1 | flag[148]==0 & flag[149]>=1 & flag[150]==0 | flag[148]>=1 & flag[149]==0 & flag[150]>=1 & flag[151]>=1 | flag[148]>=1 & flag[150]==0 | flag[149]==0 & flag[150]>=1 & flag[151]==0 | flag[149]>=1 & flag[150]>=1
+E0787	ENTRY	END	
 E0805	ENTRY	E0805.MOVIE21:G14@30	
 E0805	E0805.MOVIE21:G14@30	END	
 E0807	ENTRY	E0807.5@2F6	flag[42]>=1

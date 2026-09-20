@@ -11,6 +11,9 @@
        0  reached the target frame and the game's own code was executing
        3  the target frame arrived but the PC was not in the executable's range
        4  the PC was in range but the instruction stream under it was all zero
+       5  main RAM does not hold the executable — the BIOS shell is still running, or
+          the disc booted something else
+       6  no expected bytes were supplied, so 5 could not be decided
      (2)  a hang. Not produced here: run-headless.sh owns the wall clock, because an
           in-emulator watchdog cannot be relied on when the emulator is what wedged.
 
@@ -19,9 +22,15 @@
      (getMemPtr), stop on an address (addBreakpoint, which needs -debugger).
 --]]
 
--- Boku no Natsuyasumi spends its first seconds in logos and a CD load. Measured on this
--- machine: the executable's entry point at 0x80049154 is first reached around frame 90,
--- so anything below ~150 tests the BIOS, not the game.
+-- Boku no Natsuyasumi spends its first seconds in logos and a CD load, and the BIOS SHELL
+-- runs from RAM at 0x8003xxxx-0x8005xxxx meanwhile — inside the range the game will later
+-- occupy, and across the executable's own entry address, which the PC crosses from frame
+-- ~90 in shell code. The BIOS copies the executable in at frame ~720 and the real entry is
+-- reached at ~835 (measured: research/renderer-runtime.md § Q0). So no frame count and no
+-- PC test tells the game from the shell; only the EXE's bytes being in RAM does, which is
+-- what BOKU_EXE_SAMPLES below is for. The default target is past the load as well, so that
+-- a run whose samples are somehow absent is not also sitting in the logos.
+
 -- A typo'd env var must fail loudly here, not as a nil address or a nil comparison
 -- somewhere inside a callback where the only symptom is a hang.
 local function numenv(name, default)
@@ -31,7 +40,21 @@ local function numenv(name, default)
     return n
 end
 
-local TARGET_FRAME = numenv('BOKU_FRAMES', '300')
+local TARGET_FRAME = numenv('BOKU_FRAMES', '1000')
+
+-- "ADDR:HEXBYTES ADDR:HEXBYTES ..." — run-headless.sh reads them out of the executable on
+-- disc at launch. They are never written into this file: the repo ships no byte of the
+-- original (CLAUDE.md § "This repo is public and contains none of the original game").
+local function parse_samples(spec)
+    local out = {}
+    for addr, bytes in spec:gmatch('(%x+):(%x+)') do
+        assert(#bytes % 2 == 0, 'BOKU_EXE_SAMPLES: odd hex run at ' .. addr)
+        out[#out + 1] = { addr = tonumber(addr, 16), bytes = bytes:lower() }
+    end
+    return out
+end
+
+local SAMPLES = parse_samples(os.getenv('BOKU_EXE_SAMPLES') or '')
 
 -- From the PS-X EXE header of SCPS_100.88: t_addr 0x80010000, t_size 0x7f800.
 local TEXT_START = 0x80010000
@@ -110,7 +133,20 @@ local function report()
     say('gamemode[0x%08x]=0x%02x (address unconfirmed, reported only)',
         GAMEMODE_ADDR, readRAM(GAMEMODE_ADDR, 1)[1])
 
-    -- The assertion. If the disc fails to boot, the PC stays in BIOS ROM at 0xbfc0xxxx
+    -- The assertion that decides game-or-shell, and the reason this gate cannot pass on
+    -- BIOS code: the shell occupies the same addresses but not the same bytes.
+    for _, s in ipairs(SAMPLES) do
+        local got = (hex(readRAM(s.addr, #s.bytes / 2)):gsub(' ', ''))
+        if got ~= s.bytes then
+            say('ram @0x%08x = %s', s.addr, got)
+            say('file        = %s', s.bytes)
+            finish(5, 'main RAM does not hold the executable — this is not the game')
+            return
+        end
+    end
+    say('exe bytes match the file at %d sampled offsets', #SAMPLES)
+
+    -- The second assertion. If the disc fails to boot, the PC stays in BIOS ROM at 0xbfc0xxxx
     -- or in kernel RAM below 0x80010000, and this is what notices. Verified red on
     -- purpose at BOKU_FRAMES=1, where the BIOS has not yet handed over.
     if pc < TEXT_START or pc >= TEXT_END then
@@ -147,7 +183,14 @@ end
 
 keep[#keep + 1] = PCSX.Events.createEventListener('GPU::Vsync', function()
     frames = frames + 1
-    if frames >= TARGET_FRAME then report() end
+    -- Reported on the first frame rather than after the target, so a gate that has been
+    -- disarmed by a missing environment cannot spend a minute looking like it is working.
+    if #SAMPLES == 0 then
+        finish(6, 'BOKU_EXE_SAMPLES is empty; without the file\'s bytes this gate cannot ' ..
+            'tell the game from the BIOS shell. Launch through run-headless.sh.')
+    elseif frames >= TARGET_FRAME then
+        report()
+    end
 end)
 
-say('armed target-frame=%d', TARGET_FRAME)
+say('armed target-frame=%d exe-samples=%d', TARGET_FRAME, #SAMPLES)

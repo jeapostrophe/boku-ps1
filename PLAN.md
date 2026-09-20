@@ -180,12 +180,21 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       instructions in `dialog_panel_draw`). There is no page logic in code — "3 × 16" is an
       authoring convention — and voice sync is only the `0x8002` frame operand counting down.
       A table-lookup advance fits in place in 9 instruction slots at `0x8002BF5C` with no
-      trampoline; left bearings or a variable-width SELECT need real hooks. **Left to do —
-      the emulator half:** the spec's questions Q0–Q9 (RAM matches file at `glyph_draw`;
-      `dialog_open` arguments at run time; how a bottom band looks and what it collides
-      with; primitive-buffer peak; whether `0x8008F3A4…0x8008F7FF` and `dbg_vprintf` are
-      really dead; voiced page-turn timing; the two untraced `MUSI` call sites). Harmed:
-      `TXT-05`, which would otherwise patch on the strength of reading alone.
+      trampoline; left bearings or a variable-width SELECT need real hooks. **The emulator half
+      is mostly DONE too** (`research/renderer-runtime.md`, scripts under `tools/redux/`): RAM
+      equals the file once the EXE is loaded (frame ~720; entered at ~835 — the BIOS shell
+      crosses the same addresses earlier), so file addresses are run-time addresses; the
+      opening line is `E0171.0`; `dialog_open` is always called with (297, 22, 1); the strip is
+      x = 265–319, opaque grey, and scenes are composed for the left 260 px; in-RAM the
+      horizontal patch works, and a band with independent y/h (`band2`, Y=168, H=72) keeps
+      the scene visible, opaque or translucent; at 14-px pitch English is legible but far too
+      wide, at 8 px letters collide; the heap-raise gap saw 0 writes in 12,000 frames; the
+      debug printer is never called; voiced pages turn on 30 Hz timers and ○ switches to manual
+      paging; the font's VRAM page is unchanged across five sampled moments (row 240 is in
+      use). **Left to do:** the primitive-buffer peak outside cutscenes (53,288 of 78,000 bytes
+      seen), paging of unvoiced `MSG` lines, the two `MUSI` call sites — all need parts of the
+      game a scripted cold boot does not reach (a prepared memory card or save state would
+      open them). Harmed: `TXT-05`, where a buffer overrun or a missed surface would land.
 - [ ] **[TXT-02]** **What the existing font offers.** Mostly answered by `research/font.md`:
       full A–Z/a–z/0–9 and common punctuation exist, in 12×12 full-width cells with ink widths
       of 1–9 px and left bearings of 1–5 px (so a VWF needs a per-glyph offset as well as an
@@ -194,7 +203,8 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       vertical-writing form; ~583 slots look repurposable. **Left to do:** recount the unused
       slots against `REC-03`'s structural text walk (the 583 is an upper bound from a heuristic
       scan), and confirm VRAM (768–831, 0–255) stays the font's for the whole game and whether
-      rows 224–255 are free (needs the emulator). Original question, from `REC-04`: are there Latin glyphs, are
+      rows 224–255 are free — measured since: rows 224–239 and 241–255 are zero, row 240 is in
+      use (`research/font.md`), so the sheet can grow to 240 rows / 1,680 slots. Original question, from `REC-04`: are there Latin glyphs, are
       they full-width cells only, is the cell size workable for English at this resolution, and
       how many glyph slots can be repurposed without breaking untranslated text during
       development. Harmed: `TXT-03`, which is decided on this evidence.

@@ -23,6 +23,11 @@
 # The disc image is INPUT ONLY. Redux can write to a mounted ISO (that is how it
 # generates PPF patches), so this script hashes the image before and after and fails if
 # it moved. A silently rewritten dump is unrecoverable without re-ripping the disc.
+#
+# This script also samples the executable and exports the bytes in BOKU_EXE_SAMPLES, so
+# a gate can prove the GAME is running rather than the BIOS shell (smoke.lua says why).
+# They are sampled at launch and never written to a tracked file: the repo ships none of
+# the original (CLAUDE.md § "This repo is public and contains none of the original game").
 
 set -eu
 
@@ -69,6 +74,28 @@ esac
 
 before=$(shasum -a 256 "$data" | cut -d' ' -f1)
 
+# Sample the executable for the gate. A PS-X EXE header is magic, 8 zero bytes, then u32
+# pc0 at 0x10 and u32 t_addr at 0x18; the image that goes to t_addr is the 0x800 bytes on.
+# Everything here is DERIVED from the file — the load address, the entry point and the
+# bytes themselves — so nothing about the game is written down in this repo. The offsets
+# land in code that the program never writes to (the last is the entry point), so they
+# still match the file long after boot; an all-zero window would assert nothing, so a
+# sample that comes back zero is a hard error rather than a check that cannot fail.
+exe=${BOKU_EXE:-$repo/disc/files/SCPS_100.88}
+[ -f "$exe" ] || { echo "no executable at $exe (run ./make.sh import first, or set BOKU_EXE)" >&2; exit 127; }
+hdr=$((0x800))
+t_addr=$(od -An -tu4 -j 24 -N 4 "$exe" | tr -d ' ')
+pc0=$(od -An -tu4 -j 16 -N 4 "$exe" | tr -d ' ')
+samples=
+for off in $((0x2000)) $((0x8000)) $((0x1C000)) $((0x28000)) $((0x30000)) $((pc0 - t_addr)); do
+	bytes=$(dd if="$exe" bs=1 skip=$((hdr + off)) count=16 2>/dev/null | od -An -tx1 | tr -d ' \n')
+	[ ${#bytes} -eq 32 ] || { echo "could not sample 16 bytes at offset $off of $exe" >&2; exit 127; }
+	[ "$bytes" != "00000000000000000000000000000000" ] ||
+		{ echo "sample at offset $off of $exe is all zero and would assert nothing" >&2; exit 127; }
+	samples="$samples $(printf '%x' $((t_addr + off))):$bytes"
+done
+export BOKU_EXE_SAMPLES="$samples"
+
 # Positional parameters, not a string: "-bios $REDUX_BIOS" expanded unquoted splits a
 # path containing a space into two arguments and globs one containing * or ?.
 set --
@@ -77,7 +104,7 @@ if [ -n "${REDUX_BIOS:-}" ]; then
 	set -- -bios "$REDUX_BIOS"
 else
 	echo "warning: REDUX_BIOS unset — falling back to the bundled OpenBIOS, which does" >&2
-	echo "         not reach this game's entry point. Expect the gate to report exit 3." >&2
+	echo "         not reach this game's entry point. Expect the gate to report exit 5." >&2
 fi
 
 # The wall clock lives here, not in the Lua. A watchdog inside the emulator cannot be
@@ -93,7 +120,11 @@ status=0
 	-loadiso "$iso" -run -dofile "$lua" $extra_flags &
 emu=$!
 
-( sleep "$timeout"; kill -TERM "$emu" 2>/dev/null ) &
+# Detached from this script's stdout on purpose: killing the watchdog leaves its `sleep`
+# orphaned, and an orphan that still holds the write end keeps a `run-headless.sh | grep`
+# open for the whole timeout after the gate has already answered — a gate that looks hung
+# exactly when it has passed.
+( sleep "$timeout"; kill -TERM "$emu" 2>/dev/null ) >/dev/null 2>&1 &
 watchdog=$!
 
 wait "$emu" || status=$?
