@@ -237,16 +237,20 @@ advance with no trampoline:
 
 ```
 lhu   v0, 0(s0)            ; glyph id just drawn
-sltiu at, v0, N            ; table covers ids < N
-beqz  at, +4               ; others keep the fixed pitch
-addiu v1, zero, 14
 lui   v1, %hi(width_tbl)
 addu  v1, v1, v0
 lbu   v1, %lo(width_tbl)(v1)
+sltiu at, v0, N            ; in the lbu's load-delay slot: table covers ids < N
+bnez  at, done
+nop
+addiu v1, zero, 14         ; others keep the fixed pitch
+done:
 addu  s2, s2, v1           ; falls into 0x8002BF80
 ```
 
-8 of 9 slots. The newline branch (`0x8002BF3C…48`) is already right for horizontal. What this does
+All nine slots: the R3000's load delay means `v1` from the `lbu` is not usable by the very next
+instruction, which is what an 8-instruction version gets wrong. This is the sequence
+`asm/dialogue.asm` assembles and both emulators run ([vwf-prototype.md](vwf-prototype.md)). The newline branch (`0x8002BF3C…48`) is already right for horizontal. What this does
 **not** give: wrapping (do it at build time — the engine has none to fight), a per-glyph left
 bearing (needs the x passed to `glyph_draw` adjusted *before* the call at `0x8002BF4C`, i.e. a
 real hook — or a left-aligned redrawn sheet, which avoids it), and narrower sprites (the shadow

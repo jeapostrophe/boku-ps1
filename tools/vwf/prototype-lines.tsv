@@ -1,0 +1,24 @@
+# What the TXT-05 prototype writes over the arrival sequence (the first thing a new game
+# shows: research/renderer-runtime.md § "Reaching the first dialogue"). Tab-separated.
+#
+#   site    a line id (research/text-format.md § "Proposed line id"); every physical copy is written
+#   source  a line id in translation/samples/ (its English is read from there), or `fixture`
+#   label   yes = prefix the sample's speaker, "Boku: ..."
+#   wrap    yes = break lines at spaces to the band's width; no = leave the page as written
+#   text    fixtures only: layout tests, not translation. ` // ` is a page break, \n a line break
+#
+# The English here is not the translation of these sites: the prototype writes in place, so
+# each site takes a sample line that fits its bytes and has its page count. Messages of the
+# sequence that are not listed (E0177.0, E0179 onward) stay Japanese on purpose: they show that
+# untranslated text keeps its cells and its 14-px pitch.
+site	source	label	wrap	text
+E0171.0	E0406.0	no	yes	
+E0171.1	E0406.6	yes	yes	
+E0171.2	E0650.7	no	yes	
+E0171.3	E0650.16	yes	yes	
+E0174.0	fixture	no	yes	Aunt: What syrup do you like on your shaved ice? // Hm?
+E0174.1	E0404.0	yes	yes	
+E0175.0	fixture	no	no	(No wrap) "The quick brown fox jumps over the lazy dog." // ~
+E0176.0	E2805.4	no	yes	
+E0177.1	E0650.18	no	yes	
+E0177.2	fixture	no	yes	Line 1\nLine 2\nLine 3\nLine 4\nLine 5 // 67890
