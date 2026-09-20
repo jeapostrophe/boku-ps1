@@ -195,20 +195,23 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       seen), paging of unvoiced `MSG` lines, the two `MUSI` call sites — all need parts of the
       game a scripted cold boot does not reach (a prepared memory card or save state would
       open them). Harmed: `TXT-05`, where a buffer overrun or a missed surface would land.
-- [ ] **[TXT-02]** **What the existing font offers.** Mostly answered by `research/font.md`:
-      full A–Z/a–z/0–9 and common punctuation exist, in 12×12 full-width cells with ink widths
-      of 1–9 px and left bearings of 1–5 px (so a VWF needs a per-glyph offset as well as an
-      advance); at the fixed 14-px pitch a 300-px line holds 22 characters, with true advances
-      about 45; straight/double quotes are missing and `、。ー〜…（）「」『』` are drawn in
-      vertical-writing form; ~583 slots look repurposable. **Left to do:** recount the unused
-      slots against `REC-03`'s structural text walk (the 583 is an upper bound from a heuristic
-      scan), and confirm VRAM (768–831, 0–255) stays the font's for the whole game and whether
-      rows 224–255 are free — measured since: rows 224–239 and 241–255 are zero, row 240 is in
-      use (`research/font.md`), so the sheet can grow to 240 rows / 1,680 slots. Original question, from `REC-04`: are there Latin glyphs, are
-      they full-width cells only, is the cell size workable for English at this resolution, and
-      how many glyph slots can be repurposed without breaking untranslated text during
-      development. Harmed: `TXT-03`, which is decided on this evidence.
-- [ ] **[TXT-03]** **Choose how English gets on screen.** `[MINE: product]` — between (1) patch
+- [x] **[TXT-02]** **What the existing font offers.** DONE 2026-09-20 (`research/font.md`,
+      `research/font-candidates.md`): full A–Z/a–z/0–9 and common punctuation in 12×12
+      full-width cells, ink widths 1–9 px, left bearings 1–5 px; missing `' " - ~ $ [ ]` and a
+      horizontal `( )`; Japanese punctuation drawn for vertical lines. Counted against the
+      structural text, arrays and code immediates, **1,333 ids are in use and 179 are free**
+      (155 inked-unused + 24 blank; 347 if the sheet grows to its 1,680-slot VRAM ceiling) —
+      not the 583 a heuristic scan suggested. English needs about 12 new cells. The font's
+      VRAM page is unchanged across five sampled moments; row 240 is in use.
+- [ ] **[TXT-03]** **Choose how English gets on screen.** `[MINE: product]` — **the evidence is
+      in: look at `work/txt06/DECIDE.png`** (local; built by `work/txt06/`, described in
+      `research/font-candidates.md`). Recommendation on the table: horizontal band + the in-place
+      9-slot width table + Latin cells left-aligned in a sheet rebuilt at build time from the
+      contributor's disc (the bearing hook is then unnecessary); estimated fit over all 3,484
+      pages, three lines at 272 px: 57% at today's fixed 14 px, 99.3% with a width table on the
+      untouched sheet, ~100% re-aligned. Also Jay's: opaque vs translucent band, and band
+      height (72 rows = 4 lines; a 46-row band at Y=194 holds 3 and shows 26 more scene rows).
+      Original row — between (1) patch
       the renderer to horizontal + variable width using the game's font, (2) the same with a
       replacement glyph sheet, (3) leave the renderer alone and draw a subtitle overlay. A fourth lever worth mocking up
       if the engine is rigidly full-width: two narrow Latin letters packed per 16-pixel cell,
@@ -242,11 +245,20 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 - [ ] **[TXT-06]** **The font.** If `TXT-03` needs a replacement sheet: a font under SIL OFL (or
       drawn for the project) so the repo stays fully open, rendered to the engine's cell format
       by a tool in the repo, with the width table generated from the same render.
-      `[MINE: product]` for the typeface itself. Harmed: the player (legibility at 320×240 on
+      `[MINE: product]` for the typeface itself — shortlist with licences verified at source
+      (`research/font-candidates.md`, `reference/fonts/SOURCES.md`): **Galmuri9** (OFL; same
+      9/6-px cap/x-height as the game's Latin, 51 chars per line, has every glyph needed)
+      recommended, then the game's own glyphs re-aligned (44), Ark Pixel 12 (45), Pixel
+      Operator (42). Harmed: the player (legibility at 320×240 on
       a phone screen in Mode One is the hard case) and the repo's licence cleanliness.
 - [ ] **[TXT-07]** **Measure what each box can hold.** For every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
-      glyphs, `research/text-format.md`). Output is data the translation lints and the
+      glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
+      minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
+      in `research/font-candidates.md`; the whole-game fit there is an estimate from 80 sample
+      pages, so `PIPE-06`'s page-length lint is the real gate). Also: every other text surface
+      steps a fixed 12 px, so left-aligned narrow cells look gappy there until each surface
+      gets its own advance — that is `TXT-05`'s surface list. Output is data the translation lints and the
       translation agents both consume. Harmed: the player, by text that overflows; the
       translators, by limits discovered after the fact.
 

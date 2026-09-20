@@ -158,8 +158,9 @@ Workable? At the engine's fixed 14-px pitch a 320-px line holds 22 characters �
 With per-glyph advances (mean lowercase ink 5.6 + 1 px gap) about 45 characters fit in 300 px
 at a 13-px line pitch, which is ordinary for a PS1 translation. The glyphs are 1bpp with a
 two-copy drop shadow, legible but plain; whether to keep them or redraw is `TXT-03`/`TXT-06`.
-The lowercase letters and every capital but `Ｔ` are unused by the Japanese text, so they can be
-redrawn or re-spaced without touching untranslated lines.
+The Japanese text uses nine capitals (`Ａ Ｂ Ｃ Ｌ Ｍ Ｐ Ｔ Ｘ Ｚ`) and `ｚ` (structural recount,
+[font-candidates.md](font-candidates.md)); the rest of the Latin cells can be redrawn or
+re-spaced without touching untranslated lines, and those ten only shift by their bearing.
 
 ## Open doubts
 
