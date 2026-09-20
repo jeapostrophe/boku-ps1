@@ -3,9 +3,10 @@
 An English translation patch for the PlayStation original of *Boku no Natsuyasumi* (ぼくのなつやすみ,
 SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools and translation both.
 
-> **Status, 2026-09-19: project start.** The disc has had a first look
-> ([research/disc-recon.md](research/disc-recon.md)): the script is readable, nothing is
-> extracted by a real tool yet, and nothing has been translated. Open work is
+> **Status, 2026-09-20: recon.** The import step works. The archive, the text format, the
+> font and the glyph table are decoded and written up under [research/](research/) — the
+> script is 2,977 lines / ~75,000 glyphs. No extraction or reinsertion tool is built yet
+> beyond the import, and nothing has been translated. Open work is
 > [PLAN.md](PLAN.md). No English translation of the PS1 original was found, released or in progress — GitHub
 > searched thoroughly, the romhacking sites could not be (they block automated fetches) ([research/related-projects.md](research/related-projects.md) §7(d)).
 
@@ -130,11 +131,16 @@ and [research/boku-bin.md](research/boku-bin.md) (the archive's 1,302 members, m
 
 ## The import step
 
-*Not built yet (PLAN `ENV-02`).* The contract: you point it at your own dump
-(`.chd` or `.bin/.cue`); it verifies the image against the Redump checksum
-(recorded in [research/disc-recon.md](research/disc-recon.md) § "The dump"), and writes the image, the extracted files
-and the decoded script under `disc/`. Nothing else in the repo works without it, and nothing it
-writes is ever committed. It needs `chdman` (from MAME) for CHD input.
+```
+./make.sh import path/to/your-dump.chd      # or .cue / .bin / .img, or set BOKU_DISC
+```
+
+It verifies the image against the Redump checksum (recorded in
+[research/disc-recon.md](research/disc-recon.md) § "The dump") and refuses anything else,
+then writes `disc/image.img`, `disc/image.cue`, `disc/manifest.json` and the extracted files
+under `disc/files/`. It does not write the decoded script yet (PLAN `PIPE-01`). Nothing else
+in the repo works without it, and nothing it writes is ever committed. It needs `uv`, and
+`chdman` (from MAME) for CHD input.
 
 ## Layout
 
@@ -144,16 +150,19 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
+make.sh              every recurring command: import, test, lint
+boku/                the Python package (`boku import` so far; `boku/disc.py` reads raw sectors)
+tests/               pytest; the disc-dependent tests skip when there is no import
+tools/               helper scripts for external tools (Ghidra, PCSX-Redux)
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
-disc/        (ignored)  your import: image.img, files/, decoded script
+disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects
 build/       (ignored)  patched files, patched image, the patch
 ```
 
-Tools are Python, managed with `uv`; assembly patches are armips. Code directories appear here
-as they are created.
+Tools are Python, managed with `uv`; assembly patches are armips.
 
 ## Delivery
 

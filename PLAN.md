@@ -44,18 +44,20 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Environment
 
-- [ ] **[ENV-01]** **Scaffold the Python project.** `pyproject.toml` under `uv`, a package for the
-      tools, `pytest`, a linter, and a root `make.sh` whose verbs are the only documented
-      commands (`import`, `test`, later `extract`/`build`/`patch`). README § Layout updated in
-      the same commit. Harmed: a contributor who cannot tell how to run anything.
-- [ ] **[ENV-02]** **The import step.** Input a `.chd` (via `chdman`) or `.bin/.cue`; verify the
-      raw image against the Redump SHA-1 (confirm that value against redump.org itself, not a
-      secondary report) and refuse anything else with a message that names both hashes; walk
-      ISO9660 over 2352-byte Mode 2 sectors and write `disc/image.img` and `disc/files/`.
-      Source path from an argument or env var — no machine-specific default in the repo. Must
-      not be defeatable by the case-insensitive-filesystem collision recorded in
-      `research/disc-recon.md`. Later rows extend it to write the decoded script. Harmed: every
-      contributor — principle 2 in the README makes this the only way anyone gets content.
+- [x] **[ENV-01]** **Scaffold the Python project.** DONE 2026-09-20: `uv` project (Python ≥ 3.12,
+      stdlib-only runtime), package `boku` with a `boku` CLI, `pytest` + `ruff`, and `make.sh`
+      (`import`, `test`, `lint`). Ruff is scoped to project code (`research/` Markdown quotes
+      other projects' code and was being reformatted).
+- [x] **[ENV-02]** **The import step.** DONE 2026-09-20: `boku import SOURCE [--out DIR]`
+      (`boku/importer.py`, `boku/disc.py`) takes `.chd`/`.cue`/`.bin`/`.img` or `$BOKU_DISC`,
+      refuses any image whose SHA-1 is not Redump's (checked against redump.org/disc/4890
+      itself), guards case-insensitive path collisions and non-import `--out` directories, and
+      writes `image.img`, `image.cue`, `manifest.json`, `files/`. 43 tests, each made red on
+      purpose; 6 need the disc and skip without it. Measured along the way: `__STR` records are
+      XA-*interleaved* (`0x2555`), `.IKI` files being Form 1 video with Form 2 audio between —
+      so interleaved files are listed in the manifest, not extracted. Closed as *no*: a
+      fallback for images lacking the CD-XA extension (we patch in place, so the image the
+      tools re-read always has it; reopen if `PIPE-04` ever rebuilds the filesystem).
 - [ ] **[ENV-03]** **A PS1 emulator with a debugger on this Mac, and the Mode One core beside
       it.** Need: execution/read/write breakpoints, a VRAM viewer, GPU primitive logging. Jay's machine has no PS1 emulator with a debugger installed today. `RSH-01` §4: **PCSX-Redux** (native Apple Silicon build; mapping breakpoints, VRAM viewer,
       GPU logger, Lua, GDB server, and `-run -testmode -lua_stdout` for a headless smoke gate) for

@@ -23,3 +23,7 @@ TODO.md
 __pycache__/
 *.pyc
 /.venv/
+
+# pytest and ruff caches
+.pytest_cache/
+.ruff_cache/

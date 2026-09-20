@@ -12,17 +12,17 @@ rows, not this file.
 | Game | ぼくのなつやすみ / Boku no Natsuyasumi (SCEI / Millennium Kitchen, 2000), **SCPS-10088** |
 | Source | `Boku no Natsuyasumi - Summer Holiday 20th Century (Japan).chd` — CHD v5. The `.chd` file's own SHA-1 is `5223868970ec3970d353b3447fb213ddfda541af`, but a CHD is not canonical (the same disc compresses differently per `chdman` version); `chdman info` reports internal `SHA1` `7ee18b72…` / `Data SHA1` `c3dc335e…`. The hash that identifies the dump is the extracted image's, below. |
 | Extracted image | one track, `MODE2/2352`, 280,170 sectors, 658,959,840 bytes, no CD-DA |
-| Image SHA-1 / MD5 | `5959bf7d9835d0a60aeb0143e2d0fc564bfea9fa` / `ee044864753c75ce0aea4ba777735fcd` (the one home for this value — cite it, don't copy it) — matches the Redump entry as reported in [related-projects.md](related-projects.md) §7(c); re-verify against redump.org directly (PLAN `ENV-02`) |
+| Image SHA-1 / MD5 | `5959bf7d9835d0a60aeb0143e2d0fc564bfea9fa` / `ee044864753c75ce0aea4ba777735fcd` (the one home for this value — cite it, don't copy it) — matches Redump, checked against <http://redump.org/disc/4890/> itself on 2026-09-20 (SCPS-10088, 1 track, CRC32 `39d1fe3f`). The import step pins it as `boku.importer.IMAGE_SHA1`. |
 
 ## Filesystem (30 entries)
 
-| LBA | bytes | file | XA attr |
+| LBA | bytes | file | XA attributes |
 |---:|---:|---|---|
-| 23 | 524,288 | `SCPS_100.88` — PS-X EXE, load `0x80010000`, text size `0x7f800`, entry `0x80049154`, SP `0x801ffff0` | Form 1 |
-| 279 | 68 | `SYSTEM.CNF` — `BOOT = cdrom:\SCPS_100.88;1`, `TCB = 4`, `EVENT = 10`, `STACK = 801ffff0` | Form 1 |
-| 1046 | 109,303,808 | `BOKU.BIN` — the whole game's data, 53,371 sectors | Form 1 |
-| 54417 | 197,535,744 | `__STR/BOKU_XA.XAM` — XA audio (voices) | Form 2 |
-| 150870… | — | `__STR/M*.IKI` ×25 — STR video (`M27`, `M28` are ~86 MB each) | Form 2 |
+| 23 | 524,288 | `SCPS_100.88` — PS-X EXE, load `0x80010000`, text size `0x7f800`, entry `0x80049154`, SP `0x801ffff0` | `0x0d55` Form 1 |
+| 279 | 68 | `SYSTEM.CNF` — `BOOT = cdrom:\SCPS_100.88;1`, `TCB = 4`, `EVENT = 10`, `STACK = 801ffff0` | `0x0d55` Form 1 |
+| 1046 | 109,303,808 | `BOKU.BIN` — the whole game's data, 53,371 sectors | `0x0d55` Form 1 |
+| 54417 | 197,535,744 | `__STR/BOKU_XA.XAM` — XA audio (voices) | `0x2555` interleaved; sectors are Form 2 |
+| 150870… | — | `__STR/M*.IKI` ×25 — STR video (`M27`, `M28` are ~86 MB each) | `0x2555` interleaved; Form 1 video sectors with Form 2 audio between them |
 
 Sector 280 is the `__STR` directory. Sectors 281–1045 (765 sectors) belong to no file; the
 practice survey measured them as zero-filled Form 2 filler (submode `0x20`), with 150 more at

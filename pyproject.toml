@@ -1,0 +1,37 @@
+[project]
+name = "boku"
+version = "0.1.0"
+description = "Tools for the boku-ps1 English translation patch"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+# Runtime is standard library only, on purpose: a contributor with uv and chdman has
+# everything. A new runtime dependency is Jay's decision (CLAUDE.md), not a tool author's.
+dependencies = []
+
+[project.scripts]
+boku = "boku.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["boku"]
+
+[tool.ruff]
+line-length = 100
+# Lint and format the project's own Python only. research/ holds Markdown whose code blocks
+# quote other projects verbatim (ruff reformats those), tools/ghidra/ is Jython 2, and the
+# ignored directories hold scratch and third-party code.
+extend-exclude = ["research", "reference", "work", "disc", "build", "tools/ghidra"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
