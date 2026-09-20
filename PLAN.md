@@ -92,15 +92,20 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       grows?); the `NIKKI.SEC` consumer; the two unknown words of `g_cd_dir`; the nine
       `file_load` sites with a computed index. Harmed: the reinserter, which must rebuild
       every table that encloses or points into text.
-- [ ] **[REC-03]** **The text tables, completely.** Lines are `u16` glyph indices ending `0x8000`
-      with `0x8001` newline and `0x8002`+param wait. Establish: the table structure around the
-      lines (count + offsets? relative to what?), every control code in use, what ids above 1023
-      are (440 of 5,527 candidate lines use one — 127 distinct ids), alignment/padding rules (PS2 pads with `0xCDCD` to 4 bytes), the PSP port's page-break
-      sequence `0x8002, arg, 0x0000, next page` whose zero must survive, and
-      **which text is duplicated** (hash every 2 KB block of the archive for collisions) — 1,398 of 5,527 candidate lines sit in one MiB, and the PS2
-      game copies message files into preloaded blobs that must all be patched. Output: a real
-      unique-line and glyph count. Harmed: a player who sees untranslated text from a missed
-      copy; the translation budget, which is sized from this count.
+- [x] **[REC-03]** **The text tables, completely.** DONE 2026-09-20: `research/text-format.md`
+      + `research/data/text-sites.tsv` (from `work/rec03/text_sites.py`, whose `--selftest`
+      breaks the walk three ways and sees the gate fire). All dialogue is in **event blocks**
+      (`u32 n; u32 off[n]`: header, trigger, bytecode, then voice-key/text pairs); map-pack
+      child 1 is a table of `{u16 event_id, u16 block_len, u32 off}` + blocks; an `EV` member
+      is one bare block, byte-identical to the map copy. Bytecode names text by message index
+      (`0x0D` XAMSG, `0x0E` MSG, `0x0F` XA, `0x21` SELECT — SELECT text has no terminator; its
+      line count is in executable tables). The rest is `u16` arrays in the executable and the
+      `HHON`/`ZUKAN`/`TAKO`/`MUSI` overlays. Only three control words exist: `0x8000` end,
+      `0x8001` newline (= next column), `0x8002`+timer page break (voiced lines only); the
+      word after each newline/page break is `0x0000`, drawn as glyph 0. **6,183 physical
+      sites = 2,977 logical lines = 2,426 distinct strings = 74,584 glyphs**; copies of a
+      logical line are always byte-identical. A page is at most 3 columns × 16 glyphs. The
+      rewrite list for a grown line and the per-member slack are in the spec.
 - [x] **[REC-04]** **The glyph table, derived from this disc.** DONE 2026-09-20:
       `research/font.md` + `research/data/glyph-table.tsv` (1,512 slots, every inked cell read
       by eye; the PSP table was wrong at 9 ids and has nothing above 1023). The font is one TIM
@@ -120,7 +125,10 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       (its Shift-JIS load/save messages are PC dev-host debug printfs, not these — the real
       failure path is still to be found), the memory-card save title (the BIOS
       requires Shift-JIS), and anything drawn by a path other than the dialogue renderer —
-      menus, the insect list, item names, the clock/calendar. Harmed: a player who meets
+      menus, the insect list, item names, the clock/calendar. `REC-03` found the `u16` arrays in
+      the executable and the `HHON`/`ZUKAN`/`TAKO`/`MUSI` overlays, but arrays with no end word
+      were delimited by hand, and the code that reads the `ZUKAN`/`TAKO`/`MUSI` arrays is
+      untraced; code also writes digit glyphs (`0x34 + d`) into messages at run time. Harmed: a player who meets
       Japanese in a menu of an otherwise finished patch.
 - [ ] **[REC-07]** **Is there tamper detection on data?** The executable's warning string is the
       stock mod-chip check, not a data check — but the PS2 sequel CRCs the first `0x80` bytes of
@@ -192,16 +200,18 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `[MINE: product]` for the typeface itself. Harmed: the player (legibility at 320×240 on
       a phone screen in Mode One is the hard case) and the repo's licence cleanliness.
 - [ ] **[TXT-07]** **Measure what each box can hold.** For every box geometry the game uses:
-      lines × pixel width under the new renderer. Output is data the translation lints and the
+      lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
+      glyphs, `research/text-format.md`). Output is data the translation lints and the
       translation agents both consume. Harmed: the player, by text that overflows; the
       translators, by limits discovered after the fact.
 
 ## Pipeline
 
-- [ ] **[PIPE-01]** **Extraction to stable line ids.** An id names a line by where it lives
-      (file, table, index), not by its content or a running number, so ids survive a
-      translation edit and mean the same thing on every contributor's machine; duplicated
-      copies (`REC-03`) share one id with many sites. The import step writes the Japanese, with
+- [ ] **[PIPE-01]** **Extraction to stable line ids.** Ids per `research/text-format.md`: `E<event id>.<message
+      index>` for event text — one id, all its physical sites, since copies of an (event,
+      index) pair are byte-identical in all 2,686 cases; **the extractor asserts that
+      invariant** rather than assuming it — and `<file>@<original offset>.<item>` for the
+      code-file arrays. Ids survive translation edits and are the same on every machine. The import step writes the Japanese, with
       `REC-05`'s scene/order/speaker/choice/voiced context, under `disc/`. Harmed: contributors
       — an unstable id scheme invalidates every open PR.
 - [ ] **[PIPE-02]** **The committed translation format.** `[MINE: contract]` — English and
@@ -213,7 +223,12 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       Japanese (README principles 2–3). Harmed: every contributor, and the agents that read and write it at scale.
 - [ ] **[PIPE-03]** **Reinsertion.** Encode English to glyph indices under the `TXT-05` renderer's
       table, rebuild text tables and every enclosing container and directory when sizes change
-      (`REC-01`, `REC-02`), write every duplicated site. **Growth is this row's problem, never the translation's**
+      (`REC-01`, `REC-02`), write every duplicated site, following the rewrite list in `research/text-format.md`
+      (block offsets → child-1 table → pack offsets → `.SEC` sizes, `EV.SEC`'s being `u16` →
+      sector spill into later `.SEC` fields and `g_cd_dir`). Unknown and needed before text
+      can grow: the size of the buffers the game loads map packs and `EV` members into.
+      Code-file arrays have no slack: relocate the array and patch its `lui`/`addiu` pairs.
+      **Growth is this row's problem, never the translation's**
       (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new
       packing/compression and its MIPS decoder. Harmed: the player.
 - [ ] **[PIPE-04]** **Image build.** Patch sectors in place and keep the image length identical
