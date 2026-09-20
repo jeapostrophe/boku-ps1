@@ -101,15 +101,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       game copies message files into preloaded blobs that must all be patched. Output: a real
       unique-line and glyph count. Harmed: a player who sees untranslated text from a missed
       copy; the translation budget, which is sized from this count.
-- [ ] **[REC-04]** **The glyph table, derived from this disc.** Find the font sheet(s) — cell size,
-      bit depth, where they are loaded — and build the index → character table from the sheet
-      itself, using Shift-JIS collation order as the generator and the PSP table only as a
-      cross-check (it is GPL-3.0 and 1024 entries; this game exceeds 1024 — the Korean PSP
-      patch's table has 2,020 codes; indices 0–293 match on 285 of 294 positions across the PSP
-      and PS2 games, the rest being transcription ambiguities).
-      OCR of the sheet (Hilltop used KanjiTomo) beats typing kanji. Record whether the
-      sheet contains Latin letters, digits and punctuation, at what widths. Harmed: the
-      extractor (wrong characters), and `TXT-02`.
+- [x] **[REC-04]** **The glyph table, derived from this disc.** DONE 2026-09-20:
+      `research/font.md` + `research/data/glyph-table.tsv` (1,512 slots, every inked cell read
+      by eye; the PSP table was wrong at 9 ids and has nothing above 1023). The font is one TIM
+      — `ONMEM.BIN` child 2, 252×224 4bpp used as **four 1-bit planes** of 12×12 cells, 21
+      columns — uploaded once at boot to VRAM (768,0) by `onmem_init` → `tim_upload`, then
+      only in VRAM. `glyph_draw` (`0x8002BA2C`) maps an id to column/plane/row and emits three
+      SPRTs (glyph + two shadows). Ids above 1023 are just more slots of the same sheet.
 - [ ] **[REC-05]** **Event scripts, as far as translation needs them.** The PS2 sequel's per-map
       bytecode has `MSG`, `XAMSG` (voiced line), `SELECT` (choices) and flow opcodes, with the
       first three table entries being code rather than text. Decode enough of the PS1
@@ -137,7 +135,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Text renderer — the central risk (README § "The central risk")
 
-- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** First question (`research/
+- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** Static analysis already found the
+      answer to the first question (`research/font.md`): **`text_draw_step` (`0x8002BDB0`) has a
+      horizontal mode** — `g_text_flags & 0x10` selects vertical (y+13 per glyph, newline x−14);
+      with the bit clear it advances x+14, newline y+13. So this row is now: which callers set
+      that bit and from what data (per box? per script command? hard-coded?), whether the
+      seven code overlays draw text through the same routine, and the rest below. Original
+      first question (`research/
       renderer-prior-art.md` §2, §8): does the print routine take a **direction argument**? The
       PS2 sequel's did — its menus went horizontal with one `li reg, 0` each and only the
       dialogue path needed rewriting. Then: who reads the `u16`s, how a
@@ -146,7 +150,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       vertical advance (possibly a per-character function's *return value*, not a constant) and the column step (the family's `base_x − column × spacing` pattern)
       are computed, and what owns the box geometry. Output: `research/text-renderer.md` with
       addresses and symbol names. Harmed: every other row in this section.
-- [ ] **[TXT-02]** **What the existing font offers.** From `REC-04`: are there Latin glyphs, are
+- [ ] **[TXT-02]** **What the existing font offers.** Mostly answered by `research/font.md`:
+      full A–Z/a–z/0–9 and common punctuation exist, in 12×12 full-width cells with ink widths
+      of 1–9 px and left bearings of 1–5 px (so a VWF needs a per-glyph offset as well as an
+      advance); at the fixed 14-px pitch a 300-px line holds 22 characters, with true advances
+      about 45; straight/double quotes are missing and `、。ー〜…（）「」『』` are drawn in
+      vertical-writing form; ~583 slots look repurposable. **Left to do:** recount the unused
+      slots against `REC-03`'s structural text walk (the 583 is an upper bound from a heuristic
+      scan), and confirm VRAM (768–831, 0–255) stays the font's for the whole game and whether
+      rows 224–255 are free (needs the emulator). Original question, from `REC-04`: are there Latin glyphs, are
       they full-width cells only, is the cell size workable for English at this resolution, and
       how many glyph slots can be repurposed without breaking untranslated text during
       development. Harmed: `TXT-03`, which is decided on this evidence.

@@ -1,0 +1,1513 @@
+index	character	confidence	used	notes
+0	　	verified-visually		blank cell = the space
+1	、	verified-visually	text	sits top-right: vertical-writing form
+2	。	verified-visually		sits top-right: vertical-writing form
+3	，	verified-visually		bottom-left: horizontal form
+4	．	verified-visually	text	bottom-left: horizontal form
+5	・	verified-visually	text	
+6	：	verified-visually		
+7	；	verified-visually		
+8	？	verified-visually	text	
+9	！	verified-visually	text	
+10	゛	verified-visually		
+11	＿	verified-visually		
+12	々	verified-visually	text	
+13	ー	verified-visually	text	drawn as a vertical stroke: vertical-writing form
+14	―	verified-visually	text	
+15	／	verified-visually	code	
+16	〜	verified-visually	text	vertical-writing form
+17	｜	verified-visually		
+18	…	verified-visually	text	vertical-writing form (dots stacked)
+19	‘	verified-visually		
+20	’	verified-visually		
+21	（	verified-visually	text	rotated: vertical-writing form
+22	）	verified-visually	text	rotated: vertical-writing form
+23	「	verified-visually	text	rotated: vertical-writing form
+24	」	verified-visually	text	rotated: vertical-writing form
+25	『	verified-visually	text	rotated: vertical-writing form
+26	』	verified-visually	text	rotated: vertical-writing form
+27	【	verified-visually		vertical-writing form
+28	】	verified-visually		vertical-writing form
+29	＋	verified-visually	text	
+30	−	verified-visually		
+31	±	verified-visually		
+32	×	verified-visually		
+33	÷	verified-visually		
+34	＝	verified-visually		
+35	＜	verified-visually		
+36	＞	verified-visually		
+37	♂	verified-visually	text	
+38	♀	verified-visually	text	
+39	￥	verified-visually		
+40	％	verified-visually	code	
+41	＃	verified-visually		
+42	＆	verified-visually		
+43	＊	verified-visually		
+44	＠	verified-visually		
+45	○	verified-visually	text	
+46	□	verified-visually		
+47	△	verified-visually		
+48	→	verified-visually		
+49	←	verified-visually		
+50	↑	verified-visually		
+51	↓	verified-visually		
+52	０	verified-visually	text	
+53	１	verified-visually	text	
+54	２	verified-visually	text	
+55	３	verified-visually	text	
+56	４	verified-visually	text	
+57	５	verified-visually	text	
+58	６	verified-visually	text	
+59	７	verified-visually	text	
+60	８	verified-visually	text	
+61	９	verified-visually	text	
+62	Ａ	verified-visually		
+63	Ｂ	verified-visually		
+64	Ｃ	verified-visually		
+65	Ｄ	verified-visually		
+66	Ｅ	verified-visually		
+67	Ｆ	verified-visually		
+68	Ｇ	verified-visually		
+69	Ｈ	verified-visually		
+70	Ｉ	verified-visually		
+71	Ｊ	verified-visually		
+72	Ｋ	verified-visually		
+73	Ｌ	verified-visually		
+74	Ｍ	verified-visually		
+75	Ｎ	verified-visually		
+76	Ｏ	verified-visually		
+77	Ｐ	verified-visually		
+78	Ｑ	verified-visually		
+79	Ｒ	verified-visually		
+80	Ｓ	verified-visually		
+81	Ｔ	verified-visually	text	
+82	Ｕ	verified-visually		
+83	Ｖ	verified-visually		
+84	Ｗ	verified-visually		
+85	Ｘ	verified-visually		
+86	Ｙ	verified-visually		
+87	Ｚ	verified-visually		
+88	ａ	verified-visually		
+89	ｂ	verified-visually		
+90	ｃ	verified-visually		
+91	ｄ	verified-visually		
+92	ｅ	verified-visually		
+93	ｆ	verified-visually		
+94	ｇ	verified-visually		
+95	ｈ	verified-visually		
+96	ｉ	verified-visually		
+97	ｊ	verified-visually		
+98	ｋ	verified-visually		
+99	ｌ	verified-visually		
+100	ｍ	verified-visually		
+101	ｎ	verified-visually		
+102	ｏ	verified-visually		
+103	ｐ	verified-visually		
+104	ｑ	verified-visually		
+105	ｒ	verified-visually		
+106	ｓ	verified-visually		
+107	ｔ	verified-visually		
+108	ｕ	verified-visually		
+109	ｖ	verified-visually		
+110	ｗ	verified-visually		
+111	ｘ	verified-visually		
+112	ｙ	verified-visually		
+113	ｚ	verified-visually		
+114	ぁ	verified-visually	text	
+115	あ	verified-visually	text	
+116	ぃ	verified-visually	text	
+117	い	verified-visually	text	
+118	ぅ	verified-visually	text	
+119	う	verified-visually	text	
+120	ぇ	verified-visually	text	
+121	え	verified-visually	text	
+122	ぉ	verified-visually	text	
+123	お	verified-visually	text	
+124	か	verified-visually	text	
+125	が	verified-visually	text	
+126	き	verified-visually	text	
+127	ぎ	verified-visually	text	
+128	く	verified-visually	text	
+129	ぐ	verified-visually	text	
+130	け	verified-visually	text	
+131	げ	verified-visually	text	
+132	こ	verified-visually	text	
+133	ご	verified-visually	text	
+134	さ	verified-visually	text	
+135	ざ	verified-visually	text	
+136	し	verified-visually	text	
+137	じ	verified-visually	text	
+138	す	verified-visually	text	
+139	ず	verified-visually	text	
+140	せ	verified-visually	text	
+141	ぜ	verified-visually	text	
+142	そ	verified-visually	text	
+143	ぞ	verified-visually	text	
+144	た	verified-visually	text	
+145	だ	verified-visually	text	
+146	ち	verified-visually	text	
+147	ぢ	verified-visually		
+148	っ	verified-visually	text	
+149	つ	verified-visually	text	
+150	づ	verified-visually	text	
+151	て	verified-visually	text	
+152	で	verified-visually	text	
+153	と	verified-visually	text	
+154	ど	verified-visually	text	
+155	な	verified-visually	text	
+156	に	verified-visually	text	
+157	ぬ	verified-visually		
+158	ね	verified-visually	text	
+159	の	verified-visually	text	
+160	は	verified-visually	text	
+161	ば	verified-visually	text	
+162	ぱ	verified-visually	text	
+163	ひ	verified-visually	text	
+164	び	verified-visually	text	
+165	ぴ	verified-visually		
+166	ふ	verified-visually	text	
+167	ぶ	verified-visually	text	
+168	ぷ	verified-visually		
+169	へ	verified-visually	text	
+170	べ	verified-visually	text	
+171	ぺ	verified-visually	text	
+172	ほ	verified-visually	text	
+173	ぼ	verified-visually	text	
+174	ぽ	verified-visually	text	
+175	ま	verified-visually	text	
+176	み	verified-visually	text	
+177	む	verified-visually	text	
+178	め	verified-visually	text	
+179	も	verified-visually	text	
+180	ゃ	verified-visually	text	
+181	や	verified-visually	text	
+182	ゅ	verified-visually	text	
+183	ゆ	verified-visually	text	
+184	ょ	verified-visually	text	
+185	よ	verified-visually	text	
+186	ら	verified-visually	text	
+187	り	verified-visually	text	
+188	る	verified-visually	text	
+189	れ	verified-visually	text	
+190	ろ	verified-visually	text	
+191	ゎ	verified-visually		
+192	わ	verified-visually	text	
+193	を	verified-visually	text	
+194	ん	verified-visually	text	
+195	ァ	verified-visually	text	
+196	ア	verified-visually	text	
+197	ィ	verified-visually	text	
+198	イ	verified-visually	text	
+199	ゥ	verified-visually	text	
+200	ウ	verified-visually	text	
+201	ェ	verified-visually	text	
+202	エ	verified-visually	text	
+203	ォ	verified-visually		
+204	オ	verified-visually	text	
+205	カ	verified-visually	text	
+206	ガ	verified-visually	text	
+207	キ	verified-visually	text	
+208	ギ	verified-visually	text	
+209	ク	verified-visually	text	
+210	グ	verified-visually	text	
+211	ケ	verified-visually	text	
+212	ゲ	verified-visually	text	
+213	コ	verified-visually	text	
+214	ゴ	verified-visually	text	
+215	サ	verified-visually	text	
+216	ザ	verified-visually	text	
+217	シ	verified-visually	text	
+218	ジ	verified-visually	text	
+219	ス	verified-visually	text	
+220	ズ	verified-visually	text	
+221	セ	verified-visually	text	
+222	ゼ	verified-visually	text	
+223	ソ	verified-visually	text	
+224	ゾ	verified-visually	text	
+225	タ	verified-visually	text	
+226	ダ	verified-visually	text	
+227	チ	verified-visually	text	
+228	ヂ	verified-visually		
+229	ッ	verified-visually	text	
+230	ツ	verified-visually	text	
+231	ヅ	verified-visually		
+232	テ	verified-visually	text	
+233	デ	verified-visually	text	
+234	ト	verified-visually	text	
+235	ド	verified-visually	text	
+236	ナ	verified-visually	text	
+237	ニ	verified-visually	text	
+238	ヌ	verified-visually	text	
+239	ネ	verified-visually	text	
+240	ノ	verified-visually	text	
+241	ハ	verified-visually	text	
+242	バ	verified-visually	text	
+243	パ	verified-visually	text	
+244	ヒ	verified-visually	text	
+245	ビ	verified-visually	text	
+246	ピ	verified-visually	text	
+247	フ	verified-visually	text	
+248	ブ	verified-visually	text	
+249	プ	verified-visually	text	
+250	ヘ	verified-visually	text	
+251	ベ	verified-visually	text	
+252	ペ	verified-visually	text	
+253	ホ	verified-visually	text	
+254	ボ	verified-visually	text	
+255	ポ	verified-visually	text	
+256	マ	verified-visually	text	
+257	ミ	verified-visually	text	
+258	ム	verified-visually	text	
+259	メ	verified-visually	text	
+260	モ	verified-visually	text	
+261	ャ	verified-visually	text	
+262	ヤ	verified-visually	text	
+263	ュ	verified-visually	text	
+264	ユ	verified-visually	text	
+265	ョ	verified-visually	text	
+266	ヨ	verified-visually	text	
+267	ラ	verified-visually	text	
+268	リ	verified-visually	text	
+269	ル	verified-visually	text	
+270	レ	verified-visually	text	
+271	ロ	verified-visually	text	
+272	ヮ	verified-visually		
+273	ワ	verified-visually	text	
+274	ヲ	verified-visually		
+275	ン	verified-visually	text	
+276	ヴ	verified-visually		
+277	ヵ	verified-visually		
+278	ヶ	verified-visually		
+279	一	verified-visually	text	context-checked
+280	二	verified-visually	text	context-checked
+281	三	verified-visually	text	context-checked
+282	四	verified-visually	text	context-checked
+283	五	verified-visually	text	context-checked
+284	六	verified-visually		no context: not used by scanned text
+285	七	verified-visually	text	context-checked
+286	八	verified-visually	text	context-checked
+287	九	verified-visually	text	context-checked
+288	十	verified-visually	text	context-checked
+289	百	verified-visually	text	context-checked
+290	千	verified-visually		no context: not used by scanned text
+291	万	verified-visually		no context: not used by scanned text
+292	億	verified-visually		no context: not used by scanned text
+293	兆	verified-visually	text	context-checked
+294	全	verified-visually	text	context-checked
+295	国	verified-visually	text	context-checked
+296	各	verified-visually		no context: not used by scanned text
+297	地	verified-visually	text	context-checked
+298	住	verified-visually	text	context-checked
+299	町	verified-visually	text	context-checked
+300	時	verified-visually	text	context-checked
+301	見	verified-visually	text	context-checked
+302	寒	verified-visually	text	context-checked
+303	弱	verified-visually	text	context-checked
+304	幼	verified-visually	text	context-checked
+305	虫	verified-visually	text	context-checked
+306	苦	verified-visually	text	context-checked
+307	手	verified-visually	text	context-checked
+308	好	verified-visually	text	context-checked
+309	奴	verified-visually		no context: not used by scanned text
+310	春	verified-visually	text	context-checked
+311	生	verified-visually	text	context-checked
+312	夏	verified-visually	text	context-checked
+313	方	verified-visually	text	context-checked
+314	大	verified-visually	text	context-checked
+315	青	verified-visually	text	context-checked
+316	緑	verified-visually	text	context-checked
+317	羽	verified-visually	text	context-checked
+318	香	verified-visually	text	context-checked
+319	水	verified-visually	text	context-checked
+320	色	verified-visually	text	context-checked
+321	力	verified-visually	text	context-checked
+322	変	verified-visually	text	context-checked
+323	行	verified-visually	text	context-checked
+324	物	verified-visually	text	context-checked
+325	食	verified-visually	text	context-checked
+326	現	verified-visually	text	context-checked
+327	女	verified-visually	text	context-checked
+328	子	verified-visually	text	context-checked
+329	昼	verified-visually	text	context-checked
+330	間	verified-visually	text	context-checked
+331	休	verified-visually	text	context-checked
+332	夕	verified-visually	text	context-checked
+333	動	verified-visually	text	context-checked
+334	出	verified-visually	text	context-checked
+335	夜	verified-visually	text	context-checked
+336	更	verified-visually	text	context-checked
+337	家	verified-visually	text	context-checked
+338	空	verified-visually	text	context-checked
+339	目	verified-visually	text	context-checked
+340	玉	verified-visually	text	context-checked
+341	合	verified-visually	text	context-checked
+342	計	verified-visually	text	context-checked
+343	日	verified-visually	text	context-checked
+344	本	verified-visually	text	context-checked
+345	王	verified-visually	text	context-checked
+346	様	verified-visually	text	context-checked
+347	高	verified-visually	text	context-checked
+348	山	verified-visually	text	context-checked
+349	上	verified-visually	text	context-checked
+350	涼	verified-visually	text	context-checked
+351	向	verified-visually	text	context-checked
+352	農	verified-visually	text	context-checked
+353	薬	verified-visually	text	context-checked
+354	減	verified-visually	text	context-checked
+355	今	verified-visually	text	context-checked
+356	許	verified-visually	text	context-checked
+357	世	verified-visually	text	context-checked
+358	界	verified-visually	text	context-checked
+359	中	verified-visually	text	context-checked
+360	仲	verified-visually	text	context-checked
+361	種	verified-visually	text	context-checked
+362	類	verified-visually	text	context-checked
+363	尾	verified-visually	text	context-checked
+364	季	verified-visually	text	context-checked
+365	節	verified-visually	text	context-checked
+366	来	verified-visually	text	context-checked
+367	鳥	verified-visually	text	context-checked
+368	渡	verified-visually	text	context-checked
+369	習	verified-visually	text	context-checked
+370	性	verified-visually	text	context-checked
+371	晴	verified-visually	text	context-checked
+372	曇	verified-visually	text	context-checked
+373	暑	verified-visually	text	context 暑い; differs from the PSP port's table
+374	頭	verified-visually	text	context-checked
+375	張	verified-visually	text	context-checked
+376	天	verified-visually	text	context-checked
+377	狗	verified-visually	text	context-checked
+378	鼻	verified-visually	text	context-checked
+379	敵	verified-visually	text	context-checked
+380	枯	verified-visually	text	context-checked
+381	葉	verified-visually	text	context-checked
+382	模	verified-visually	text	context-checked
+383	隠	verified-visually	text	context-checked
+384	蓑	verified-visually	text	context-checked
+385	金	verified-visually	text	context-checked
+386	属	verified-visually	text	context-checked
+387	質	verified-visually	text	context-checked
+388	光	verified-visually	text	context-checked
+389	番	verified-visually	text	context-checked
+390	強	verified-visually	text	context-checked
+391	名	verified-visually	text	context-checked
+392	足	verified-visually	text	context-checked
+393	根	verified-visually	text	context-checked
+394	赤	verified-visually	text	context-checked; differs from the PSP port's table
+395	小	verified-visually	text	context-checked
+396	短	verified-visually	text	context-checked
+397	卵	verified-visually	text	context-checked
+398	川	verified-visually	text	context-checked
+399	化	verified-visually	text	context-checked
+400	石	verified-visually	text	context-checked
+401	当	verified-visually	text	context-checked
+402	前	verified-visually	text	context-checked
+403	超	verified-visually	text	context-checked
+404	自	verified-visually	text	context-checked
+405	分	verified-visually	text	context-checked
+406	何	verified-visually	text	context-checked
+407	倍	verified-visually	text	context-checked
+408	昔	verified-visually	text	context-checked
+409	呼	verified-visually	text	context-checked
+410	声	verified-visually	text	context-checked
+411	基	verified-visually		no context: not used by scanned text; differs from the PSP port's table
+412	型	verified-visually	text	context-checked
+413	説	verified-visually		no context: not used by scanned text
+414	明	verified-visually	text	context-checked
+415	寿	verified-visually	text	context-checked
+416	命	verified-visually	text	context-checked
+417	立	verified-visually	text	context-checked
+418	宇	verified-visually	text	context-checked
+419	宙	verified-visually	text	context-checked
+420	軍	verified-visually		no context: not used by scanned text
+421	翼	verified-visually		no context: not used by scanned text
+422	営	verified-visually		no context: not used by scanned text
+423	絡	verified-visually		no context: not used by scanned text
+424	負	verified-visually	text	context-checked
+425	神	verified-visually		no context: not used by scanned text
+426	熱	verified-visually	text	context-checked
+427	溶	verified-visually		no context: not used by scanned text
+428	供	verified-visually	text	context-checked
+429	無	verified-visually	text	context-checked
+430	邪	verified-visually		no context: not used by scanned text
+431	気	verified-visually	text	context-checked
+432	次	verified-visually		no context: not used by scanned text
+433	夢	verified-visually		no context: not used by scanned text
+434	描	verified-visually	text	context-checked
+435	不	verified-visually	text	context-checked
+436	思	verified-visually	text	context-checked
+437	議	verified-visually	text	context-checked
+438	弟	verified-visually		no context: not used by scanned text
+439	年	verified-visually	text	context-checked
+440	月	verified-visually	text	context-checked
+441	最	verified-visually	text	context-checked
+442	初	verified-visually	text	context-checked
+443	歳	verified-visually		no context: not used by scanned text
+444	私	verified-visually	text	context-checked
+445	終	verified-visually	text	context-checked
+446	臨	verified-visually		no context: not used by scanned text
+447	迎	verified-visually		no context: not used by scanned text
+448	母	verified-visually		no context: not used by scanned text
+449	親	verified-visually	text	context-checked
+450	事	verified-visually	text	context-checked
+451	担	verified-visually	text	context-checked
+452	為	verified-visually		no context: not used by scanned text
+453	叔	verified-visually	text	context-checked
+454	父	verified-visually	text	context-checked
+455	居	verified-visually	text	context-checked
+456	候	verified-visually		no context: not used by scanned text
+457	共	verified-visually		no context: not used by scanned text
+458	族	verified-visually		no context: not used by scanned text
+459	北	verified-visually		no context: not used by scanned text
+460	関	verified-visually	text	context-checked
+461	東	verified-visually	text	context-checked
+462	田	verified-visually	text	context-checked
+463	舎	verified-visually		no context: not used by scanned text
+464	入	verified-visually	text	context-checked
+465	道	verified-visually	text	context-checked
+466	雲	verified-visually	text	context-checked
+467	陽	verified-visually	text	context-checked
+468	差	verified-visually		no context: not used by scanned text
+469	浴	verified-visually	text	context-checked
+470	沸	verified-visually		no context: not used by scanned text
+471	白	verified-visually	text	context-checked
+472	輝	verified-visually	text	context-checked
+473	驚	verified-visually	text	context-checked
+474	程	verified-visually		no context: not used by scanned text
+475	度	verified-visually	text	context-checked
+476	少	verified-visually	text	context-checked
+477	車	verified-visually	text	context-checked
+478	窓	verified-visually		no context: not used by scanned text
+479	身	verified-visually	text	context-checked
+480	乗	verified-visually	text	context-checked
+481	残	verified-visually	text	context-checked
+482	沈	verified-visually		no context: not used by scanned text
+483	深	verified-visually	text	context-checked
+484	吸	verified-visually	text	context-checked
+485	真	verified-visually	text	context-checked
+486	滅	verified-visually	text	context-checked
+487	感	verified-visually	text	context-checked
+488	息	verified-visually		no context: not used by scanned text
+489	話	verified-visually	text	context-checked
+490	然	verified-visually	text	context-checked
+491	里	verified-visually		no context: not used by scanned text
+492	始	verified-visually	text	context-checked
+493	宜	verified-visually	text	context-checked
+494	願	verified-visually	text	context-checked
+495	己	verified-visually	text	context-checked
+496	紹	verified-visually	text	context-checked
+497	介	verified-visually	text	context-checked
+498	長	verified-visually	text	context-checked
+499	旅	verified-visually	text	context-checked
+500	労	verified-visually	text	context-checked
+501	野	verified-visually	text	context-checked
+502	優	verified-visually		no context: not used by scanned text
+503	作	verified-visually	text	context-checked
+504	遊	verified-visually	text	context-checked
+505	下	verified-visually	text	context-checked
+506	挨	verified-visually	text	context-checked
+507	拶	verified-visually	text	context-checked
+508	詩	verified-visually	text	context-checked
+509	書	verified-visually	text	context-checked
+510	皿	verified-visually	text	context-checked
+511	茶	verified-visually	text	context-checked
+512	碗	verified-visually	text	context-checked
+513	悪	verified-visually	text	context-checked
+514	覚	verified-visually	text	context-checked
+515	替	verified-visually	text	context-checked
+516	妹	verified-visually		no context: not used by scanned text
+517	薫	verified-visually	text	context-checked
+518	部	verified-visually	text	context-checked
+519	屋	verified-visually	text	context-checked
+520	由	verified-visually	text	context-checked
+521	使	verified-visually	text	context-checked
+522	布	verified-visually		no context: not used by scanned text
+523	団	verified-visually		no context: not used by scanned text
+524	降	verified-visually	text	context-checked
+525	参	verified-visually	text	context-checked
+526	寝	verified-visually	text	context-checked
+527	心	verified-visually	text	context-checked
+528	満	verified-visually	text	context-checked
+529	点	verified-visually	text	context-checked
+530	匂	verified-visually	text	context-checked
+531	眠	verified-visually	text	context-checked
+532	人	verified-visually	text	context-checked
+533	晩	verified-visually	text	context-checked
+534	庭	verified-visually		no context: not used by scanned text
+535	散	verified-visually		no context: not used by scanned text
+536	歩	verified-visually		no context: not used by scanned text
+537	遅	verified-visually	text	context-checked
+538	決	verified-visually	text	context-checked
+539	鍵	verified-visually	text	context-checked
+540	研	verified-visually		no context: not used by scanned text
+541	究	verified-visually		no context: not used by scanned text
+542	昆	verified-visually	text	context-checked
+543	採	verified-visually	text	context-checked
+544	集	verified-visually	text	context-checked
+545	持	verified-visually	text	context-checked
+546	期	verified-visually	text	context-checked
+547	待	verified-visually	text	context-checked; differs from the PSP port's table
+548	徒	verified-visually		no context: not used by scanned text
+549	競	verified-visually		no context: not used by scanned text
+550	走	verified-visually	text	context-checked
+551	後	verified-visually	text	context-checked
+552	臓	verified-visually	text	context-checked
+553	縁	verified-visually	text	context-checked
+554	側	verified-visually	text	context-checked
+555	良	verified-visually	text	context-checked
+556	風	verified-visually	text	context-checked
+557	応	verified-visually	text	context-checked
+558	扇	verified-visually		no context: not used by scanned text
+559	機	verified-visually	text	context-checked
+560	周	verified-visually		no context: not used by scanned text
+561	埋	verified-visually		no context: not used by scanned text
+562	井	verified-visually	text	context-checked
+563	毎	verified-visually		no context: not used by scanned text
+564	朝	verified-visually	text	context-checked
+565	起	verified-visually	text	context-checked
+566	洗	verified-visually	text	context-checked
+567	濯	verified-visually	text	context-checked
+568	汚	verified-visually		no context: not used by scanned text
+569	枚	verified-visually	text	context-checked
+570	荷	verified-visually		no context: not used by scanned text
+571	詰	verified-visually		no context: not used by scanned text
+572	男	verified-visually	text	context-checked
+573	別	verified-visually	text	context-checked
+574	兄	verified-visually	text	context-checked
+575	古	verified-visually	text	context-checked
+576	着	verified-visually	text	context-checked
+577	実	verified-visually	text	context-checked
+578	験	verified-visually	text	context-checked
+579	楽	verified-visually	text	context-checked
+580	教	verified-visually	text	context-checked
+581	怒	verified-visually	text	context-checked
+582	遠	verified-visually	text	context-checked
+583	麓	verified-visually	text	context-checked
+584	鷺	verified-visually	text	context-checked
+585	郷	verified-visually	text	context-checked
+586	村	verified-visually	text	context-checked
+587	読	verified-visually	text	context-checked
+588	先	verified-visually	text	context-checked
+589	暗	verified-visually	text	context-checked
+590	元	verified-visually	text	context-checked
+591	偉	verified-visually	text	context-checked
+592	階	verified-visually	text	context-checked
+593	机	verified-visually	text	context-checked
+594	置	verified-visually	text	context-checked
+595	悲	verified-visually	text	context-checked
+596	焼	verified-visually	text	context-checked
+597	複	verified-visually		no context: not used by scanned text
+598	箱	verified-visually	text	context-checked
+599	約	verified-visually	text	context-checked
+600	束	verified-visually	text	context-checked
+601	通	verified-visually	text	context-checked
+602	早	verified-visually	text	context-checked
+603	以	verified-visually	text	context-checked
+604	完	verified-visually	text	context-checked
+605	成	verified-visually	text	context-checked
+606	僕	verified-visually	text	context-checked
+607	工	verified-visually	text	context-checked
+608	房	verified-visually		no context: not used by scanned text; differs from the PSP port's table
+609	辺	verified-visually	text	context-checked
+610	喉	verified-visually		no context: not used by scanned text
+611	渇	verified-visually		no context: not used by scanned text
+612	冷	verified-visually	text	context-checked
+613	蔵	verified-visually	text	context-checked
+614	庫	verified-visually		no context: not used by scanned text
+615	麦	verified-visually	text	context-checked
+616	牛	verified-visually	text	context-checked
+617	乳	verified-visually	text	context-checked
+618	勝	verified-visually	text	context-checked
+619	飲	verified-visually	text	context-checked
+620	製	verified-visually	text	context-checked
+621	同	verified-visually	text	context-checked
+622	容	verified-visually		no context: not used by scanned text
+623	器	verified-visually	text	context-checked
+624	固	verified-visually	text	context-checked
+625	混	verified-visually		no context: not used by scanned text
+626	鍋	verified-visually	text	context-checked
+627	殺	verified-visually		no context: not used by scanned text
+628	菌	verified-visually		no context: not used by scanned text
+629	菜	verified-visually		no context: not used by scanned text
+630	煮	verified-visually	text	context-checked
+631	唐	verified-visually		no context: not used by scanned text
+632	揚	verified-visually	text	context-checked
+633	豆	verified-visually	text	context-checked
+634	腐	verified-visually	text	context-checked
+635	酒	verified-visually		no context: not used by scanned text
+636	蒸	verified-visually	text	context-checked
+637	巻	verified-visually	text	context-checked
+638	宝	verified-visually	text	context-checked
+639	華	verified-visually	text	context-checked
+640	刺	verified-visually		no context: not used by scanned text
+641	純	verified-visually	text	context-checked
+642	和	verified-visually	text	context-checked
+643	棒	verified-visually	text	context-checked
+644	鶏	verified-visually		no context: not used by scanned text
+645	巾	verified-visually		no context: not used by scanned text
+646	厚	verified-visually	text	context-checked
+647	炒	verified-visually		no context: not used by scanned text
+648	組	verified-visually	text	context-checked
+649	酢	verified-visually	text	context-checked
+650	豚	verified-visually	text	context-checked
+651	萌	verified-visually	text	context-checked
+652	枝	verified-visually	text	context-checked
+653	油	verified-visually	text	context-checked
+654	引	verified-visually	text	context-checked
+655	将	verified-visually		no context: not used by scanned text
+656	司	verified-visually	text	context-checked
+657	特	verified-visually	text	context-checked
+658	飛	verified-visually	text	context-checked
+659	正	verified-visually	text	context-checked
+660	解	verified-visually	text	context-checked
+661	念	verified-visually	text	context-checked
+662	材	verified-visually		no context: not used by scanned text
+663	料	verified-visually	text	context-checked
+664	注	verified-visually	text	context-checked
+665	意	verified-visually	text	context-checked
+666	欽	verified-visually		no context: not used by scanned text
+667	酷	verified-visually	text	context-checked
+668	面	verified-visually	text	context-checked
+669	花	verified-visually	text	context-checked
+670	顔	verified-visually	text	context-checked
+671	定	verified-visually	text	context-checked
+672	左	verified-visually		no context: not used by scanned text
+673	棚	verified-visually		no context: not used by scanned text
+674	咲	verified-visually	text	context-checked
+675	仕	verified-visually	text	context-checked
+676	窯	verified-visually	text	context-checked
+677	粘	verified-visually		no context: not used by scanned text
+678	土	verified-visually	text	context-checked; differs from the PSP port's table
+679	回	verified-visually	text	context-checked
+680	沢	verified-visually	text	context-checked
+681	登	verified-visually	text	context-checked
+682	火	verified-visually	text	context-checked
+683	多	verified-visually	text	context-checked
+684	旬	verified-visually		no context: not used by scanned text
+685	相	verified-visually	text	context-checked
+686	溜	verified-visually		no context: not used by scanned text
+687	外	verified-visually	text	context-checked
+688	横	verified-visually	text	context-checked
+689	裏	verified-visually	text	context-checked
+690	門	verified-visually		no context: not used by scanned text
+691	橋	verified-visually	text	context-checked
+692	経	verified-visually		no context: not used by scanned text
+693	危	verified-visually	text	context-checked
+694	開	verified-visually	text	context-checked
+695	修	verified-visually		no context: not used by scanned text
+696	理	verified-visually	text	context-checked
+697	落	verified-visually	text	context-checked
+698	頑	verified-visually	text	context-checked
+699	丈	verified-visually	text	context-checked; differs from the PSP port's table
+700	快	verified-visually		no context: not used by scanned text
+701	干	verified-visually		no context: not used by scanned text
+702	旗	verified-visually		no context: not used by scanned text
+703	並	verified-visually	text	context-checked
+704	誇	verified-visually		no context: not used by scanned text
+705	示	verified-visually		no context: not used by scanned text
+706	主	verified-visually	text	context-checked
+707	婦	verified-visually		no context: not used by scanned text
+708	表	verified-visually	text	context-checked
+709	妙	verified-visually		no context: not used by scanned text
+710	結	verified-visually	text	context-checked
+711	婚	verified-visually	text	context-checked
+712	会	verified-visually	text	context-checked
+713	知	verified-visually	text	context-checked
+714	奥	verified-visually	text	context-checked
+715	伝	verified-visually	text	context-checked
+716	旦	verified-visually	text	context-checked
+717	那	verified-visually	text	context-checked
+718	忘	verified-visually	text	context-checked
+719	続	verified-visually	text	context-checked
+720	帰	verified-visually	text	context-checked
+721	痛	verified-visually	text	context-checked
+722	飯	verified-visually	text	context-checked
+723	直	verified-visually	text	context-checked
+724	近	verified-visually	text	context-checked
+725	泥	verified-visually	text	context-checked
+726	必	verified-visually	text	context-checked
+727	要	verified-visually	text	context-checked
+728	秘	verified-visually	text	context-checked
+729	密	verified-visually	text	context-checked
+730	件	verified-visually		no context: not used by scanned text
+731	言	verified-visually	text	context-checked
+732	捕	verified-visually	text	context-checked
+733	頃	verified-visually	text	context-checked
+734	盗	verified-visually		no context: not used by scanned text
+735	聞	verified-visually	text	context-checked
+736	味	verified-visually	text	context-checked
+737	瓜	verified-visually		no context: not used by scanned text
+738	可	verified-visually	text	context-checked
+739	愛	verified-visually	text	context-checked
+740	死	verified-visually	text	context-checked
+741	刑	verified-visually	text	context-checked
+742	欲	verified-visually	text	context-checked
+743	雅	verified-visually		no context: not used by scanned text
+744	普	verified-visually	text	context-checked
+745	段	verified-visually	text	context-checked
+746	骸	verified-visually	text	context-checked
+747	蜂	verified-visually		no context: not used by scanned text
+748	巣	verified-visually		no context: not used by scanned text
+749	揺	verified-visually		no context: not used by scanned text
+750	数	verified-visually	text	context-checked
+751	竿	verified-visually	text	context-checked
+752	夫	verified-visually	text	context-checked
+753	絶	verified-visually	text	context-checked
+754	木	verified-visually	text	context-checked
+755	切	verified-visually	text	context-checked
+756	池	verified-visually	text	context-checked
+757	魚	verified-visually	text	context-checked
+758	釣	verified-visually	text	context-checked
+759	口	verified-visually	text	context-checked
+760	右	verified-visually		no context: not used by scanned text
+761	納	verified-visually	text	context-checked
+762	美	verified-visually	text	context-checked
+763	畑	verified-visually	text	context-checked
+764	森	verified-visually	text	context-checked
+765	途	verified-visually		no context: not used by scanned text
+766	午	verified-visually		no context: not used by scanned text
+767	頼	verified-visually	text	context-checked
+768	校	verified-visually	text	context-checked
+769	球	verified-visually	text	context-checked
+770	第	verified-visually		no context: not used by scanned text
+771	試	verified-visually		no context: not used by scanned text
+772	阿	verified-visually		no context: not used by scanned text
+773	蘇	verified-visually		no context: not used by scanned text
+774	南	verified-visually	text	context-checked
+775	対	verified-visually	text	context-checked
+776	仙	verified-visually		no context: not used by scanned text
+777	業	verified-visually		no context: not used by scanned text
+778	戦	verified-visually	text	context-checked
+779	攻	verified-visually	text	context-checked
+780	撃	verified-visually		no context: not used by scanned text
+781	在	verified-visually	text	context-checked
+782	発	verified-visually	text	context-checked
+783	柿	verified-visually		no context: not used by scanned text
+784	投	verified-visually	text	context-checked
+785	惜	verified-visually		no context: not used by scanned text
+786	薩	verified-visually		no context: not used by scanned text
+787	摩	verified-visually		no context: not used by scanned text
+788	連	verified-visually	text	context-checked
+789	広	verified-visually	text	context-checked
+790	島	verified-visually	text	context-checked
+791	船	verified-visually		no context: not used by scanned text
+792	舶	verified-visually		no context: not used by scanned text
+793	新	verified-visually	text	context-checked
+794	潟	verified-visually		no context: not used by scanned text
+795	稲	verified-visually		no context: not used by scanned text
+796	刈	verified-visually		no context: not used by scanned text
+797	御	verified-visually		no context: not used by scanned text
+798	福	verified-visually		no context: not used by scanned text
+799	彼	verified-visually		no context: not used by scanned text
+800	配	verified-visually	text	context-checked
+801	故	verified-visually		no context: not used by scanned text
+802	障	verified-visually		no context: not used by scanned text
+803	室	verified-visually		no context: not used by scanned text
+804	流	verified-visually	text	context-checked
+805	氷	verified-visually	text	context-checked
+806	富	verified-visually		no context: not used by scanned text
+807	科	verified-visually	text	context-checked
+808	付	verified-visually	text	context-checked
+809	打	verified-visually		no context: not used by scanned text
+810	者	verified-visually	text	context-checked
+811	巡	verified-visually		no context: not used by scanned text
+812	量	verified-visually		no context: not used by scanned text
+813	得	verified-visually	text	context-checked
+814	線	verified-visually	text	context-checked
+815	封	verified-visually		no context: not used by scanned text
+816	依	verified-visually		no context: not used by scanned text
+817	沖	verified-visually		no context: not used by scanned text
+818	縄	verified-visually	text	context-checked
+819	歌	verified-visually	text	context-checked
+820	謡	verified-visually		no context: not used by scanned text
+821	果	verified-visually		no context: not used by scanned text
+822	予	verified-visually	text	context-checked; differs from the PSP port's table
+823	過	verified-visually	text	context-checked
+824	具	verified-visually		no context: not used by scanned text
+825	志	verified-visually		no context: not used by scanned text
+826	堅	verified-visually		no context: not used by scanned text
+827	徳	verified-visually		no context: not used by scanned text
+828	伸	verified-visually		no context: not used by scanned text; differs from the PSP port's table
+829	乱	verified-visually		no context: not used by scanned text
+830	利	verified-visually	text	context-checked
+831	用	verified-visually	text	context-checked
+832	再	verified-visually		no context: not used by scanned text
+833	局	verified-visually		no context: not used by scanned text
+834	接	verified-visually		no context: not used by scanned text
+835	末	verified-visually	text	context-checked
+836	追	verified-visually	text	context-checked
+837	延	verified-visually		no context: not used by scanned text
+838	込	verified-visually	text	context-checked
+839	塁	verified-visually		no context: not used by scanned text
+840	逆	verified-visually		no context: not used by scanned text
+841	転	verified-visually	text	context-checked
+842	阪	verified-visually		no context: not used by scanned text
+843	吉	verified-visually		no context: not used by scanned text
+844	甲	verified-visually		no context: not used by scanned text
+845	園	verified-visually		no context: not used by scanned text
+846	場	verified-visually		no context: not used by scanned text
+847	狭	verified-visually		no context: not used by scanned text
+848	畜	verified-visually		no context: not used by scanned text
+849	友	verified-visually	text	context-checked
+850	達	verified-visually	text	context-checked
+851	秋	verified-visually	text	context-checked
+852	文	verified-visually	text	context-checked
+853	祭	verified-visually		no context: not used by scanned text
+854	演	verified-visually	text	context-checked
+855	奏	verified-visually	text	context-checked
+856	貸	verified-visually	text	context-checked
+857	笛	verified-visually		no context: not used by scanned text
+858	吹	verified-visually	text	context-checked
+859	台	verified-visually	text	context-checked
+860	所	verified-visually	text	context-checked
+861	隣	verified-visually	text	context-checked
+862	腹	verified-visually	text	context-checked
+863	給	verified-visually	text	context-checked
+864	雨	verified-visually	text	context-checked
+865	籠	verified-visually		no context: not used by scanned text
+866	疲	verified-visually	text	context-checked
+867	汗	verified-visually	text	context-checked
+868	茹	verified-visually		no context: not used by scanned text
+869	案	verified-visually	text	context-checked
+870	内	verified-visually	text	context-checked
+871	謝	verified-visually	text	context-checked
+872	娘	verified-visually	text	context-checked
+873	学	verified-visually	text	context-checked
+874	姉	verified-visually	text	context-checked
+875	坊	verified-visually	text	context-checked
+876	罪	verified-visually	text	context-checked
+877	恐	verified-visually	text	context-checked
+878	遭	verified-visually	text	context-checked
+879	遇	verified-visually	text	context-checked
+880	雪	verified-visually	text	context-checked
+881	哀	verified-visually		no context: not used by scanned text
+882	違	verified-visually	text	context-checked
+883	裂	verified-visually		no context: not used by scanned text
+884	運	verified-visually	text	context-checked
+885	占	verified-visually	text	context-checked
+886	叩	verified-visually		no context: not used by scanned text
+887	甘	verified-visually	text	context-checked
+888	写	verified-visually	text	context-checked
+889	撮	verified-visually	text	context-checked
+890	京	verified-visually	text	context-checked
+891	助	verified-visually	text	context-checked
+892	柚	verified-visually		no context: not used by scanned text
+893	紙	verified-visually	text	context-checked
+894	喜	verified-visually	text	context-checked
+895	進	verified-visually	text	context-checked
+896	倒	verified-visually	text	context-checked
+897	誰	verified-visually	text	context-checked
+898	取	verified-visually	text	context-checked
+899	印	verified-visually	text	context-checked
+900	軽	verified-visually	text	context-checked
+901	浮	verified-visually	text	context-checked
+902	腕	verified-visually		no context: not used by scanned text
+903	癖	verified-visually		no context: not used by scanned text
+904	犬	verified-visually	text	context-checked
+905	雄	verified-visually		no context: not used by scanned text
+906	騒	verified-visually		no context: not used by scanned text
+907	寂	verified-visually	text	context-checked
+908	響	verified-visually	text	context-checked
+909	医	verified-visually		no context: not used by scanned text
+910	活	verified-visually		no context: not used by scanned text
+911	病	verified-visually	text	context-checked
+912	院	verified-visually		no context: not used by scanned text
+913	代	verified-visually	text	context-checked
+914	恩	verified-visually	text	context-checked
+915	考	verified-visually	text	context-checked
+916	繁	verified-visually		no context: not used by scanned text
+917	殖	verified-visually		no context: not used by scanned text
+918	趣	verified-visually		no context: not used by scanned text
+919	旨	verified-visually		no context: not used by scanned text
+920	貝	verified-visually		no context: not used by scanned text
+921	懸	verified-visually	text	context-checked
+922	恋	verified-visually	text	context-checked
+923	若	verified-visually		no context: not used by scanned text
+924	電	verified-visually	text	context 電話
+925	泣	verified-visually		no context: not used by scanned text
+926	殴	verified-visually		no context: not used by scanned text
+927	働	verified-visually	text	context-checked
+928	寄	verified-visually	text	context-checked
+929	移	verified-visually	text	context-checked
+930	谷	verified-visually	text	context-checked
+931	禁	verified-visually	text	context-checked
+932	止	verified-visually	text	context-checked
+933	順	verified-visually		no context: not used by scanned text
+934	等	verified-visually	text	context-checked
+935	賞	verified-visually	text	context-checked
+936	君	verified-visually	text	context-checked
+937	級	verified-visually		no context: not used by scanned text
+938	太	verified-visually	text	context-checked
+939	放	verified-visually		no context: not used by scanned text
+940	題	verified-visually	text	context-checked
+941	破	verified-visually		no context: not used by scanned text
+942	闘	verified-visually	text	context-checked
+943	交	verified-visually	text	context-checked
+944	換	verified-visually	text	context-checked
+945	体	verified-visually	text	context-checked
+946	操	verified-visually	text	context-checked
+947	平	verified-visually	text	context-checked
+948	記	verified-visually	text	context-checked
+949	式	verified-visually		no context: not used by scanned text
+950	典	verified-visually	text	context-checked
+951	列	verified-visually		no context: not used by scanned text
+952	公	verified-visually		no context: not used by scanned text
+953	昨	verified-visually		no context: not used by scanned text
+954	客	verified-visually		no context: not used by scanned text
+955	暴	verified-visually		no context: not used by scanned text
+956	確	verified-visually	text	context-checked
+957	逃	verified-visually	text	context-checked
+958	脱	verified-visually	text	context-checked
+959	帝	verified-visually		no context: not used by scanned text
+960	未	verified-visually		no context: not used by scanned text
+961	限	verified-visually	text	context-checked
+962	被	verified-visually	text	context-checked
+963	害	verified-visually	text	context-checked
+964	菓	verified-visually	text	context-checked
+965	砂	verified-visually	text	context-checked
+966	糖	verified-visually	text	context-checked
+967	汁	verified-visually		no context: not used by scanned text
+968	塗	verified-visually		no context: not used by scanned text
+969	割	verified-visually	text	context-checked
+970	判	verified-visually	text	context-checked
+971	飽	verified-visually	text	context-checked
+972	都	verified-visually	text	context-checked
+973	異	verified-visually		no context: not used by scanned text
+974	潤	verified-visually	text	context-checked
+975	脂	verified-visually	text	context-checked
+976	肪	verified-visually	text	context-checked
+977	痩	verified-visually		no context: not used by scanned text
+978	骨	verified-visually	text	context-checked
+979	形	verified-visually	text	context-checked
+980	承	verified-visually		no context: not used by scanned text
+981	能	verified-visually		no context: not used by scanned text
+982	的	verified-visually	text	context-checked
+983	郎	verified-visually		no context: not used by scanned text
+984	尻	verified-visually		no context: not used by scanned text
+985	突	verified-visually		no context: not used by scanned text
+986	返	verified-visually	text	context-checked
+987	押	verified-visually	text	context-checked
+988	素	verified-visually	text	context-checked
+989	丘	verified-visually	text	context-checked
+990	眺	verified-visually		no context: not used by scanned text
+991	似	verified-visually	text	context-checked
+992	凧	verified-visually	text	context-checked
+993	買	verified-visually	text	context-checked
+994	選	verified-visually	text	context-checked
+995	柔	verified-visually		no context: not used by scanned text
+996	軟	verified-visually		no context: not used by scanned text
+997	図	verified-visually	text	context-checked
+998	鑑	verified-visually	text	context-checked
+999	褒	verified-visually	text	context-checked
+1000	難	verified-visually	text	context-checked
+1001	筈	verified-visually	text	context-checked
+1002	角	verified-visually	text	context-checked
+1003	絵	verified-visually	text	context-checked
+1004	標	verified-visually	text	context-checked
+1005	任	verified-visually	text	context-checked
+1006	冠	verified-visually		no context: not used by scanned text
+1007	慣	verified-visually	text	context-checked
+1008	治	verified-visually		no context: not used by scanned text
+1009	建	verified-visually		no context: not used by scanned text
+1010	民	verified-visually		no context: not used by scanned text
+1011	築	verified-visually	text	context-checked
+1012	越	verified-visually		no context: not used by scanned text
+1013	戸	verified-visually		no context: not used by scanned text
+1014	捜	verified-visually		no context: not used by scanned text
+1015	索	verified-visually		no context: not used by scanned text
+1016	槽	verified-visually		no context: not used by scanned text
+1017	飼	verified-visually		no context: not used by scanned text
+1018	礼	verified-visually	text	context-checked
+1019	摘	verified-visually	text	context-checked
+1020	折	verified-visually		no context: not used by scanned text
+1021	陰	verified-visually		no context: not used by scanned text
+1022	艶	verified-visually		no context: not used by scanned text
+1023	静	verified-visually	text	context-checked
+1024	暮	verified-visually	text	context-checked
+1025	探	verified-visually	text	context-checked
+1026	黄	verified-visually	text	context-checked
+1027	努	verified-visually	text	context-checked
+1028	撲	verified-visually		no context: not used by scanned text
+1029	斧	verified-visually	text	shape 父+斤; context 「斧を手に入れた」
+1030	画	verified-visually	text	context-checked
+1031	士	verified-visually	text	context-checked
+1032	触	verified-visually	text	context-checked
+1033	筋	verified-visually	text	context-checked
+1034	肉	verified-visually	text	context-checked
+1035	勉	verified-visually	text	context-checked
+1036	語	verified-visually	text	context-checked
+1037	術	verified-visually		no context: not used by scanned text
+1038	音	verified-visually	text	context-checked
+1039	嫌	verified-visually	text	context-checked
+1040	英	verified-visually	text	context-checked
+1041	授	verified-visually		no context: not used by scanned text
+1042	員	verified-visually		no context: not used by scanned text
+1043	景	verified-visually		no context: not used by scanned text
+1044	紫	verified-visually		no context: not used by scanned text
+1045	損	verified-visually		no context: not used by scanned text
+1046	処	verified-visually	text	context-checked
+1047	闇	verified-visually		no context: not used by scanned text
+1048	包	verified-visually		no context: not used by scanned text
+1049	梢	verified-visually		no context: not used by scanned text
+1050	眼	verified-visually		no context: not used by scanned text
+1051	求	verified-visually		no context: not used by scanned text
+1052	幸	verified-visually	text	context-checked
+1053	鐘	verified-visually		no context: not used by scanned text
+1054	衣	verified-visually	text	context-checked
+1055	憶	verified-visually		no context: not used by scanned text
+1056	他	verified-visually	text	context-checked
+1057	粉	verified-visually	text	context-checked
+1058	跳	verified-visually	text	context-checked
+1059	毛	verified-visually	text	context-checked
+1060	綿	verified-visually		no context: not used by scanned text
+1061	簡	verified-visually	text	context-checked
+1062	単	verified-visually	text	context-checked
+1063	姿	verified-visually	text	context-checked
+1064	影	verified-visually	text	context-checked
+1065	浅	verified-visually		no context: not used by scanned text
+1066	適	verified-visually		no context: not used by scanned text
+1067	醤	verified-visually		no context: not used by scanned text
+1068	姜	verified-visually		no context: not used by scanned text
+1069	鯨	verified-visually	text	context-checked
+1070	龍	verified-visually		no context: not used by scanned text
+1071	硬	verified-visually		no context: not used by scanned text
+1072	噛	verified-visually	text	context-checked
+1073	掃	verified-visually		no context: not used by scanned text
+1074	除	verified-visually		no context: not used by scanned text
+1075	余	verified-visually		no context: not used by scanned text
+1076	乾	verified-visually	text	context-checked
+1077	困	verified-visually	text	context-checked
+1078	泳	verified-visually	text	context-checked
+1079	安	verified-visually	text	context-checked
+1080	問	verified-visually	text	context-checked
+1081	眩	verified-visually		no context: not used by scanned text
+1082	透	verified-visually	text	context-checked
+1083	孤	verified-visually		no context: not used by scanned text
+1084	独	verified-visually		no context: not used by scanned text
+1085	纏	verified-visually		no context: not used by scanned text
+1086	滑	verified-visually		no context: not used by scanned text
+1087	衛	verified-visually	text	context 人工衛星
+1088	星	verified-visually	text	context-checked
+1089	瞬	verified-visually		no context: not used by scanned text
+1090	了	verified-visually	text	context-checked
+1091	麺	verified-visually		no context: not used by scanned text
+1092	輪	verified-visually	text	context-checked
+1093	薪	verified-visually	text	context-checked
+1094	鈴	verified-visually		no context: not used by scanned text
+1095	産	verified-visually	text	context-checked
+1096	煙	verified-visually		no context: not used by scanned text
+1097	臭	verified-visually	text	context-checked
+1098	賢	verified-visually		no context: not used by scanned text
+1099	例	verified-visually		no context: not used by scanned text
+1100	麻	verified-visually		no context: not used by scanned text
+1101	疹	verified-visually		no context: not used by scanned text
+1102	葬	verified-visually		no context: not used by scanned text
+1103	猿	verified-visually		no context: not used by scanned text
+1104	刻	verified-visually	text	context-checked
+1105	浸	verified-visually		no context: not used by scanned text
+1106	溢	verified-visually		no context: not used by scanned text
+1107	樹	verified-visually	text	context-checked
+1108	齢	verified-visually		no context: not used by scanned text
+1109	巨	verified-visually		no context: not used by scanned text
+1110	背	verified-visually	text	context-checked
+1111	博	verified-visually	text	context-checked
+1112	珍	verified-visually		no context: not used by scanned text
+1113	伏	verified-visually		no context: not used by scanned text
+1114	矢	verified-visually		no context: not used by scanned text
+1115	曲	verified-visually		no context: not used by scanned text
+1116	練	verified-visually	text	context-checked
+1117	調	verified-visually	text	context-checked
+1118	餌	verified-visually		no context: not used by scanned text
+1119	断	verified-visually		no context: not used by scanned text
+1120	吐	verified-visually		no context: not used by scanned text
+1121	針	verified-visually		no context: not used by scanned text
+1122	馴	verified-visually		no context: not used by scanned text
+1123	耳	verified-visually	text	context-checked
+1124	挟	verified-visually		no context: not used by scanned text
+1125	岬	verified-visually	text	context-checked
+1126	曜	verified-visually	text	context-checked
+1127	墓	verified-visually	text	context-checked
+1128	半	verified-visually	text	context-checked
+1129	争	verified-visually	text	context-checked
+1130	洋	verified-visually		no context: not used by scanned text
+1131	海	verified-visually	text	context-checked
+1132	樽	verified-visually		no context: not used by scanned text
+1133	港	verified-visually		no context: not used by scanned text
+1134	育	verified-visually	text	context-checked
+1135	昇	verified-visually		no context: not used by scanned text
+1136	艦	verified-visually		no context: not used by scanned text
+1137	急	verified-visually		no context: not used by scanned text
+1138	塩	verified-visually	text	context-checked
+1139	陸	verified-visually		no context: not used by scanned text
+1140	兵	verified-visually		no context: not used by scanned text
+1141	隊	verified-visually		no context: not used by scanned text
+1142	路	verified-visually		no context: not used by scanned text
+1143	猫	verified-visually	text	context-checked
+1144	抱	verified-visually	text	context-checked
+1145	隙	verified-visually		no context: not used by scanned text
+1146	久	verified-visually	text	context-checked
+1147	冬	verified-visually	text	context-checked
+1148	靴	verified-visually	text	context-checked
+1149	留	verified-visually	text	context-checked
+1150	守	verified-visually	text	context-checked
+1151	吊	verified-visually	text	context-checked
+1152	鳴	verified-visually	text	context-checked
+1153	我	verified-visually	text	context-checked
+1154	凝	verified-visually		no context: not used by scanned text
+1155	細	verified-visually		no context: not used by scanned text
+1156	糠	verified-visually		no context: not used by scanned text
+1157	袋	verified-visually		no context: not used by scanned text
+1158	卑	verified-visually	text	context-checked
+1159	怯	verified-visually	text	context-checked
+1160	品	verified-visually		no context: not used by scanned text
+1161	呂	verified-visually	text	context-checked
+1162	去	verified-visually		no context: not used by scanned text
+1163	竜	verified-visually	text	context-checked
+1164	借	verified-visually	text	context-checked
+1165	抜	verified-visually	text	context-checked
+1166	械	verified-visually	text	context-checked
+1167	駄	verified-visually	text	context-checked
+1168	敏	verified-visually	text	context 敏感
+1169	床	verified-visually		no context: not used by scanned text
+1170	装	verified-visually	text	context-checked
+1171	字	verified-visually		no context: not used by scanned text
+1172	望	verified-visually		no context: not used by scanned text
+1173	看	verified-visually		no context: not used by scanned text
+1174	板	verified-visually		no context: not used by scanned text
+1175	郵	verified-visually	text	context-checked
+1176	便	verified-visually	text	context-checked
+1177	乙	verified-visually	text	context-checked
+1178	血	verified-visually	text	context-checked
+1179	飴	verified-visually	text	context-checked
+1180	評	verified-visually		no context: not used by scanned text
+1181	号	verified-visually	text	context-checked
+1182	狂	verified-visually	text	context-checked
+1183	沙	verified-visually	text	context-checked
+1184	織	verified-visually	text	context-checked
+1185	専	verified-visually	text	context-checked
+1186	録	verified-visually	text	context-checked
+1187	売	verified-visually	text	context-checked
+1188	蛮	verified-visually		no context: not used by scanned text
+1189	希	verified-visually		no context: not used by scanned text
+1190	悩	verified-visually	text	context-checked
+1191	貧	verified-visually		no context: not used by scanned text
+1192	信	verified-visually	text	context-checked
+1193	座	verified-visually		no context: not used by scanned text
+1194	映	verified-visually		no context: not used by scanned text
+1195	蓋	verified-visually		no context: not used by scanned text
+1196	爆	verified-visually	text	context-checked
+1197	竹	verified-visually	text	context-checked
+1198	匹	verified-visually		no context: not used by scanned text
+1199	亡	verified-visually	text	context-checked
+1200	憐	verified-visually		no context: not used by scanned text
+1201	草	verified-visually	text	context-checked
+1202	尚	verified-visually		no context: not used by scanned text
+1203	穏	verified-visually		no context: not used by scanned text
+1204	卒	verified-visually		no context: not used by scanned text
+1205	戻	verified-visually	text	context-checked
+1206	受	verified-visually	text	context-checked
+1207	想	verified-visually		no context: not used by scanned text
+1208	失	verified-visually	text	context-checked
+1209	敗	verified-visually	code	
+1210	嘘	verified-visually		no context: not used by scanned text
+1211	壊	verified-visually		no context: not used by scanned text
+1212	歴	verified-visually		no context: not used by scanned text
+1213	社	verified-visually		no context: not used by scanned text
+1214	養	verified-visually	text	context-checked
+1215	整	verified-visually		no context: not used by scanned text
+1216	悔	verified-visually		no context: not used by scanned text
+1217	論	verified-visually		no context: not used by scanned text
+1218	職	verified-visually		no context: not used by scanned text
+1219	就	verified-visually		no context: not used by scanned text
+1220	秀	verified-visually		no context: not used by scanned text
+1221	句	verified-visually	text	context-checked
+1222	璧	verified-visually	text	context 完璧
+1223	存	verified-visually	text	context-checked
+1224	両	verified-visually	text	context-checked
+1225	欠	verified-visually		no context: not used by scanned text
+1226	陥	verified-visually		no context: not used by scanned text
+1227	端	verified-visually		no context: not used by scanned text
+1228	誕	verified-visually	text	context-checked
+1229	席	verified-visually	text	context-checked
+1230	増	verified-visually	text	context-checked
+1231	誘	verified-visually		no context: not used by scanned text
+1232	勘	verified-visually	text	context-checked
+1233	視	verified-visually	text	context-checked
+1234	閉	verified-visually	text	context-checked
+1235	笑	verified-visually	text	context-checked
+1236	裸	verified-visually		no context: not used by scanned text
+1237	興	verified-visually	text	context-checked
+1238	胸	verified-visually	text	context-checked
+1239	蝶	verified-visually	text	context-checked
+1240	震	verified-visually	text	context-checked
+1241	湯	verified-visually		no context: not used by scanned text
+1242	群	verified-visually	text	context-checked
+1243	告	verified-visually	text	context-checked
+1244	迷	verified-visually		no context: not used by scanned text
+1245	嘲	verified-visually		no context: not used by scanned text
+1246	河	verified-visually		no context: not used by scanned text
+1247	原	verified-visually	text	context-checked
+1248	保	verified-visually	text	context-checked
+1249	護	verified-visually	text	context-checked
+1250	丸	verified-visually	text	context-checked
+1251	格	verified-visually	text	context-checked
+1252	籍	verified-visually		no context: not used by scanned text
+1253	緒	verified-visually	text	context-checked
+1254	貴	verified-visually		no context: not used by scanned text
+1255	重	verified-visually		no context: not used by scanned text
+1256	情	verified-visually	text	context-checked
+1257	報	verified-visually	text	context-checked
+1258	杉	verified-visually		no context: not used by scanned text
+1259	区	verified-visually		no context: not used by scanned text
+1260	役	verified-visually		no context: not used by scanned text
+1261	粗	verified-visually	text	context-checked
+1262	怖	verified-visually	text	context-checked
+1263	殻	verified-visually	text	context-checked
+1264	権	verified-visually	text	context-checked
+1265	週	verified-visually	text	context-checked
+1266	歯	verified-visually	text	context-checked
+1267	磨	verified-visually		no context: not used by scanned text
+1268	辞	verified-visually		no context: not used by scanned text
+1269	訳	verified-visually	text	context-checked
+1270	冒	verified-visually		no context: not used by scanned text
+1271	険	verified-visually		no context: not used by scanned text
+1272	祖	verified-visually		no context: not used by scanned text
+1273	肌	verified-visually		no context: not used by scanned text
+1274	清	verified-visually		no context: not used by scanned text
+1275	垢	verified-visually		no context: not used by scanned text
+1276	到	verified-visually		no context: not used by scanned text
+1277	昭	verified-visually	text	context-checked
+1278	躍	verified-visually	text	context-checked
+1279	有	verified-visually	text	context-checked
+1280	援	verified-visually	text	context-checked
+1281	尽	verified-visually	text	context-checked
+1282	鉱	verified-visually		no context: not used by scanned text
+1283	常	verified-visually	text	context-checked
+1284	識	verified-visually	text	context-checked
+1285	怪	verified-visually		no context: not used by scanned text
+1286	穴	verified-visually		no context: not used by scanned text
+1287	象	verified-visually	text	context-checked
+1288	準	verified-visually		no context: not used by scanned text
+1289	備	verified-visually		no context: not used by scanned text
+1290	焚	verified-visually		no context: not used by scanned text
+1291	斜	verified-visually		no context: not used by scanned text
+1292	温	verified-visually	text	context-checked
+1293	効	verified-visually		no context: not used by scanned text
+1294	率	verified-visually		no context: not used by scanned text
+1295	徐	verified-visually		no context: not used by scanned text
+1296	速	verified-visually		no context: not used by scanned text
+1297	徹	verified-visually	text	context-checked
+1298	消	verified-visually		no context: not used by scanned text
+1299	頂	verified-visually	text	context-checked
+1300	稜	inferred-from-order		read 稜 (禾+夌) from the shape; neighbour 1299 頂 (mountain vocabulary); 0x514 is also a script opcode, so the raw scan over-counts it; no context: not used by scanned text
+1301	幾	verified-visually		no context: not used by scanned text
+1302	鈍	verified-visually		no context: not used by scanned text
+1303	瓦	verified-visually		no context: not used by scanned text
+1304	西	verified-visually		no context: not used by scanned text
+1305	囲	verified-visually		no context: not used by scanned text
+1306	指	verified-visually		no context: not used by scanned text
+1307	招	verified-visually		no context: not used by scanned text
+1308	丁	verified-visually		no context: not used by scanned text
+1309	寧	verified-visually		no context: not used by scanned text
+1310	積	verified-visually	text	context-checked
+1311	繰	verified-visually		no context: not used by scanned text
+1312	収	verified-visually	text	context-checked
+1313	紀	verified-visually		no context: not used by scanned text
+1314	宿	verified-visually		no context: not used by scanned text
+1315	紅	verified-visually		no context: not used by scanned text
+1316	認	verified-visually	text	context-checked
+1317	傷	verified-visually	text	context-checked
+1318	魅	verified-visually	text	context-checked
+1319	剤	verified-visually		no context: not used by scanned text
+1320	崇	verified-visually		no context: not used by scanned text
+1321	支	verified-visually	text	context-checked
+1322	栄	verified-visually	text	context-checked
+1323	挑	verified-visually	text	context-checked
+1324	聴	verified-visually	text	context-checked
+1325	照	verified-visually		no context: not used by scanned text
+1326	片	verified-visually	text	context-checked
+1327	秒	verified-visually		no context: not used by scanned text
+1328	構	verified-visually		no context: not used by scanned text
+1329	崩	verified-visually		no context: not used by scanned text
+1330	惑	verified-visually		no context: not used by scanned text
+1331	覇	verified-visually		no context: not used by scanned text
+1332	至	verified-visually	text	context-checked
+1333	系	verified-visually		no context: not used by scanned text
+1334	版	verified-visually		no context: not used by scanned text
+1335	勤	verified-visually		no context: not used by scanned text
+1336	陶	verified-visually		no context: not used by scanned text
+1337	芸	verified-visually		no context: not used by scanned text
+1338	踏	verified-visually		no context: not used by scanned text
+1339	制	verified-visually		no context: not used by scanned text
+1340	蛍	verified-visually	text	context-checked
+1341	燈	verified-visually		no context: not used by scanned text
+1342	燥	verified-visually		no context: not used by scanned text
+1343	首	verified-visually		no context: not used by scanned text
+1344	駆	verified-visually		no context: not used by scanned text
+1345	反	verified-visually		no context: not used by scanned text
+1346	芻	inferred-from-order		read 芻 from the shape; neighbour 1345 反 makes 反芻; no context: not used by scanned text
+1347	功	verified-visually		no context: not used by scanned text
+1348	暦	verified-visually		no context: not used by scanned text
+1349	梅	verified-visually		no context: not used by scanned text
+1350	往	verified-visually		no context: not used by scanned text
+1351	偲	verified-visually		no context: not used by scanned text
+1352	飾	verified-visually	text	context-checked
+1353	個	verified-visually	text	context-checked
+1354	犯	verified-visually	text	context-checked
+1355	熊	verified-visually		no context: not used by scanned text
+1356	宮	verified-visually		no context: not used by scanned text
+1357	城	verified-visually		no context: not used by scanned text
+1358	猛	verified-visually		no context: not used by scanned text
+1359	鮮	verified-visually		no context: not used by scanned text
+1360	低	verified-visually	text	context-checked
+1361	加	verified-visually		no context: not used by scanned text
+1362	課	verified-visually		no context: not used by scanned text
+1363	波	verified-visually	text	context-checked
+1364	柄	verified-visually	text	context-checked
+1365	烈	verified-visually	text	context-checked
+1366	執	verified-visually	text	context-checked
+1367	筆	verified-visually	text	context-checked
+1368	幅	verified-visually		no context: not used by scanned text
+1369	係	verified-visually	text	context-checked
+1370	稚	verified-visually		no context: not used by scanned text
+1371	浜	verified-visually		no context: not used by scanned text
+1372	答	verified-visually	text	context-checked
+1373	垂	verified-visually	text	context-checked
+1374	謳	verified-visually		no context: not used by scanned text
+1375	拾	verified-visually	text	context-checked
+1376	岸	verified-visually		no context: not used by scanned text
+1377	岩	verified-visually		no context: not used by scanned text
+1378	哺	verified-visually		no context: not used by scanned text
+1379	底	verified-visually		no context: not used by scanned text
+1380	離	verified-visually		no context: not used by scanned text
+1381	慎	verified-visually		no context: not used by scanned text
+1382	貼	verified-visually	text	context-checked
+1383	預	verified-visually	text	context-checked
+1384	脳	verified-visually		no context: not used by scanned text
+1385	漂	verified-visually	text	context-checked
+1386	髪	verified-visually		no context: not used by scanned text
+1387	曖	verified-visually		no context: not used by scanned text
+1388	洞	verified-visually		no context: not used by scanned text
+1389	窟	verified-visually		no context: not used by scanned text
+1390	蚊	verified-visually	text	context-checked
+1391	娯	verified-visually		no context: not used by scanned text
+1392	童	verified-visually		no context: not used by scanned text
+1393	鉄	verified-visually		no context: not used by scanned text
+1394	肩	verified-visually	text	context-checked
+1395	浪	verified-visually	text	context-checked
+1396	防	verified-visually		no context: not used by scanned text
+1397	壕	verified-visually		no context: not used by scanned text
+1398	臆	verified-visually		no context: not used by scanned text
+1399	績	verified-visually		no context: not used by scanned text
+1400	晦	verified-visually		no context: not used by scanned text
+1401	溺	verified-visually		no context: not used by scanned text
+1402	継	verified-visually	text	context-checked
+1403	済	verified-visually		no context: not used by scanned text
+1404	退	verified-visually		no context: not used by scanned text
+1405	屈	verified-visually		no context: not used by scanned text
+1406	服	verified-visually	text	context-checked
+1407	永	verified-visually		no context: not used by scanned text
+1408	県	verified-visually		no context: not used by scanned text
+1409	豊	verified-visually		no context: not used by scanned text
+1410	市	verified-visually		no context: not used by scanned text
+1411	糸	verified-visually		no context: not used by scanned text
+1412	江	verified-visually		no context: not used by scanned text
+1413	丼	verified-visually		no context: not used by scanned text
+1414	漬	verified-visually		no context: not used by scanned text
+1415	噌	verified-visually		no context: not used by scanned text
+1416	蒲	verified-visually		no context: not used by scanned text
+1417	掛	verified-visually	text	context-checked
+1418	俵	verified-visually		no context: not used by scanned text
+1419	軒	verified-visually		no context: not used by scanned text
+1420	際	verified-visually		no context: not used by scanned text
+1421	技	verified-visually		no context: not used by scanned text
+1422	徴	verified-visually	text	context-checked
+1423	管	verified-visually		no context: not used by scanned text
+1424	館	verified-visually	text	context-checked
+1425	漠	verified-visually		no context: not used by scanned text
+1426	冊	verified-visually	text	context-checked
+1427	謎	verified-visually	text	context-checked
+1428	位	verified-visually		no context: not used by scanned text
+1429	惚	verified-visually	text	context-checked
+1430	彩	verified-visually		no context: not used by scanned text
+1431	凶	verified-visually		no context: not used by scanned text
+1432	墜	verified-visually		no context: not used by scanned text
+1433	振	verified-visually		no context: not used by scanned text
+1434	虹	verified-visually		no context: not used by scanned text
+1435	林	verified-visually	text	context-checked
+1436	財	verified-visually		no context: not used by scanned text
+1437	閥	inferred-from-order		read 閥 from the shape; neighbour 1436 財 makes 財閥; no context: not used by scanned text
+1438	令	verified-visually		no context: not used by scanned text
+1439	嬢	verified-visually		no context: not used by scanned text
+1440	燕	verified-visually	text	context-checked
+1441	液	verified-visually	text	context-checked
+1442	黒	verified-visually	text	context-checked
+1443	揮	verified-visually	text	context-checked
+1444	橙	verified-visually	text	context-checked
+1445	緩	verified-visually	text	context-checked
+1446	熟	verified-visually	text	context-checked
+1447	荒	verified-visually	text	context-checked
+1448	湿	verified-visually	text	context-checked
+1449	馬	verified-visually	text	context-checked
+1450	盛	verified-visually	text	context-checked
+1451	幹	verified-visually	text	context-checked
+1452	薄	verified-visually	text	context-checked
+1453	雑	verified-visually	text	context-checked
+1454	獲	verified-visually	text	context-checked
+1455	朽	verified-visually	text	context-checked
+1456	）	verified-visually	code	narrow closing paren, horizontal form (22 is the vertical form); drawn by TITLE.OVL
+1457	釜	verified-visually		no context: not used by scanned text
+1458	鏡	verified-visually		no context: not used by scanned text
+1459	駒	verified-visually	text	context-checked
+1460	検	verified-visually	text	context 点検
+1461	献	verified-visually	text	context-checked
+1462	植	verified-visually	text	context-checked
+1463	炭	verified-visually		no context: not used by scanned text
+1464	壇	verified-visually		no context: not used by scanned text
+1465	店	verified-visually		no context: not used by scanned text
+1466	灯	verified-visually		no context: not used by scanned text
+1467	燃	verified-visually		no context: not used by scanned text
+1468	鉢	verified-visually	text	context 鉢植え
+1469	販	verified-visually		no context: not used by scanned text
+1470	肥	verified-visually		no context: not used by scanned text
+1471	仏	verified-visually		no context: not used by scanned text
+1472	帽	verified-visually	text	context-checked
+1473	椀	verified-visually		no context: not used by scanned text
+1474	[SEL]	verified-visually		left half of the word SELECT
+1475	[ECT]	verified-visually		right half of the word SELECT
+1476	蛇	verified-visually		no context: not used by scanned text
+1477	皮	verified-visually		no context: not used by scanned text
+1478	染	verified-visually		no context: not used by scanned text
+1479	網	verified-visually		no context: not used by scanned text
+1480	択	verified-visually		no context: not used by scanned text
+1481	[----]	verified-visually		dashed rule
+1482	[△L]	verified-visually		left cell of a two-cell triangle-button glyph
+1483	[△R・]	verified-visually		right cell of the two-cell triangle, then a middle dot
+1484	□	verified-visually		square, second copy (46 is the first)
+1485	[○L]	verified-visually		left cell of a two-cell circle-button glyph
+1486	[○R・]	verified-visually		right cell of the two-cell circle, then a middle dot
+1487	△	verified-visually		triangle, second copy (47 is the first)
+1488		verified-visually		blank cell, free slot
+1489		verified-visually		blank cell, free slot
+1490		verified-visually		blank cell, free slot
+1491		verified-visually		blank cell, free slot
+1492		verified-visually		blank cell, free slot
+1493		verified-visually		blank cell, free slot
+1494		verified-visually		blank cell, free slot
+1495		verified-visually		blank cell, free slot
+1496		verified-visually		blank cell, free slot
+1497		verified-visually		blank cell, free slot
+1498		verified-visually		blank cell, free slot
+1499		verified-visually		blank cell, free slot
+1500		verified-visually		blank cell, free slot
+1501		verified-visually		blank cell, free slot
+1502		verified-visually		blank cell, free slot
+1503		verified-visually		blank cell, free slot
+1504		verified-visually		blank cell, free slot
+1505		verified-visually		blank cell, free slot
+1506		verified-visually		blank cell, free slot
+1507		verified-visually		blank cell, free slot
+1508		verified-visually		blank cell, free slot
+1509		verified-visually		blank cell, free slot
+1510		verified-visually		blank cell, free slot
+1511		verified-visually		blank cell, free slot

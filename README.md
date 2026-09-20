@@ -96,6 +96,12 @@ around — the renderer in a 512 KB MIPS executable. The fallbacks, cheapest fir
 3. The renderer can't reasonably be bent: leave it alone and add a hand-written subtitle
    overlay drawn on top of the normal interface.
 
+First good news (2026-09-20, static analysis, `research/font.md`): the game's text stepper
+already has a **horizontal mode** behind a flag bit, and its 12×12 font sheet already contains
+A–Z, a–z, digits and most punctuation — full-width, so a width table is still needed, and the
+Japanese punctuation is drawn for vertical lines. Which callers choose vertical, and whether
+every text surface goes through that stepper, is not yet known.
+
 Both the PS2 sequel's English patch and the PSP port's Spanish patch hit vertical text in
 their versions of this engine and converted it to horizontal with a variable-width font, so
 (1)/(2) have precedent in the family — but neither is this executable, and what the PS1
