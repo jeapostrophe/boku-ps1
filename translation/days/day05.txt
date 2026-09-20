@@ -1,0 +1,203 @@
+# Day 5 — August 5. Guts and the pact; the uncle is out: the one chance to see the fireflies
+# (PLAN TRN-04). Every event whose id is E05xx (day = id / 100), in the order the game plays
+# them. None of them hands over to a day-independent event (every scene's handovers list is
+# empty); the day's shared events — E0006 at breakfast, E0190, E0009, E0221, E4028, E0020,
+# E0023 — are in day01.txt and shared.txt. Format: translation/days/README.md. Policies:
+# style-guide.md (all rulings settled 2026-09-20), glossary.md, bible.md § 4 (day 5).
+#
+# Morning: E0502 (after breakfast, forced). Day: E0520 (the garden, the aunt, before 14:00),
+# E0510 (the workshop, before 16:00), E0540 (Shirabe and the ants, before 18:00), E0551 and
+# E0570 (the secret base, before 18:00), E0512 (the living room, 16:00-18:00). Evening: E0504
+# (after dinner, forced), E0541 (the television room), and E0505 — Firefly Creek at night, no
+# text: it only sets flag 26, "went to the fireflies", which day 6's oversleep tests.
+#
+# E0551 and E0570 carry no day in their conditions (day 5 to 26, not the 15th; E0570 to 25)
+# and E0551 needs flag 22 == 2 — the watermelon thief seen and the howl heard, day 4's E0405 —
+# so the first afternoon they can play is this one. Their ids put them in this file.
+
+# --- E0502: breakfast (G02), 8:00. The after-meal chorus, then the uncle's plans for the
+#     evening. Forced.
+E0502.0	Uncle	Gochisosama deshita.
+E0502.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0502.2	Aunt	Yu-chan, you're going to the meeting in Sagi-no-sato tonight, aren't you?
+E0502.3	Uncle	Yeah! Something about getting the firefly larvae to breed in creeks other than Tsukiyono's as well... // so let's give it a little more thought before we use pesticides... a gathering along those lines, apparently. // I'll have dinner, and then go.
+E0502.4	Boku	What are firefly larvae?
+E0502.5	Uncle	Ah — there are kinds of firefly that spend their time as larvae in the river. // They eat the snails in the river and grow big. // Oh, that's right — Uncle will be away tonight, but... // it's dangerous, so you mustn't go to Firefly Creek.
+E0502.6	Boku	Yeah, I understand, Uncle.
+E0502.7	Narrator	That was the one and only chance to go to Firefly Creek at night.
+# NOTE E0502.0-.1: the same fixed phrase as E0010.0-.1 (glossary § 3); the chorus carries no label
+#   on the disc, and the speaker operand is the group Shirabe + Moe + Boku + Aunt (slot 12).
+# NOTE E0502.2: "Yu-chan" is the aunt's pet name for her husband (glossary § 1, which cites this
+#   line). Sagi-no-sato stays (Q5).
+# NOTE E0502.3: the Japanese sentence is one long "it seems to be a gathering to the effect that
+#   [p1: so that the larvae breed elsewhere too] [p2: let's use pesticides more thoughtfully]";
+#   each English page keeps its own clause, with the verb-last "a gathering along those lines,
+#   apparently" landing on page 2 where the voice says it. Bible § 5: pesticides and fireflies.
+# NOTE E0502.5, page 4: "you mustn't" is E0185.0's word for the same "-cha ikenai yo"; not the
+#   house-rule frame — the uncle does not use it here.
+
+# --- E0520: the garden off the veranda (H06), before 14:00, talking to the aunt. Flag 23 is set
+#     by E0221, the guess-the-dinner game: before it has been played, .0 then .1 on a repeat;
+#     after, .2-.10, then .11 on a repeat.
+E0520.0	Aunt	Boku-kun! Shall we play the guess-the-dinner game? // If you want to play, talk to Auntie in the kitchen toward evening, all right?
+E0520.1	Aunt	Auntie looks forward to cooking everyone's meals, every day...
+E0520.2	Aunt	Boku-kun, by now you're missing your mom, aren't you? // Are you getting homesick, I wonder?
+E0520.3	Boku	What's homesick?
+E0520.4	Aunt	Well, you see — for instance, the ones who've been beside you all this time, Boku-kun... // the people you love so much — they're not around you now, right? // Your dad, and your mom too. // And then, don't you feel sort of sad, or lonely?
+E0520.5	Boku	Why?
+E0520.6	Aunt	Huh? So you're not lonely.
+E0520.7	Boku	...Yeah.
+E0520.8	Aunt	Oh, my. You're quite the grown-up, Boku-kun, aren't you.
+E0520.9	Boku	Yeah. But once I understood what homesick means... // I started wanting to try being homesick.
+E0520.10	Aunt	...I see. Well then — do your best.
+E0520.11	Aunt	Auntie, you know... // when she was young, she got homesick as soon as she came out to Tokyo.
+# NOTE E0520.0: "the guess-the-dinner game" is the glossary's (§ 3, which cites this line). The
+#   Japanese says "toward evening"; the game itself runs 14:00-17:00 (E0221).
+# NOTE E0520.2-.10: "homesick" is a loanword in the Japanese and Boku does not know it; it is
+#   just English here (style guide § 16) and the scene is his taking the word literally — bible
+#   § 3 quotes .9 as his register. E0520.7: "un" agreeing with "you're not lonely" — English
+#   "...Yeah." agrees the same way. E0520.10: her "do your best" for "ganbatte ne" is the joke —
+#   she wishes him luck with being homesick.
+# NOTE E0520.11: "Auntie... when she was young" — self-reference by role across the page break
+#   (style guide § 2); she came to Tokyo from Otaru (bible § 1).
+
+# --- E0510: the workshop (H26), before 16:00, talking to the uncle at the wheel: the model plane
+#     the aunt built (E0113.1, .5). .0-.3 the first time; .4-.5 on a repeat.
+E0510.0	Boku	Oh! Uncle, there's a plastic airplane model in front of you!
+E0510.1	Uncle	Yeah! // When Uncle's kid was still little, he loved airplanes. // So Auntie put it together with all her might.
+E0510.2	Boku	Can't you build them, Uncle?
+E0510.3	Uncle	Ahaha. Uncle can build them too, and he likes building them, but... // this kind of thing is mostly Auntie's department.
+E0510.4	Boku	Uncle, have you ever seen fireflies?
+E0510.5	Uncle	Yeah. And in the old days you could see them all over the place, you know.
+# NOTE E0510.1, page 2: "Uncle's kid" — the same vague "the child of Uncle's house" as E0114.5,
+#   and kept as vague. The Japanese has no pronoun; English needs one, and "he" gives away only
+#   what E0121.5-.6 already gave (Onii-chan), not which child. Reviewed 2026-09-20: kept —
+#   every pronoun-free English adds a noun phrase instead, and "Onii-chan" is already a brother.
+
+# --- E0540: a corner of the garden (H09), before 18:00, Shirabe at the ants. .0 if her tour of
+#     day 4 has not happened (flag 21 clear), and on every repeat; .1-.3 the first time after it.
+E0540.0	Shirabe	Today too, the worker ants are working away, busy, busy, as hard as they can. // How beautiful...
+E0540.1	Shirabe	Did you try the fortune-telling Jizo today? // If you keep at it and do it over and over until Great luck comes up... // then even for someone as unlucky as you, life from here on might get a little better.
+E0540.2	Boku	But if I do that... I'd have to hit Jizo-sama over and over, wouldn't I...
+E0540.3	Shirabe	It beats you getting hit by me, doesn't it?
+# NOTE E0540.1: "the fortune-telling Jizo" and "Great luck" are the glossary's (§ 2, § 4e — the
+#   best of the four fortunes); you get a fortune by hitting the statue on the head, which is
+#   what Boku objects to in .2. "Jizo-sama" as heard (glossary § 2).
+
+# --- E0551: the secret base under the expressway (A18), before 18:00, once Boku has seen the
+#     watermelon thief and heard the howl (flag 22 == 2, E0405) and before the pact (flag 25).
+#     The boy is labelled "Boy" until he gives his name in .15; "Guts" from .16 (style guide
+#     § 9, which cites this scene). Forced on entering.
+E0551.0	Boy	Huh? Who the heck are you?
+E0551.1	Boku	...Were you eating watermelon?
+E0551.2	Boy	Yeah. This is all-you-can-eat.
+E0551.3	Boku	Is it good?
+E0551.4	Boy	Can't beat the ones at Grandpa's place in Okuzawa, but... hmmm, so-so, I'd say. // Want some? If you'll eat it, I'll bring you some.
+E0551.5	Boku	Then I'll have some one of these days.
+E0551.6	Boy	Your name?
+E0551.7	Boku	...I'm called Boku. // I'm at my uncle's house down below here, just for summer vacation.
+E0551.8	Boy	Huh! Ugh, that's bad... // Your uncle's place — that's the house over there that does the pottery, right?
+E0551.9	Boku	Yeah...
+E0551.10	Boku	This watermelon, too.
+E0551.11	Boy	I see...
+E0551.12	Boy	Don't you go blabbing. // Listen. This is a promise between men, so if you break it, that's a hundred wrist slaps. // Absolutely, positively!
+E0551.13	Boku	Yeah, I know.
+E0551.14	Boy	I see. All right!
+E0551.15	Boy	My name's Guts.
+E0551.16	Guts	This is our secret, secret base. // Hehe. Pretty cool, right?
+E0551.17	Guts	Actually, nobody but members is allowed in, but...
+E0551.18	Guts	From now on, admission is specially granted!
+E0551.19	Boku	Is this because I found out the watermelon secret?
+E0551.20	Guts	Hehe. That's right.
+E0551.21	Boku	Hey, hey — then what's the password?
+E0551.22	Guts	Huh? What?
+E0551.23	Boku	Isn't there a password for getting into the base?
+E0551.24	Guts	Ohhh, that. In that case...
+E0551.25	Guts	Huhhh... // Oh no! I've gone and forgotten it.
+# NOTE E0551.0: "omae ... da yo" — the rudeness of the pronoun goes into the sentence (style
+#   guide § 2); "the heck" is where it went.
+# NOTE E0551.7: "I'm called Boku" — the style guide's own citation of this line (§ 1). To a
+#   stranger Boku says "my uncle's house", not "Uncle's". The house is below the expressway.
+# NOTE E0551.8: "yabbai" doubles the consonant, not the vowel, so nothing is stretched (§ 7);
+#   the weight is in "Ugh" (glossary § 8) and the ellipsis. He has just learned the watermelon
+#   is the boy's uncle's.
+# NOTE E0551.10: "kono suika mo ne" — "this watermelon too [is theirs]"; the predicate is left
+#   unsaid in the Japanese and in the English.
+# NOTE E0551.12: the bible's quotation for Guts (§ 3): "a promise between men" for "otoko to otoko
+#   no yakusoku"; "shippe" is the two-finger slap on the wrist. Page 3, "zettai no zettai" —
+#   "the absolute of absolutes" — is an English child's doubled absolute. Reviewed 2026-09-20:
+#   kept; the ear hears "zettai" twice and the eye sees two words (style guide § 0.3), but the
+#   ear-matched "Absolutely, absolutely!" reads as a stammer.
+# NOTE E0551.15-.16: "Guts" as heard (Q4); "secret, secret base" is the Japanese's own doubling.
+#   E0551.18: mock-official, like the uncle's appointments.
+# NOTE E0551.24-.25: "naanda" → "Ohhh, that."; "aree" → "Huhhh..." — the stretched vowels are the
+#   style guide's (§ 7); "-chatta" → "gone and".
+
+# --- E0570: the secret base (A18), before 18:00, talking to Guts after the pact (flag 25 == 1),
+#     day 5 to 25.
+E0570.0	Guts	Here, everybody plays at fighting their rhino beetles and stag beetles... // and trading them.
+# NOTE E0570.0: "rhino beetles" in a boy's mouth (glossary § 4a, item 30); "stag beetles" is the
+#   class word.
+
+# --- E0512: the living room (G01), 16:00-18:00, talking to the uncle, home before the meeting.
+#     .0-.1 the first time; .2 on a repeat.
+E0512.0	Uncle	What a pain, going to the village meeting... // Boku-kun, want to go in Uncle's place?
+E0512.1	Aunt	No! If you say things like that and your lazy streak rubs off on Boku-kun... // I'm the one who'll get scolded, you know...
+E0512.2	Uncle	How many days has it been since I last went out of this valley, I wonder...
+# NOTE E0512.1: to her husband the aunt says "I", not "Auntie" (style guide § 2, the contrast);
+#   "namake-guse ga utsuru" — a lazy habit catching, like a cold — is "rubs off". Bible § 3: lazy
+#   about everything but the kiln.
+# NOTE E0512.2: musing alone, the uncle says "I" (style guide § 2; bible § 3).
+
+# --- E0504: after dinner (G02), 19:00. .0 is a voice-only clip before the aunt speaks; the
+#     tracksuit is for the uncle's cold walk to the meeting. Forced.
+E0504.0	(voice only)
+E0504.1	Aunt	Moe's baggy tracksuit was in the car, so... // Dad said he'd put it on if it got chilly.
+E0504.2	Moe	No — it went baggy because Dad forced himself into it.
+E0504.3	Shirabe	Could Dad wear Shirabe's too, I wonder?
+E0504.4	Aunt	Well then —
+E0504.5	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0504.6	Aunt	Mom could probably wear it. // It'd end up as shorts, though.
+# NOTE E0504.1-.6: to her daughters the aunt calls her husband "Dad" and herself "Mom" (bible
+#   § 3, "Otō-san" / "Okā-san"); self-reference by role stays (style guide § 2). "Jaaji" is the
+#   Japanese "jersey" — a tracksuit, not a knitted top.
+# NOTE E0504.4-.5: the aunt's "ja" leads the chorus, so the fixed phrase is hers to start
+#   tonight and the group's (slot 12, no label on the disc) to say; the uncle has left the table.
+# NOTE E0504.6: the reply to Shirabe's question, delayed past the chorus — "if it's Mom", she
+#   could wear Shirabe's; on her it would be shorts. Kept in the disc's order.
+
+# --- E0541: the television room (G06), from 19:00, Shirabe. .0-.4 the first time; on a repeat,
+#     .5 before the pact (flag 25 clear) or .6-.7 after it.
+E0541.0	Shirabe	Huh? I've gone and gotten hungry again...
+E0541.1	Boku	Hey, Pipsqueak, you...
+E0541.2	Shirabe	Ah! I told you, that's banned!
+E0541.3	Boku	Then when you line up by height at school, what number are you from the front?
+E0541.4	Shirabe	...Well, excuse me. First prize.
+E0541.5	Shirabe	Call me a pipsqueak and I won't forgive you, you know. // Shirabe's going to be big someday...
+E0541.6	Boku	Do you know Guts-kun?
+E0541.7	Shirabe	Yeah, if you mean Gacchan, I know him. // He's good friends with that crybaby Megane from Shirabe's class and the fat one from the upper grades.
+# NOTE E0541.1-.2: "Pipsqueak" is the glossary's one banned word (§ 1, which cites this line); the
+#   ban was laid down on day 4 (E0402.6-.7). E0541.5, page 1: "chibi" alone, the short form —
+#   the same word, lower case. Page 2: "biggu" in katakana → "big".
+# NOTE E0541.4: "warukatta wa ne" is sarcastic — "well, excuse me" — and "ittō-shō" is "first
+#   prize": smallest in the class, first in line (bible § 3).
+# NOTE E0541.6-.7: Boku says "Guts-kun"; Shirabe says "Gacchan" — both as heard (glossary § 1).
+#   "That crybaby Megane" and "the fat one" are the glossary's renderings for this line (§ 1);
+#   she does not know their names as names.
+
+# NOTES — the day
+# * Register. The uncle: teacherly about the larvae (E0502.5), "Uncle" of himself with Boku
+#   (E0502.5, E0510.1, E0512.0), plain "I" musing alone (E0512.2). The aunt: "Auntie" of herself
+#   with Boku (E0520.0-.1, E0520.11), "I" to her husband (E0512.1), "Mom" to her daughters
+#   (E0504.6); "all right?" / "you know" for her sentence endings. Guts: curt, bossy, "Listen.",
+#   a mock-official permit (E0551.18); no dropped g's. Shirabe: prim ("How beautiful...", "Well,
+#   excuse me"), third-person "Shirabe" (E0504.3, E0541.5, E0541.7), plain "me" once (E0540.3,
+#   where the Japanese has "watashi"). Boku: short, literal, deadpan (E0551.5, E0551.10,
+#   E0520.9). The narrator: one sentence, no contractions (E0502.7).
+# * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
+#   original's. The longest pages, label and space included, are E0502.3 page 2 (115 characters),
+#   E0541.7 page 2 (110) and E0502.3 page 1 (107): three lines of the band at most — no OVERFLOW
+#   on day 5.
+# * No choice menus on day 5.
+# * Duplicates. E0502.0-.1 = E0010.0-.1 and E0504.5 = E0010.1 (identical source text, identical
+#   English — bible § 8 item 4).
