@@ -1,0 +1,105 @@
+# Symbols named by research/text-renderer.md (PLAN TXT-01). Names are ours; addresses are RAM.
+# image: exe = SCPS_100.88 (file offset = RAM - 0x8000F800); overlays load at 0x80079A08 (file offset = RAM - 0x80079A08).
+# sha256 SCPS_100.88	feac435d110c112ed83f9a84ceffd5902277a421cbca173939b9fcd92885f4a9
+address	image	name	kind	note
+8002b92c	exe	text_emit_tpage_layer	function	(layer): sets g_text_layer, calls text_emit_tpage, restores layer 1. One caller (HHON)
+8002b95c	exe	text_emit_tpage	function	DR_TPAGE for the font page into g_ot[g_text_layer]; called after every batch of glyphs
+8002b9fc	exe	glyph_draw_layer	function	(id, x, y, layer). One caller (HHON)
+8002ba2c	exe	glyph_draw	function	(u32 id, s16 x, s16 y): 3 SPRTs (glyph + 2 shadows). 58 jal sites, no pointer refs
+8002bc5c	exe	text_reset	function	rgb=0x10, flags=0, origin=0, msg=NULL, layer=1
+8002bcac	exe	text_set_light	function	(on): flag bit 4; on = light text 0x7C with dark shadow 0x18, off = dark text 0x10 with light shadow 0x4C
+8002bcf8	exe	text_set_color	function	(light, r, g, b)
+8002bd30	exe	dialog_open	function	(s16 x, s16 y, int vertical, u16 *text). The ONLY writer of flag bit 0x10. Two callers
+8002bd8c	exe	dialog_next_page	function	sets flag bit 8, clears wait_armed
+8002bda8	exe	dialog_draw	function	per-frame page walker; one caller (event_update)
+8002bdb0	exe	text_draw_step	function	NOT a separate entry: second instruction pair of dialog_draw; nothing jumps here
+8002bfb0	exe	dialog_cursor_draw	function	the bobbing next-page arrow at (0x10A + wobble, 0xDC / 0xDF)
+8002c150	exe	select_box_draw	function	(type): black TILE from g_select_rect[type]
+8002c234	exe	select_draw	function	(type, variant, u16 *text): vertical, 12 px/glyph, line origins from g_select_pos
+8002c330	exe	select_cursor_update	function	(type, variant, int *sel, a3): cursor sprite at line origin (-2, -0x18); pad -> index
+8002c58c	exe	dbg_menu	function	debug screen (dbg_printf ×17); no jal caller, reached through the pointer word at 0x8002373C — NOT proven dead
+8002ca0c	exe	sjis_panic_print	function	BIOS-font fatal message; one caller ("event buffer over")
+8002cd00	exe	event_state_reset	function	calls text_reset
+8002cd8c	exe	event_begin	function	(block, ctx): g_ev_block, g_voice_active = 1, script pc = block + off[2]
+8002cf14	exe	msg_voice_start	function	(msg, force): XA key of entry msg -> 0x8002B3E4
+8002cf9c	exe	msg_open	function	(msg): dialog_open(297, 22, 1, block + text_off[msg]); dialog_panel_show
+8002d00c	exe	select_open	function	(msg, type, variant, d): event-script SELECT
+8002d10c	exe	select_run_ptr	function	(u16 *text, type, variant): SELECT from native code; 8 callers
+8002d23c	exe	event_update	function	per-frame: panel, text_set_light(0), dialog_draw, pad handling, bytecode dispatch
+8002e964	exe	dialog_panel_draw	function	the translucent strip behind dialogue (additive, DR_TPAGE abr=1): TILE x=g_dlgbox_x+5 y=0 w=0x145-x h=240 + 5 px gradient
+8002eb30	exe	dialog_panel_reset	function
+8002eb54	exe	dialog_panel_show	function	fade level 6, visible
+8002eb70	exe	dialog_panel_hide	function
+80011e80	exe	sys_init	function	bump-allocates OTs and primitive buffers from g_heap_base
+80019dec	exe	ev_queue_load	function	loads EV.BIN members into the 0x4000-byte per-slot event buffer; panics past it
+800221cc	exe	dbg_font_init	function	UNREFERENCED (712 bytes). Builds the 8x8 debug font; never called, so dbg_* never has a font
+800229a4	exe	dbg_vprintf	function	house printf-to-screen (not PsyQ Fnt*)
+80022c38	exe	dbg_printf	function	(col, row, fmt, ...): 100 call sites, all behind debug flags (hypothesis)
+80035360	exe	text_draw_right	function	(u16 *s, x_right, y): counts glyphs, draws right-to-left at 12 px. Pre-measures
+800353f8	exe	help_label_draw	function	(line, x_right, y): text_nth_line(g_help_text) -> text_draw_right
+80035448	exe	help_line_draw	function	(line, x, y): horizontal, 10 px advance
+80035674	exe	help_screen_draw	function	controls help; select_box_draw(7)
+8003532c	exe	text_nth_line	function	(u16 *arr, n): skip n bit-15 words
+80037544	exe	date_label_draw	function	(x, y, day, ..): glyph ids as immediates, horizontal; digits via number_draw
+80037698	exe	date_label_draw_b	function	UNREFERENCED (352 bytes) variant with four immediates
+800377f8	exe	count_label_draw	function	"n wins m losses": immediates 0x26A / 0x4B9, x shifts by digit count
+800379ec	exe	sysmsg_draw	function	(u16 *arr, line, x, y, vertical): 12 px; vertical != 0 steps y instead. Returns glyph count
+80037ba8	exe	sysmsg_line_draw	function	(line, x, y, vertical, no_tpage): remaps 4 line ids, draws from g_sysmsg_text
+8003a7a4	exe	mc_slot_labels_draw	function	3 single glyphs stacked at x=0x9A, 28 px apart
+8003c5ec	exe	sys_title_draw	function	line n of 0x8003DA4C at (0x88|0x82, 0x48), horizontal 12 px
+8003fea4	exe	cage_hud_draw	function	insect name, then icons placed at x + count*12
+800400f8	exe	number_draw	function	sprite digits (not font glyphs)
+800402d8	exe	number_draw_b	function	sprite digits (not font glyphs)
+800416e8	exe	item_menu_draw	function	item names (text_draw_line_h) and descriptions (text_draw_h at 0xB8, 0x7E)
+80041fe4	exe	kite_menu_draw	function	kite names at x=0x30
+800437f4	exe	text_draw_line_h	function	(u16 *s, x, y): one line, 12 px
+80043864	exe	text_draw_h	function	(u16 *s, x, y): multi-line, 12 px advance, 16 px line step
+800438f0	exe	text_nth	function	(u16 *arr, n): skip n 0x8000 words
+80043f5c	exe	fishing_text_draw	function
+800258f0	exe	g_prim_next	data	primitive bump pointer; reset each frame to g_prim_buf[frame]
+800258e8	exe	g_prim_buf	data	void*[2]; each 0x130B0 bytes
+8002593c	exe	g_ot	data	current ordering table; 0x2000 entries
+80028e3c	exe	g_text_layer	data	u32 OT slot for text, normally 1
+80028e40	exe	g_cursor_phase	data	u16 angle for dialog_cursor_draw
+80028e44	exe	g_select_rect	data	s16 {x,y,w,h}[7], indexed type-1
+80028e7c	exe	g_select_pos	data	s16 {x,y}[5] per layout, 12 layouts (0x14 bytes each)
+80028f6c	exe	g_select_base	data	u8[6]: first layout of each type
+80028f74	exe	g_select_lines	data	u8[12]: lines per layout
+80028f80	exe	g_select_first	data	u8[12]: leading prompt lines per layout
+8002911c	exe	g_dlgbox_x	data	s16 260, never written
+8002911e	exe	g_dlgbox_visible	data	u8
+80029120	exe	g_dlgbox_fade	data	s16 {brightness, abr+1}[7]
+80036541	exe	g_dlgbox_level	data	u8 0..6
+800359e0	exe	g_text	data	the text context, 0x18 bytes (struct in text-renderer.md)
+800359e0	exe	g_text_rgb	data	u8[3]
+800359e3	exe	g_text_wait_armed	data	u8
+800359e4	exe	g_text_flags	data	u32: 1 more pages, 2 ended, 4 light text, 8 advance request, 0x10 vertical
+800359e8	exe	g_text_origin	data	s16 x, s16 y
+800359ec	exe	g_text_page	data	u16* start of the page being shown; NULL = no dialogue
+800359f0	exe	g_text_next	data	u16* where the next page starts
+800359f4	exe	g_text_wait	data	s16 frames until auto page turn
+800359f6	exe	g_voice_active	data	u8; set by event_begin, cleared at XA end (0x8002B6EC) or by the skip press
+80036338	exe	g_ev_block	data	current event block
+80036340	exe	g_ev_pc	data	bytecode cursor
+80036538	exe	g_select_index	data	int
+80027808	exe	g_ev_buf	data	void*[2]: 0x4000-byte event buffers
+80068af0	exe	g_heap_base	data	0x8008F3A4 in the file; main() zeroes from here to 0x801FFFC0
+80068af4	exe	g_overlay_base	data	0x80079A08; all seven .OVL load here (8 file_load sites read this word)
+800237f0	exe	g_debug	data	0 in the file; enables the dbg_printf overlays
+8003d2e0	exe	g_sysmsg_text	data	103-line L array; TITLE.OVL also points into its middle (0x8003D5F0, 0x8003D9BC, 0x8003DA00)
+80029b20	exe	g_help_text	data	22-line L array
+8007bb60	TITLE	title_date_draw	function	"8 <month glyph> n <day glyph>", immediates
+8007c8ec	TITLE	title_slot_digits_draw	function	two save-slot rows of digits + glyph 0x5B0
+8007cb54	TITLE	title_mc_message_draw	function	up to 3 lines from 0x8003D5F0 by table 0x800814C0; horizontal 12 px, rows +16
+8007cf7c	TITLE	title_mc_glyphs_draw	function	5 glyphs from 0x80081480
+8007fa94	TITLE	title_config_draw	function	5 lines from 0x8003D9BC; x=0x28, rows 0x50 + 0x18*i
+800803d8	TITLE	title_line5_draw	function	line 5 of 0x8003DA00 at (0x72, 0x50)
+80080484	TITLE	title_stats_draw	function	digits and immediates
+80080680	TITLE	title_lines_draw	function	lines of 0x8003DA00
+8007c684	TAKO	tako_slot_labels_draw	function	4 single glyphs stacked at x=0x9A
+8007c604	MUSI	musi_label_draw	function	glyph row from 0x80079D50 at y=0x9C
+8007edb0	MUSI	musi_grid_labels_draw	function
+80084f64	MUSI	musi_move_name_draw	function	line n of MUSI +0x2C at (0x8C, 0xA0|0xB4)
+800850d8	MUSI	musi_line_draw	function	horizontal, y=0x68
+8007c278	HHON	hhon_text_draw_v	function	VERTICAL, hard-coded: y += 12, newline x -= 14
+8007c1c4	HHON	hhon_text_scroll_v	function	VERTICAL, hard-coded, scrolled by a3, drawn through glyph_draw_layer

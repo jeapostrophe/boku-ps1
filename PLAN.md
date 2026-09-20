@@ -157,21 +157,23 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Text renderer — the central risk (README § "The central risk")
 
-- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** Static analysis already found the
-      answer to the first question (`research/font.md`): **`text_draw_step` (`0x8002BDB0`) has a
-      horizontal mode** — `g_text_flags & 0x10` selects vertical (y+13 per glyph, newline x−14);
-      with the bit clear it advances x+14, newline y+13. So this row is now: which callers set
-      that bit and from what data (per box? per script command? hard-coded?), whether the
-      seven code overlays draw text through the same routine, and the rest below. Original
-      first question (`research/
-      renderer-prior-art.md` §2, §8): does the print routine take a **direction argument**? The
-      PS2 sequel's did — its menus went horizontal with one `li reg, 0` each and only the
-      dialogue path needed rewriting. Then: who reads the `u16`s, how a
-      glyph index becomes a texture coordinate, whether glyphs are drawn as sprites per
-      character or composed into a VRAM texture, where the pen position lives, where the
-      vertical advance (possibly a per-character function's *return value*, not a constant) and the column step (the family's `base_x − column × spacing` pattern)
-      are computed, and what owns the box geometry. Output: `research/text-renderer.md` with
-      addresses and symbol names. Harmed: every other row in this section.
+- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** The static half is DONE
+      (2026-09-20, `research/text-renderer.md`, `research/symbols/text-renderer.symbols.tsv`):
+      direction is an **argument** — `dialog_open(x, y, vertical, text)` (`0x8002BD30`) is the
+      only writer of `g_text_flags & 0x10`, and its two callers (`msg_open`, the ant-count
+      message) pass literals: x = 297, y = 22, vertical = 1. Of 26 text surfaces, 20 are
+      already horizontal at fixed pitch, 4 vertical (dialogue, SELECT, two `HHON.OVL`
+      walkers), 2 draw one glyph per row. The dialogue "box" is a 60-px strip down the right
+      edge, so horizontal text needs the panel re-placed as a band (`g_dlgbox_x` + two
+      instructions in `dialog_panel_draw`). There is no page logic in code — "3 × 16" is an
+      authoring convention — and voice sync is only the `0x8002` frame operand counting down.
+      A table-lookup advance fits in place in 9 instruction slots at `0x8002BF5C` with no
+      trampoline; left bearings or a variable-width SELECT need real hooks. **Left to do —
+      the emulator half:** the spec's questions Q0–Q9 (RAM matches file at `glyph_draw`;
+      `dialog_open` arguments at run time; how a bottom band looks and what it collides
+      with; primitive-buffer peak; whether `0x8008F3A4…0x8008F7FF` and `dbg_vprintf` are
+      really dead; voiced page-turn timing; the two untraced `MUSI` call sites). Harmed:
+      `TXT-05`, which would otherwise patch on the strength of reading alone.
 - [ ] **[TXT-02]** **What the existing font offers.** Mostly answered by `research/font.md`:
       full A–Z/a–z/0–9 and common punctuation exist, in 12×12 full-width cells with ink widths
       of 1–9 px and left bearings of 1–5 px (so a VWF needs a per-glyph offset as well as an
@@ -192,9 +194,12 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       to Jay with `TXT-01`/`TXT-02` evidence and a mock-up of each viable option in a real box.
       The decision is recorded in README § "The central risk". Harmed: the player, by
       whichever option is chosen blind.
-- [ ] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** By the crudest
-      means that work — in-place sector patch, full-width letters if that is all the font has,
-      vertical if it must be. It proves the chain text table → image → emulator end to end, on
+- [ ] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** The recipe
+      exists (`research/text-renderer.md` § trial): three immediates at EXE file offsets
+      `0x1D7C4`/`C8`/`CC` (disc sector 81) make dialogue run left to right from (24, 132), and
+      13 words spell "Hello, Boku!" over every copy of the first spoken line — which must be
+      read off the screen, since the opening event was not identified statically. Needs the
+      sector writer with EDC/ECC (`PIPE-04`'s core) and a way to look at the result. It proves the chain text table → image → emulator end to end, on
       Beetle PSX as well as the debugging emulator, and flushes out `REC-07`. **This is the
       go/no-go for the approach.** Harmed: the whole project, if the pipeline is built before
       this is known to work.
@@ -205,8 +210,10 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       non-dialogue draw paths from `REC-06` are separate sites and are enumerated here, not
       discovered at release — every comparable project needed **one hack per text surface**, and
       every `strlen`-based centring or right-align routine is wrong once widths vary. Free space,
-      cheapest first: the PS-X EXE header past `0x4C`, unused PsyQ debug-font routines
-      (`FntLoad`/`FntPrint`…), then growing `t_size`. Every injection inside an armips `.area`
+      measured (`research/text-renderer.md`): raising `g_heap_base` frees 1,116 bytes already
+      in the file; ~3.1 KB of unreferenced code islands (620 contiguous at `0x80012E04`, the
+      712-byte `dbg_font_init`); probably the ~2 KB in-house debug printer. Not available:
+      PsyQ `Fnt*` (not linked), the PS-X header (never reaches RAM), zero runs (live BSS). Every injection inside an armips `.area`
       so overflow fails the build. Consider writing the new routine in C (`.importobj`). Harmed: the player.
 - [ ] **[TXT-06]** **The font.** If `TXT-03` needs a replacement sheet: a font under SIL OFL (or
       drawn for the project) so the repo stays fully open, rendered to the engine's cell format
@@ -239,8 +246,9 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       table, rebuild text tables and every enclosing container and directory when sizes change
       (`REC-01`, `REC-02`), write every duplicated site, following the rewrite list in `research/text-format.md`
       (block offsets → child-1 table → pack offsets → `.SEC` sizes, `EV.SEC`'s being `u16` →
-      sector spill into later `.SEC` fields and `g_cd_dir`). Unknown and needed before text
-      can grow: the size of the buffers the game loads map packs and `EV` members into.
+      sector spill into later `.SEC` fields and `g_cd_dir`). Known limit: an event block loads into a **`0x4000`-byte buffer** and overrunning it
+      panics ("event buffer over") — the cap on one event's translated text + bytecode. Map-pack
+      buffer sizes: see `research/loading-and-memory.md` when `REC-02` closes.
       Code-file arrays have no slack: relocate the array and patch its `lui`/`addiu` pairs.
       **Growth is this row's problem, never the translation's**
       (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new

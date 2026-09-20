@@ -100,8 +100,11 @@ around — the renderer in a 512 KB MIPS executable. The fallbacks, cheapest fir
 First good news (2026-09-20, static analysis, `research/font.md`): the game's text stepper
 already has a **horizontal mode** behind a flag bit, and its 12×12 font sheet already contains
 A–Z, a–z, digits and most punctuation — full-width, so a width table is still needed, and the
-Japanese punctuation is drawn for vertical lines. Which callers choose vertical, and whether
-every text surface goes through that stepper, is not yet known.
+Japanese punctuation is drawn for vertical lines. And direction turns out to be an *argument*: dialogue is vertical because two call sites pass
+a literal 1 (`research/text-renderer.md`). Twenty of the game's 26 text surfaces are already
+horizontal. What is left is real but bounded: the dialogue panel is a narrow strip down the
+right edge and has to become a band, SELECT menus and two overlay screens are hard-coded
+vertical, and a width table has to be hooked in. None of this has been seen running yet.
 
 Both the PS2 sequel's English patch and the PSP port's Spanish patch hit vertical text in
 their versions of this engine and converted it to horizontal with a variable-width font, so
