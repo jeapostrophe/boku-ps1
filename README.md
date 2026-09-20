@@ -104,10 +104,11 @@ renderer actually does is PLAN § *Text renderer*.
 ## What the disc looks like
 
 One Mode 2 data track: a PS-X EXE (`SCPS_100.88`), one 104 MiB headerless archive
-(`BOKU.BIN`; its directory is not in the archive's head and is probably in the executable), XA voice audio and STR video. Game text is
+(`BOKU.BIN`, whose directory is three arrays inside the executable), XA voice audio and STR video. Game text is
 **not Shift-JIS**: it is 16-bit indices into the font sheet with `0x8000`-range control codes —
 the same scheme, and at least largely the same glyph order, as the PSP port and the PS2 sequel.
-Details, measurements and what is still unknown: [research/disc-recon.md](research/disc-recon.md).
+Details, measurements and what is still unknown: [research/disc-recon.md](research/disc-recon.md)
+and [research/boku-bin.md](research/boku-bin.md) (the archive's 1,302 members, mapped).
 
 ## The approach
 

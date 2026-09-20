@@ -1,6 +1,7 @@
 # Disc recon — what the PS1 disc looks like (2026-09-19)
 
-First-look findings from throwaway scripts. Every claim here was measured on the
+First-look findings from throwaway scripts. **Superseded where they overlap by
+[boku-bin.md](boku-bin.md)** (the archive's directory and member map, PLAN `REC-01`). Every claim here was measured on the
 dump below; anything marked *hypothesis* was not. Open questions are PLAN `REC-*`
 rows, not this file.
 
@@ -27,7 +28,7 @@ Sector 280 is the `__STR` directory. Sectors 281–1045 (765 sectors) belong to 
 practice survey measured them as zero-filled Form 2 filler (submode `0x20`), with 150 more at
 the end of the disc — candidate expansion space if nothing seeks there (PLAN `PIPE-04`).
 
-## `BOKU.BIN` has no header; its index is somewhere else — probably the executable
+## `BOKU.BIN` has no header; its index is in the executable
 
 `BOKU.BIN` starts with zeros (110 all-zero sectors overall). The executable carries a
 table of ~300 **development-time path names** starting near file offset `0x808`:
@@ -42,8 +43,8 @@ The first non-zero byte of `BOKU.BIN` is at `0x4800` (sector 9), and what starts
 engine family's **pack** format, measured: `u32 count = 4`, then `{u32 offset, u32 size}` pairs
 `(0x24, 0x83a4) (0x83c8, 0x2ff0) (0xb3b8, 0x1c) (0xb3d4, 0x1280)` — each offset + size is the
 next offset — and the first member is itself a pack of 8. So `BOKU.BIN` is a run of sector-positioned members, at least some of which are packs, with
-no directory at its head. Where the directory *is* — the executable next to the name table,
-or a member of the archive, or both — is not yet measured (PLAN `REC-01`).
+no directory at its head. The directory is measured now: three parallel arrays in the executable (`g_cd_dir`), and no
+second copy in the archive — see [boku-bin.md](boku-bin.md).
 
 ## Text is 16-bit glyph indices, not Shift-JIS — and the PSP table decodes it
 
@@ -51,7 +52,8 @@ The executable's only Shift-JIS is developer-facing debug text (`(PCload):ファ
 ロードできません!!` sits beside `PCload:No file!` and a `C:\CD_IMAGE` path — PC dev-host
 loading, not something a player sees; `イベントバッファオーバー`) and the standard mod-chip
 warning. A Shift-JIS scan of
-`BOKU.BIN` finds only noise.
+`BOKU.BIN` finds only noise. (The executable does hold *glyph-encoded* text, which this
+Shift-JIS scan could not see — [boku-bin.md](boku-bin.md).)
 
 Scanning `BOKU.BIN` for runs of little-endian `u16` in `1..0x4ff` ended by `0x8000`
 (allowing `0x8001` and `0x8002 <param>` inside) finds **5,527 candidate lines / 54,600
@@ -71,9 +73,8 @@ So: the control codes documented for the PSP port and the PS2 sequel (`0x8000` e
 PSP port at least for kana and common kanji; speaker labels are inline text before
 `「`. Not yet known: ids above 1023, which the 1024-entry PSP table cannot hold — **440 of the
 5,527 lines use one, 127 distinct ids**, so this is ~8% of lines, not an oddity — the full control-code set, the table structure around the lines, and how
-many of the 5,527 are duplicates (1,398 of them sit in the second MiB alone). The
-count is a floor on unique text only if duplicates are few — treat it as an order of
-magnitude.
+many of the 5,527 are duplicates (1,398 of them sit in the second MiB alone). Duplicates turned out to be most of it: **2,078 distinct strings**, 1,016 of them present
+in more than one member ([boku-bin.md](boku-bin.md)).
 
 ## Textures
 
