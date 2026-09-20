@@ -33,12 +33,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       keyed on Japanese `msgid`s it is superseded by README principles 2 and 3. Its unanswered
       sub-questions (DMCA history of translation patches, no$psx under CrossOver) are closed
       as *no*: nothing in the plan depends on either.
-- [ ] **[RSH-02]** **Watch-list of primary sources worth a full read before `TXT-01`.** Hilltop's
-      *How to Romhack: Mega Man Legends 2* and *Racing Lagoon Hacking Deep Dive* (the PS1 VWF
-      and LBA-table method), slowbeef's Policenauts technicals, and the TraduSquare devlog on
-      the PSP port's vertical→horizontal fix (URLs in `research/related-projects.md` §3, §6).
-      Extract what applies into `research/`; this is reading, not building. Harmed: the agent
-      doing `TXT-01`, who otherwise rediscovers a documented method in a disassembler.
+- [x] **[RSH-02]** **Primary sources read before `TXT-01`.** DONE 2026-09-20:
+      `research/renderer-prior-art.md` — a method for finding a PS1 text renderer, the
+      instruction-level cost of vertical→horizontal in the PS2 sequel and the PSP port, three
+      VWF designs, the what-breaks checklist, Kendrit's PSP dialogue/event spec as a PS1
+      hypothesis, and the text-lookup hijack. Read in full: Hilltop's MML2, Racing Lagoon and
+      Ghidra videos, slowbeef `pnhack1/2/4/5`, the TraduSquare devlog, the four patch sources.
+      Unreachable (404 / no Wayback capture): `pnhack3/6/7` — closed as *no*; reopen only if
+      `TXT-05` ends up needing the lookup-hijack design.
 
 ## Environment
 
@@ -133,10 +135,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Text renderer — the central risk (README § "The central risk")
 
-- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** Who reads the `u16`s, how a
+- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** First question (`research/
+      renderer-prior-art.md` §2, §8): does the print routine take a **direction argument**? The
+      PS2 sequel's did — its menus went horizontal with one `li reg, 0` each and only the
+      dialogue path needed rewriting. Then: who reads the `u16`s, how a
       glyph index becomes a texture coordinate, whether glyphs are drawn as sprites per
       character or composed into a VRAM texture, where the pen position lives, where the
-      vertical advance and the column step (the family's `base_x − column × spacing` pattern)
+      vertical advance (possibly a per-character function's *return value*, not a constant) and the column step (the family's `base_x − column × spacing` pattern)
       are computed, and what owns the box geometry. Output: `research/text-renderer.md` with
       addresses and symbol names. Harmed: every other row in this section.
 - [ ] **[TXT-02]** **What the existing font offers.** From `REC-04`: are there Latin glyphs, are
