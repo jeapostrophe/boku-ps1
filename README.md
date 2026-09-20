@@ -143,7 +143,8 @@ and [research/boku-bin.md](research/boku-bin.md) (the archive's 1,302 members, m
 It verifies the image against the Redump checksum (recorded in
 [research/disc-recon.md](research/disc-recon.md) § "The dump") and refuses anything else,
 then writes `disc/image.img`, `disc/image.cue`, `disc/manifest.json` and the extracted files
-under `disc/files/`. It does not write the decoded script yet (PLAN `PIPE-01`). Nothing else
+under `disc/files/`. `./make.sh extract` then writes the decoded script and per-scene flow graphs under
+`disc/script/`. Nothing else
 in the repo works without it, and nothing it writes is ever committed. It needs `uv`, and
 `chdman` (from MAME) for CHD input.
 
@@ -155,14 +156,15 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, test, lint
-boku/                the Python package (`boku import` so far; `boku/disc.py` reads raw sectors)
+make.sh              every recurring command: import, extract, trial, patch, apply-patch, test, lint
+boku/                the Python package: import, extract, trial, patch, apply-patch
+asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
-tools/               helper scripts for external tools (Ghidra, PCSX-Redux)
+tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
 translation/         the English: story bible, style guide, open questions, samples (drafts so far)
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
-disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/
+disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects
 build/       (ignored)  patched files, patched image, the patch

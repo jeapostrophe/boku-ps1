@@ -26,6 +26,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from boku import staging
 from boku.disc import RAW_SECTOR_SIZE, DirEntry, DiscError, DiscImage
 
 # The dump this project is built from. research/disc-recon.md § "The dump" is the one home
@@ -184,29 +185,24 @@ class DestinationSet:
 
 
 def check_out_dir(
-    out_dir: Path, *, manifest_name: str = MANIFEST_NAME, what: str = "import"
+    out_dir: Path,
+    *,
+    manifest_name: str = MANIFEST_NAME,
+    what: str = "import",
+    source: Path | None = None,
+    doing: str | None = None,
 ) -> None:
-    """Refuse an output directory whose contents are not this tool's to delete.
+    """`boku.staging.check_out_dir`, raising this module's refusal type.
 
-    A successful run replaces `--out` wholesale, so pointing it at a directory that
-    holds anything else -- `--out ~/Downloads` -- would destroy it. A directory that
-    holds a manifest is a previous run of the same kind and may be replaced. `boku.trial`
-    builds the same way and calls this with its own manifest name, so the rule has one
-    home rather than two that drift.
+    The rule itself lives in `boku.staging` with the rest of the build-beside-and-swap
+    machinery, because four steps of the pipeline need it and it had grown four copies.
     """
-    if not out_dir.name:
-        raise ImportRefused(f"{out_dir} has no name to write into; give --out a directory")
-    if not out_dir.exists():
-        return
-    if not out_dir.is_dir():
-        raise ImportRefused(f"--out {out_dir} exists and is not a directory")
-    contents = list(out_dir.iterdir())
-    if contents and not (out_dir / manifest_name).is_file():
-        raise ImportRefused(
-            f"--out {out_dir} is not empty and holds no {manifest_name}, so it is not a "
-            f"previous {what}. A successful {what} replaces this directory whole; refusing "
-            f"to delete {len(contents)} item(s) that are not this tool's."
+    try:
+        staging.check_out_dir(
+            out_dir, manifest_name=manifest_name, what=what, source=source, doing=doing
         )
+    except staging.StagingRefused as error:
+        raise ImportRefused(str(error)) from error
 
 
 @dataclass(frozen=True)
@@ -288,96 +284,83 @@ def import_disc(
     and swapped in at the end -- and the swap deletes whatever was at `out_dir`, so
     `check_out_dir` first insists that it is empty or a previous import.
     """
-    # Resolved so that `--out .` names a real directory: the staging and replaced
-    # directories are built from `out_dir.name`, which is empty for a relative ".".
+    # Resolved so that `--out .` names a real directory: `boku.staging` builds the
+    # staging and replaced directories from `out_dir.name`, empty for a relative ".".
     out_dir = Path(out_dir).resolve()
     check_out_dir(out_dir)
-    staging = out_dir.parent / f".{out_dir.name}.importing.{os.getpid()}"
-    replaced = out_dir.parent / f".{out_dir.name}.replaced.{os.getpid()}"
-    out_dir.parent.mkdir(parents=True, exist_ok=True)
-    shutil.rmtree(staging, ignore_errors=True)
-    staging.mkdir()
     try:
-        image_path = staging / IMAGE_NAME
-        suffix = source.suffix.lower()
-        if suffix == ".chd":
-            extract_chd(source, image_path)
-        else:
-            binary = image_from_cue(source) if suffix == ".cue" else source
-            progress(f"copying {binary}")
-            shutil.copyfile(binary, image_path)
+        with staging.staged(out_dir, suffix="importing") as stage:
+            image_path = stage / IMAGE_NAME
+            suffix = source.suffix.lower()
+            if suffix == ".chd":
+                extract_chd(source, image_path)
+            else:
+                binary = image_from_cue(source) if suffix == ".cue" else source
+                progress(f"copying {binary}")
+                shutil.copyfile(binary, image_path)
 
-        progress(f"verifying {source.name} ({image_path.stat().st_size:,} bytes)")
-        image_sha1 = verify_image(image_path, shown_as=source)
-        progress(f"image verified: sha1 {image_sha1}")
+            progress(f"verifying {source.name} ({image_path.stat().st_size:,} bytes)")
+            image_sha1 = verify_image(image_path, shown_as=source)
+            progress(f"image verified: sha1 {image_sha1}")
 
-        (staging / CUE_NAME).write_text(CUE_TEXT, encoding="ascii")
-        destinations = DestinationSet()
-        destinations.reserve(IMAGE_NAME)
-        destinations.reserve(CUE_NAME)
-        destinations.reserve(MANIFEST_NAME)
-        destinations.reserve(FILES_DIR)
+            (stage / CUE_NAME).write_text(CUE_TEXT, encoding="ascii")
+            destinations = DestinationSet()
+            destinations.reserve(IMAGE_NAME)
+            destinations.reserve(CUE_NAME)
+            destinations.reserve(MANIFEST_NAME)
+            destinations.reserve(FILES_DIR)
 
-        files_root = staging / FILES_DIR
-        files_root.mkdir()
-        records: list[dict] = []
-        extracted_count = 0
-        with DiscImage(image_path) as image:
-            pvd = image.primary_volume_descriptor()
-            for entry in image.walk():
-                record = _entry_record(entry, image)
-                relative = f"{FILES_DIR}{entry.path}"
-                if entry.is_dir:
-                    destinations.reserve(relative)
-                    (staging / relative).mkdir(parents=True, exist_ok=True)
-                else:
-                    cooked, reason = _is_cooked_file(entry, record["first_sector_form"])
-                    if cooked:
+            files_root = stage / FILES_DIR
+            files_root.mkdir()
+            records: list[dict] = []
+            extracted_count = 0
+            with DiscImage(image_path) as image:
+                pvd = image.primary_volume_descriptor()
+                for entry in image.walk():
+                    record = _entry_record(entry, image)
+                    relative = f"{FILES_DIR}{entry.path}"
+                    if entry.is_dir:
                         destinations.reserve(relative)
-                        record["sha1"] = _extract(image, entry, staging / relative)
-                        record["extracted"] = relative
-                        extracted_count += 1
-                        progress(f"extracted {relative} ({entry.size:,} bytes)")
+                        (stage / relative).mkdir(parents=True, exist_ok=True)
                     else:
-                        record["not_extracted"] = reason
-                        headline = reason.split(":")[0]
-                        progress(f"recorded only {entry.path} ({entry.size:,} bytes): {headline}")
-                records.append(record)
+                        cooked, reason = _is_cooked_file(entry, record["first_sector_form"])
+                        if cooked:
+                            destinations.reserve(relative)
+                            record["sha1"] = _extract(image, entry, stage / relative)
+                            record["extracted"] = relative
+                            extracted_count += 1
+                            progress(f"extracted {relative} ({entry.size:,} bytes)")
+                        else:
+                            record["not_extracted"] = reason
+                            headline = reason.split(":")[0]
+                            progress(
+                                f"recorded only {entry.path} ({entry.size:,} bytes): {headline}"
+                            )
+                    records.append(record)
 
-        manifest = {
-            "format": MANIFEST_FORMAT,
-            "source": source.name,
-            "image": {
-                "file": IMAGE_NAME,
-                "size": image_path.stat().st_size,
-                "sha1": image_sha1,
-                "sectors": image_path.stat().st_size // RAW_SECTOR_SIZE,
-            },
-            "volume": {
-                "system_identifier": pvd.system_identifier,
-                "volume_identifier": pvd.volume_identifier,
-                "volume_space_size": pvd.volume_space_size,
-                "logical_block_size": pvd.logical_block_size,
-            },
-            "entries": records,
-        }
-        (staging / MANIFEST_NAME).write_text(
-            json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-        )
+            manifest = {
+                "format": MANIFEST_FORMAT,
+                "source": source.name,
+                "image": {
+                    "file": IMAGE_NAME,
+                    "size": image_path.stat().st_size,
+                    "sha1": image_sha1,
+                    "sectors": image_path.stat().st_size // RAW_SECTOR_SIZE,
+                },
+                "volume": {
+                    "system_identifier": pvd.system_identifier,
+                    "volume_identifier": pvd.volume_identifier,
+                    "volume_space_size": pvd.volume_space_size,
+                    "logical_block_size": pvd.logical_block_size,
+                },
+                "entries": records,
+            }
+            (stage / MANIFEST_NAME).write_text(
+                json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
 
-        if out_dir.exists():
-            out_dir.rename(replaced)
-        try:
-            staging.rename(out_dir)
-        except OSError:
-            if replaced.exists():
-                replaced.rename(out_dir)
-            raise
-        shutil.rmtree(replaced, ignore_errors=True)
     except DiscError as error:
         raise ImportRefused(f"{source}: {error}") from error
-    finally:
-        shutil.rmtree(staging, ignore_errors=True)
 
     return ImportResult(
         out_dir=out_dir,

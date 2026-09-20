@@ -12,9 +12,14 @@ from pathlib import Path
 
 import pytest
 
+from boku import REPO_ROOT
+from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive
+from boku.events import EventWorld
 from boku.importer import IMAGE_SIZE, SOURCE_ENV_VAR
+from boku.sites import Walk, walk
+from boku.text import SiteIndex
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+DISC_DIR = REPO_ROOT / "disc"
 
 
 def find_real_image() -> Path | None:
@@ -46,3 +51,49 @@ def real_image() -> Path:
             f"none of the game."
         )
     return image
+
+
+@pytest.fixture(scope="session")
+def disc_dir() -> Path:
+    """The import the walkers read: `disc/files/` as `boku import` wrote it."""
+    files = DISC_DIR / "files"
+    for name in (EXE_NAME, ARCHIVE_NAME):
+        if not (files / name).is_file():
+            pytest.skip(
+                f"no {name} in {files}: run `./make.sh import` first. The repo ships "
+                f"none of the game."
+            )
+    return DISC_DIR
+
+
+@pytest.fixture(scope="session")
+def archive(disc_dir: Path) -> Archive:
+    """One `Archive` for the whole session; it holds 109 MB and is read-only."""
+    return Archive(disc_dir)
+
+
+@pytest.fixture(scope="session")
+def site_index(disc_dir: Path) -> SiteIndex:
+    return SiteIndex.from_disc(disc_dir)
+
+
+# The three decodings of the whole disc, each done once for the session. Between them
+# they used to be repeated nine times across `test_real_extract.py` alone, and each one
+# is seconds of work over 109 MB. They are read-only for the same reason `archive` is.
+
+
+@pytest.fixture(scope="session")
+def walk_reader(archive: Archive) -> Walk:
+    """The `REC-06` partition: one string per item as its reader indexes it."""
+    return walk(archive, array_partition="reader")
+
+
+@pytest.fixture(scope="session")
+def walk_rec03(archive: Archive) -> Walk:
+    """The earlier partition, which `research/data/text-sites.tsv` is written from."""
+    return walk(archive, array_partition="rec03")
+
+
+@pytest.fixture(scope="session")
+def event_world(archive: Archive) -> EventWorld:
+    return EventWorld(archive)

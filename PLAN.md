@@ -236,7 +236,22 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       indent, the next-page arrow sits inside the band, and the arrival sequence autoplays to
       the same end as the stock disc. No integrity check fired (`REC-07` held). On Beetle PSX (Mode One's core, retail BIOS, `tools/libretro/`) the same
       image shows the same frame: English, horizontal, in the band.
-- [ ] **[TXT-05]** **The renderer patch.** Per `TXT-03`: armips source in the repo, horizontal
+- [ ] **[TXT-05]** **The renderer patch.** The DIALOGUE surface is prototyped and runs on both
+      emulators (2026-09-20, `asm/dialogue.asm`, `tools/vwf/build_prototype.py`,
+      `research/vwf-prototype.md`): 21 EXE words — direction, pen, the band, line pitch, the
+      nine-slot table-lookup advance (no trampoline), heap start raised to make room for the
+      width table in the measured-dead gap; every site carries its retail instruction and the
+      build refuses unless the `ORIGINAL=1` arm reassembles the EXE byte-identically. The font
+      sheet is rebuilt at build time from the contributor's disc with Latin cells
+      left-aligned in FREE cells (cells the Japanese script draws are never moved, and a gate
+      refuses if one would change), so untranslated pages are unchanged; the typeface is a
+      `--font` input. Real lines measured to the pixel against the mock-ups. **Left to do:**
+      SELECT menus (a real hook), the two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and
+      their arrays, the 23 computed-id `glyph_draw` sites (not covered by the free-cell gate),
+      `...` reading as a dash under the shadow, the speaker-label design, watching the heap
+      gap under the four overlays / a save / a full day, and moving the build from
+      `tools/vwf/` into `boku` behind a `make.sh` verb once `TXT-03`/`TXT-06` are ruled.
+      Original row: Per `TXT-03`: armips source in the repo, horizontal
       advance, per-glyph width table, wrapping inside the existing box, free space located in
       the executable (it is exactly `0x80000` bytes — check the tail and dead debug code). Every
       patched site documented with what the original instruction did. Menus and other
@@ -257,7 +272,12 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       recommended, then the game's own glyphs re-aligned (44), Ark Pixel 12 (45), Pixel
       Operator (42). Harmed: the player (legibility at 320×240 on
       a phone screen in Mode One is the hard case) and the repo's licence cleanliness.
-- [ ] **[TXT-07]** **Measure what each box can hold.** For every box geometry the game uses:
+- [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
+      (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
+      line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
+      next-page pencil, and overflow is clipped silently at x = 319 — the engine never wraps,
+      so the inserter breaks lines and `PIPE-06` measures them in pixels. Still to measure:
+      every other surface. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
       minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
@@ -270,14 +290,20 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Pipeline
 
-- [ ] **[PIPE-01]** **Extraction to stable line ids.** Ids per `research/text-format.md`: `E<event id>.<message
-      index>` for event text — one id, all its physical sites, since copies of an (event,
-      index) pair are byte-identical in all 2,686 cases; **the extractor asserts that
-      invariant** rather than assuming it — and `<file>@<original offset>.<item>` for the
-      code-file arrays, plus forms for labels built from instruction immediates and for the
-      Shift-JIS save title (proposal in `research/text-outside-events.md`). Ids survive translation edits and are the same on every machine. The import step writes the Japanese, with
-      `REC-05`'s scene/order/speaker/choice/voiced context, under `disc/`. Harmed: contributors
-      — an unstable id scheme invalidates every open PR.
+- [x] **[PIPE-01]** **Extraction to stable line ids.** DONE 2026-09-20: `./make.sh extract`
+      (`boku/archive.py`, `events.py`, `arrays.py`, `sites.py`, `glyphs.py`, `extract.py`) reads
+      the import and writes `disc/script/` in about a second, byte-identical across runs and
+      hash seeds: `lines.jsonl` (2,987 logical lines — id, kind, speaker, voice key, tokenised
+      Japanese, page/column layout, every physical site, capacity facts such as "pages fixed
+      by voice"), `scenes/E<id>.json` (where/when, cast, flow graph, hand-overs, dinner-quiz
+      days), `arrays.json`, `index.json` (written last, as the completeness marker). One id
+      names every copy of a line (EV member, each map-pack copy, exe-resident blocks) and the
+      extractor asserts the copies are byte-identical. Gates: the port regenerates all five
+      tracked research TSVs byte-for-byte (`./make.sh research-tsv`); decode→encode is exact
+      over all 6,193 sites; counts are parsed out of the research notes; and **parse →
+      serialise is the identity for all 4 `.SEC` indexes, 1,106 packs, 555 child-1 tables and
+      2,352 event blocks**, with `Block.replace_entry` / `BlockTable.replace` as the
+      reinserter's primitives. Reviewed twice (`~/.claude/session-notes/boku-ps1/`).
 - [ ] **[PIPE-02]** **The committed translation format.** `[MINE: contract]` — English and
       project-written context notes only, keyed by id, one file per scene so diffs and PRs are
       local, plain text that merges well, room for more than one candidate English per line. Our
@@ -316,7 +342,16 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       there. `mkpsxiso`/`dumpsxiso` 2.30 stay installed as the escape hatch. Output is deterministic:
       same inputs, same image hash. Harmed: Mode One, which pins that hash; hardware users, if
       EDC/ECC is wrong.
-- [ ] **[PIPE-05]** **Patch emit and the round-trip gate.** Emit xdelta (what the scene expects; `xdelta3 -e -9 -S lzma -B <≥ image size> -A ""` —
+- [ ] **[PIPE-05]** **Patch emit and the round-trip gate.** Patch emit is DONE (2026-09-20):
+      `./make.sh patch` writes a PPF3, an xdelta and `PATCH.json` (size/CRC32/MD5/SHA-1 of base
+      and result); `./make.sh apply-patch` verifies the base first and the result after, and
+      never touches the original. Proven on the trial image with three independent appliers —
+      ours, Icarus's `applyppf3`, and retro-trainer's Rust `apply_ppf` — and our record stream
+      is byte-identical to `makeppf3`'s. Mode One's applier wants PPF3, ignores the
+      blockcheck and reads records to EOF, so no FILE_ID.DIZ trailer. xdelta 3.2.0: `-A ""`
+      *is* the armor switch (off; our applier supplies the hashes) and it no longer leaks
+      paths. **Left to do:** the whole-pipeline round-trip gate below, which needs `PIPE-03`.
+      Original row: Emit xdelta (what the scene expects; `xdelta3 -e -9 -S lzma -B <≥ image size> -A ""` —
       the default 64 MB window silently bloats the patch and the default header leaks build
       paths) and PPF3 (Mode One's patcher; DuckStation also applies a same-named `.ppf` beside
       a CHD), stating size, CRC32, MD5 and SHA-1 of base and result. None of the

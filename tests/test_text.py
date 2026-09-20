@@ -1,4 +1,4 @@
-"""Text sites and the glyph sheet, checked without a disc.
+"""Placing text sites into files, and the `TXT-04` recipe read back out of its note.
 
 The two fixtures that matter here are read out of `research/text-renderer.md` § 7 rather
 than typed into this file. That note is the source of truth for the trial: it is where
@@ -6,6 +6,11 @@ the three immediates and the thirteen glyph words of "Hello, Boku!" were measure
 hand-written copy of them here would pass exactly when the code and the copy were wrong
 together, which is the failure this project has measured before; parsing the note means
 the gate breaks the moment the code and the research disagree.
+
+The site half is about one property: **a line id names every physical copy of that line,
+and only those.** Under the earlier per-site scheme a map-resident line could not be asked
+for by its event id at all, and grouping by bytes swept up the 246 byte strings that two
+different lines happen to share.
 """
 
 from __future__ import annotations
@@ -16,18 +21,9 @@ from pathlib import Path
 
 import pytest
 
-from boku.text import (
-    END_WORD,
-    PAD_WORD,
-    GlyphTable,
-    SiteIndex,
-    TextError,
-    TextSite,
-    check_placement,
-    line_key_of,
-    load_member_offsets,
-    load_sites,
-)
+from boku.glyphs import END_WORD, PAD_WORD, GlyphTable, TextError
+from boku.sites import Site, line_key_of
+from boku.text import PlacedSite, SiteIndex, check_placement
 from boku.trial import RENDERER_PATCH, TRIAL_TEXT
 
 RECIPE = Path(__file__).resolve().parents[1] / "research/text-renderer.md"
@@ -67,12 +63,12 @@ def test_english_encodes_to_the_words_the_research_note_measured():
     listed = re.findall(r"^`((?:[0-9A-F]{4} )+8000)`$", recipe_section(), re.M)
     assert len(listed) == 1, f"{RECIPE} § 7 no longer holds exactly one glyph-word line"
     expected = b"".join(int(word, 16).to_bytes(2, "little") for word in listed[0].split())
-    encoded = GlyphTable.load().encode(TRIAL_TEXT) + END_WORD.to_bytes(2, "little")
+    encoded = GlyphTable.load().encode_english(TRIAL_TEXT) + END_WORD.to_bytes(2, "little")
     assert encoded == expected
     assert len(expected) == 26, "the note says the site must be at least 26 bytes"
 
 
-# --- the glyph sheet --------------------------------------------------------------------
+# --- writing English into a site --------------------------------------------------------
 
 
 @pytest.fixture(scope="module")
@@ -80,22 +76,16 @@ def glyphs() -> GlyphTable:
     return GlyphTable.load()
 
 
-def test_the_sheet_draws_letters_digits_and_the_space(glyphs: GlyphTable):
-    for character in "ABZabz09 .,!?":
-        assert character in glyphs.to_glyph, character
-    assert glyphs.to_glyph[" "] == 0, "glyph 0 is the blank cell"
-
-
 def test_a_character_the_sheet_cannot_draw_is_named_rather_than_substituted(glyphs: GlyphTable):
     assert glyphs.unencodable("don't") == ["'"]
     with pytest.raises(TextError, match="no cell"):
-        glyphs.encode("don't")
+        glyphs.encode_english("don't")
 
 
 def test_a_message_is_terminated_and_then_padded_to_the_original_length(glyphs: GlyphTable):
     body = glyphs.message("Hi", 12)
     assert len(body) == 12
-    assert body[:4] == glyphs.encode("Hi")
+    assert body[:4] == glyphs.encode_english("Hi")
     assert body[4:6] == END_WORD.to_bytes(2, "little")
     assert body[6:] == PAD_WORD.to_bytes(2, "little") * 3
 
@@ -107,14 +97,15 @@ def test_a_message_that_does_not_fit_is_refused_rather_than_cut(glyphs: GlyphTab
 
 
 def test_a_newline_is_the_control_word_not_a_glyph(glyphs: GlyphTable):
-    assert glyphs.encode("a\nb")[2:4] == (0x8001).to_bytes(2, "little")
+    assert glyphs.encode_english("a\nb")[2:4] == (0x8001).to_bytes(2, "little")
 
 
-# --- sites ------------------------------------------------------------------------------
+# --- sites, placed --------------------------------------------------------------------------
 
 
-def site(**overrides) -> TextSite:
+def site(**overrides) -> Site:
     fields = {
+        "file": "BOKU",
         "member": "EV0112.BIN",
         "container": "ev",
         "table": 0,
@@ -124,105 +115,109 @@ def site(**overrides) -> TextSite:
         "size": 32,
         "slack": 0,
         "kind": "MSG+XA",
-        "line_key": "a" * 12,
+        "line_id": "E0112.0",
+        "absolute": 0x1100,
     }
     fields.update(overrides)
-    return TextSite(**fields)
+    return Site(**fields)
 
 
-def test_a_site_id_names_an_event_and_a_message_index():
-    assert site().site_id == "E0112.0"
-    assert site(block_id=6, index=3).site_id == "E0006.3"
+def placed(site_: Site, key: str = "a" * 12) -> PlacedSite:
+    return PlacedSite(site_, "BOKU.BIN", site_.absolute, key)
 
 
-def test_two_sites_that_differ_only_by_their_table_are_not_the_same_site():
-    """The `c1` containers restart their indices per table, so the table is part of the name."""
-    first = site(member="M_A01000.BIN", container="c1", table=0, index=0)
-    second = site(
-        member="M_A01000.BIN", container="c1", table=1, index=0, offset=0x200, line_key="b" * 12
-    )
-    assert first.site_id != second.site_id
-    index = SiteIndex([first, second], {"M_A01000.BIN": 0x1000})
-    assert [entry.file_offset for entry in index.copies_of(second.site_id)] == [0x1200]
+def test_one_id_names_every_copy_of_a_line_wherever_the_copies_live():
+    """`E0112.0` has to reach the map-resident copies, or the trial proves less."""
+    in_ev = placed(site())
+    in_map = placed(site(member="M_G02001.BIN", container="c1", table=1, absolute=0x9000))
+    other = placed(site(index=1, line_id="E0112.1", absolute=0x1200), key="b" * 12)
+    index = SiteIndex([in_ev, in_map, other])
+    assert [e.file_offset for e in index.copies_of("E0112.0")] == [0x1100, 0x9000]
+    assert [e.file_offset for e in index.copies_of("E0112.1")] == [0x1200]
 
 
-def test_two_sites_with_one_name_are_refused_rather_than_resolved_to_the_first():
-    """`--line <id>` must write where the id says, or it writes somewhere else entirely."""
-    twin = site(member="M_A01000.BIN", container="c1", table=0, index=0)
-    with pytest.raises(TextError, match="two text sites are both called"):
-        SiteIndex([twin, replace(twin, offset=0x200)], {"M_A01000.BIN": 0x1000})
+def test_a_line_key_still_groups_by_bytes_which_is_the_coarser_question():
+    """246 byte strings on the disc belong to more than one line; the ids keep them apart."""
+    here = placed(site())
+    twin = placed(site(block_id=700, member="EV0700.BIN", line_id="E0700.4", absolute=0x2100))
+    index = SiteIndex([here, twin])
+    assert {e.line_id for e in index.copies_of("a" * 12)} == {"E0112.0", "E0700.4"}
+    assert index.copies_of("E0112.0") == [here]
 
 
-def test_every_copy_of_a_line_is_found_by_key_and_by_any_of_its_site_ids():
-    """`--line E0112.0` has to reach the copy in another event, or the trial proves less."""
-    here = site()
-    elsewhere = site(member="EV0700.BIN", block_id=700, index=4, offset=0x900)
-    unrelated = site(member="EV0700.BIN", block_id=700, index=5, line_key="b" * 12)
-    index = SiteIndex([here, elsewhere, unrelated], {"EV0112.BIN": 0x1000, "EV0700.BIN": 0x2000})
-    assert [entry.site.site_id for entry in index.copies_of("a" * 12)] == ["E0112.0", "E0700.4"]
-    assert index.copies_of("E0700.4") == index.copies_of("E0112.0")
-    with pytest.raises(TextError, match="no text site"):
+def test_an_id_nobody_has_is_refused_rather_than_resolved_to_something_else():
+    index = SiteIndex([placed(site())])
+    with pytest.raises(TextError, match="no text site is called"):
         index.copies_of("E9999.0")
 
 
-def test_a_site_is_placed_at_its_member_offset_plus_its_own():
-    index = SiteIndex([site()], {"EV0112.BIN": 0x1000})
-    placed = index.copies_of("a" * 12)[0]
-    assert (placed.file_name, placed.file_offset, placed.end) == ("BOKU.BIN", 0x1100, 0x1120)
+def test_two_sites_at_one_byte_range_are_refused():
+    """A walk that emitted the same range twice would double-write it and count it twice."""
+    entry = placed(site())
+    with pytest.raises(TextError, match="both start at"):
+        SiteIndex([entry, replace(entry, line_key="b" * 12)])
 
 
-def test_an_exe_site_is_placed_at_its_own_offset():
-    index = SiteIndex([site(member="SCPS_100.88", container="array@0x1a2fc", kind="ARR-E")], {})
-    placed = index.copies_of("a" * 12)[0]
-    assert (placed.file_name, placed.file_offset) == ("SCPS_100.88", 0x100)
+def test_event_messages_are_the_map_resident_copies_as_well_as_the_ev_ones():
+    """The bug this model replaced: `container == "ev"` missed 4,000-odd sites."""
+    in_map = placed(site(member="M_G02001.BIN", container="c1", absolute=0x9000))
+    array = placed(
+        site(
+            file="EXE",
+            member="SCPS_100.88",
+            container="array@0x36a14",
+            kind="ARR-E",
+            line_id="exe@80046214.0",
+            absolute=0x36A14,
+        ),
+        key="c" * 12,
+    )
+    index = SiteIndex([placed(site()), in_map, array])
+    assert {e.line_id for e in index.event_messages()} == {"E0112.0"}
+    assert len(list(index.event_messages())) == 2
 
 
-def test_a_site_whose_member_is_unknown_is_refused_rather_than_guessed():
-    with pytest.raises(TextError, match=re.escape("not in boku-bin-members.tsv")):
-        SiteIndex([site()], {})
-
-
-def test_the_bytes_on_the_disc_have_to_hash_to_what_the_table_recorded():
-    """The gate that makes a committed table safe to write from."""
+def test_the_bytes_in_the_image_have_to_hash_to_what_the_walk_read_in_the_files():
+    """The gate that makes a write safe: the image and the import are separate artifacts."""
     content = b"\x45\x00\x00\x80" + bytes(28)
-    index = SiteIndex([site(line_key=line_key_of(content))], {"EV0112.BIN": 0x1000})
-    placed = index.copies_of(line_key_of(content))[0]
-    check_placement(placed, content)
-    with pytest.raises(TextError, match="table and this image disagree"):
-        check_placement(placed, bytes(32))
+    entry = placed(site(), key=line_key_of(content))
+    check_placement(entry, content)
+    with pytest.raises(TextError, match="image and the import disagree"):
+        check_placement(entry, bytes(32))
     with pytest.raises(TextError, match="the site is 32"):
-        check_placement(placed, content[:30])
+        check_placement(entry, content[:30])
 
 
-# --- the committed tables ------------------------------------------------------------------
+# --- against the real import -------------------------------------------------------------------
 
 
-def test_the_committed_tables_load_and_line_up():
-    """`text-sites.tsv` names only members `boku-bin-members.tsv` knows, so every site places."""
-    sites = load_sites()
-    index = SiteIndex(sites, load_member_offsets())
-    assert len(index) == len(sites) > 6000
-    assert len(index.line_keys) < len(sites), "the disc repeats lines; the grouping must see it"
-    assert {entry.file_name for entry in index.placed} == {"BOKU.BIN", "SCPS_100.88"}
-    events = list(index.event_messages())
-    assert len(events) > 1000
-    assert all(entry.site.container == "ev" and entry.file_name == "BOKU.BIN" for entry in events)
+def test_every_site_of_the_real_import_is_reachable_by_its_own_id(site_index: SiteIndex):
+    """The round trip the whole `--line` switch rests on, over all 6,193 sites.
 
-
-def test_every_site_in_the_committed_table_is_reachable_by_its_own_id():
-    """The round trip the whole `--line` switch rests on, over the real 6,183 rows.
-
-    Nothing is typed in here: the table is the source of truth, and the property asked of
-    it is that resolving a row's own id lands on that row and no other. It fails on any
-    id scheme that two rows can share -- under `member:container:index` the disc had 750
-    such names and the second row of each was unreachable, so `--line` would have
-    rewritten the first one's bytes and reported success.
+    Nothing is typed in: the walk is the source of truth, and the property asked of it is
+    that resolving a site's own id lands on that site among others. It fails on any id
+    scheme two unrelated sites can share.
     """
-    index = SiteIndex()
-    by_place = {(entry.file_name, entry.file_offset): entry for entry in index.placed}
-    assert len(by_place) == len(index.placed), "two rows place at one byte range"
-    for entry in index.placed:
-        found = index.copies_of(entry.site.site_id)
+    assert len(site_index) > 6000
+    assert {e.file_name for e in site_index.placed} == {"BOKU.BIN", "SCPS_100.88"}
+    for entry in site_index.placed:
+        found = site_index.copies_of(entry.line_id)
         assert (entry.file_name, entry.file_offset) in {
             (copy.file_name, copy.file_offset) for copy in found
-        }, f"{entry.site.site_id} resolves somewhere else"
+        }, f"{entry.line_id} resolves somewhere else"
+
+
+def test_the_opening_line_of_the_game_is_addressable_by_its_event_id(site_index: SiteIndex):
+    """`E0171` is map-resident with no `EV.BIN` copy; the earlier model could not name it."""
+    copies = site_index.copies_of("E0171.0")
+    assert copies
+    assert all(copy.site.container == "c1" for copy in copies)
+
+
+def test_a_line_with_many_copies_returns_all_of_them_and_they_are_the_same_bytes(
+    site_index: SiteIndex,
+):
+    many = max(site_index.line_ids, key=lambda i: len(site_index.copies_of(i)))
+    copies = site_index.copies_of(many)
+    assert len(copies) > 5
+    assert len({copy.line_key for copy in copies}) == 1

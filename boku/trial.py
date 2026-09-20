@@ -20,13 +20,15 @@ left-to-right text lands on bare scenery. `research/renderer-runtime.md` § Q2 m
 the fix in RAM -- the same instruction slots made to draw a band across the foot of the
 screen, with the pen moved into it.
 
-**One line in English** (`--line`). A logical line has up to 53 physical copies on the
-disc, and which copy the game reaches is not known statically, so every copy is
-overwritten (`boku.text.SiteIndex.copies_of`).
+**One line in English** (`--line`). A logical line has up to 26 physical copies on the
+disc -- one per map variant that embeds its event -- and which copy the game reaches is
+not known statically, so every copy is overwritten (`boku.text.SiteIndex.copies_of`).
+The copies are found by walking the import (`boku.sites`), so a map-resident line such as
+`E0171.0`, the opening line of the game, is addressable by its event id like any other.
 
 **Markers** (`--all-lines-marker`). The recipe cannot name the opening line from static
 analysis -- `research/text-renderer.md` § 7 says Step B's target "is chosen from Step A's
-screen". So this mode writes each event message's own site id (`E0112.0`) over it, and
+screen". So this mode writes each event message's own line id (`E0112.0`) over it, and
 whatever line the game reaches announces which one it is. Feed that id back as `--line`.
 
 Nothing grows: every write is the same byte length as what it replaces, because the image
@@ -34,29 +36,33 @@ is patched in place and 226,000 sectors of streaming media sit behind `BOKU.BIN`
 addresses (`PIPE-04`).
 
 Nothing half-built escapes either: the image is patched inside a staging directory beside
-`--out` and moved into place only once every write and the manifest have succeeded, so a
-failure leaves the previous complete build or nothing at all -- never this run's image
-beside the last run's manifest.
+`--out` (`boku.staging`) and moved into place only once every write and the manifest have
+succeeded, so a failure leaves the previous complete build or nothing at all -- never this
+run's image beside the last run's manifest.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from boku import edc
+from boku.archive import DEFAULT_DISC_DIR, EXE_LOAD_BIAS, ArchiveError
+from boku.arrays import ArrayError
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
+from boku.events import EventError
 from boku.importer import ImportRefused, check_out_dir, sha1_of
+from boku.staging import StagingRefused, staged
 from boku.text import (
     ARCHIVE_NAME,
     EXE_NAME,
     MESSAGE_KINDS,
     GlyphTable,
     PlacedSite,
+    SiteError,
     SiteIndex,
     TextError,
     check_placement,
@@ -92,12 +98,11 @@ class PatchWord:
 
     @property
     def ram_address(self) -> int:
-        """Where this word lives at run time. The EXE is identity-loaded (`Q0`)."""
+        """Where this word lives at run time. The EXE is identity-loaded (`Q0`); the
+        bias is `boku.archive.EXE_LOAD_BIAS`, which is the same number `g_cd_dir` is
+        read at and had three homes in this package."""
         return self.file_offset + EXE_LOAD_BIAS
 
-
-EXE_LOAD_BIAS = 0x8000F800
-"""RAM address = file offset + this (`research/text-renderer.md`, confirmed by `Q0`)."""
 
 RENDERER_PATCH: tuple[PatchWord, ...] = (
     PatchWord(0x1D7C4, bytes.fromhex("29010424"), bytes.fromhex("18000424"), "x = 24"),
@@ -307,7 +312,7 @@ def _check_writable(placed: PlacedSite) -> None:
     """
     if placed.site.kind not in MESSAGE_KINDS:
         raise TrialRefused(
-            f"{placed.site.site_id} is a {placed.site.kind} site, and only message sites "
+            f"{placed.line_id} is a {placed.site.kind} site, and only message sites "
             f"({', '.join(MESSAGE_KINDS)}) are overwritten: an early terminator would "
             f"move every item after it in an array."
         )
@@ -338,33 +343,15 @@ def _write_site(
 def _check_out_dir(out_dir: Path, source: Path) -> None:
     """Refuse an output directory that would damage the import, or someone else's files.
 
-    Two rules. The first is this module's: `--out` is replaced wholesale, and the import
-    it is reading from is the one thing in the repo that cannot be regenerated without
-    the contributor's own disc, so `--out` may not be, contain, or sit inside the
-    directory holding the source image -- `boku trial --out disc` would otherwise leave
-    every later "real disc" test running against a patched image. The second is the
-    import step's own (`boku.importer.check_out_dir`): a non-empty directory with no
-    manifest in it is not this tool's to delete.
+    Both rules live in `boku.staging.check_out_dir`: `--out` may not be, contain, or sit
+    inside the directory holding the source image -- `boku trial --out disc` would
+    otherwise leave every later "real disc" test running against a patched image -- and a
+    non-empty directory with no trial manifest in it is not this tool's to delete.
     """
-    # Both sides are resolved here rather than by the caller: on macOS `/tmp` is a
-    # symlink to `/private/tmp`, so an unresolved pair of paths to the same directory
-    # are not relative to each other and the whole guard silently passes.
-    source_dir = source.resolve().parent
-    out_dir = out_dir.resolve()
-    if out_dir == source_dir or out_dir.is_relative_to(source_dir):
-        raise TrialRefused(
-            f"--out {out_dir} is inside {source_dir}, which holds the image this build "
-            f"reads. The trial writes a patched copy; putting it there would overwrite "
-            f"your verified import, and every test that checks against the real disc "
-            f"would silently run on the patched one."
-        )
-    if source_dir.is_relative_to(out_dir):
-        raise TrialRefused(
-            f"--out {out_dir} contains {source_dir}, and a successful build replaces "
-            f"--out whole; that would delete your verified import."
-        )
     try:
-        check_out_dir(out_dir, manifest_name=MANIFEST_NAME, what="trial")
+        check_out_dir(
+            out_dir, manifest_name=MANIFEST_NAME, what="trial", source=source, doing="build"
+        )
     except ImportRefused as error:
         raise TrialRefused(str(error)) from error
 
@@ -377,6 +364,7 @@ def build_trial(
     markers: bool = False,
     renderer_patch: bool = True,
     band: bool | None = None,
+    disc_dir: Path = DEFAULT_DISC_DIR,
 ) -> TrialResult:
     """Copy `source` to `out_dir/image.img` and apply the trial to the copy, in place.
 
@@ -384,6 +372,10 @@ def build_trial(
     text and is meaningless without it. With `renderer_patch` off and neither `line` nor
     `markers` asked for, nothing is written and the copy is byte-identical to `source` --
     the null round trip.
+
+    `disc_dir` is the import whose files the text sites are walked out of. It stays the
+    contributor's own `disc/` even when `source` is an image from somewhere else: the two
+    are separate artifacts, and `check_placement` refuses the write if they disagree.
     """
     source = Path(source)
     out_dir = Path(out_dir).resolve()
@@ -400,7 +392,7 @@ def build_trial(
 
     words = patch_words(renderer_patch, band)
     glyphs = GlyphTable.load()
-    index = SiteIndex() if (line or markers) else None
+    index = SiteIndex.from_disc(disc_dir) if (line or markers) else None
     copies: list[PlacedSite] = []
     if line:
         try:
@@ -413,7 +405,7 @@ def build_trial(
             try:
                 glyphs.message(text, placed.site.size)
             except TextError as error:
-                raise TrialRefused(f"{placed.site.site_id}: {error}") from error
+                raise TrialRefused(f"{placed.line_id}: {error}") from error
 
     with DiscImage(source) as reader:
         exe = _file_entry(reader, EXE_PATH)
@@ -421,15 +413,10 @@ def build_trial(
         _check_patch_words(reader, exe, words)
     files = {exe.name: exe, archive.name: archive}
 
-    out_dir.parent.mkdir(parents=True, exist_ok=True)
-    staging = out_dir.parent / f".{out_dir.name}.building.{os.getpid()}"
-    replaced = out_dir.parent / f".{out_dir.name}.replaced.{os.getpid()}"
-    shutil.rmtree(staging, ignore_errors=True)
-    staging.mkdir()
-    try:
-        image = staging / IMAGE_NAME
+    with staged(out_dir, suffix="building") as stage:
+        image = stage / IMAGE_NAME
         shutil.copyfile(source, image)
-        (staging / CUE_NAME).write_text(
+        (stage / CUE_NAME).write_text(
             f'FILE "{IMAGE_NAME}" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n',
             encoding="ascii",
         )
@@ -451,7 +438,7 @@ def build_trial(
                     if (placed.file_name, placed.file_offset) in claimed:
                         markers_superseded += 1
                         continue
-                    tag = placed.site.site_id
+                    tag = placed.line_id
                     try:
                         glyphs.message(tag, placed.site.size)
                     except TextError:
@@ -481,19 +468,7 @@ def build_trial(
             markers_superseded=markers_superseded,
             sectors=ledger.records(),
         )
-        (staging / MANIFEST_NAME).write_text(_manifest_json(result), encoding="utf-8")
-
-        if out_dir.exists():
-            out_dir.rename(replaced)
-        try:
-            staging.rename(out_dir)
-        except OSError:
-            if replaced.exists():
-                replaced.rename(out_dir)
-            raise
-        shutil.rmtree(replaced, ignore_errors=True)
-    finally:
-        shutil.rmtree(staging, ignore_errors=True)
+        (stage / MANIFEST_NAME).write_text(_manifest_json(result), encoding="utf-8")
     return result
 
 
@@ -581,6 +556,7 @@ def main_trial(
     markers: bool,
     renderer_patch: bool,
     band: bool | None,
+    disc_dir: Path = DEFAULT_DISC_DIR,
 ) -> int:
     try:
         result = build_trial(
@@ -591,8 +567,24 @@ def main_trial(
             markers=markers,
             renderer_patch=renderer_patch,
             band=band,
+            disc_dir=disc_dir,
         )
-    except (TrialRefused, TextError, DiscError, OSError) as error:
+    except (
+        ArchiveError,
+        TrialRefused,
+        TextError,
+        SiteError,
+        StagingRefused,
+        EventError,
+        ArrayError,
+        DiscError,
+        OSError,
+    ) as error:
+        # `SiteIndex.from_disc` walks the whole import, so it can refuse for any of the
+        # reasons `boku extract` can -- a block that does not decode (`EventError`), an
+        # array whose reader and bytes disagree (`ArrayError`) -- and those reached the
+        # caller as a traceback until `PIPE-01`'s review.
+        #
         # OSError covers shutil.SameFileError and every permission, space and
         # cross-device failure of the copy and the swap: the caller gets the sentence,
         # not a traceback.

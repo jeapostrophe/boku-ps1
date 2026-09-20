@@ -19,8 +19,10 @@ from pathlib import Path
 import pytest
 
 from boku import trial as trial_module
+from boku.arrays import ArrayError
 from boku.disc import RAW_SECTOR_SIZE, USER_DATA_OFFSET, DiscImage
-from boku.text import MESSAGE_KINDS, GlyphTable, SiteIndex, TextError
+from boku.events import EventError
+from boku.text import MESSAGE_KINDS, GlyphTable, SiteError, TextError
 from boku.trial import (
     BAND_PATCH,
     RENDERER_PATCH,
@@ -197,10 +199,9 @@ def test_building_over_an_already_patched_image_is_refused(patched, tmp_path_fac
         build_trial(source=patched.image, out_dir=tmp_path_factory.mktemp("again"))
 
 
-def test_every_physical_copy_of_the_chosen_line_now_reads_the_english(patched):
-    index = SiteIndex()
+def test_every_physical_copy_of_the_chosen_line_now_reads_the_english(patched, site_index):
     glyphs = GlyphTable.load()
-    copies = index.copies_of(TRIAL_LINE)
+    copies = site_index.copies_of(TRIAL_LINE)
     assert len(copies) > 1, f"{TRIAL_LINE} has one copy; pick a line that exercises the fan-out"
     assert patched.line_copies == len(copies)
     with DiscImage(patched.image) as image:
@@ -212,11 +213,10 @@ def test_every_physical_copy_of_the_chosen_line_now_reads_the_english(patched):
             assert found == glyphs.message(TRIAL_TEXT, placed.site.size)
 
 
-def test_the_markers_tag_the_event_messages_that_can_hold_their_own_id(patched):
-    index = SiteIndex()
+def test_the_markers_tag_the_event_messages_that_can_hold_their_own_id(patched, site_index):
     glyphs = GlyphTable.load()
-    events = list(index.event_messages())
-    chosen_line = index.copies_of(TRIAL_LINE)[0].site.line_key
+    events = list(site_index.event_messages())
+    claimed = {(copy.file_name, copy.file_offset) for copy in site_index.copies_of(TRIAL_LINE)}
     assert patched.markers_written + patched.markers_too_small + patched.markers_superseded == len(
         events
     )
@@ -230,38 +230,36 @@ def test_the_markers_tag_the_event_messages_that_can_hold_their_own_id(patched):
         each other and with nothing else; both call it instead.
         """
         try:
-            glyphs.message(entry.site.site_id, entry.site.size)
+            glyphs.message(entry.line_id, entry.site.size)
         except TextError:
             return False
         return True
 
-    too_small = [entry for entry in events if not fits(entry)]
+    superseded = [e for e in events if (e.file_name, e.file_offset) in claimed]
+    too_small = [e for e in events if e not in superseded and not fits(e)]
     assert 0 < len(too_small) < len(events), "a marker run with no rejects gates nothing"
     assert patched.markers_too_small == len(too_small)
-    assert patched.markers_superseded == sum(
-        1 for entry in events if entry.site.line_key == chosen_line
-    )
+    assert patched.markers_superseded == len(superseded)
 
-    chosen = next(entry for entry in events if fits(entry) and entry.site.line_key != chosen_line)
+    chosen = next(e for e in events if fits(e) and e not in superseded)
     with DiscImage(patched.image) as image:
         lbas = {entry.name: entry.lba for entry in image.walk() if not entry.is_dir}
         found = image.read_file_bytes(lbas[chosen.file_name], chosen.file_offset, chosen.site.size)
-    assert found == glyphs.message(chosen.site.site_id, chosen.site.size)
+    assert found == glyphs.message(chosen.line_id, chosen.site.size)
 
 
 def test_a_line_that_is_not_a_message_is_refused_before_anything_is_copied(
-    real_image: Path, tmp_path_factory
+    real_image: Path, tmp_path_factory, site_index
 ):
     """An array item is delimited by its terminator, so an early one would move its neighbours.
 
-    The site is picked out of the committed table rather than named here, so this stays
-    true as `REC-03`'s walk changes.
+    The site is picked out of the walk rather than named here, so this stays true as the
+    walk changes.
     """
-    index = SiteIndex()
-    array_site = next(entry for entry in index.placed if entry.site.kind not in MESSAGE_KINDS)
+    array_site = next(e for e in site_index.placed if e.site.kind not in MESSAGE_KINDS)
     out = tmp_path_factory.mktemp("refused")
     with pytest.raises(TrialRefused, match="only message sites"):
-        build_trial(source=real_image, out_dir=out, line=array_site.site.line_key)
+        build_trial(source=real_image, out_dir=out, line=array_site.line_id)
     assert not (out / "image.img").exists(), "the image was copied before the refusal"
 
 
@@ -348,3 +346,40 @@ def test_the_command_prints_a_sentence_where_it_used_to_raise(
     out = tmp_path_factory.mktemp("oserror")
     assert main_trial(str(real_image), out, None, TRIAL_TEXT, False, True, None) == 1
     assert "are the same file" in capsys.readouterr().out
+
+
+# --- what a refusal looks like to the caller ------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        EventError("E0171 copies differ in entries 0-2"),
+        ArrayError("exe@80046214: the walk ran off the end of SCPS_100.88"),
+        SiteError("3 logical lines have physical copies that differ in bytes"),
+    ],
+)
+def test_a_refusal_from_the_walk_is_a_sentence_and_not_a_traceback(error, tmp_path, monkeypatch):
+    """`--line` walks the whole import, so it can refuse for any reason `boku extract` can.
+
+    `main_trial` caught only the archive's and the glyph sheet's exceptions, so a block
+    that did not decode or an array whose reader and bytes disagreed reached the
+    contributor as a traceback.
+    """
+
+    def refuse(_disc_dir):
+        raise error
+
+    monkeypatch.setattr(trial_module.SiteIndex, "from_disc", staticmethod(refuse))
+    # The source gets a directory of its own: `--out` beside the image is refused before
+    # the walk is ever reached, which would leave this test proving nothing.
+    (tmp_path / "src").mkdir()
+    source = tmp_path / "src" / "image.img"
+    source.write_bytes(bytes(RAW_SECTOR_SIZE))
+    printed: list[str] = []
+    monkeypatch.setattr("builtins.print", lambda *a, **k: printed.append(" ".join(map(str, a))))
+    out = tmp_path / "out"
+    assert trial_module.main_trial(str(source), out, "E0171.0", "x", False, True, None) == 1
+    assert printed and printed[0].startswith("boku trial: ")
+    assert str(error) in printed[0], printed
+    assert not out.exists()
