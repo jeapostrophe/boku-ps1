@@ -3,12 +3,13 @@
 An English translation patch for the PlayStation original of *Boku no Natsuyasumi* (ぼくのなつやすみ,
 SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools and translation both.
 
-> **Status, 2026-09-20: recon.** The import step works. The archive, the text format, the
-> font and the glyph table are decoded and written up under [research/](research/) — the
-> script is 2,977 lines / ~75,000 glyphs. No extraction or reinsertion tool is built yet
-> beyond the import, and nothing has been translated. Open work is
-> [PLAN.md](PLAN.md). No English translation of the PS1 original was found, released or in progress — GitHub
-> searched thoroughly, the romhacking sites could not be (they block automated fetches) ([research/related-projects.md](research/related-projects.md) §7(d)).
+> **Status, 2026-09-20: the approach works.** A patched disc image boots — on PCSX-Redux and on
+> Beetle PSX, the core Mode One uses — and draws English left to right in a band under the
+> scene (`./make.sh trial`). The archive, text format, event scripts, font, renderer, memory
+> map and textures are decoded and written up under [research/](research/): the script is
+> 2,977 lines / ~75,000 glyphs, 180 textures carry Japanese, and the game checks nothing it
+> loads. Not built yet: the variable-width renderer patch, the reinserter, and the
+> translation itself, which waits on rulings in [translation/QUESTIONS.md](translation/QUESTIONS.md).
 
 ## Why the PS1 version
 
@@ -104,7 +105,8 @@ Japanese punctuation is drawn for vertical lines. And direction turns out to be 
 a literal 1 (`research/text-renderer.md`). Twenty of the game's 26 text surfaces are already
 horizontal. What is left is real but bounded: the dialogue panel is a narrow strip down the
 right edge and has to become a band, SELECT menus and two overlay screens are hard-coded
-vertical, and a width table has to be hooked in. None of this has been seen running yet.
+vertical, and a width table has to be hooked in. The first half of that has now been seen running: `PLAN TXT-04`'s trial image draws
+horizontal English in a bottom band on both emulators. The width table is the next piece.
 
 Both the PS2 sequel's English patch and the PSP port's Spanish patch hit vertical text in
 their versions of this engine and converted it to horizontal with a variable-width font, so

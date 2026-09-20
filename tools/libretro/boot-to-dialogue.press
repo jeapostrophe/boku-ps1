@@ -1,0 +1,21 @@
+# Cold boot -> title -> new game -> skip the intro FMV -> the first dialogue line, on Beetle
+# PSX (mednafen_psx) with the retail JP BIOS scph5500.bin and the core's own option defaults.
+# Frames are retro_run calls counted from 1; measured 2026-09-20 against disc/image.cue.
+#
+#   ~3200  the title screen is up ("PRESS START BUTTON" over the logo)
+#    3300  START   -> the menu fades in; the hand cursor sits on the first item,
+#                     最初から始める ("start from the beginning"), by ~3600
+#    3600  CIRCLE  -> "checking the memory card", which holds until ~4500
+#   ~5100  the intro FMV starts
+#    5400  START   -> skips the FMV; the arrival scene loads
+#   ~5800  the first dialogue box opens: 父「夏休み中、息子がお世話になります」
+#   ~5825  it is fully drawn -- shoot at 5850 and the page is still up
+#
+# PCSX-Redux needs different numbers for the same boot -- it counts GPU vsyncs, and its CD
+# and memory-card timing are not Beetle's. Its schedule is in tools/redux/boot-to-dialogue.lua
+# and belongs only there; neither clock is wrong, and copying either one into the other file
+# is how they drift.
+
+3300:START
+3600:CIRCLE
+5400:START

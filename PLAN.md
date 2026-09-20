@@ -58,17 +58,16 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       so interleaved files are listed in the manifest, not extracted. Closed as *no*: a
       fallback for images lacking the CD-XA extension (we patch in place, so the image the
       tools re-read always has it; reopen if `PIPE-04` ever rebuilds the filesystem).
-- [ ] **[ENV-03]** **A PS1 emulator with a debugger on this Mac, and the Mode One core beside
-      it.** Debugger half DONE 2026-09-20 (`research/tooling-setup.md`, `tools/redux/`):
-      PCSX-Redux runs with no window (`-no-ui`), and Lua advances frames, reads RAM and
-      registers, sets breakpoints and dumps the framebuffer. Traps: breakpoints silently never
-      fire without `-debugger`; the arm64 dynarec crashes under a retail BIOS, so
-      `-interpreter`; the web server and GDB stub do not listen under `-no-ui`; OpenBIOS
-      never reaches the game, a retail JP BIOS (`scph5500.bin`) does. Also installed: armips,
-      mkpsxiso/dumpsxiso 2.30, xdelta 3.2.0. **Left to do:** a way to boot a built image on
-      Beetle PSX — the core is built (`mednafen_psx_libretro.dylib`, matches retro-trainer's
-      `cores.lock`) but this machine has no RetroArch, and retro-trainer boots registered
-      games, not a path. Harmed: `REL-01`, and every result that is "confirmed" only on Redux.
+- [x] **[ENV-03]** **A PS1 emulator with a debugger on this Mac, and the Mode One core beside
+      it.** DONE 2026-09-20 (`research/tooling-setup.md`). Debugger: PCSX-Redux with no window
+      (`tools/redux/`) — Lua advances frames, reads RAM, sets breakpoints, dumps the
+      framebuffer; needs `-debugger` for breakpoints, `-interpreter` under a retail BIOS, and
+      a retail JP BIOS (OpenBIOS never reaches the game). Mode One's core: `tools/libretro/
+      run_core.py`, a stdlib ctypes libretro frontend that boots any `.cue` on
+      `mednafen_psx_libretro.dylib` with scripted input, PNG shots and save states, ~800 fps,
+      byte-identical frames across cold boots; it refuses to run without a real BIOS because
+      Beetle would silently fall back to its HLE BIOS. Also installed: armips,
+      mkpsxiso/dumpsxiso 2.30, xdelta 3.2.0.
 - [x] **[ENV-04]** **Disassembly project for `SCPS_100.88`.** DONE 2026-09-20: Ghidra 12.1.3
       with locally built arm64 natives and `ghidra_psx_ldr`; headless import detects **PsyQ
       4.6.0**, 1,542 functions, 792 named (417 by PsyQ signatures). The database is disposable
@@ -219,17 +218,16 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       to Jay with `TXT-01`/`TXT-02` evidence and a mock-up of each viable option in a real box.
       The decision is recorded in README § "The central risk". Harmed: the player, by
       whichever option is chosen blind.
-- [ ] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** PASSED on
-      PCSX-Redux, 2026-09-20 — **the approach is a go.** `./make.sh trial --line
+- [x] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** PASSED on
+      PCSX-Redux and on Beetle PSX, 2026-09-20 — **the approach is a go.** `./make.sh trial --line
       'M_H02001.BIN:c1:0:171.0' --text "Hello, Boku!"` (`boku/trial.py`) patches seven EXE words
       (direction, pen position, the `band2` panel: y=168, h=72) and every copy of the opening
       line, in place, 4 sectors, EDC/ECC regenerated; the image boots cold with no RAM pokes,
       `dialog_open` is called with (24, 176, 0), "Hello, Boku!" draws left to right in the band
       with the scene intact above it, the following Japanese lines wrap with their one-cell
       indent, the next-page arrow sits inside the band, and the arrival sequence autoplays to
-      the same end as the stock disc. No integrity check fired (`REC-07` held). **Left to do:**
-      the same boot on Beetle PSX (`ENV-03`'s headless runner). Harmed: Mode One, the first
-      consumer, if the patched image behaves differently on its core.
+      the same end as the stock disc. No integrity check fired (`REC-07` held). On Beetle PSX (Mode One's core, retail BIOS, `tools/libretro/`) the same
+      image shows the same frame: English, horizontal, in the band.
 - [ ] **[TXT-05]** **The renderer patch.** Per `TXT-03`: armips source in the repo, horizontal
       advance, per-glyph width table, wrapping inside the existing box, free space located in
       the executable (it is exactly `0x80000` bytes — check the tail and dead debug code). Every

@@ -325,9 +325,10 @@ Read-only survey of `~/Dev/retro-trainer`; nothing there was modified.
   `retro-trainer [OPTIONS] <DATA_DIR> [GAME]` — it takes a *registered game name*, not a path.
   Games live in `config/games.json` (126 entries) keyed by short name, with `rom` naming a file
   under `config/roms/`; its README's platform table lists PS1 → `mednafen_psx` → `.cue`/`.bin`,
-  though every existing PS1 entry uses a `.chd`. **So booting an arbitrary `.cue` is not a
-  command line today** — it needs a `games.json` entry plus the image under `config/roms/`, or a
-  RetroArch build. Setting that up was explicitly out of scope here.
+  though every existing PS1 entry uses a `.chd`. **Neither existing frontend boots an arbitrary
+  `.cue`**: retro-trainer would need a `games.json` entry plus the image under `config/roms/`,
+  and there is no RetroArch to point at one. That is what `tools/libretro/run_core.py` is for —
+  § "Beetle PSX, headless" below; nothing in retro-trainer had to change.
 * **BIOS**: `config/system/` holds `scph5500.bin` (Japanese, sha256
   `9c0421858e217805f4abe18698afea8d5aa36ff0727eb8484944e00eb5e7eadb`) and `psxonpsp660.bin`.
   Beetle PSX wants `scph5500/5501/5502.bin` for JP/US/EU; only the JP one is present, which is the
@@ -357,3 +358,87 @@ no PC test can tell the shell from the game. `smoke.lua`'s old default of 300 fr
 windows of `0x80010000…` against `disc/files/SCPS_100.88`, which `run-headless.sh` reads at launch
 and passes in through `BOKU_EXE_SAMPLES` (no byte of the game is written into a tracked file). The
 OpenBIOS observation ("the PC sits at `0x8003xxxx` indefinitely") was not re-measured.
+
+## Beetle PSX, headless
+
+`tools/libretro/run_core.py` is a libretro frontend: one file of Python and `ctypes` against
+`~/Dev/retro-trainer/dist/libretro.h`, standard library only, no window and no human. It loads
+the core dylib, answers the environment calls, runs N frames, presses buttons on a schedule,
+writes PNGs and `retro_serialize` states, and prints what the core asked for. It is how a
+result gets confirmed on the core Mode One runs (CLAUDE.md § "Working with the disc"); nothing
+under `~/Dev/retro-trainer` is read except the core, the BIOS and the header.
+
+```sh
+export BOKU_LIBRETRO_CORE=~/Dev/retro-trainer/config/cores/mednafen_psx_libretro.dylib
+export BOKU_LIBRETRO_SYSTEM=~/Dev/retro-trainer/config/system   # holds scph5500.bin
+
+tools/libretro/smoke.sh                       # boots disc/image.cue to the title screen
+tools/libretro/smoke.sh build/trial/image.cue # or any other image
+
+# cold boot to the first dialogue line, screenshots and a state to resume from
+uv run python tools/libretro/run_core.py disc/image.cue \
+    --work work/beetle/stock --frames 5850 \
+    --press-file tools/libretro/boot-to-dialogue.press \
+    --shot 3251:title --shot 5850:first-dialogue --state-out 5850:first-dialogue
+
+# start where that left off, instead of booting for eight seconds again
+uv run python tools/libretro/run_core.py disc/image.cue --work work/beetle/resume \
+    --state-in work/beetle/stock/first-dialogue.state --frames 300 --shot 300:later
+```
+
+Neither path has a default in a tracked file — pass `--core`/`--system` or set the two
+variables. Everything written goes under `--work` (default `work/beetle/`, gitignored):
+screenshots, states, and `saves/`, which is what the core is given as its save directory, so
+memory cards can never land next to the image. A boot to the first dialogue leaves `saves/`
+empty — the game only reads the card there — but once something saves, reusing that `--work`
+carries the card into the next boot, so a run that must be reproducible gets a fresh one. Two
+such runs are byte-identical: the frame-5850 PNG from two cold boots has the same sha256.
+
+**The trap that matters: Beetle boots without a BIOS and does not stop you.** With an empty
+system directory the core logs `Firmware is missing` at INFO and runs the game on its own HLE
+BIOS — no logo, and the boot runs ahead: at frame 3251 the real-BIOS boot is on the title
+logo, while the HLE one is already further into the attract loop, so the schedule below does
+not land where it should. Every timing measured that way, and every "confirmed on Beetle"
+claim, would be about a different machine. `run_core.py` therefore reads that log line and exits 7 unless
+`--allow-hle-bios` is given; a missing BIOS never shows up as a load failure.
+
+Every failure gets its own exit code — `run_core.py --help` lists them, and `smoke.sh` maps
+them one for one, adding 9 for "run_core.py fell over". `--assert-drawn FRAME[:COLOURS]` is
+what makes the gate able to fail at all: it counts distinct pixel values in that frame, and
+the measured spread on this disc is **1 on a blank screen, 433 on the title screen, 1518 in
+the arrival scene** — so the default threshold of 100 separates "the game is drawing" from "it
+is not". A frame that was asked for and never arrived (the core can ask to shut down early) is
+also a failure, not a note: otherwise a gate could pass without its assertion ever running.
+
+**Input timings are not Redux's.** `tools/libretro/boot-to-dialogue.press` holds the schedule
+that reaches the first dialogue line on Beetle, with each frame's meaning; frames are
+`retro_run` calls counted from 1. `tools/redux/boot-to-dialogue.lua` needs different numbers
+for the same boot because it counts GPU vsyncs and its CD timing is not Beetle's. Both are
+right about their own emulator; never copy one schedule into the other.
+
+**Speed**: ~760–850 frames per second on this Mac, one core, software rendering — a cold boot
+to the first dialogue is about eight seconds of wall clock. Two such boots produce a
+byte-identical frame-5850 PNG. `GET_CAN_DUPE` is answered **false** on purpose: a core allowed
+to dupe sends NULL instead of redrawing, and the frame held for `--shot N` would then be an
+older one wearing N's name.
+
+**What the core actually asks for** (24 distinct environment calls on a full boot):
+`GET_SYSTEM_DIRECTORY` and `GET_SAVE_DIRECTORY` once each, `SET_PIXEL_FORMAT` → **XRGB8888**
+(so the framebuffer is 4 bytes per pixel, not the PS1's 16-bit word — `tools/redux/shot2png.py`
+decodes the other kind), `GET_VARIABLE` 58 times during load, `GET_VARIABLE_UPDATE` every
+frame, `GET_LOG_INTERFACE`, `SET_MEMORY_MAPS`, `SET_GEOMETRY`, `SET_SYSTEM_AV_INFO` (320×240 at
+59.94 Hz, the geometry changing as the BIOS, the FMV and the game hand over). Core options are
+answered from the core's own `SET_VARIABLES` defaults: the frontend claims core-options version
+0, the core lowers its v2 definitions into legacy strings whose first choice is the default,
+and those are handed straight back — no table of option values is retyped into the tool.
+
+**This build never asks about hardware rendering at all.** `SET_HW_RENDER` is refused on
+principle — no window, no GL context — but it is absent from a full boot's tally, so nothing
+about the software path depends on that refusal here; it would only matter to a
+`mednafen_psx_hw` build. The only call this core has refused on purpose is
+`GET_CORE_OPTIONS_VERSION`, the version-0 claim above. Ten more are simply unimplemented and
+refused harmlessly — the disk-control, VFS, LED, perf, rumble, bitmask, message and
+audio/video-enable interfaces, `SET_CORE_OPTIONS_DISPLAY`, and an old-numbered
+`SET_HW_SHARED_CONTEXT` this core still sends as plain 44 rather than 44|EXPERIMENTAL.
+`run_core.py` prints those two lists separately, so a call the core newly depends on shows up
+as unimplemented instead of hiding among the deliberate noes.
