@@ -183,12 +183,16 @@ class DestinationSet:
         return relative_path
 
 
-def _check_out_dir(out_dir: Path) -> None:
+def check_out_dir(
+    out_dir: Path, *, manifest_name: str = MANIFEST_NAME, what: str = "import"
+) -> None:
     """Refuse an output directory whose contents are not this tool's to delete.
 
-    A successful import replaces `--out` wholesale, so pointing it at a directory that
+    A successful run replaces `--out` wholesale, so pointing it at a directory that
     holds anything else -- `--out ~/Downloads` -- would destroy it. A directory that
-    holds a manifest is a previous import and may be replaced.
+    holds a manifest is a previous run of the same kind and may be replaced. `boku.trial`
+    builds the same way and calls this with its own manifest name, so the rule has one
+    home rather than two that drift.
     """
     if not out_dir.name:
         raise ImportRefused(f"{out_dir} has no name to write into; give --out a directory")
@@ -197,10 +201,10 @@ def _check_out_dir(out_dir: Path) -> None:
     if not out_dir.is_dir():
         raise ImportRefused(f"--out {out_dir} exists and is not a directory")
     contents = list(out_dir.iterdir())
-    if contents and not (out_dir / MANIFEST_NAME).is_file():
+    if contents and not (out_dir / manifest_name).is_file():
         raise ImportRefused(
-            f"--out {out_dir} is not empty and holds no {MANIFEST_NAME}, so it is not a "
-            f"previous import. A successful import replaces this directory whole; refusing "
+            f"--out {out_dir} is not empty and holds no {manifest_name}, so it is not a "
+            f"previous {what}. A successful {what} replaces this directory whole; refusing "
             f"to delete {len(contents)} item(s) that are not this tool's."
         )
 
@@ -282,12 +286,12 @@ def import_disc(
     The image is verified before `out_dir` is touched at all, so a refused import
     leaves no partial output. Everything else is built in a sibling staging directory
     and swapped in at the end -- and the swap deletes whatever was at `out_dir`, so
-    `_check_out_dir` first insists that it is empty or a previous import.
+    `check_out_dir` first insists that it is empty or a previous import.
     """
     # Resolved so that `--out .` names a real directory: the staging and replaced
     # directories are built from `out_dir.name`, which is empty for a relative ".".
     out_dir = Path(out_dir).resolve()
-    _check_out_dir(out_dir)
+    check_out_dir(out_dir)
     staging = out_dir.parent / f".{out_dir.name}.importing.{os.getpid()}"
     replaced = out_dir.parent / f".{out_dir.name}.replaced.{os.getpid()}"
     out_dir.parent.mkdir(parents=True, exist_ok=True)

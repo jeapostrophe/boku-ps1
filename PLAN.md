@@ -216,15 +216,17 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       to Jay with `TXT-01`/`TXT-02` evidence and a mock-up of each viable option in a real box.
       The decision is recorded in README § "The central risk". Harmed: the player, by
       whichever option is chosen blind.
-- [ ] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** The recipe
-      exists (`research/text-renderer.md` § trial): three immediates at EXE file offsets
-      `0x1D7C4`/`C8`/`CC` (disc sector 81) make dialogue run left to right from (24, 132), and
-      13 words spell "Hello, Boku!" over every copy of the first spoken line — which must be
-      read off the screen, since the opening event was not identified statically. Needs the
-      sector writer with EDC/ECC (`PIPE-04`'s core) and a way to look at the result. It proves the chain text table → image → emulator end to end, on
-      Beetle PSX as well as the debugging emulator, and flushes out `REC-07`. **This is the
-      go/no-go for the approach.** Harmed: the whole project, if the pipeline is built before
-      this is known to work.
+- [ ] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** PASSED on
+      PCSX-Redux, 2026-09-20 — **the approach is a go.** `./make.sh trial --line
+      'M_H02001.BIN:c1:0:171.0' --text "Hello, Boku!"` (`boku/trial.py`) patches seven EXE words
+      (direction, pen position, the `band2` panel: y=168, h=72) and every copy of the opening
+      line, in place, 4 sectors, EDC/ECC regenerated; the image boots cold with no RAM pokes,
+      `dialog_open` is called with (24, 176, 0), "Hello, Boku!" draws left to right in the band
+      with the scene intact above it, the following Japanese lines wrap with their one-cell
+      indent, the next-page arrow sits inside the band, and the arrival sequence autoplays to
+      the same end as the stock disc. No integrity check fired (`REC-07` held). **Left to do:**
+      the same boot on Beetle PSX (`ENV-03`'s headless runner). Harmed: Mode One, the first
+      consumer, if the patched image behaves differently on its core.
 - [ ] **[TXT-05]** **The renderer patch.** Per `TXT-03`: armips source in the repo, horizontal
       advance, per-glyph width table, wrapping inside the existing box, free space located in
       the executable (it is exactly `0x80000` bytes — check the tail and dead debug code). Every
@@ -281,7 +283,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       **Growth is this row's problem, never the translation's**
       (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new
       packing/compression and its MIPS decoder. Harmed: the player.
-- [ ] **[PIPE-04]** **Image build.** Patch sectors in place and keep the image length identical
+- [ ] **[PIPE-04]** **Image build.** The core exists (2026-09-20): `boku/edc.py` regenerates EDC/ECC —
+      gated by recomputing **all 280,170 sectors of the real disc** with 0 mismatches — and
+      `DiscWriter.write_file_bytes` patches a byte range inside a file's extent, validating
+      every sector before writing the first; `boku trial` builds atomically into `build/` and
+      proves diff ≡ manifest and a byte-identical null build. **Left to do:** the general build
+      that applies a whole translation (it needs `PIPE-03`), and growth beyond a file's
+      extent. Original row: Patch sectors in place and keep the image length identical
       (`RSH-01` §1.4): 226,000 sectors of XA/STR sit behind `BOKU.BIN` at positions the
       executable addresses directly, and PPF cannot grow an image. Own Mode 2 Form 1 sector
       writer that regenerates EDC and ECC (ECC computed with the header zeroed) — wrong EDC/ECC

@@ -27,8 +27,10 @@ A logical block address (LBA) is a sector index from the start of the image; the
 address field in the header counts from the two-second pregap that precedes LBA 0
 and is not part of the image, so ``lba = (minute * 60 + second) * 75 + frame - 150``.
 
-Writing sectors is deliberately absent: a write must regenerate EDC/ECC (see
-CLAUDE.md), and no row needs it yet.
+`DiscImage` only reads. `DiscWriter` is the same reader opened read-write, and every
+write goes through `boku.edc`: a sector's sync pattern, header and subheader are carried
+through untouched and its EDC and ECC are regenerated from the result, because an image
+whose EDC/ECC no longer match works in emulators and fails on hardware (`PIPE-04`).
 """
 
 from __future__ import annotations
@@ -39,14 +41,22 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
 
-RAW_SECTOR_SIZE = 2352
+from boku import edc
+
+# The layout above, as numbers. They live in `boku.edc`, which is the module everything
+# else imports; this file is where what they mean is written down.
+from boku.edc import (
+    FORM1_DATA_SIZE,
+    FORM2_DATA_SIZE,
+    HEADER_OFFSET,
+    RAW_SECTOR_SIZE,
+    SECTOR_MODE,
+    USER_DATA_OFFSET,
+)
+
 SYNC_PATTERN = b"\x00" + b"\xff" * 10 + b"\x00"
-HEADER_OFFSET = 12
 SUBHEADER_OFFSET = 16
 SUBHEADER_SIZE = 8
-USER_DATA_OFFSET = 24
-FORM1_DATA_SIZE = 2048
-FORM2_DATA_SIZE = 2324
 MSF_LBA_OFFSET = 150
 """The two-second pregap, in sectors. It is not in the image: address 00:02:00 is LBA 0."""
 
@@ -156,8 +166,8 @@ def parse_sector(raw: bytes, lba: int) -> Sector:
     frame = _bcd(raw[HEADER_OFFSET + 2], f"sector {lba} header frame")
     header_lba = (minute * 60 + second) * 75 + frame - MSF_LBA_OFFSET
     mode = raw[HEADER_OFFSET + 3]
-    if mode != 2:
-        raise DiscError(f"sector {lba}: mode {mode}, expected Mode 2")
+    if mode != SECTOR_MODE:
+        raise DiscError(f"sector {lba}: mode {mode}, expected Mode {SECTOR_MODE}")
     subheader = Subheader.parse(raw[SUBHEADER_OFFSET : SUBHEADER_OFFSET + SUBHEADER_SIZE])
     data = raw[USER_DATA_OFFSET : USER_DATA_OFFSET + subheader.data_size]
     return Sector(lba=lba, header_lba=header_lba, subheader=subheader, data=data)
@@ -303,6 +313,8 @@ class DiscImage:
     one file handle, so instances are not safe to share between threads.
     """
 
+    _OPEN_MODE = "rb"
+
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
         size = self.path.stat().st_size
@@ -331,11 +343,15 @@ class DiscImage:
     @property
     def _handle(self) -> BinaryIO:
         if self._file is None:
-            self._file = self.path.open("rb")
+            self._file = self.path.open(self._OPEN_MODE)
         return self._file
 
-    def _read_raw(self, lba: int, count: int) -> bytes:
-        if lba < 0 or lba + count > self.sector_count:
+    def read_raw(self, lba: int, count: int = 1) -> bytes:
+        """The untouched bytes of `count` sectors: sync, header, subheader, data, EDC/ECC.
+
+        What a checker of EDC/ECC needs and `read_sector` throws away.
+        """
+        if lba < 0 or count < 0 or lba + count > self.sector_count:
             raise DiscError(
                 f"sectors {lba}..{lba + count - 1} fall outside the image, which has "
                 f"{self.sector_count} sectors"
@@ -348,14 +364,14 @@ class DiscImage:
 
     def read_sector(self, lba: int) -> Sector:
         """One parsed sector: subheader plus the user data its form defines."""
-        return parse_sector(self._read_raw(lba, 1), lba)
+        return parse_sector(self.read_raw(lba, 1), lba)
 
     def iter_sectors(self, lba: int, count: int) -> Iterator[Sector]:
         """Parsed sectors `lba..lba+count-1`, read in chunks."""
         read = 0
         while read < count:
             batch = min(_READ_CHUNK_SECTORS, count - read)
-            raw = self._read_raw(lba + read, batch)
+            raw = self.read_raw(lba + read, batch)
             for i in range(batch):
                 start = i * RAW_SECTOR_SIZE
                 yield parse_sector(raw[start : start + RAW_SECTOR_SIZE], lba + read + i)
@@ -386,6 +402,30 @@ class DiscImage:
     def read_file(self, lba: int, size: int) -> bytes:
         """The whole file at `lba` as bytes. See `iter_file` for the Form 2 refusal."""
         return b"".join(self.iter_file(lba, size))
+
+    def read_file_bytes(self, file_lba: int, offset: int, length: int) -> bytes:
+        """`length` bytes at `offset` in the Form 1 file at `file_lba`, across sectors.
+
+        The counterpart of `DiscWriter.write_file_bytes`, and the read a caller makes to
+        prove it knows what it is about to overwrite. Like the write, it knows nothing
+        about ISO 9660, so it cannot tell that a range has run past the file's size.
+        """
+        if offset < 0 or length < 0:
+            raise DiscError(f"file at sector {file_lba}: offset {offset}, length {length}")
+        if length == 0:
+            return b""
+        first = file_lba + offset // FORM1_DATA_SIZE
+        last = file_lba + (offset + length - 1) // FORM1_DATA_SIZE
+        blocks = []
+        for sector in self.iter_sectors(first, last - first + 1):
+            if sector.form != 1:
+                raise DiscError(
+                    f"file at sector {file_lba}: sector {sector.lba} is Mode 2 Form 2 "
+                    f"(submode 0x{sector.subheader.submode:02x}) and holds no file bytes"
+                )
+            blocks.append(sector.data)
+        start = offset % FORM1_DATA_SIZE
+        return b"".join(blocks)[start : start + length]
 
     def sha1_file(self, lba: int, size: int) -> str:
         digest = hashlib.sha1()
@@ -478,3 +518,116 @@ class DiscImage:
             yield entry
             if entry.is_dir:
                 yield from self._walk(entry.lba, entry.size, entry.path, seen)
+
+
+@dataclass(frozen=True)
+class SectorWrite:
+    """One sector this process changed: what it was, and what it became."""
+
+    lba: int
+    old_sha1: str
+    new_sha1: str
+
+
+class DiscWriter(DiscImage):
+    """The reader, opened read-write, with user data writable a byte range at a time.
+
+    Everything `DiscImage` does still works, so the same object can walk the filesystem
+    it is patching. Only Form 1 user data is writable: Form 2 sectors are interleaved
+    real-time streams whose bytes are not addressable as a file (`iter_file`), and the
+    trial and the pipeline never have business in one.
+
+    Writes are read-modify-write on whole sectors and a sector whose bytes do not change
+    is not written at all, so an unchanged run is byte-identical to its source -- the
+    property `PIPE-05`'s round-trip gate rests on.
+    """
+
+    _OPEN_MODE = "r+b"
+
+    def _write_raw(self, lba: int, raw: bytes) -> None:
+        if len(raw) != RAW_SECTOR_SIZE:
+            raise DiscError(f"sector {lba}: {len(raw)} bytes to write, expected {RAW_SECTOR_SIZE}")
+        self._handle.seek(lba * RAW_SECTOR_SIZE)
+        self._handle.write(raw)
+
+    def flush(self) -> None:
+        if self._file is not None:
+            self._file.flush()
+
+    def write_sector_data(self, lba: int, data: bytes) -> SectorWrite | None:
+        """Replace sector `lba`'s 2048 user bytes, regenerating its EDC and ECC.
+
+        Returns None when the sector's bytes are unchanged; otherwise the record the
+        build manifest carries. Raises `DiscError` if the sector is not Form 1.
+        """
+        old = self.read_raw(lba)
+        sector = parse_sector(old, lba)
+        if sector.form != 1:
+            raise DiscError(
+                f"sector {lba} is Mode 2 Form 2 (submode "
+                f"0x{sector.subheader.submode:02x}); only Form 1 user data is writable"
+            )
+        if len(data) != FORM1_DATA_SIZE:
+            raise DiscError(
+                f"sector {lba}: {len(data)} bytes of user data, Form 1 holds {FORM1_DATA_SIZE}"
+            )
+        new = edc.set_form1_data(old, data)
+        if new == old:
+            return None
+        self._write_raw(lba, new)
+        return SectorWrite(
+            lba=lba,
+            old_sha1=hashlib.sha1(old).hexdigest(),
+            new_sha1=hashlib.sha1(new).hexdigest(),
+        )
+
+    def write_file_bytes(
+        self, file_lba: int, offset: int, data: bytes, *, file_size: int
+    ) -> list[SectorWrite]:
+        """Patch `data` over the byte range at `offset` in the Form 1 file at `file_lba`.
+
+        The range may start and end anywhere and may cross any number of sectors; each
+        sector it touches is read, spliced and written back with fresh EDC/ECC.
+
+        `file_size` is the extent's recorded length (`DirEntry.size`) and is required,
+        because this call has no other way to know where the file ends: without it a
+        write that runs one byte past a text site's file silently lands in whatever
+        follows it on the disc, which here is another file's first sector. The whole
+        range is checked -- in bounds, and every sector of it Form 1 -- **before** the
+        first sector is written, so a refusal leaves the image as it was rather than
+        half patched.
+        """
+        if offset < 0:
+            raise DiscError(f"file at sector {file_lba}: negative offset {offset}")
+        end = offset + len(data)
+        if end > file_size:
+            raise DiscError(
+                f"file at sector {file_lba} is {file_size} bytes; writing {len(data)} "
+                f"bytes at offset {offset} would end at {end}, past the file's own "
+                f"extent. Nothing was written."
+            )
+        if not data:
+            return []
+        first = file_lba + offset // FORM1_DATA_SIZE
+        last = file_lba + (end - 1) // FORM1_DATA_SIZE
+        for sector in self.iter_sectors(first, last - first + 1):
+            if sector.form != 1:
+                raise DiscError(
+                    f"file at sector {file_lba}: sector {sector.lba} is Mode 2 Form 2 "
+                    f"(submode 0x{sector.subheader.submode:02x}); only Form 1 user data "
+                    f"is writable. Nothing was written."
+                )
+        writes: list[SectorWrite] = []
+        written = 0
+        while written < len(data):
+            position = offset + written
+            lba = file_lba + position // FORM1_DATA_SIZE
+            start = position % FORM1_DATA_SIZE
+            chunk = data[written : written + FORM1_DATA_SIZE - start]
+            block = bytearray(self.read_sector(lba).data)
+            block[start : start + len(chunk)] = chunk
+            write = self.write_sector_data(lba, bytes(block))
+            if write is not None:
+                writes.append(write)
+            written += len(chunk)
+        return writes

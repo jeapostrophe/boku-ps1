@@ -11,6 +11,8 @@ usage: ./make.sh <verb> [arguments]
 
   import [SOURCE] [--out DIR]   write the image and its files from your own dump
                                 (./make.sh import --help for the source kinds)
+  trial [arguments]             build the TXT-04 trial image into build/trial/
+                                (./make.sh trial --help for the switches)
   test [pytest arguments]       run the test suite
   lint                          ruff check + format check
 
@@ -24,6 +26,9 @@ shift || true
 case "$verb" in
     import)
         exec uv run boku import "$@"
+        ;;
+    trial)
+        exec uv run boku trial "$@"
         ;;
     test)
         exec uv run pytest "$@"
