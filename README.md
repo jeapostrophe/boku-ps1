@@ -22,28 +22,50 @@ playing, so it is the one worth translating.
 1. **The whole repo is public.** The fan-translation norm is to work in private and post a
    finished patch. Here the tools, the format notes, the translation and its history are all
    in the repo, and pull requests with better ideas, options or styles are welcome.
-2. **The repo contains none of the game.** No image, no extracted files, no Japanese script,
-   no ripped textures. Everything derived from the disc is regenerated locally by the
-   *import step* from a dump you own, into gitignored directories.
+2. **The repo contains none of the original game.** No image, no extracted files, no Japanese
+   script, no ripped textures. Everything taken from the disc is regenerated locally by the
+   *import step* from a dump you own, into gitignored directories. One deliberate exception
+   (Jay, 2026-09-20): textures **redrawn** in English are new images and are committed; whether
+   a redraw of a copyrighted image carries the original's copyright is arguable, and the
+   project takes that chance. Textures that merely get subtitles composited onto the original
+   pixels are *not* committed — the repo holds the subtitle text and placement, and the build
+   composites them onto your import.
 3. **Translation is keyed by line id.** Committed translation files hold English plus context
    notes written for this project, keyed by stable ids; the Japanese for an id exists only in
-   your local import. Translation is done by agents working on those ids — there is no
-   side-by-side projection of the script, and none will be built unless the project itself
-   turns out to need one.
+   your local import. Agents translate on those ids directly. For reading it as a script there is a
+   read-only scene reader (PLAN `TRN-06`); there is no editable projection of the script to
+   keep in sync, and no `.po`/Weblate layer.
 4. **Quality over throughput.** Reverse engineering and translation run on the strongest
    available model even where that makes the project slower.
 5. **Reproducible from a verified dump.** One command takes a Redump-verified image to a
    patched image with a known checksum; the released patch is that build's output.
 
+## Who this is for, and what kind of translation it is
+
+**A translation, not a localization** (Jay, 2026-09-20). The audience is the person who would
+otherwise play this with Google Translate open, or screenshot a text box and ask Claude what it
+says — someone who wants *this* game, overtly Japanese as it is, and needs the words. It is
+not an attempt to bring the game to a wider audience. So Japanese-isms stay: Boku is called
+"Boku" (English can't keep the word's you/I/little-boy ambiguity, but it can keep the name),
+and the style guide decides the rest in that spirit. The voices stay Japanese for the same
+reason — it is a choice, not a limitation: the intended experience is a film
+with subtitles, not a dub, and that suits a work this rooted in its place.
+
+Nothing is cut to fit. Older projects that found "the script does not fit" were hand-writing
+assembler; if English outgrows its space, the answer here is engineering — relocation, the
+disc's unused sectors, new packing or compression routines — not a shorter translation.
+
 ## How the translation is made
 
-Said up front because the fan-translation scene cares, with reason: **the English script is
-drafted, reviewed and revised by AI agents** (Claude), working scene by scene with the story,
-the speakers and the text-box limits in front of them, against a style guide kept in this
-repo, and then played through. It is not a raw machine translation and it is not a human
-translator's work, and releases will say so in their notes. Everything that produced it is
-here to inspect; corrections from people who read Japanese are the most valuable pull request
-this project can get.
+**The English script is written by AI agents** — Claude, the strongest model available, not a
+sentence-at-a-time machine translation. The plan (none of it is built yet — PLAN § *Translation*): the event scripts get decoded so a
+translator sees a whole scene as the game plays it — which line follows which, where the choices branch — along
+with the speakers, the box limits, the style guide, the glossary, and long-form context on the
+game and its story. A second agent reviews against the Japanese, and then it gets played.
+Scenes will be readable in order outside the game, with alternatives side by side, in a
+small reader built for this project rather than a generic localization platform. The project
+is made for Jay and his friends and published for anyone who wants it; everything that
+produced the script is here to inspect, and pull requests that improve it are welcome.
 
 ## What gets translated
 
@@ -52,7 +74,7 @@ this project can get.
 | 1 | Text drawn by the game's own renderer — dialogue, menus, item and insect names | **The priority.** |
 | 2 | Japanese text inside textures (the picture diary is the likely bulk) | After 1. Try image-model redraws in the original style; fall back to drawing subtitles onto the texture. |
 | 3 | Text inside FMVs (`__STR/*.IKI`) | Out of scope. Reopen only if subtitling textures turns out to extend cheaply to STR frames. |
-| 4 | Voices (`__STR/BOKU_XA.XAM`) | Out of scope. |
+| 4 | Voices (`__STR/BOKU_XA.XAM`) | **Kept Japanese on purpose** — subtitles, not a dub (see above). |
 
 ## The central risk: the game writes vertically
 
@@ -136,6 +158,12 @@ Kept locally under `reference/`, not redistributed here:
   used as story context for translation. It is on GameFAQs under the PlayStation game
   "Boku no Natsuyasumi" (<https://gamefaqs.gamespot.com>, search the title); save the text
   version as `reference/gamefaqs-guide.txt`.
+* **Action Button's review of the game** (Tim Rogers, six hours, English) —
+  <https://www.youtube.com/watch?v=779coR-XPTw>. Its auto-generated transcript is long-form
+  context on the story, characters and feel; fetch it with `yt-dlp` to
+  `reference/youtube-779coR-XPTw-transcript.txt`.
+* **xneo.jp's Japanese walkthrough** — <https://xneo.jp/bokunatsu/> → `reference/xneo/`.
+  Day-by-day events in the game's own vocabulary.
 
 ## Related work and credit
 

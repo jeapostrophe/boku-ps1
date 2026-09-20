@@ -15,7 +15,7 @@ by dependency, and the project's pace is set by Fable throughput, which Jay has 
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-04` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-07` text renderer · `PIPE-01`–`PIPE-06`
-pipeline · `TRN-01`–`TRN-05` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
+pipeline · `TRN-01`–`TRN-06` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
 trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
@@ -109,8 +109,10 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 - [ ] **[REC-05]** **Event scripts, as far as translation needs them.** The PS2 sequel's per-map
       bytecode has `MSG`, `XAMSG` (voiced line), `SELECT` (choices) and flow opcodes, with the
       first three table entries being code rather than text. Decode enough of the PS1
-      equivalent to recover, for each line: its map/scene, its order in a conversation, which
-      lines are player choices, and which are voiced. Not a full decompile. Harmed: translation
+      equivalent to recover the **flow graph of each scene** — this line is followed by that one,
+      a choice here offers these options and each leads there — plus which lines are voiced and
+      what map/day/condition triggers the scene. Flow opcodes must be understood; the rest need
+      not be. Harmed: translation
       quality — a line translated without its conversation is translated badly.
 - [ ] **[REC-06]** **Text outside the tables.** Strings in the executable that a player can see
       (its Shift-JIS load/save messages are PC dev-host debug printfs, not these — the real
@@ -185,12 +187,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       — an unstable id scheme invalidates every open PR.
 - [ ] **[PIPE-02]** **The committed translation format.** `[MINE: contract]` — English and
       project-written context notes only, keyed by id, one file per scene so diffs and PRs are
-      local, plain text that merges well. Candidates and what comparable projects use come from
-      `RSH-01`. No Japanese, and no projection to or from a side-by-side view (README principle
-      3). Harmed: every contributor, and the agents that read and write it at scale.
+      local, plain text that merges well, room for more than one candidate English per line. Our
+      own format, designed for agents and `TRN-06` — not `.po`/Weblate (Jay, 2026-09-20). No
+      Japanese (README principles 2–3). Harmed: every contributor, and the agents that read and write it at scale.
 - [ ] **[PIPE-03]** **Reinsertion.** Encode English to glyph indices under the `TXT-05` renderer's
       table, rebuild text tables and every enclosing container and directory when sizes change
-      (`REC-01`, `REC-02`), write every duplicated site. Harmed: the player.
+      (`REC-01`, `REC-02`), write every duplicated site. **Growth is this row's problem, never the translation's**
+      (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new
+      packing/compression and its MIPS decoder. Harmed: the player.
 - [ ] **[PIPE-04]** **Image build.** Patch sectors in place and keep the image length identical
       (`RSH-01` §1.4): 226,000 sectors of XA/STR sit behind `BOKU.BIN` at positions the
       executable addresses directly, and PPF cannot grow an image. Own Mode 2 Form 1 sector
@@ -213,21 +217,27 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       that silently corrupts.
 - [ ] **[PIPE-06]** **Translation lints.** Every id present exactly once; control codes (waits,
       choice structure) match the source line's; every character encodable; every line within
-      its box per `TXT-07`. Runs in `make.sh test` so a PR cannot merge a line that overflows.
+      its box per `TXT-07` — the fix for an overflow is another page or box, never a shorter
+      translation. Runs in `make.sh test` so a PR cannot merge a line that overflows.
       Harmed: the player; the maintainer reviewing PRs by eye.
 
 ## Translation
 
-- [ ] **[TRN-01]** **The style guide and the story bible.** Setting (rural Japan, August 1975, a
-      nine-year-old narrator and the adult he became), every character with voice and register,
-      name romanisation, honorifics policy, how dialect and children's speech are carried,
-      insect/fish/item glossary, what is left Japanese. Built from the decoded script and the
-      walkthrough in `reference/`. Tracked, CC BY-SA, and the thing contributors argue with.
-      `[MINE: product]` on the policy questions. Harmed: the player — consistency across
+- [ ] **[TRN-01]** **The style guide and the story bible.** The charter is settled (README
+      § "Who this is for": translate, don't localize; Japanese-isms stay; "Boku" is "Boku"); this
+      row turns it into rulings — honorifics, name order and romanisation, how dialect and
+      children's speech are carried, food/insect/fish/item glossary, what is left in Japanese —
+      plus the bible: setting (rural Japan, August 1975, a nine-year-old and the adult narrator he
+      became), every character with voice and register. Sources, all under `reference/`: the
+      decoded script, jooey's walkthrough, the Action Button transcript (fetched), xneo.jp's
+      Japanese walkthrough (to fetch), and a search for more long-form Japanese accounts of the
+      story. Tracked, CC BY-SA, and the thing contributors argue with. `[MINE: product]` on
+      rulings the charter does not decide. Harmed: the player — consistency across
       thousands of lines comes from this file or from nowhere.
 - [ ] **[TRN-02]** **Scene assembly for the translator.** From `REC-05`: each unit of translation
-      work is a whole conversation in order, with speakers, choices and branches, the box
-      limits, the relevant bible/glossary slices, and neighbouring scenes' settled English.
+      work is a whole scene as a flow graph, with speakers, choices and branches, the box
+      limits, the bible and glossary, the day's events from the walkthroughs, and neighbouring
+      scenes' settled English. Err toward too much context — the model has the window for it.
       Harmed: translation quality.
 - [ ] **[TRN-03]** **Design and pilot the agent workflow.** Fable sub-agents under a dynamic
       workflow (needs Jay's opt-in at launch, `AGT-1`): translate → independent review against
@@ -235,6 +245,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       in-game day, read the result in the game, fix the workflow before scaling. Apply what
       `RSH-01` found about LLM game-translation failure modes. Harmed: the token budget and the
       player, if the full run repeats a flaw a pilot would have shown.
+- [ ] **[TRN-06]** **The scene reader.** A small local tool (Jay, 2026-09-20: easier to make and
+      better to use than Weblate) that renders a scene in play order from `TRN-02`'s graph:
+      Japanese from the local import beside the English, candidate translations and reviewer
+      notes side by side, branches navigable. Read-only over the translation files — edits go
+      through the files and the agents, so there is no second representation to keep in sync.
+      Built when `TRN-03`'s pilot has output to read. Harmed: Jay, who otherwise can only judge
+      the translation by playing to each line.
 - [ ] **[TRN-04]** **The full translation run.** Everything `REC-03` and `REC-06` found, through
       the piloted workflow, committed scene by scene. Harmed: the player.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
@@ -255,8 +272,9 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `[MINE: product]` on which path, per texture category. Harmed: the player, by whichever
       path is chosen without looking.
 - [ ] **[GFX-03]** **Translate the textures** per `GFX-02`, category by category, recording for
-      each texture id what was done. Edited images are our work and are tracked; the originals
-      are not. Harmed: the player.
+      each texture id what was done. Redrawn images are tracked (README principle 2);
+      a subtitled texture is tracked only as its subtitle text and placement, composited onto
+      the contributor's import at build time; originals are never tracked. Harmed: the player.
 
 ## Release
 
@@ -270,8 +288,7 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       scripts. Harmed: Jay, the first player.
 - [ ] **[REL-03]** **Public release.** GitHub Release as the primary home: both patch
       formats, the `.cue`, four hashes each side, plain instructions (extract CHD → hash →
-      patch), credits (README § "Related work"), the AI disclosure from README § "How the
-      translation is made" repeated in the release notes. Listings on romhack.ing and
-      romhacking.net (both accept submissions in 2026); romhack.ing's written rule tags
-      machine-assisted translations and withholds them from web download, so GitHub carries
-      the distribution. Harmed: everyone who is not Jay.
+      patch), credits (README § "Related work"), and a plain statement of how the translation was made.
+      GitHub is the distribution. Listing on romhack.ing / romhacking.net is optional and not
+      worth bending anything for (romhack.ing withholds machine-assisted translations from web
+      download; Jay, 2026-09-20: the scene's view of AI is not an input). Harmed: everyone who is not Jay.
