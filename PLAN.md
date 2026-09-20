@@ -115,14 +115,21 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       columns — uploaded once at boot to VRAM (768,0) by `onmem_init` → `tim_upload`, then
       only in VRAM. `glyph_draw` (`0x8002BA2C`) maps an id to column/plane/row and emits three
       SPRTs (glyph + two shadows). Ids above 1023 are just more slots of the same sheet.
-- [ ] **[REC-05]** **Event scripts, as far as translation needs them.** The PS2 sequel's per-map
-      bytecode has `MSG`, `XAMSG` (voiced line), `SELECT` (choices) and flow opcodes, with the
-      first three table entries being code rather than text. Decode enough of the PS1
-      equivalent to recover the **flow graph of each scene** — this line is followed by that one,
-      a choice here offers these options and each leads there — plus which lines are voiced and
-      what map/day/condition triggers the scene. Flow opcodes must be understood; the rest need
-      not be. Harmed: translation
-      quality — a line translated without its conversation is translated badly.
+- [x] **[REC-05]** **Event scripts, as far as translation needs them.** DONE 2026-09-20:
+      `research/event-scripts.md` + `research/data/scenes.tsv`, `scene-edges.tsv` (from
+      `work/rec05/scenes.py`; its `--selftest` mis-sizes opcodes and watches hundreds of events
+      desync). Instructions are `u8 opcode, u8 size_in_words, operands`, dispatched by `ev_run`
+      (`0x8002D23C`) through `g_ev_ops`; 36 opcodes in use, Hilltop's PS2 names fit. Branches
+      are only JMP / JMPM (current map) / JMPE (`flag >= v`); SELECT writes the choice to
+      `g_flags[255]` and JMPE tests it; PROG calls 76 native routines (day/hour reach scripts
+      that way; the dinner quiz opens 83 messages by a day-computed index). All 677 events
+      walk clean: 2,686 text entries, none dead, 24 SELECTs (+61 in quiz tables), 762
+      conditional branches. Event id ÷ 100 is the day; block entry 1 is a condition tree over
+      hour/day/flags/map; map-pack child 0 holds placement records with the trigger type. The
+      speaker is an operand of XAMSG/XA (actor slot = character), and the 12-byte voice key is
+      `{start sector, end sector, channel, file}` into `BOKU_XA.XAM`, verified against the
+      disc's XA subheaders for all 2,163 keys. Not in the data, so `TRN-02` needs it from the
+      walkthroughs: which real place each map base is, and what individual flags mean.
 - [ ] **[REC-06]** **Text outside the tables.** Strings in the executable that a player can see
       (its Shift-JIS load/save messages are PC dev-host debug printfs, not these — the real
       failure path is still to be found), the memory-card save title (the BIOS
@@ -273,7 +280,9 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       rulings the charter does not decide. Harmed: the player — consistency across
       thousands of lines comes from this file or from nowhere.
 - [ ] **[TRN-02]** **Scene assembly for the translator.** From `REC-05`: each unit of translation
-      work is a whole scene as a flow graph, with speakers, choices and branches, the box
+      work is a whole scene as a flow graph (`work/rec05/scenes.py --dump` already renders one
+      locally; the 83 dinner-quiz lines need "this is day d's question" as context; map base →
+      place name and flag meanings come from the walkthroughs, not the disc), with speakers, choices and branches, the box
       limits, the bible and glossary, the day's events from the walkthroughs, and neighbouring
       scenes' settled English. Err toward too much context — the model has the window for it.
       Harmed: translation quality.
