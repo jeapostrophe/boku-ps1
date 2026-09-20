@@ -1,0 +1,179 @@
+# Day 2 — August 2. Boku is made morning-glory monitor; the workshop; the secret base and the
+# wrecked watermelon, and he says nothing at dinner (PLAN TRN-04).
+# Every event whose id is E02xx (day = id / 100), in the order the game plays them — except
+# E0221, the guess-the-dinner game, which is day-independent by condition, reachable on day 1,
+# and translated in shared.txt (each event is translated once, days/README.md). E0205 (the
+# beehive) is day-independent by condition too — it needs the fishing rod, so day 3 at the
+# earliest — but nothing else holds it, so it is here. No E02xx event hands over to an event
+# outside the day: E0205 hands over to map B05 and E0255 to the close-up I04 and back, map
+# changes with no event (scene JSON "handovers"). The day's dinner opens with the shared chorus
+# E0009 (shared.txt) after the dinner call E0190 (day01.txt); breakfast opens with E0006, the
+# 7:00 chorus, which is day-independent, not reachable on day 1, and not yet translated in any
+# file — it belongs in shared.txt, not here. E0202 evidently stands in for the generic
+# after-breakfast E0007 (same hour, same map, same opening lines; EVVER puts EV0202 on the day).
+# Format: translation/days/README.md. Policies: style-guide.md, glossary.md, bible.md § 4
+# (day 2).
+#
+# Morning: E0202 (after breakfast, forced, 8:00), then free time — E0220 (the washing, before
+# 14:00), E0207 (the trellis, no text), E0210 (the workshop, before 16:00), E0254 / E0255 (the
+# secret base, days 2-4), E0206 (the fallen bridge), E0205 (the beehive, listed with the forest
+# events). Afternoon: E0212 (the living room, 16:00-17:00), E0240 (Shirabe in the garden,
+# before 18:00). Evening: E0204 (after dinner, forced), E0213, E0241.
+
+# --- E0202: the dining room (G02), after breakfast, 8:00. Forced.
+E0202.0	Uncle	Gochisosama deshita.
+E0202.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0202.2	Aunt	Hey, Boku-kun, do you like flowers?
+E0202.3	[SEL]	Yes | No
+E0202.4	Aunt	Hmm, I see. Well then...
+E0202.5	Uncle	Boku-kun — you are hereby appointed morning-glory watering monitor!
+E0202.6	(voice only)
+E0202.7	Aunt	Go out into the garden from here and head left, and right beside the house... // there's a morning-glory trellis, so water it there every day, all right? // Just a little longer, and lots of pretty flowers will bloom, you know.
+E0202.8	Narrator	And so I was appointed morning-glory monitor.
+# NOTE E0202.1: the chorus is slot 12, Shirabe + Moe + Boku + Aunt — Boku is in it from day 2;
+#   the day-1 chorus (E0103.1, slot 13) was the three without him.
+# NOTE E0202.3: both answers lead to the same line (.4); only the aunt's animation differs.
+# NOTE E0202.5: the mock-official appointment frame (glossary § 3, 当番に決定！); E0302.5 uses
+#   the same frame for the corn field. "Morning-glory" is hyphenated wherever it modifies a noun
+#   (monitor, trellis); the flower itself is "morning glories" (E0212.1).
+# NOTE E0202.6: the family getting up from the table; no text on the disc.
+
+# --- E0220: the garden off the veranda (H06), the washing line, before 14:00, talking to the
+#     aunt. .0-.7 the first time; on a repeat, .8 if the morning glories are still unwatered
+#     (flag 6), .9 once they are.
+E0220.0	Aunt	Perfectly clear weather! // Doing the washing in midsummer really does feel good, doesn't it!
+E0220.1	Boku	Hmm.
+E0220.2	Aunt	Especially on a day with weather as nice as this... // when I'm hanging out lots and lots of washing like this... // it's as if I've lined up the Sorano family's flags in a row, showing off our home's housewife-power... // and as a woman, I start getting this strange feeling, oddly proud...
+E0220.3	Boku	What's that supposed to mean...
+E0220.4	Aunt	Hm-hm. But when you get married too, Boku-kun... // and you get the chance to hang out lots of washing... // you might understand, just a little.
+E0220.5	Boku	You think so?
+E0220.6	Aunt	Mind you, only if you proooperly... // become a husband who can help his wife out.
+E0220.7	Aunt	Hm-hm... It might be a sad life, never understanding as long as you live.
+E0220.8	Aunt	Come to think of it, right here... // there seems to be somebody who still hasn't carried out this morning's promise...
+E0220.9	Aunt	Come to think of it, Boku-kun... if you keep on being morning-glory monitor and don't forget... // before summer vacation ends and you go home, Auntie will give you a present!
+# NOTE E0220.2: "housewife-power" is the aunt's own coinage (bible § 3 quotes this line); kept
+#   as a coinage.
+# NOTE E0220.6: the Japanese page 1 is only "Mind you — proooperly..."; the English fronts
+#   page 2's "only if you" (ならないと) onto page 1 so the sentence reads forward. The husband and
+#   the wife are on page 2 in both languages.
+# NOTE E0220.7: the sentence is the other branch of .6's "only if" — a sad life, never
+#   understanding; no "or" is in the Japanese and none is written. # UNSURE
+
+# --- E0207: the morning-glory trellis (H05), from day 2 once appointed. No text — the spigot
+#     and the watering animation; it sets flag 6 (watered today).
+
+# --- E0210: the workshop (H26), before 16:00, talking to the uncle. .0-.6 the first time; .7 on
+#     a repeat.
+E0210.0	Uncle	Hello.
+E0210.1	Uncle	Boku-kun! This is Uncle's workshop. // Well? It's a pretty interesting space, isn't it... // This workshop takes its name from this place — it's called the Tsukiyono Kiln. // Here is where Uncle does his work, kneading clay and turning the wheel.
+E0210.2	Uncle	The big firing kiln a little farther along toward the creek is called a climbing kiln... // and in there we light the fire and keep at it a whole day and night, and finish the pottery.
+E0210.3	Boku	Huh — so then, there's a chance you'll light it while I'm here?
+E0210.4	Uncle	Hmmm, actually, you know, firing the kiln in summer is hot, so honestly I'd rather not... // but by late August there'll probably be quite a pile of things to fire... // so around then, I suppose I'll have to light it.
+E0210.5	Boku	Kind of something to look forward to, huh.
+E0210.6	Uncle	Uncle's looking forward to it too — apart from the heat.
+E0210.7	Uncle	Oh — still here, are you. // At Uncle's house there's a back gate next to the veranda... // and from there, by way of the bridge, you can get out toward the mountains. // A child should go and play out in the great outdoors. // The mountains at night are dangerous, so the gate's only open in the daytime, though.
+# NOTE E0210.1, page 3: the studio name is explained from the place name, so both stay
+#   "Tsukiyono" (glossary § 2). Page 4: "the wheel" is the potter's wheel (rokuro).
+# NOTE E0210.2: "climbing kiln" — the uncle names it from its shape on day 25 (glossary § 2).
+# NOTE E0210.4: no self-reference in the Japanese; "I" throughout, "Uncle" only in .6 where
+#   he says it.
+# NOTE E0210.7, page 4: いらっしゃい is the uncle sending him off — "go and play" — with no
+#   "should" in the Japanese beyond the imperative; the English needs a verb of permission or
+#   duty to make "a child" the subject. # UNSURE
+
+# --- E0254: the way in to the secret base (A17), days 2-4, the first time. Forced.
+E0254.0	Narrator	It was, presumably, where the local brats usually hung around... // the thing they call a secret base.
+# --- E0255: inside the base (A18), days 2-4: .0 at the table, then the close-up (I04) with .1,
+#     then back. The visit sets flag 8 (E0204.4 tests it) and costs the clock an hour.
+E0255.0	Boku	What is thiiis?
+E0255.1	Narrator	It was the remains of a watermelon that the watermelon thieves had eaten and scattered about...
+# NOTE E0254.0: the narrator's "presumably" is his のだろう — the adult guessing at what the
+#   place was, not the child knowing.
+
+# --- E0206: the fallen bridge (A16), from day 2, the first time Boku reaches it. Forced.
+E0206.0	Boku	Aw, what... I can't get past here...
+E0206.1	Boku	I wonder if I should cut this tree down and make a bridge?
+
+# --- E0205: the beehive (A13), examined with the fishing rod (flag 10 — day 3 at the earliest),
+#     while the hive is still up (flag 11). Fewer than four pokes so far: .0-.1; the fourth
+#     brings it down: .2, then the path beyond opens (map B05).
+E0205.0	Boku	Whoa!
+E0205.1	Narrator	The big beehive swayed, wobbling... // It felt as if just a few more pokes with the rod would bring it down to the ground...
+E0205.2	Boku	All right!
+# NOTE E0205: the uncle's warning on day 4 (E0406.5, samples/family-E0404-E0406.txt) is about
+#   exactly this. "All right!" is day 1's rendering of the same cheer (E0114.4).
+
+# --- E0221: the kitchen (G03), 14:00-17:00, the guess-the-dinner game — in shared.txt (its
+#     condition admits every day but 15 and 30, day 1 included). Not repeated here.
+
+# --- E0212: the living room (G01), 16:00-17:00, talking to the uncle. .0 if the morning glories
+#     have not been watered today (flag 6), .1 if they have.
+E0212.0	Uncle	Once it gets to be this time of day, Uncle's always already stopped work and come home. // But the workshop's left unlocked until just before dinner... // so you're not to go in there when Uncle isn't around, all right?
+E0212.1	Uncle	Looks like you watered the morning glories properly today. Good work. // From tomorrow on as well, please don't forget.
+# NOTE E0212.1: ご苦労様でした → "Good work." (glossary § 3: by context — the uncle acknowledging
+#   a chore he assigned, in his mock-official voice; page 2 keeps the "please" of his
+#   お願いします).
+
+# --- E0240: a corner of the garden (H09), before 18:00, Shirabe. .0-.4 the first time; .5-.6 on
+#     a repeat.
+E0240.0	Shirabe	You — what did you come here for?
+E0240.1	Boku	......
+E0240.2	Shirabe	If you get hurt, it's no concern of mine.
+E0240.3	Boku	Huh? Why?
+E0240.4	Shirabe	I'm not telliiing.
+E0240.5	Shirabe	Shirabe likes to play by herself, so leave her alone, if you please!
+E0240.6	Boku	......
+# NOTE E0240.0: her あんた (style guide § 2) is the fronted "You —".
+# NOTE E0240.1 / .6: unvoiced silent messages (style guide § 9).
+# NOTE E0240.2: 知らない is "not my concern", not "I don't know". # UNSURE
+# NOTE E0240.4: the same words as E0140.5, stretched — she is teasing this time, not snapping.
+
+# --- E0204: the dining room (G02), after dinner, 19:00. Forced. .4 only if Boku has seen the
+#     watermelon at the base (flag 8).
+E0204.0	Uncle	Gochisosama deshita.
+E0204.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0204.2	Uncle	Come to think of it, lately the watermelon thieves have been terrible again... // If it goes on and gets worse than it is now, we might need a lookout.
+E0204.3	Uncle	Boku-kun, you too — if you see anything, please let me know.
+E0204.4	Narrator	At the time, that business at the secret base... // for some reason, I did not tell my uncle about it.
+# NOTE E0204.4: the Japanese puts the object (the affair at the base) on page 1 and the verb (did
+#   not tell my uncle) on page 2; the English keeps that order, so each page shows what the
+#   voice is saying. This is the day's title event in the bible ("says nothing at dinner").
+#   # UNSURE
+# NOTE E0204.2: またまた — the thieves are a recurring nuisance; "again" carries it.
+
+# --- E0213: the living room (G01), 19:00 onward, talking to the uncle. .0-.6 the first time; .7
+#     on a repeat.
+E0213.0	Boku	Uncle... // If you caught the watermelon thief, Uncle, what would you do?
+E0213.1	Uncle	Hmmm, what would I do, I wonder? Uncle did some stealing himself when he was little, after all...
+E0213.2	Boku	Whaat?! // You've been a thief too, Uncle!
+E0213.3	Uncle	Hey, hey, don't make it sound like that... // What Uncle and his friends stole weren't big things like watermelons. // Right, right — you could polish off a whole one by yourself, just like that. // Cute little things — ajiuri, they were called back then.
+E0213.4	Aunt	Those are...
+E0213.5	Aunt	...what they call melons nowadays, aren't they?
+E0213.6	Boku	That's a crime.
+E0213.7	Uncle	I'd rather you didn't say things that make me sound so bad...
+# NOTE E0213.3, page 4: ajiuri stays as the name — the line itself explains it (glossary § 5),
+#   and the aunt's next line supplies the modern word.
+# NOTE E0213.4-.5: one utterance split across two messages, a beat between them; translated as
+#   one sentence, kept in order (style guide § 9).
+# NOTE E0213.6: deadpan; the three-word verdict is the joke.
+
+# --- E0241: the television room (G06), 19:00 onward, Shirabe in front of the set. .0-.2 the
+#     first time; .3 on a repeat.
+E0241.0	Shirabe	Honestly, I'm hungry... // even though I only just ate...
+E0241.1	Boku	What food do you like?
+E0241.2	Shirabe	What is it! And just when a lady is enjoying an elegant after-dinner moment.
+E0241.3	Shirabe	Like I said — leave Shirabe alone!
+# NOTE E0241.2: the bible quotes this line for her register (§ 3): an eight-year-old's "a lady".
+
+# NOTES — the day
+# * Register. The uncle: mock-official for the appointment (E0202.5) and the rules (E0212.0,
+#   E0204.3); "Uncle" of himself with Boku (E0210.1, .6, .7, E0212.0, E0213.1, .3), "I" where
+#   the Japanese has no self-reference (E0210.4, E0213.7). The aunt: "Auntie" once (E0220.9),
+#   "you know" / "all right?" for her sentence endings; the washing speech is hers alone. Boku:
+#   short, literal, deadpan (E0213.6, E0220.3). Shirabe: prim and hostile; third-person
+#   "Shirabe" (E0240.5, E0241.3). The narrator: no contractions, past tense, "my uncle".
+# * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
+#   original's. Longest page: E0220.2 page 3 (about 110 characters), three lines of the band;
+#   nothing reaches the fourth line — no OVERFLOW on day 2.
+# * Duplicates. E0202.0 = E0204.0 = E0007.0 = E0010.0 and E0202.1 = E0204.1 = E0007.1 = E0010.1
+#   (identical source text, identical English; E0010 is in shared.txt).
