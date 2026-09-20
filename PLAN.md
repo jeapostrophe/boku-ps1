@@ -13,7 +13,7 @@ true, committed, and deleted at the next triage. A row is a lead, not a spec: re
 claims against the disc and `HEAD` before working it. No time estimates — sections are ordered
 by dependency, and the project's pace is set by Fable throughput, which Jay has accepted.
 
-**Classes and ids spent so far:** `ENV-01`–`ENV-04` environment · `RSH-01`–`RSH-02` research ·
+**Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-07` text renderer · `PIPE-01`–`PIPE-06`
 pipeline · `TRN-01`–`TRN-06` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
 
@@ -76,6 +76,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       refuse a TSV whose program hash does not match. The setup note's closing claim that RAM
       never matches the file is unresolved and probably a too-early sample (the BIOS shell
       also runs from `0x8003xxxx`–`0x8004xxxx`); it is `TXT-01`'s question Q0.
+- [ ] **[ENV-05]** **Wire the emulator gates into `make.sh` and test the Beetle runner's pure
+      code.** Split out of `ENV-03` when it closed. `./make.sh smoke [image.cue]` should run both
+      headless boots (`tools/redux/run-headless.sh`, `tools/libretro/smoke.sh`) — CLAUDE.md makes
+      `make.sh` the only documented entry point, and today a contributor has to find the
+      scripts. `tools/libretro/run_core.py`'s `to_rgb_rows`, `parse_*` and PNG writer have no
+      unit tests, and its RGB565 / 0RGB1555 conversions have never run (this core build only
+      selects XRGB8888). Harmed: a contributor whose core build picks another pixel format
+      and gets silently wrong screenshots; anyone looking for how to run the gates.
 
 ## Recon — where every piece of Japanese lives
 
