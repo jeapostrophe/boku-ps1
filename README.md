@@ -67,6 +67,12 @@ small reader built for this project rather than a generic localization platform.
 is made for Jay and his friends and published for anyone who wants it; everything that
 produced the script is here to inspect, and pull requests that improve it are welcome.
 
+The engineering does not care who wrote the English. The translation files are the only
+interface between the script and the build, so someone who wants to do a hand translation —
+or one into another language — should be able to replace those files and get a patch with
+all of the reverse engineering already done. That is an aspiration: this project will not
+test it, so expect to find the places where it quietly assumed its own workflow.
+
 ## What gets translated
 
 | | Content | Plan |

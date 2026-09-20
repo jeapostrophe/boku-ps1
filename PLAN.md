@@ -188,7 +188,9 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 - [ ] **[PIPE-02]** **The committed translation format.** `[MINE: contract]` — English and
       project-written context notes only, keyed by id, one file per scene so diffs and PRs are
       local, plain text that merges well, room for more than one candidate English per line. Our
-      own format, designed for agents and `TRN-06` — not `.po`/Weblate (Jay, 2026-09-20). No
+      own format, designed for agents and `TRN-06` — not `.po`/Weblate (Jay, 2026-09-20) — but
+      still plain enough that a person could write a whole translation in it by hand: the files
+      are the build's only interface to the script (README § "How the translation is made"). No
       Japanese (README principles 2–3). Harmed: every contributor, and the agents that read and write it at scale.
 - [ ] **[PIPE-03]** **Reinsertion.** Encode English to glyph indices under the `TXT-05` renderer's
       table, rebuild text tables and every enclosing container and directory when sizes change
