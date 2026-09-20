@@ -18,10 +18,12 @@ from pathlib import Path
 
 import pytest
 
+from boku import build as build_module
 from boku import trial as trial_module
 from boku.arrays import ArrayError
 from boku.disc import RAW_SECTOR_SIZE, USER_DATA_OFFSET, DiscImage
 from boku.events import EventError
+from boku.importer import sha1_of
 from boku.text import MESSAGE_KINDS, GlyphTable, SiteError, TextError
 from boku.trial import (
     BAND_PATCH,
@@ -271,25 +273,33 @@ def test_a_failure_part_way_through_leaves_the_previous_build_whole(
 ):
     """The harm: this run's half-patched image beside the last run's manifest.
 
-    The build writes the EXE words first and the text sites after, so a failure between
-    them used to leave `image.img` patched, `manifest.json` describing the *previous*
-    build, and no way to tell from the directory which was which -- while every gate that
-    reads the manifest still passed. The failure is injected at exactly that point.
+    The build applies its edits one after another, so a failure part way through used to
+    leave `image.img` patched, `manifest.json` describing the *previous* build, and no way
+    to tell from the directory which was which -- while every gate that reads the manifest
+    still passed. The failure is injected after the first edit has already been written,
+    which is the only point at which the harm is possible.
     """
     out = tmp_path_factory.mktemp("atomic")
     first = build_trial(source=real_image, out_dir=out, band=False)
     kept = json.loads(first.manifest.read_text(encoding="utf-8"))
 
-    def explode(*args, **kwargs):
-        raise RuntimeError("disc went away mid-build")
+    real_apply = build_module.apply_edit
+    applied: list[int] = []
 
-    monkeypatch.setattr(trial_module, "_write_site", explode)
+    def explode(*args, **kwargs):
+        applied.append(1)
+        if len(applied) > 1:
+            raise RuntimeError("disc went away mid-build")
+        return real_apply(*args, **kwargs)
+
+    monkeypatch.setattr(build_module, "apply_edit", explode)
     with pytest.raises(RuntimeError, match="mid-build"):
         build_trial(source=real_image, out_dir=out, line=TRIAL_LINE)
+    assert len(applied) > 1, "the failure was injected before anything had been written"
 
     after = json.loads(first.manifest.read_text(encoding="utf-8"))
     assert after == kept, "the manifest is not the one describing the image beside it"
-    assert trial_module.sha1_of(first.image) == kept["result_sha1"]
+    assert sha1_of(first.image) == kept["result_sha1"]
     leftovers = [p.name for p in out.parent.iterdir() if p.name.startswith(f".{out.name}.")]
     assert leftovers == [], "the staging directory was left behind"
 
@@ -342,7 +352,7 @@ def test_the_command_prints_a_sentence_where_it_used_to_raise(
     def same_file(*args, **kwargs):
         raise shutil.SameFileError("'a' and 'b' are the same file")
 
-    monkeypatch.setattr(trial_module.shutil, "copyfile", same_file)
+    monkeypatch.setattr(build_module.shutil, "copyfile", same_file)
     out = tmp_path_factory.mktemp("oserror")
     assert main_trial(str(real_image), out, None, TRIAL_TEXT, False, True, None) == 1
     assert "are the same file" in capsys.readouterr().out

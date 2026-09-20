@@ -208,7 +208,11 @@ def pack_block(entries: list[bytes | None]) -> bytes:
 
     Each entry's bytes already carry whatever pad follows it — an entry's length *is* the
     distance to the next live offset — so this is where a reinserter's growth shows up:
-    lengthen one entry and every later offset moves by the same amount.
+    lengthen one entry and every later offset moves by the same amount. `boku.reinsert`
+    rewrites a message by substituting one entry in `Block.entries` and calling this;
+    **what that entry's pad is made of is that module's decision**, not this one's, because
+    the original pad is uninitialised build-tool memory and carrying it back is what makes
+    the round trip byte-identical.
     """
     n = len(entries)
     offsets = []
@@ -280,20 +284,6 @@ class Block:
     def serialise(self) -> bytes:
         """The block's own bytes, rebuilt from the parsed entries."""
         return pack_block(self.entries)
-
-    def replace_entry(self, i: int, raw: bytes) -> Block:
-        """A new block with entry `i` replaced by `raw`, padded to 4, offsets recomputed.
-
-        `replace_entry(4 + 2*index, ...)` is how `PIPE-03` rewrites one message. Handing
-        back the entry that is already there reproduces the block byte for byte, because
-        an entry's own bytes are already padded; a longer one moves every later offset by
-        the padded difference and changes nothing else.
-        """
-        if self.entries[i] is None:
-            raise EventError(f"entry {i} of this block is null; there is nothing to replace")
-        entries = list(self.entries)
-        entries[i] = raw + bytes(-len(raw) % 4)
-        return Block(pack_block(entries))
 
 
 @dataclass(frozen=True)

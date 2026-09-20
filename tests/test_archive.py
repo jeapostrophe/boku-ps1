@@ -24,6 +24,7 @@ from boku.archive import (
     sniff,
     tim_length,
 )
+from boku.tim import parse
 from tests import synth_archive as synth
 
 # --- the directory in the executable ---------------------------------------------------
@@ -123,6 +124,29 @@ def test_a_tim_is_measured_by_its_own_block_lengths():
     assert tim_length(tim) == len(tim)
     assert sniff(tim) == "TIM"
     assert tim_length(tim[:-2]) is None, "a truncated pixel block is not a TIM"
+
+
+def test_a_clut_block_that_declares_no_palette_is_not_a_tim():
+    """The harm: `sites.py` asks this whether a scan hit is "inside a texture".
+
+    62 four-aligned candidates in `M_FILES.BIN`'s map packs declare a CLUT block with
+    `colours`/`cluts` of zero — a shape the PsyQ format cannot mean and `tim.parse`
+    refuses — and a looser answer here turns each into a fictitious texture span that
+    explains away whatever text sites fall inside it.
+    """
+    pixels = b"\x00" * (4 * 3 * 2)
+    empty_clut = (12).to_bytes(4, "little") + (0).to_bytes(2, "little") * 4
+    body = (
+        (12 + len(pixels)).to_bytes(4, "little")
+        + (0).to_bytes(2, "little") * 2
+        + (4).to_bytes(2, "little")
+        + (3).to_bytes(2, "little")
+        + pixels
+    )
+    blob = (0x10).to_bytes(4, "little") + (0x9).to_bytes(4, "little") + empty_clut + body
+    assert parse(blob) is None, "the fixture is not the shape this test is about"
+    assert tim_length(blob) is None
+    assert sniff(blob) != "TIM"
 
 
 def test_entropy_separates_a_constant_block_from_a_varied_one():

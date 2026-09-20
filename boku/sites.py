@@ -229,8 +229,14 @@ def walk_block(
 # --- the whole disc --------------------------------------------------------------------------
 
 
-def walk(archive: Archive, array_partition: str = "reader") -> Walk:
-    """Every physical text site, in the order `research/data/text-sites.tsv` lists them."""
+def walk(archive: Archive, array_partition: str = "reader", *, code_files: bool = True) -> Walk:
+    """Every physical text site, in the order `research/data/text-sites.tsv` lists them.
+
+    `code_files=False` leaves out the executable's three resident blocks and the code-file
+    arrays, walking only the event containers in `BOKU.BIN`. It exists for the disc-free
+    tests, whose archives have no executable text in them at all — every real walk keeps
+    it on, and `load` below has no switch for it.
+    """
     if array_partition not in ("reader", "rec03"):
         raise ValueError(f"unknown array partition {array_partition!r}")
     result = Walk()
@@ -263,6 +269,9 @@ def walk(archive: Archive, array_partition: str = "reader") -> Walk:
                     absolute=base + to,
                 )
             )
+
+    if not code_files:
+        return result
 
     for ram in RESIDENT_BLOCK_ADDRS:
         fo = ram - EXE_LOAD_BIAS

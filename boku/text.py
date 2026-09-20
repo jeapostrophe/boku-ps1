@@ -11,12 +11,14 @@ when there is one. The earlier model keyed `E<id>.<index>` to `EV.BIN` alone and
 map-resident copies a `M_H02001.BIN:c1:0:171.0` name of their own, which made the opening
 line — a map-resident block with no `EV` copy — impossible to ask for by event id.
 
-**`check_placement` still gates every write, and still proves something.** The walk reads
-`disc/files/`, which the import step extracted from the image; the trial writes into the
-image's own embedded copy of those files. The two are separate artifacts, so re-reading a
-site through the image and finding the hash the walk recorded is a real cross-check: it
-fails on a mis-resolved member offset, on an image that is not this game, and on an import
-whose files no longer match the image they came from.
+**What proves a write is safe lives in `boku.build.verify_edits` now.** The walk reads
+`disc/files/`, which the import step extracted from the image; a build writes into the
+image's own embedded copy of those files. The two are separate artifacts, so reading a
+byte range back through the image and finding what the walk read there is a real
+cross-check — it fails on a mis-resolved member offset, on an image that is not this game,
+and on an import whose files no longer match the image they came from. This module used to
+do that a site at a time against a hash; the builder does it over whole byte ranges,
+including the rebuilt containers a hashed site could not see.
 
 The glyph sheet moved to `boku.glyphs`; it is re-exported here because `GlyphTable` and
 `TextError` are what a caller wanting "text" reaches for.
@@ -28,9 +30,9 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from boku.archive import ARCHIVE_NAME, DEFAULT_DISC_DIR, EXE_NAME
+from boku.archive import ARCHIVE_NAME, DEFAULT_DISC_DIR, EXE_NAME, Archive
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, GlyphTable, TextError
-from boku.sites import LINE_KEY_LENGTH, Site, SiteError, line_key_of, load
+from boku.sites import LINE_KEY_LENGTH, Site, SiteError, Walk, line_key_of, load
 
 __all__ = [
     "ARCHIVE_NAME",
@@ -46,7 +48,6 @@ __all__ = [
     "SiteError",
     "SiteIndex",
     "TextError",
-    "check_placement",
     "line_key_of",
 ]
 
@@ -62,7 +63,8 @@ class PlacedSite:
     file_name: str
     file_offset: int
     line_key: str
-    """SHA-1 prefix of the bytes the walk read at this site, for `check_placement`."""
+    """SHA-1 prefix of the bytes the walk read here. `SiteIndex.copies_of` groups sites
+    by it, which is how `--line` accepts a `line_key` as well as a logical id."""
 
     @property
     def end(self) -> int:
@@ -76,7 +78,21 @@ class PlacedSite:
 class SiteIndex:
     """Every text site of one import, placed into its file and grouped by logical line."""
 
-    def __init__(self, placed: Iterable[PlacedSite]) -> None:
+    def __init__(
+        self, placed: Iterable[PlacedSite], *, archive: Archive | None, walk: Walk | None
+    ) -> None:
+        self.archive = archive
+        """The import these sites were read out of, or `None` for an index built by hand.
+
+        Keyword-only and without a default, so that "this index cannot rebuild anything"
+        is a thing the caller **says**, rather than a thing it forgets to pass."""
+        self.walk = walk
+        """The structural walk they came from — what `boku.reinsert` needs to rebuild a
+        container. It is kept rather than walked again because walking the whole archive
+        is seconds of work over 109 MB, and a second walk could disagree with the first.
+        Required, not optional: `boku.trial` reads it for every `--line`, so an index
+        without one is an object that works until somebody asks it the one question a
+        reinserter has."""
         self.placed = list(placed)
         self._by_line: dict[str, list[PlacedSite]] = {}
         self._by_key: dict[str, list[PlacedSite]] = {}
@@ -102,7 +118,7 @@ class SiteIndex:
             placed.append(
                 PlacedSite(site, file_name, site.absolute, line_key_of(result.raw(archive, site)))
             )
-        return cls(placed)
+        return cls(placed, archive=archive, walk=result)
 
     def __len__(self) -> int:
         return len(self.placed)
@@ -131,25 +147,4 @@ class SiteIndex:
             f"no text site is called {line!r}: give a line id such as E0171.0 or "
             f"exe@80046214.3 (they are listed in disc/script/lines.jsonl), or a "
             f"{LINE_KEY_LENGTH}-hex-digit line_key"
-        )
-
-
-def check_placement(entry: PlacedSite, raw: bytes) -> None:
-    """Raise unless `raw` — the bytes actually in the image there — hash to the walk's key.
-
-    This is the gate that makes a write safe: it fails on a mis-resolved member offset, on
-    an image that is not this game, and on an import whose files have drifted from the
-    image they were extracted from, all before a single byte is written.
-    """
-    if len(raw) != entry.site.size:
-        raise TextError(
-            f"{entry.line_id}: read {len(raw)} bytes at {entry.file_name}"
-            f"+0x{entry.file_offset:x}, the site is {entry.site.size}"
-        )
-    found = line_key_of(raw)
-    if found != entry.line_key:
-        raise TextError(
-            f"{entry.line_id}: {entry.file_name}+0x{entry.file_offset:x} hashes to "
-            f"{found}, and the walk over disc/files read {entry.line_key} there. The "
-            f"image and the import disagree; nothing was written."
         )

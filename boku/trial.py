@@ -44,20 +44,28 @@ run's image beside the last run's manifest.
 from __future__ import annotations
 
 import json
-import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from boku import edc
 from boku.archive import DEFAULT_DISC_DIR, EXE_LOAD_BIAS, ArchiveError
 from boku.arrays import ArrayError
-from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
-from boku.edc import FORM1_DATA_SIZE
+from boku.build import (
+    DEFAULT_IMAGE,
+    BuildRefused,
+    ByteEdit,
+    SectorRecord,
+    WrittenImage,
+    check_output_directory,
+    verify_written_sectors,
+    write_image,
+)
+from boku.disc import DiscError
 from boku.events import EventError
-from boku.importer import ImportRefused, check_out_dir, sha1_of
-from boku.staging import StagingRefused, staged
+from boku.glyphs import END_WORD, words_of
+from boku.reinsert import ReinsertRefused
+from boku.reinsert import plan as reinsert_plan
+from boku.staging import StagingRefused
 from boku.text import (
-    ARCHIVE_NAME,
     EXE_NAME,
     MESSAGE_KINDS,
     GlyphTable,
@@ -65,18 +73,11 @@ from boku.text import (
     SiteError,
     SiteIndex,
     TextError,
-    check_placement,
 )
 
-DEFAULT_IMAGE = Path("disc/image.img")
 DEFAULT_OUT_DIR = Path("build/trial")
-IMAGE_NAME = "image.img"
-CUE_NAME = "image.cue"
-MANIFEST_NAME = "manifest.json"
 MANIFEST_FORMAT = 1
-
-EXE_PATH = f"/{EXE_NAME}"
-ARCHIVE_PATH = f"/{ARCHIVE_NAME}"
+"""The trial manifest's own version. It is not `boku.build`'s: two documents, two formats."""
 
 TRIAL_TEXT = "Hello, Boku!"
 """`research/text-renderer.md` § 7 Step B's line. Thirteen words including the terminator."""
@@ -102,6 +103,14 @@ class PatchWord:
         bias is `boku.archive.EXE_LOAD_BIAS`, which is the same number `g_cd_dir` is
         read at and had three homes in this package."""
         return self.file_offset + EXE_LOAD_BIAS
+
+    def edit(self) -> ByteEdit:
+        """The same word as one of `boku.build`'s edits, so the builder sees one kind.
+
+        An EXE immediate and a rebuilt map pack are the same operation to the image: a
+        byte range that has to hold `old` and will hold `new`.
+        """
+        return ByteEdit(EXE_NAME, self.file_offset, self.old, self.new, self.meaning)
 
 
 RENDERER_PATCH: tuple[PatchWord, ...] = (
@@ -181,7 +190,7 @@ def patch_words(renderer_patch: bool, band: bool) -> tuple[PatchWord, ...]:
     return origin + BAND_PATCH
 
 
-class TrialRefused(Exception):
+class TrialRefused(BuildRefused):
     """The build will not proceed.
 
     Everything that can be checked is checked before the 660 MB copy -- the line exists,
@@ -189,18 +198,10 @@ class TrialRefused(Exception):
     the words the recipe expects -- so a refusal normally leaves nothing behind at all.
     A failure after that point discards the staging directory and leaves whatever was at
     `--out` before, untouched.
+
+    It is a `BuildRefused`, because the trial is one configuration of `boku.build`'s image
+    builder and every refusal that builder makes is one the trial makes.
     """
-
-
-@dataclass
-class SectorRecord:
-    """A sector the build changed. `offset` is where it starts inside `file`."""
-
-    lba: int
-    file: str
-    offset: int
-    old_sha1: str
-    new_sha1: str
 
 
 @dataclass
@@ -229,77 +230,6 @@ class TrialResult:
         return patch_words(self.renderer_patched, self.band)
 
 
-def _file_entry(image: DiscImage, path: str) -> DirEntry:
-    for entry in image.walk():
-        if entry.path == path:
-            return entry
-    raise TrialRefused(f"{image.path} has no {path}; this is not SCPS-10088")
-
-
-class _Ledger:
-    """Collects sector writes so the manifest shows each LBA once, as it was and as it is.
-
-    Two sites can share a sector, so the same LBA can be written twice; the manifest must
-    still say what that sector looked like before the build touched it and after it
-    finished. A sector whose bytes come back to where they started is dropped, so the
-    manifest is exactly the set of sectors an image diff can see.
-    """
-
-    def __init__(self) -> None:
-        self._first: dict[int, str] = {}
-        self._last: dict[int, str] = {}
-        self._where: dict[int, tuple[str, int]] = {}
-
-    def add(self, writes: list[SectorWrite], file_name: str, file_lba: int) -> None:
-        for write in writes:
-            self._first.setdefault(write.lba, write.old_sha1)
-            self._last[write.lba] = write.new_sha1
-            self._where[write.lba] = (file_name, (write.lba - file_lba) * FORM1_DATA_SIZE)
-
-    def records(self) -> list[SectorRecord]:
-        out = []
-        for lba in sorted(self._first):
-            if self._first[lba] == self._last[lba]:
-                continue
-            file_name, offset = self._where[lba]
-            out.append(
-                SectorRecord(
-                    lba=lba,
-                    file=file_name,
-                    offset=offset,
-                    old_sha1=self._first[lba],
-                    new_sha1=self._last[lba],
-                )
-            )
-        return out
-
-
-def _check_patch_words(image: DiscImage, exe: DirEntry, words: tuple[PatchWord, ...]) -> None:
-    """Refuse unless every word the patch replaces is still what the recipe measured."""
-    for word in words:
-        found = image.read_file_bytes(exe.lba, word.file_offset, len(word.old))
-        if found != word.old:
-            raise TrialRefused(
-                f"{EXE_NAME}+0x{word.file_offset:x} holds {found.hex(' ')}, and the "
-                f"recipe says {word.old.hex(' ')} ({word.meaning}). Either this image is "
-                f"already patched or it is not the dump the recipe was measured on; "
-                f"nothing was written."
-            )
-
-
-def _apply_patch_words(
-    writer: DiscWriter, exe: DirEntry, words: tuple[PatchWord, ...], ledger: _Ledger
-) -> None:
-    """Write the patch, having proved once more that the copy holds the expected bytes."""
-    _check_patch_words(writer, exe, words)
-    for word in words:
-        ledger.add(
-            writer.write_file_bytes(exe.lba, word.file_offset, word.new, file_size=exe.size),
-            EXE_NAME,
-            exe.lba,
-        )
-
-
 def _check_writable(placed: PlacedSite) -> None:
     """Only message sites are overwritten. The reason is the terminator's two meanings.
 
@@ -307,8 +237,8 @@ def _check_writable(placed: PlacedSite) -> None:
     one is never read and the site's original length can be padded out safely. In an
     array the same word *delimits* the items, and `REC-03` finds item `n + 1` by scanning
     past item `n`'s terminator -- so an early `0x8000` would move every item after it.
-    The trial has no business in one, and `TXT-05` will need a different filler rule when
-    the pipeline does.
+    The trial has no business in one; the general build reaches an array through
+    `boku.reinsert`, which keeps the item's control words where they were.
     """
     if placed.site.kind not in MESSAGE_KINDS:
         raise TrialRefused(
@@ -318,26 +248,17 @@ def _check_writable(placed: PlacedSite) -> None:
         )
 
 
-def _write_site(
-    writer: DiscWriter,
-    placed: PlacedSite,
-    text: str,
-    glyphs: GlyphTable,
-    files: dict[str, DirEntry],
-    ledger: _Ledger,
-) -> None:
-    """Overwrite one site with `text`, after proving the disc agrees about what is there."""
-    _check_writable(placed)
-    site = placed.site
-    entry = files[placed.file_name]
-    current = writer.read_file_bytes(entry.lba, placed.file_offset, site.size)
-    check_placement(placed, current)
-    replacement = glyphs.message(text, site.size)
-    ledger.add(
-        writer.write_file_bytes(entry.lba, placed.file_offset, replacement, file_size=entry.size),
-        placed.file_name,
-        entry.lba,
-    )
+def _english(glyphs: GlyphTable, text: str, size: int) -> tuple[int, ...]:
+    """`text` as the words that go into a site, without the filler that pads them out.
+
+    `GlyphTable.message` stays the one authority on whether a string fits a site — it
+    raises when it does not — so it is what encodes here too, and the words up to and
+    including its terminator are what `boku.reinsert` is handed. The filler after that
+    terminator is the reinserter's, because the rule for where a site's pad goes differs
+    between a message and an array item.
+    """
+    padded = words_of(glyphs.message(text, size))
+    return padded[: padded.index(END_WORD) + 1]
 
 
 def _check_out_dir(out_dir: Path, source: Path) -> None:
@@ -348,12 +269,7 @@ def _check_out_dir(out_dir: Path, source: Path) -> None:
     otherwise leave every later "real disc" test running against a patched image -- and a
     non-empty directory with no trial manifest in it is not this tool's to delete.
     """
-    try:
-        check_out_dir(
-            out_dir, manifest_name=MANIFEST_NAME, what="trial", source=source, doing="build"
-        )
-    except ImportRefused as error:
-        raise TrialRefused(str(error)) from error
+    check_output_directory(out_dir, source, what="trial", refused=TrialRefused)
 
 
 def build_trial(
@@ -375,7 +291,12 @@ def build_trial(
 
     `disc_dir` is the import whose files the text sites are walked out of. It stays the
     contributor's own `disc/` even when `source` is an image from somewhere else: the two
-    are separate artifacts, and `check_placement` refuses the write if they disagree.
+    are separate artifacts, and the byte ranges every edit carries refuse the write if
+    they disagree.
+
+    Every write here is **in place**: a site keeps its own byte length and no container
+    is rebuilt, which is `TXT-04`'s rule and the reason this image's sha1 is stable. The
+    general build (`boku.build`) is the same machinery with that switch the other way.
     """
     source = Path(source)
     out_dir = Path(out_dir).resolve()
@@ -394,70 +315,62 @@ def build_trial(
     glyphs = GlyphTable.load()
     index = SiteIndex.from_disc(disc_dir) if (line or markers) else None
     copies: list[PlacedSite] = []
+    replacements: dict[str, tuple[int, ...]] = {}
+    markers_written = 0
+    markers_too_small = 0
+    markers_superseded = 0
     if line:
         try:
             copies = index.copies_of(line)
         except TextError as error:
             raise TrialRefused(str(error)) from error
+        # `copies_of` accepts a 12-hex `line_key`, which groups sites whose *bytes* match
+        # across different logical ids -- and the reinserter rewrites every site of every
+        # id it is given. So the set that will actually be written is the union of those
+        # ids' sites, and that is the set to check and to count; checking the narrower one
+        # would let a site reach the image without passing `_check_writable`.
+        ids = {placed.line_id for placed in copies}
+        copies = [placed for placed in index.placed if placed.line_id in ids]
         # Everything checkable, checked before the 660 MB copy.
         for placed in copies:
             _check_writable(placed)
             try:
-                glyphs.message(text, placed.site.size)
+                _english(glyphs, text, placed.site.size)
             except TextError as error:
                 raise TrialRefused(f"{placed.line_id}: {error}") from error
+    if markers:
+        # A site `--line` is about to rewrite must not be tagged first: the tag would
+        # become what is on the disc, and the write's own before-and-after check -- which
+        # proves the table still describes this image -- would fail against its own
+        # marker. The English wins, and the sites it takes are counted separately.
+        claimed = {(entry.file_name, entry.file_offset) for entry in copies}
+        for placed in index.event_messages():
+            if (placed.file_name, placed.file_offset) in claimed:
+                markers_superseded += 1
+                continue
+            try:
+                replacements[placed.line_id] = _english(glyphs, placed.line_id, placed.site.size)
+            except TextError:
+                # `GlyphTable.message` is the one authority on what fits; this loop asks
+                # it rather than reproducing its arithmetic.
+                markers_too_small += 1
+                continue
+            markers_written += 1
+    for placed in copies:
+        replacements[placed.line_id] = _english(glyphs, text, placed.site.size)
 
-    with DiscImage(source) as reader:
-        exe = _file_entry(reader, EXE_PATH)
-        archive = _file_entry(reader, ARCHIVE_PATH)
-        _check_patch_words(reader, exe, words)
-    files = {exe.name: exe, archive.name: archive}
+    edits = [word.edit() for word in words]
+    if replacements:
+        edits += list(reinsert_plan(index.archive, index.walk, replacements, in_place=True).edits)
+    edits.sort(key=lambda edit: (edit.file, edit.offset))
 
-    with staged(out_dir, suffix="building") as stage:
-        image = stage / IMAGE_NAME
-        shutil.copyfile(source, image)
-        (stage / CUE_NAME).write_text(
-            f'FILE "{IMAGE_NAME}" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n',
-            encoding="ascii",
-        )
-
-        ledger = _Ledger()
-        markers_written = 0
-        markers_too_small = 0
-        markers_superseded = 0
-        with DiscWriter(image) as writer:
-            _apply_patch_words(writer, exe, words, ledger)
-            if markers:
-                # A site `--line` is about to rewrite must not be tagged first: the tag
-                # would become what is on the disc, and the line write's check_placement
-                # -- which proves the table still describes this image -- would fail
-                # against its own marker. The English wins, and the sites it takes are
-                # counted separately.
-                claimed = {(entry.file_name, entry.file_offset) for entry in copies}
-                for placed in index.event_messages():
-                    if (placed.file_name, placed.file_offset) in claimed:
-                        markers_superseded += 1
-                        continue
-                    tag = placed.line_id
-                    try:
-                        glyphs.message(tag, placed.site.size)
-                    except TextError:
-                        # `GlyphTable.message` is the one authority on what fits; this
-                        # loop asks it rather than reproducing its arithmetic.
-                        markers_too_small += 1
-                        continue
-                    _write_site(writer, placed, tag, glyphs, files, ledger)
-                    markers_written += 1
-            for placed in copies:
-                _write_site(writer, placed, text, glyphs, files, ledger)
-            writer.flush()
-
-        result = TrialResult(
-            image=out_dir / IMAGE_NAME,
-            cue=out_dir / CUE_NAME,
-            manifest=out_dir / MANIFEST_NAME,
-            source_sha1=sha1_of(source),
-            result_sha1=sha1_of(image),
+    def described(written: WrittenImage) -> TrialResult:
+        return TrialResult(
+            image=written.image,
+            cue=written.cue,
+            manifest=written.manifest,
+            source_sha1=written.source_sha1,
+            result_sha1=written.result_sha1,
             renderer_patched=renderer_patch,
             band=band,
             line=line,
@@ -466,10 +379,19 @@ def build_trial(
             markers_written=markers_written,
             markers_too_small=markers_too_small,
             markers_superseded=markers_superseded,
-            sectors=ledger.records(),
+            sectors=written.sectors,
         )
-        (stage / MANIFEST_NAME).write_text(_manifest_json(result), encoding="utf-8")
-    return result
+
+    return described(
+        write_image(
+            source,
+            out_dir,
+            edits,
+            manifest=lambda written: _manifest_json(described(written)),
+            what="trial",
+            refused=TrialRefused,
+        )
+    )
 
 
 def _manifest_json(result: TrialResult) -> str:
@@ -512,16 +434,6 @@ def _manifest_json(result: TrialResult) -> str:
         )
         + "\n"
     )
-
-
-def verify_written_sectors(image: Path, records: list[SectorRecord]) -> list[int]:
-    """LBAs among `records` whose stored EDC/ECC do not match their own bytes (want: none)."""
-    bad = []
-    with DiscImage(image) as opened:
-        for record in records:
-            if not edc.check_sector(opened.read_raw(record.lba), record.lba).ok:
-                bad.append(record.lba)
-    return bad
 
 
 def format_summary(result: TrialResult) -> str:
@@ -571,19 +483,21 @@ def main_trial(
         )
     except (
         ArchiveError,
-        TrialRefused,
+        BuildRefused,
         TextError,
         SiteError,
         StagingRefused,
         EventError,
         ArrayError,
         DiscError,
+        ReinsertRefused,
         OSError,
     ) as error:
         # `SiteIndex.from_disc` walks the whole import, so it can refuse for any of the
         # reasons `boku extract` can -- a block that does not decode (`EventError`), an
         # array whose reader and bytes disagree (`ArrayError`) -- and those reached the
-        # caller as a traceback until `PIPE-01`'s review.
+        # caller as a traceback until `PIPE-01`'s review. `TrialRefused` is a
+        # `BuildRefused`, so the shared builder's refusals arrive here too.
         #
         # OSError covers shutil.SameFileError and every permission, space and
         # cross-device failure of the copy and the swap: the caller gets the sentence,

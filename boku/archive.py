@@ -29,6 +29,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from boku.edc import FORM1_DATA_SIZE
+from boku.tim import parse as parse_tim
 
 SECTOR = FORM1_DATA_SIZE
 """A Mode 2 Form 1 user-data sector, which is the unit `BOKU.BIN` is built out of. It is
@@ -307,26 +308,16 @@ def parse_offtab(b: bytes) -> list[int] | None:
 
 
 def tim_length(b: bytes, o: int = 0) -> int | None:
-    """Byte length of a PsyQ TIM at `b[o:]`, or `None` if that is not a TIM header."""
-    if len(b) - o < 20:
-        return None
-    magic, flags = struct.unpack_from("<II", b, o)
-    if magic != 0x10 or flags & ~0xF or (flags & 7) > 3:
-        return None
-    p = o + 8
-    if flags & 8:
-        (bn,) = struct.unpack_from("<I", b, p)
-        if bn < 12 or p + bn > len(b):
-            return None
-        p += bn
-    if len(b) - p < 12:
-        return None
-    bn, _x, _y, w, h = struct.unpack_from("<IHHHH", b, p)
-    if bn != 12 + w * h * 2 and bn != 12 + ((w * h * 2 + 3) & ~3):
-        return None
-    if p + bn > len(b):
-        return None
-    return p + bn - o
+    """Byte length of a PsyQ TIM at `b[o:]`, or `None` if that is not a TIM.
+
+    `boku.tim.parse` is the one acceptance test for the format — this used to be a looser
+    second one, and the two disagreed about 62 four-aligned candidates whose CLUT block
+    declares no palette at all. `boku.sites` answers "is this scan hit inside a texture?"
+    with this function, so each disagreement was a fictitious span explaining away real
+    sites; `boku.research` counted them as TIMs in the member map.
+    """
+    tim = parse_tim(b, o)
+    return tim.length if tim is not None else None
 
 
 def entropy(b: bytes) -> float:
@@ -550,19 +541,41 @@ class Archive:
     refuses an import whose tiling does not check out.
     """
 
-    def __init__(self, disc_dir: Path = DEFAULT_DISC_DIR) -> None:
+    def __init__(
+        self,
+        disc_dir: Path = DEFAULT_DISC_DIR,
+        *,
+        exe: bytes | None = None,
+        boku: bytes | None = None,
+        source: str | None = None,
+    ) -> None:
+        """Open an import. `exe`/`boku` supply the two files directly (`from_bytes`).
+
+        One constructor, so an archive built over bytes is the same object as one built
+        over a directory — every attribute either kind has, both kinds have.
+        """
         self.disc_dir = Path(disc_dir)
         files = self.disc_dir / "files"
         self.exe_path = files / EXE_NAME
         self.archive_path = files / ARCHIVE_NAME
-        for path in (self.exe_path, self.archive_path):
-            if not path.is_file():
-                raise ArchiveError(
-                    f"{path} is not there: run `./make.sh import` to write your own import. "
-                    f"The repo ships none of the game."
-                )
-        self.exe = self.exe_path.read_bytes()
-        self.boku = self.archive_path.read_bytes()
+        self.source = source or str(self.disc_dir)
+        """What a message calls this import. For an archive read out of a built image
+        there is no `disc/files/` to name, and naming one that is not there sends the
+        reader looking for a file nobody wrote."""
+        if exe is None or boku is None:
+            for path in (self.exe_path, self.archive_path):
+                if not path.is_file():
+                    raise ArchiveError(
+                        f"{path} is not there: run `./make.sh import` to write your own "
+                        f"import. The repo ships none of the game."
+                    )
+            self.exe = self.exe_path.read_bytes()
+            self.boku = self.archive_path.read_bytes()
+        else:
+            self.exe, self.boku = exe, boku
+        self._index()
+
+    def _index(self) -> None:
         self.members, self.problems = build_members(self.exe, self.boku)
         self._by_short: dict[str, Member] = {}
         for m in self.members:
@@ -571,19 +584,29 @@ class Archive:
             self._by_short[m.short_name] = m
         self._starts = [m.offset for m in self.members]
 
+    @classmethod
+    def from_bytes(cls, exe: bytes, boku: bytes, source: str = "<bytes>") -> Archive:
+        """The same archive over two byte strings rather than two files on disk.
+
+        What `PIPE-05`'s round-trip gate reads a *built image* back through: the two files
+        come out of the image with `DiscImage.read_file`, and everything downstream — the
+        member map, the structural walk, the line ids — then works on the build's own
+        output exactly as it works on the import. `source` only names them in messages.
+        """
+        return cls(exe=exe, boku=boku, source=source)
+
     def require_clean(self) -> None:
         """Refuse an archive whose members do not tile it exactly."""
         if self.problems:
             raise ArchiveError(
-                f"{self.archive_path} does not tile: {self.problems[0]} "
-                f"({len(self.problems)} problems)"
+                f"{self.source} does not tile: {self.problems[0]} ({len(self.problems)} problems)"
             )
 
     def member(self, short_name: str) -> Member:
         try:
             return self._by_short[short_name]
         except KeyError:
-            raise ArchiveError(f"{self.archive_path} has no member {short_name}") from None
+            raise ArchiveError(f"{self.source} has no member {short_name}") from None
 
     def blob(self, member: Member) -> bytes:
         return self.boku[member.offset : member.offset + member.size]

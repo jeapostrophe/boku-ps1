@@ -40,7 +40,7 @@ from boku.archive import (
     parse_pack,
 )
 from boku.arrays import read_code_labels, read_save_title, walk_all
-from boku.events import Block, EventWorld, map_block_table
+from boku.events import Block, EventWorld, map_block_table, pack_block
 from boku.extract import INDEX_NAME, build, write
 from boku.glyphs import GlyphTable
 from boku.research import (
@@ -312,11 +312,17 @@ def test_replacing_a_message_keeps_every_other_byte_and_moves_only_the_offsets_a
     index = next(i for i in range(block.message_count) if block.message_text(i))
     entry = 4 + 2 * index
 
-    assert block.replace_entry(entry, block.entries[entry]).serialise() == data, ident
+    def with_entry(raw: bytes) -> Block:
+        entries = list(block.entries)
+        entries[entry] = raw
+        return Block(pack_block(entries))
 
-    # Six more bytes of text is eight more bytes of entry: an entry is 4-aligned, and it
-    # is the *padded* difference every later offset moves by.
-    grown = block.replace_entry(entry, block.entries[entry] + bytes(6))
+    assert with_entry(block.entries[entry]).serialise() == data, ident
+
+    # An entry carries its own pad, so an entry eight bytes longer is what moves every
+    # later offset by eight. (Six bytes of new text becomes an eight-byte entry in
+    # `boku.reinsert`, which is where the 4-alignment is decided.)
+    grown = with_entry(block.entries[entry] + bytes(8))
     assert grown.n == block.n
     assert grown.offsets[:entry] == block.offsets[:entry]
     for i in range(entry + 1, block.n):

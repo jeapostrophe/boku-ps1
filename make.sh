@@ -16,8 +16,17 @@ usage: ./make.sh <verb> [arguments]
   research-tsv                  regenerate research/data/*.tsv from your import; a
                                 test diffs them against the tracked copies, which is
                                 the gate on the walk
+  textures export [arguments]   write one indexed PNG per distinct texture into
+                                work/textures/, plus an index of every occurrence
+                                (./make.sh textures export --help for the switches)
+  textures import DIR           read edited PNGs and report the patches they imply
+                                at every place each image is stored
   trial [arguments]             build the TXT-04 trial image into build/trial/
                                 (./make.sh trial --help for the switches)
+  build [arguments]             build a patched image from your import and a
+                                translation into build/image/, rebuilding every
+                                container a grown line moves
+                                (./make.sh build --help for the switches)
   patch [arguments]             emit the release patches into build/patch/
                                 (./make.sh patch --help for the switches)
   apply-patch ORIG PATCH --out FILE
@@ -124,8 +133,14 @@ case "$verb" in
         # research/data` afterwards is the answer.
         exec uv run boku extract --research-tsv research/data "$@"
         ;;
+    textures)
+        exec uv run boku textures "$@"
+        ;;
     trial)
         exec uv run boku trial "$@"
+        ;;
+    build)
+        exec uv run boku build "$@"
         ;;
     patch)
         exec uv run boku patch "$@"

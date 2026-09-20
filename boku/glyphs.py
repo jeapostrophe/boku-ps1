@@ -169,11 +169,7 @@ class GlyphTable:
 
     def unencodable(self, text: str) -> list[str]:
         """The characters of `text` this font cannot draw, in order, without repeats."""
-        missing: list[str] = []
-        for character in text:
-            if character != "\n" and character not in self.to_glyph and character not in missing:
-                missing.append(character)
-        return missing
+        return unencodable_by(self.to_glyph.__contains__, text)
 
     def encode_english(self, text: str) -> bytes:
         """`text` as glyph words, `\\n` becoming `0x8001`. No terminator.
@@ -209,6 +205,28 @@ class GlyphTable:
                 f"nothing is cut to fit (README), so the trial refuses"
             )
         return body + PAD_WORD.to_bytes(2, "little") * ((size - len(body)) // 2)
+
+
+def unencodable_by(has_cell, text: str) -> list[str]:
+    """Characters `text` needs that `has_cell` says no to, in order, without repeats.
+
+    `has_cell` is a predicate rather than a table so that the stock sheet and
+    `boku.layout`'s encoders — which can be a cell map from a font build — answer the
+    question the same way. A newline is never a cell: it is the control word `0x8001`.
+    """
+    missing: list[str] = []
+    for character in text:
+        if character != "\n" and not has_cell(character) and character not in missing:
+            missing.append(character)
+    return missing
+
+
+def words_to_bytes(words) -> bytes:
+    """Little-endian `u16`s — the inverse of `words_of`, refusing a value that is not one."""
+    for word in words:
+        if not 0 <= word <= 0xFFFF:
+            raise TextError(f"{word} is not a 16-bit text word")
+    return struct.pack(f"<{len(words)}H", *words)
 
 
 def _u16(value: int, token: str) -> bytes:

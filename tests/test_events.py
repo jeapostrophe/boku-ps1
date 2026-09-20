@@ -21,6 +21,7 @@ from boku.events import (
     decode_code,
     fmt_cond,
     load_events,
+    pack_block,
     parse_block_table,
     parse_cond,
     trigger_kind,
@@ -141,9 +142,21 @@ def test_a_block_is_laid_out_again_from_its_entries_with_the_offsets_recomputed(
     assert Block(data).serialise() == data
 
 
+def with_entry(block: Block, index: int, raw: bytes) -> Block:
+    """`block` with entry `index` swapped for `raw` — what `boku.reinsert` does to a message.
+
+    The substitution is the caller's and the offsets are `pack_block`'s, which is the split
+    the reinserter uses: what an entry's pad is made of is its business, and recomputing
+    every later offset from the lengths is this module's.
+    """
+    entries = list(block.entries)
+    entries[index] = raw
+    return Block(pack_block(entries))
+
+
 def test_replacing_a_message_with_its_own_bytes_changes_nothing():
     block = Block(a_block())
-    assert block.replace_entry(4, block.entries[4]).serialise() == block.serialise()
+    assert with_entry(block, 4, block.entries[4]).serialise() == block.serialise()
 
 
 def test_a_longer_message_moves_every_later_offset_and_nothing_else():
@@ -151,18 +164,12 @@ def test_a_longer_message_moves_every_later_offset_and_nothing_else():
     than replayed: a message that grows by four bytes moves entries 5 and 6, and only
     those, by four bytes."""
     block = Block(a_block())
-    grown = block.replace_entry(4, block.entries[4] + synth.words(0x103, 0x104))
+    grown = with_entry(block, 4, block.entries[4] + synth.words(0x103, 0x104))
     assert grown.offsets[:5] == block.offsets[:5]
     assert grown.offsets[5] == 0, "a null entry stays null"
     assert grown.offsets[6] == block.offsets[6] + 4
     assert [grown.entry(i) for i in (0, 1, 2, 3, 6)] == [block.entry(i) for i in (0, 1, 2, 3, 6)]
     assert len(grown.serialise()) == len(block.serialise()) + 4
-
-
-def test_an_entry_that_is_not_there_cannot_be_replaced():
-    block = Block(a_block())
-    with pytest.raises(EventError, match="null"):
-        block.replace_entry(5, b"\x00\x00")
 
 
 def test_a_map_packs_block_table_chains_its_blocks_and_writes_them_back():

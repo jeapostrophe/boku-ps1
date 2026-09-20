@@ -10,14 +10,30 @@ import argparse
 from pathlib import Path
 
 from boku.archive import DEFAULT_DISC_DIR
+from boku.build import DEFAULT_BUILD_NAME, DEFAULT_IMAGE, IMAGE_NAME, main_build
 from boku.extract import SCRIPT_DIR_NAME, main_extract
 from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
-from boku.trial import DEFAULT_IMAGE, IMAGE_NAME, TRIAL_TEXT, main_trial
+from boku.textures import DEFAULT_OUT_DIR as TEXTURES_OUT_DIR
+from boku.textures import INDEX_NAME as TEXTURES_INDEX_NAME
+from boku.textures import main_export as main_textures_export
+from boku.textures import main_import as main_textures_import
 from boku.trial import DEFAULT_OUT_DIR as TRIAL_OUT_DIR
+from boku.trial import TRIAL_TEXT, main_trial, patch_words
 
 DEFAULT_MODIFIED_IMAGE = TRIAL_OUT_DIR / IMAGE_NAME
+
+
+def palette_number(text: str) -> int:
+    """A CLUT index. Refused here rather than a thousand images into an export."""
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{text!r} is not a palette number") from None
+    if value < 0:
+        raise argparse.ArgumentTypeError(f"there is no palette {value}; CLUTs count from 0")
+    return value
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -152,6 +168,103 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    builder = subcommands.add_parser(
+        "build",
+        help="build a patched image from your import and a translation",
+        description=(
+            "PIPE-04's general build: read your import, lay a translation out in pixels, "
+            "rebuild every container a grown line moves (PIPE-03), and write a patched "
+            "image, cue and manifest. Every byte range is verified against the image "
+            "before anything is written and every sector written gets fresh EDC and ECC. "
+            "Nothing is cut to fit: a line that does not fit its box, or a member that "
+            "would outgrow its sectors, is refused with its numbers."
+        ),
+    )
+    builder.add_argument(
+        "source",
+        nargs="?",
+        metavar="IMAGE",
+        help=f"raw image to copy and patch (default: {DEFAULT_IMAGE})",
+    )
+    builder.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help="directory to write the image, cue and manifest (default: build/<name>/)",
+    )
+    builder.add_argument(
+        "--translation",
+        type=Path,
+        metavar="DIR",
+        help=(
+            "directory of translation files to apply; with none, only the executable "
+            "patches are written. The committed format is PLAN PIPE-02 and is not settled "
+            "-- the reader here is the provisional one for translation/samples/"
+        ),
+    )
+    builder.add_argument(
+        "--cells",
+        type=Path,
+        metavar="FILE",
+        help=(
+            "a JSON character -> cell map with per-cell pixel advances, as TXT-05's font "
+            "build emits; without it English is spelled with the stock full-width Latin "
+            "cells at a fixed 14 px"
+        ),
+    )
+    builder.add_argument(
+        "--disc",
+        type=Path,
+        default=DEFAULT_DISC_DIR,
+        metavar="DIR",
+        help=f"the import whose text sites are walked (default: {DEFAULT_DISC_DIR}/)",
+    )
+    builder.add_argument(
+        "--name",
+        default=DEFAULT_BUILD_NAME,
+        metavar="NAME",
+        help=(
+            f"what the manifest calls this build, and the directory under build/ it goes "
+            f"in (default: {DEFAULT_BUILD_NAME})"
+        ),
+    )
+    builder.add_argument(
+        "--skip-unfitted",
+        action="store_true",
+        help=(
+            "leave a line that fails a lint in Japanese and report it, instead of "
+            "refusing the whole build; the English is never shortened either way"
+        ),
+    )
+    builder.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="lay the translation out and report what fits, writing nothing",
+    )
+    builder.add_argument(
+        "--no-renderer-patch",
+        action="store_true",
+        help=(
+            "leave the executable alone; without it the TXT-04 renderer and band words "
+            "are applied, because English drawn vertically down the right-hand strip is "
+            "illegible"
+        ),
+    )
+    builder.set_defaults(
+        run=lambda args: main_build(
+            args.source,
+            args.out,
+            args.translation,
+            args.cells,
+            args.disc,
+            args.name,
+            args.skip_unfitted,
+            args.dry_run,
+            () if args.no_renderer_patch else tuple(w.edit() for w in patch_words(True, True)),
+        )
+    )
+
     patch = subcommands.add_parser(
         "patch",
         help="emit the release patches from an original and a built image",
@@ -217,6 +330,86 @@ def build_parser() -> argparse.ArgumentParser:
             args.expect_original_sha1,
             args.expect_result_sha1,
         )
+    )
+
+    textures = subcommands.add_parser(
+        "textures",
+        help="export the disc's textures as PNGs, or turn edited PNGs into patches",
+        description=(
+            "One indexed PNG per distinct image, its palette the texture's own CLUT, so "
+            "an edit that keeps to that palette re-imports without a colour decision. "
+            "Import reports the binary patches an edit implies at every place the image "
+            "is stored -- one minimap is stored 287 times."
+        ),
+    )
+    texture_verbs = textures.add_subparsers(
+        dest="textures_command", required=True, metavar="COMMAND"
+    )
+
+    export = texture_verbs.add_parser(
+        "export",
+        help="write one PNG per distinct texture, plus an index of every occurrence",
+    )
+    export.add_argument(
+        "--disc",
+        type=Path,
+        default=DEFAULT_DISC_DIR,
+        metavar="DIR",
+        help=f"the import to read (default: {DEFAULT_DISC_DIR}/)",
+    )
+    export.add_argument(
+        "--out",
+        type=Path,
+        default=TEXTURES_OUT_DIR,
+        metavar="DIR",
+        help=f"directory to write (default: {TEXTURES_OUT_DIR}/); replaced on success",
+    )
+    export.add_argument(
+        "--only-text",
+        action="store_true",
+        help="just the images research/data/texture-census.tsv marks yes or maybe for text",
+    )
+    export.add_argument(
+        "--clut",
+        type=palette_number,
+        default=0,
+        metavar="N",
+        help=(
+            "which palette to render with, for the 488 images that carry several "
+            "(default: 0); the pixels are the same either way, the colours are not"
+        ),
+    )
+    export.set_defaults(
+        run=lambda args: main_textures_export(args.disc, args.out, args.only_text, args.clut)
+    )
+
+    texture_import = texture_verbs.add_parser(
+        "import",
+        help="read edited PNGs and report the patches they imply at every occurrence",
+        description=(
+            "Each <id>.png in DIR is read as an edit of the texture that id names, using "
+            f"{TEXTURES_INDEX_NAME} for the palette it was exported through. Nothing is "
+            "written: the patches are handed to the image build."
+        ),
+    )
+    texture_import.add_argument("dir", type=Path, metavar="DIR", help="a directory of edited PNGs")
+    texture_import.add_argument(
+        "--disc",
+        type=Path,
+        default=DEFAULT_DISC_DIR,
+        metavar="DIR",
+        help=f"the import to read (default: {DEFAULT_DISC_DIR}/)",
+    )
+    texture_import.add_argument(
+        "--nearest",
+        action="store_true",
+        help=(
+            "map a colour the CLUT does not hold onto its nearest entry and report the "
+            "error, instead of refusing the edit"
+        ),
+    )
+    texture_import.set_defaults(
+        run=lambda args: main_textures_import(args.disc, args.dir, args.nearest)
     )
 
     return parser

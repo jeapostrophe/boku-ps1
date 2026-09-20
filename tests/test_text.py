@@ -22,12 +22,22 @@ from pathlib import Path
 import pytest
 
 from boku.glyphs import END_WORD, PAD_WORD, GlyphTable, TextError
-from boku.sites import Site, line_key_of
-from boku.text import PlacedSite, SiteIndex, check_placement
+from boku.sites import Site
+from boku.text import PlacedSite, SiteIndex
 from boku.trial import RENDERER_PATCH, TRIAL_TEXT
 
 RECIPE = Path(__file__).resolve().parents[1] / "research/text-renderer.md"
 RECIPE_SECTION = "## 7. The `TXT-04` trial"
+
+
+def index_of(placed) -> SiteIndex:
+    """A `SiteIndex` over hand-built sites, with no import behind it.
+
+    `SiteIndex` needs the archive and the walk it came from — `boku.reinsert` asks for
+    both — and these tests build their sites by hand, so they hand in the pair that says
+    so: nothing here may ask this index to rebuild a container.
+    """
+    return SiteIndex(placed, archive=None, walk=None)
 
 
 def recipe_section() -> str:
@@ -131,7 +141,7 @@ def test_one_id_names_every_copy_of_a_line_wherever_the_copies_live():
     in_ev = placed(site())
     in_map = placed(site(member="M_G02001.BIN", container="c1", table=1, absolute=0x9000))
     other = placed(site(index=1, line_id="E0112.1", absolute=0x1200), key="b" * 12)
-    index = SiteIndex([in_ev, in_map, other])
+    index = index_of([in_ev, in_map, other])
     assert [e.file_offset for e in index.copies_of("E0112.0")] == [0x1100, 0x9000]
     assert [e.file_offset for e in index.copies_of("E0112.1")] == [0x1200]
 
@@ -140,13 +150,13 @@ def test_a_line_key_still_groups_by_bytes_which_is_the_coarser_question():
     """246 byte strings on the disc belong to more than one line; the ids keep them apart."""
     here = placed(site())
     twin = placed(site(block_id=700, member="EV0700.BIN", line_id="E0700.4", absolute=0x2100))
-    index = SiteIndex([here, twin])
+    index = index_of([here, twin])
     assert {e.line_id for e in index.copies_of("a" * 12)} == {"E0112.0", "E0700.4"}
     assert index.copies_of("E0112.0") == [here]
 
 
 def test_an_id_nobody_has_is_refused_rather_than_resolved_to_something_else():
-    index = SiteIndex([placed(site())])
+    index = index_of([placed(site())])
     with pytest.raises(TextError, match="no text site is called"):
         index.copies_of("E9999.0")
 
@@ -155,7 +165,7 @@ def test_two_sites_at_one_byte_range_are_refused():
     """A walk that emitted the same range twice would double-write it and count it twice."""
     entry = placed(site())
     with pytest.raises(TextError, match="both start at"):
-        SiteIndex([entry, replace(entry, line_key="b" * 12)])
+        index_of([entry, replace(entry, line_key="b" * 12)])
 
 
 def test_event_messages_are_the_map_resident_copies_as_well_as_the_ev_ones():
@@ -172,20 +182,9 @@ def test_event_messages_are_the_map_resident_copies_as_well_as_the_ev_ones():
         ),
         key="c" * 12,
     )
-    index = SiteIndex([placed(site()), in_map, array])
+    index = index_of([placed(site()), in_map, array])
     assert {e.line_id for e in index.event_messages()} == {"E0112.0"}
     assert len(list(index.event_messages())) == 2
-
-
-def test_the_bytes_in_the_image_have_to_hash_to_what_the_walk_read_in_the_files():
-    """The gate that makes a write safe: the image and the import are separate artifacts."""
-    content = b"\x45\x00\x00\x80" + bytes(28)
-    entry = placed(site(), key=line_key_of(content))
-    check_placement(entry, content)
-    with pytest.raises(TextError, match="image and the import disagree"):
-        check_placement(entry, bytes(32))
-    with pytest.raises(TextError, match="the site is 32"):
-        check_placement(entry, content[:30])
 
 
 # --- against the real import -------------------------------------------------------------------
