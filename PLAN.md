@@ -76,14 +76,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       refuse a TSV whose program hash does not match. The setup note's closing claim that RAM
       never matches the file is unresolved and probably a too-early sample (the BIOS shell
       also runs from `0x8003xxxx`–`0x8004xxxx`); it is `TXT-01`'s question Q0.
-- [ ] **[ENV-05]** **Wire the emulator gates into `make.sh` and test the Beetle runner's pure
-      code.** Split out of `ENV-03` when it closed. `./make.sh smoke [image.cue]` should run both
-      headless boots (`tools/redux/run-headless.sh`, `tools/libretro/smoke.sh`) — CLAUDE.md makes
-      `make.sh` the only documented entry point, and today a contributor has to find the
-      scripts. `tools/libretro/run_core.py`'s `to_rgb_rows`, `parse_*` and PNG writer have no
-      unit tests, and its RGB565 / 0RGB1555 conversions have never run (this core build only
-      selects XRGB8888). Harmed: a contributor whose core build picks another pixel format
-      and gets silently wrong screenshots; anyone looking for how to run the gates.
+- [x] **[ENV-05]** **Wire the emulator gates into `make.sh` and test the Beetle runner's pure
+      code.** DONE 2026-09-20: `./make.sh smoke [image.cue]` runs both headless boots and names
+      any missing prerequisite (emulator, `REDUX_BIOS`, `BOKU_LIBRETRO_CORE`/`_SYSTEM`) instead
+      of skipping. `tests/test_run_core.py` covers `to_rgb_rows` for XRGB8888, RGB565 and
+      0RGB1555 (expected values from libretro.h's bit layout, padded pitch included), the
+      schedule parsers, and the PNG writer against an independent reader; the two unexercised
+      pixel paths turned out correct.
 
 ## Recon — where every piece of Japanese lives
 
