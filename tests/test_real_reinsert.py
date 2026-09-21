@@ -19,8 +19,8 @@ from pathlib import Path
 import pytest
 
 from boku import REPO_ROOT
-from boku.archive import EV_DIR_INDEX, MAP_DIR_INDEX, Archive
-from boku.build import BuildRefused, build, verify_written_sectors
+from boku.archive import EV_DIR_INDEX, MAP_DIR_INDEX, SECTOR, Archive
+from boku.build import ARENA_FILE, BuildRefused, build, verify_written_sectors
 from boku.disc import DiscImage
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, GlyphTable, words_of
 from boku.layout import StockEncoder, lay_out_array
@@ -32,6 +32,7 @@ from boku.reinsert import (
     plan,
     sector_head_room,
 )
+from boku.relocate import PREFIX_FILLER, TAIL_FILLER, Run, unclaimed_runs
 from boku.sites import walk as walk_sites
 from boku.translation import PreEncoded, SampleScenes
 
@@ -59,14 +60,25 @@ def original_words(archive: Archive, walk_reader) -> dict[str, tuple[int, ...]]:
 
 
 def read_back(image: Path) -> tuple[Archive, object]:
-    """The two files pulled out of a built image, walked as if they were an import."""
+    """The two files pulled out of a built image, walked as if they were an import.
+
+    The archive is read back over a span that **starts at the arena** — `PIPE-03`
+    relocates a member into the filler before `BOKU.BIN`, which is below the file's own
+    extent, so reading only the file would drop every member that moved and, with a
+    rebased container, every member the container holds. The filler sectors a build did
+    not write are still zero-filled Form 2 and read as their 2,048 zero bytes
+    (`DiscImage.read_form1_span`).
+    """
     with DiscImage(image) as opened:
         entries = list(opened.walk())
         files = {entry.name: entry for entry in entries if not entry.is_dir}
         exe = opened.read_file(files["SCPS_100.88"].lba, files["SCPS_100.88"].size)
-        boku = opened.read_file(files["BOKU.BIN"].lba, files["BOKU.BIN"].size)
+        archive_entry = files["BOKU.BIN"]
+        end = archive_entry.lba + (archive_entry.size + SECTOR - 1) // SECTOR
+        assert archive_entry.lba == PREFIX_FILLER.end, "the arena is not against BOKU.BIN"
+        boku = opened.read_form1_span(PREFIX_FILLER.start, end - PREFIX_FILLER.start)
     assert len(entries) == FILESYSTEM_ENTRIES, "the build added or lost a filesystem entry"
-    built = Archive.from_bytes(exe, boku, source=str(image))
+    built = Archive.from_bytes(exe, boku, source=str(image), base_lba=PREFIX_FILLER.start)
     built.require_clean()
     return built, walk_sites(built)
 
@@ -97,6 +109,10 @@ def test_the_round_trip_build_reproduces_the_image_byte_for_byte(
     )
     assert result.refused_lines == []
     assert len(result.plan.members_rebuilt) > 600, "the rebuild did not reach the whole disc"
+    # The null re-layout: every member asked for the size it already has, so nothing is
+    # planned to move and not one sector outside a file is written (`boku.relocate`).
+    assert result.plan.layout.unchanged
+    assert result.plan.sectors == ()
     assert result.written.sectors == []
     assert result.written.source_sha1 == result.written.result_sha1
     assert result.written.image.read_bytes() == real_image.read_bytes()
@@ -184,6 +200,151 @@ def test_every_sector_the_growth_wrote_carries_its_own_edc_and_ecc(grown):
     assert verify_written_sectors(result.written.image, result.written.sectors) == []
 
 
+# --- members grown out of their sectors, built, and read back ----------------------------------
+
+RELOCATED_MAPS = (TIGHTEST_MAP, "M_G16101.BIN")
+"""The map with the least work-area head room, and the one `research/relocation.md`
+§ "Does it fit?" puts furthest over its sectors under the full-translation estimate. That
+these two are the ones the growth below actually pushes out is asserted, not assumed."""
+
+RELOCATION_GLYPHS = 16
+"""Glyphs added to every line of the two maps: enough to push both past their sectors and
+not enough to reach `map_commit`'s `0x6400` work area. Which is checked — the test below
+reads both bounds off the disc, so a future import that narrows the window fails rather
+than quietly testing something else."""
+
+
+@pytest.fixture(scope="module")
+def relocating(real_image: Path, disc_dir: Path, archive: Archive, walk_reader, original_words,
+                tmp_path_factory):
+    """Grow every line of the two maps until they no longer fit, and build the image."""
+    words = dict(original_words)
+    for name in RELOCATED_MAPS:
+        for line_id in sorted({s.line_id for s in walk_reader.sites if s.member == name}):
+            words[line_id] = (
+                *original_words[line_id][:-1],
+                *([0x100] * RELOCATION_GLYPHS),
+                END_WORD,
+            )
+    result = build(
+        source=real_image,
+        out_dir=tmp_path_factory.mktemp("relocating"),
+        disc_dir=disc_dir,
+        translation=PreEncoded(words),
+        name="relocate",
+    )
+    return result, words
+
+
+def test_the_growth_that_forces_a_relocation_is_inside_the_work_area_window(
+    archive: Archive, relocating
+):
+    """The growth has to sit in `(sector slack, work-area head room)` for both maps.
+
+    Below the slack nothing moves and the gate proves nothing; above the head room
+    `map_commit`'s `0x6400` test would refuse first and the gate would prove something
+    else. Both bounds are read off the disc, so a future import that narrows the window
+    fails here instead of turning the gate vacuous.
+    """
+    result, _words = relocating
+    for name in RELOCATED_MAPS:
+        member = archive.member(name)
+        grown_by = result.plan.growth[name]
+        assert sector_head_room(member) < grown_by < map_head_room(archive.blob(member)), name
+
+
+def test_two_real_maps_grown_past_their_sectors_move_and_re_extract_correctly(
+    archive: Archive, relocating, original_words, real_image: Path
+):
+    """`PIPE-03`'s hard half on the real disc, end to end.
+
+    Build with two maps grown out of their sectors, then read the built image back as if
+    it were an import: every line correct at every copy, every member that did *not* grow
+    byte-identical, the `.SEC` records and `g_cd_dir` agreeing with where the bytes went,
+    and the image still exactly as long as it was.
+    """
+    result, words = relocating
+    assert result.refused_lines == []
+    moved = {p.member for p in result.plan.relocations}
+    assert set(RELOCATED_MAPS) <= moved, f"neither target moved; {sorted(moved)}"
+    assert moved == {
+        name for name, delta in result.plan.growth.items()
+        if archive.member(name).size + delta > archive.member(name).sectors * SECTOR
+    }, "a member moved that did not have to, or one that had to did not"
+    for placement in result.plan.relocations:
+        assert PREFIX_FILLER.start <= placement.lba
+        assert placement.lba + placement.sectors <= PREFIX_FILLER.end
+
+    built, built_walk = read_back(result.written.image)
+    assert built_walk.problems == [], built_walk.problems[:3]
+    assert built_walk.conflicts(built) == [], "the copies of some line no longer agree"
+    assert set(built_walk.by_line) == set(original_words), "a line id appeared or vanished"
+
+    # Where the bytes went: the built archive's own directory and `.SEC` records, read
+    # back through the parsers, have to put each moved member exactly where the plan did.
+    for placement in result.plan.relocations:
+        assert built.member(placement.member).lba == placement.lba, placement.member
+        assert built.member(placement.member).size == placement.size, placement.member
+
+    now = {k: words_of(built_walk.raw(built, s[0])) for k, s in built_walk.by_line.items()}
+    for line_id, expected in words.items():
+        for site in built_walk.by_line[line_id]:
+            assert words_of(built_walk.raw(built, site)) == expected, f"{line_id} @ {site.member}"
+    assert {k for k in now if now[k] != original_words[k]} == {
+        k for k in words if words[k] != original_words[k]
+    }
+
+    # "Every other member" is derived from the plan's own edits rather than from the list
+    # of members that grew: the two `.SEC` indexes are rewritten in place (new sizes, new
+    # sector fields) without changing length, and they are exactly the kind of collateral
+    # a growth-keyed comparison would not see.
+    rewritten = {placement.member for placement in result.plan.relocations}
+    for edit in result.plan.edits:
+        if edit.file != "BOKU.BIN":
+            continue
+        owner = archive.owner(edit.offset)
+        assert owner is not None, edit.reason
+        rewritten.add(owner.short_name)
+    assert set(result.plan.growth) <= rewritten
+    untouched = [m for m in archive.members if m.short_name not in rewritten]
+    assert len(untouched) > 600, "almost nothing was left alone; this comparison is empty"
+    for member in untouched:
+        assert built.blob(built.member(member.short_name)) == archive.blob(member), (
+            f"{member.short_name} changed and nothing asked it to"
+        )
+
+    assert verify_written_sectors(result.written.image, result.written.sectors) == []
+    assert result.written.image.stat().st_size == real_image.stat().st_size
+
+
+def test_the_manifest_says_which_file_each_relocated_sector_belongs_to(relocating):
+    """A relocation writes two runs, and only one of them is outside a file.
+
+    The member's new home is in the arena, which belongs to no file; the sectors it leaves
+    are inside `BOKU.BIN` and the manifest has to say so, because `boku trial` checks an
+    image diff against the manifest row by row. Both sets come from the placements.
+    """
+    result, _words = relocating
+    where = {record.lba: record.file for record in result.written.sectors}
+    named = {ARENA_FILE: 0, "BOKU.BIN": 0}
+    for placement in result.plan.relocations:
+        for lba, expected in [
+            *((lba, ARENA_FILE) for lba in range(placement.lba, placement.lba + placement.sectors)),
+            *(
+                (lba, "BOKU.BIN")
+                for lba in range(placement.old_lba, placement.old_lba + placement.old_sectors)
+            ),
+        ]:
+            # A sector the build wrote back to the bytes it already held is not in the
+            # manifest at all (`Ledger.records`) — a vacated sector that was zero padding
+            # already is the usual case.
+            if lba in where:
+                assert where[lba] == expected, lba
+                named[expected] += 1
+    assert min(named.values()) > 0, f"one of the two runs is missing from the manifest: {named}"
+    assert set(where.values()) == {ARENA_FILE, "BOKU.BIN", "SCPS_100.88"}
+
+
 # --- the measured limits, on the members they actually bind on ---------------------------------
 
 
@@ -226,10 +387,13 @@ def test_an_ev_member_refuses_a_block_past_the_event_buffer(
     assert f"{EVENT_BLOCK_LIMIT}-byte buffer" in str(raised.value)
 
 
-def test_a_member_with_no_slack_refuses_the_growth_that_would_need_a_new_sector(
-    archive: Archive, walk_reader, original_words
-):
-    """The ten members with under 64 bytes of slack are where the full script will bind."""
+@pytest.fixture(scope="module")
+def one_sector_over(archive: Archive, walk_reader, original_words):
+    """The tightest text-bearing member, and the words that push it one sector past itself.
+
+    The ten members with under 64 bytes of slack are where the full script will bind, so
+    the member the relocation tests use is the one the translation will reach first.
+    """
     tight = min(
         (
             archive.member(sites[0].member)
@@ -239,16 +403,66 @@ def test_a_member_with_no_slack_refuses_the_growth_that_would_need_a_new_sector(
         key=sector_head_room,
     )
     line_id = next(s.line_id for s in walk_reader.sites if s.member == tight.short_name)
-    slack = sector_head_room(tight)
     words = dict(original_words)
     words[line_id] = (
         *original_words[line_id][:-1],
-        *([0x100] * ((slack + 4) // 2)),
+        *([0x100] * ((sector_head_room(tight) + 4) // 2)),
         END_WORD,
     )
-    with pytest.raises(ReinsertRefused, match=f"from {slack} bytes of slack") as raised:
-        plan(archive, walk_reader, words)
-    assert "moving every later member" in str(raised.value)
+    return tight, words
+
+
+def test_a_member_with_no_slack_moves_into_the_arena_instead_of_refusing(
+    archive: Archive, walk_reader, one_sector_over
+):
+    """This used to be `PIPE-03`'s refusal — "moving every later member … which this unit
+    does not do". Moving members is what this unit does, so the same growth on the same
+    member now has to produce a placement, in the arena, one sector bigger than it was.
+    """
+    tight, words = one_sector_over
+    the_plan = plan(archive, walk_reader, words)
+    (placement,) = the_plan.relocations
+    assert placement.member == tight.short_name
+    assert placement.old_lba == tight.lba
+    assert placement.sectors == tight.sectors + 1
+    assert PREFIX_FILLER.start <= placement.lba < PREFIX_FILLER.end
+    assert the_plan.layout.free_after == PREFIX_FILLER.count - placement.sectors
+
+
+def test_a_growth_the_arena_cannot_hold_is_refused_with_the_numbers(
+    archive: Archive, walk_reader, one_sector_over
+):
+    """What stays impossible: the filler is finite, and running out has to say so.
+
+    No single member can reach 765 sectors on this disc — whichever of the two RAM limits
+    binds for the member picked, it refuses long before then — so the arena is narrowed to
+    one sector *less* than the placement needs, which is the boundary the refusal is
+    about. Both numbers in the message come from the placement the full arena made, not
+    from a count typed here.
+    """
+    tight, words = one_sector_over
+    (placement,) = plan(archive, walk_reader, words).relocations
+    short = [Run(PREFIX_FILLER.start, placement.sectors - 1)]
+    with pytest.raises(ReinsertRefused, match="no run that long") as raised:
+        plan(archive, walk_reader, words, arena=short)
+    assert tight.short_name in str(raised.value)
+    assert f"needs {placement.sectors} sectors" in str(raised.value)
+    assert f"{placement.sectors - 1}-sector arena" in str(raised.value)
+
+
+def test_the_arena_is_the_two_runs_the_disc_recon_measured(real_image: Path):
+    """`PREFIX_FILLER` and `TAIL_FILLER` are pinned constants; the image is the source.
+
+    `boku.relocate` allocates from a number written into the module so that a plan can be
+    made without an image beside it. This is the one place the two are held together — if
+    a future import has a different filesystem, the constants are wrong and this says so.
+    """
+    with DiscImage(real_image) as image:
+        runs = unclaimed_runs(image)
+    assert [(run.start, run.count) for run in runs] == [
+        (PREFIX_FILLER.start, PREFIX_FILLER.count),
+        (TAIL_FILLER.start, TAIL_FILLER.count),
+    ]
 
 
 # --- what the builder refuses before it copies 660 MB ---

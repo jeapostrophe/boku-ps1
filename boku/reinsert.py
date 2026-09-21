@@ -11,12 +11,13 @@ line:
 4. *map:* child 1's `size` and the `offset` of children 2…6 in the pack table
    (`boku.archive.Pack.serialise`);
 5. the member's `size` in `M_FILES.SEC` (`u32`) / `EV.SEC` (`u16`)
-   (`boku.archive.SubArchiveIndex.serialise`).
-
-Step 6 — a member that outgrows its sectors, so later `.SEC` `sector` fields and
-`g_cd_dir` have to move — is **out of scope here and refused**, with the number of bytes
-over. Moving members is the next unit; refusing is not "nothing is cut to fit" (README):
-the English is never shortened, the *build* stops and says which member needs the room.
+   (`boku.archive.SubArchiveIndex.serialise`);
+6. a member that outgrows its sectors is **relocated** (`boku.relocate`): it is written
+   to free sectors in the filler before `BOKU.BIN`, the sectors it leaves are zeroed, and
+   whatever addresses it is rewritten — the `.SEC` record's `sector` (relative to the
+   container's `g_cd_dir` LBA, so a container that now holds a member below its base is
+   rebased) for a sub-archive member, `g_cd_dir.lba[i]` / `size[i]` for a top-level one.
+   `research/relocation.md` is the evidence for which field is which.
 
 **Nothing is written in the abstract.** The output is a list of `ByteEdit`s over the two
 files a patch touches — `SCPS_100.88` and `BOKU.BIN` — each carrying the bytes it expects
@@ -42,9 +43,11 @@ The three measured limits, and where they come from
   (`research/loading-and-memory.md` § "Map packs"). `map_commit` tests only
   `pack[+0x34] > 0x6400`; the work-area allowance is the stricter figure the research
   computes, and it is what `head_room` reports.
-* **A member may not outgrow its own sectors.** `research/boku-bin.md` measured the slack
-  (min 16 bytes, median 1,246) and that it is zero-filled everywhere, which is why a
-  shrinking member has its tail zeroed here rather than left holding its own old bytes.
+* **A member that outgrows its own sectors has to move.** `research/boku-bin.md` measured
+  the slack (min 16 bytes, median 1,246) and that it is zero-filled everywhere, which is
+  why a shrinking member has its tail zeroed here rather than left holding its own old
+  bytes — and why a relocated member's new sectors are zero-padded too. The room is
+  finite (`boku.relocate.PREFIX_FILLER`); running out is a refusal, with the numbers.
 
 Neither the `0x4000` nor the `0x6400` limit has been watched in an emulator yet — the
 research asks for that before anything relies on them (`PLAN PIPE-03`).
@@ -54,22 +57,37 @@ from __future__ import annotations
 
 import struct
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from itertools import pairwise
 
 from boku.archive import (
     ARCHIVE_NAME,
     EV_DIR_INDEX,
     EXE_NAME,
-    MAP_DIR_INDEX,
     SECTOR,
     SUB_ARCHIVES,
     Archive,
     Member,
+    dir_arrays,
     parse_pack,
+    read_exe_dir,
 )
 from boku.events import MAP_PACK_BLOCK_TABLE, Block, pack_block, parse_block_table
 from boku.glyphs import END_WORD, PAD_WORD, words_to_bytes
+from boku.relocate import (
+    SECTOR_FIELD_MAX,
+    Layout,
+    Placement,
+    RelocationRefused,
+    Run,
+    SectorEdit,
+    container_names,
+    containers_touched,
+    plan_layout,
+    relocation_edits,
+    sector_fields,
+)
+from boku.relocate import check_disjoint as check_sectors_disjoint
 from boku.sites import Site, Walk
 
 EVENT_BLOCK_LIMIT = 0x4000
@@ -153,10 +171,19 @@ class Plan:
     lines: tuple[str, ...]
     growth: Mapping[str, int]
     """Member -> bytes its `size` gained (negative if it shrank). Unchanged members absent."""
+    sectors: tuple[SectorEdit, ...] = ()
+    """Whole sectors written outside any file: a relocated member's new home, and the
+    sectors it vacated, zeroed (`boku.relocate`). Empty unless something had to move."""
+    layout: Layout = field(default_factory=Layout)
+    """What moved and what it cost. `Layout.unchanged` is the null re-layout."""
 
     @property
     def unchanged(self) -> bool:
-        return not self.edits
+        return not self.edits and not self.sectors
+
+    @property
+    def relocations(self) -> tuple[Placement, ...]:
+        return self.layout.placements
 
 
 # --- head room, per the two measured limits --------------------------------------------------
@@ -380,25 +407,14 @@ def _rebuilt_map(
     return rebuilt
 
 
-def _grown_member(member: Member, blob: bytes, rebuilt: bytes, lines: Iterable[str]) -> ByteEdit:
-    """The archive edit for one rebuilt member, with its sector allocation enforced.
+def _grown_member(member: Member, blob: bytes, rebuilt: bytes) -> ByteEdit:
+    """The archive edit for one rebuilt member that stays where it is.
 
     The range covers the larger of the two sizes so that a member which *shrinks* has its
     tail zeroed: `research/boku-bin.md` measured that the bytes between a member's size and
     its sector end are zero everywhere, and leaving the old text there would break that and
     hand the next reader of the archive a ghost of the Japanese.
     """
-    allocation = member.sectors * SECTOR
-    if len(rebuilt) > allocation:
-        raise ReinsertRefused(
-            f"{member.short_name}: the member is {len(rebuilt)} bytes and its "
-            f"{member.sectors} sectors hold {allocation} — {len(rebuilt) - allocation} over, "
-            f"from {sector_head_room(member)} bytes of slack. Growing past a member's "
-            f"sectors means moving every later member, rewriting the .SEC sector fields and "
-            f"g_cd_dir, which this unit does not do (PLAN PIPE-03). Lines: "
-            f"{', '.join(sorted(lines))}",
-            lines,
-        )
     span = max(len(rebuilt), len(blob))
     return ByteEdit(
         file=ARCHIVE_NAME,
@@ -410,24 +426,44 @@ def _grown_member(member: Member, blob: bytes, rebuilt: bytes, lines: Iterable[s
 
 
 def _sec_edit(
-    archive: Archive, container: str, sizes: Mapping[str, int], lines: Mapping[str, set[str]]
+    archive: Archive,
+    container: str,
+    container_index: int,
+    sizes: Mapping[str, int],
+    lines: Mapping[str, set[str]],
+    layout: Layout,
 ) -> ByteEdit | None:
-    """The `.SEC` index of one sub-archive, with the changed members' `size` fields rewritten."""
+    """The `.SEC` index of one sub-archive: the changed `size` and `sector` fields.
+
+    Both fields are rewritten from the same layout, because they answer one question —
+    where the selector will point `g_cd_dir`'s slot. `sector` is **relative to the
+    container's `g_cd_dir` LBA** (`research/relocation.md`), so a rebased container moves
+    every record's field even though only one member moved.
+    """
     sec_name, parse = SUB_ARCHIVES[container]
     member = archive.member(sec_name)
     index = parse(archive.blob(member))
+    fields = dict(sector_fields(archive, layout, container_index))
     records = []
     changed = False
-    for record in index.records:
-        size = sizes.get(record.key)
-        if size is not None and size != record.size:
-            if index.kind == "EV" and size > EV_SEC_SIZE_MAX:
-                raise ReinsertRefused(
-                    f"{record.key}: {size} bytes, and {sec_name}'s size field is a u16 "
-                    f"({EV_SEC_SIZE_MAX} max)",
-                    lines.get(record.key, ()),
-                )
-            record = replace(record, size=size)
+    for i, record in enumerate(index.records):
+        size = sizes.get(record.key, record.size)
+        sector = fields.get(i, record.sector)
+        if size != record.size and index.kind == "EV" and size > EV_SEC_SIZE_MAX:
+            raise ReinsertRefused(
+                f"{record.key}: {size} bytes, and {sec_name}'s size field is a u16 "
+                f"({EV_SEC_SIZE_MAX} max)",
+                lines.get(record.key, ()),
+            )
+        if not 0 <= sector <= SECTOR_FIELD_MAX:
+            raise ReinsertRefused(
+                f"{record.key}: sector {sector} past {sec_name}'s u16 field; the record "
+                f"counts from the container's g_cd_dir LBA and the selector reads it with "
+                f"lhu (research/relocation.md)",
+                lines.get(record.key, ()),
+            )
+        if (size, sector) != (record.size, record.sector):
+            record = replace(record, size=size, sector=sector)
             changed = True
         records.append(record)
     if not changed:
@@ -439,8 +475,59 @@ def _sec_edit(
         offset=member.offset,
         old=old,
         new=rebuilt,
-        reason=f"{sec_name}: member sizes",
+        reason=f"{sec_name}: member sizes and sectors",
     )
+
+
+def directory_edits(archive: Archive, layout: Layout) -> list[ByteEdit]:
+    """The `g_cd_dir` words a layout changes: a moved member's pair, a rebase's `lba`.
+
+    A top-level member *is* its two directory words — `cd_load_sync` reads `size[i]`
+    sectors from `lba[i]` — so relocating one is exactly this write.
+
+    A rebased container gets **`lba` only**. `size[container]` is not rewritten to cover
+    the members' new span, which an earlier draft did: no reader in this toolchain uses a
+    container's `size` (`build_members` takes its `lba` and reads the `.SEC` sibling), and
+    `cd_dir_size` has 21 call sites in the game whose indexes are not documented
+    (`research/boku-bin.md` § "Loader"), so a value spanning the arena *and* every member
+    below the container would be an unmeasured write to a live executable field. Neither
+    the old value nor a recomputed one describes where the records sit; the old one is the
+    one the retail game ran with.
+    """
+    arrays = dir_arrays(archive.exe)
+    entries = {e.index: e for e in read_exe_dir(archive.exe)}
+    out: list[ByteEdit] = []
+
+    def word(index: int, offset: int, was: int, now: int, reason: str) -> None:
+        out.append(
+            ByteEdit(
+                file=EXE_NAME,
+                offset=offset,
+                old=was.to_bytes(4, "little"),
+                new=now.to_bytes(4, "little"),
+                reason=reason,
+            )
+        )
+
+    for placement in sorted(layout.placements, key=lambda p: p.dir_index):
+        if placement.sub_index is not None:
+            continue
+        index, entry = placement.dir_index, entries[placement.dir_index]
+        reason = f"g_cd_dir[{index}] {placement.member} -> LBA {placement.lba}"
+        word(index, arrays.lba_offset(index), entry.lba, placement.lba, reason)
+        word(index, arrays.size_offset(index), entry.size, placement.size, reason)
+    for index in sorted(layout.bases):
+        entry = entries[index]
+        name = entry.name.rsplit("\\", 1)[-1]
+        word(
+            index,
+            arrays.lba_offset(index),
+            entry.lba,
+            layout.bases[index],
+            f"g_cd_dir[{index}] {name} rebased to LBA {layout.bases[index]} "
+            f"(every .SEC sector counts from it)",
+        )
+    return [edit for edit in out if edit.changes]
 
 
 # --- the whole reinsertion -----------------------------------------------------------------
@@ -452,6 +539,7 @@ def plan(
     replacements: Mapping[str, Sequence[int]],
     *,
     in_place: bool = False,
+    arena: Sequence[Run] | None = None,
 ) -> Plan:
     """Every byte range one set of new lines would change, with nothing written yet.
 
@@ -503,42 +591,87 @@ def plan(
     by_member: dict[str, set[str]] = {}
     for site in sites:
         by_member.setdefault(site.member, set()).add(site.line_id)
+    blobs: dict[str, bytes] = {}
     for short_name in sorted(structural):
         member = archive.member(short_name)
         blob = archive.blob(member)
-        lines = by_member[short_name]
         if member.dir_index == EV_DIR_INDEX:
             rebuilt = _rebuilt_block(blob, structural[short_name][0], f"{short_name} (EV.BIN)")
         else:
             rebuilt = _rebuilt_map(member, blob, structural[short_name])
         rebuilt_members.append(short_name)
-        edit = _grown_member(member, blob, rebuilt, lines)
+        blobs[short_name] = rebuilt
         if len(rebuilt) != member.size:
             growth[short_name] = len(rebuilt) - member.size
+
+    sizes = {name: len(blob) for name, blob in blobs.items()}
+    try:
+        layout = plan_layout(archive, sizes, arena=arena)
+    except RelocationRefused as error:
+        raise ReinsertRefused(str(error), by_member.get(error.member or "", ())) from error
+    moved = layout.by_member
+    for short_name, rebuilt in blobs.items():
+        if short_name in moved:
+            continue
+        member = archive.member(short_name)
+        edit = _grown_member(member, archive.blob(member), rebuilt)
         if edit.changes:
             edits.append(edit)
 
-    for container, index_of in (("EV.BIN", EV_DIR_INDEX), ("M_FILES.BIN", MAP_DIR_INDEX)):
-        sizes = {
-            name: archive.member(name).size + delta
-            for name, delta in growth.items()
-            if archive.member(name).dir_index == index_of
+    # Every sub-archive whose records the layout disturbs, plus every one holding a member
+    # whose size changed -- derived, not the two that hold text today: `plan_layout` will
+    # place a member of any of the four, and rebasing a container without rewriting its
+    # records puts every model or diary page 765 sectors below where it lives.
+    names = container_names(archive)
+    touched = set(containers_touched(archive, layout))
+    touched |= {archive.member(name).dir_index for name in sizes} & set(names)
+    for index_of in sorted(touched):
+        changed = {
+            name: sizes[name] for name in sizes if archive.member(name).dir_index == index_of
         }
-        if sizes:
-            sec = _sec_edit(archive, container, sizes, by_member)
-            if sec is not None:
-                edits.append(sec)
+        sec = _sec_edit(archive, names[index_of], index_of, changed, by_member, layout)
+        if sec is not None:
+            edits.append(sec)
+    edits += directory_edits(archive, layout)
 
+    sectors = relocation_edits(archive, layout, blobs)
     edits = [e for e in edits if e.changes]
     edits.sort(key=lambda e: (e.file, e.offset))
     check_disjoint(edits)
+    check_sectors_disjoint(sectors)
+    _check_no_double_write(edits, sectors, archive)
     return Plan(
         edits=tuple(edits),
         members_rebuilt=tuple(rebuilt_members),
         sites_written=len(sites),
         lines=tuple(sorted(replacements)),
         growth=growth,
+        sectors=tuple(sorted(sectors, key=lambda e: e.lba)),
+        layout=layout,
     )
+
+
+def _check_no_double_write(
+    edits: Sequence[ByteEdit], sectors: Sequence[SectorEdit], archive: Archive
+) -> None:
+    """A sector may not be written both through `BOKU.BIN` and by LBA.
+
+    The two edit kinds are verified against different reads and applied in different
+    passes, so an overlap would make the image depend on which ran last. Members are
+    sector-aligned and a relocated one is written only by LBA, so this cannot happen.
+    """
+    by_lba = {lba for edit in sectors for lba in range(edit.lba, edit.end)}
+    for edit in edits:
+        if edit.file != ARCHIVE_NAME:
+            continue
+        first = archive.base_lba + edit.offset // SECTOR
+        last = archive.base_lba + (edit.end - 1) // SECTOR
+        clash = by_lba.intersection(range(first, last + 1))
+        if clash:
+            raise ReinsertRefused(
+                f"{edit.reason} writes {ARCHIVE_NAME} over LBA {min(clash)}, which a "
+                f"relocation also writes; one of them would be lost"
+            )
 
 
 def check_disjoint(edits: Sequence[ByteEdit]) -> None:

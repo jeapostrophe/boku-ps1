@@ -19,7 +19,15 @@ import struct
 
 import pytest
 
-from boku.archive import EV_DIR_INDEX, MAP_DIR_INDEX, SECTOR, Archive, parse_pack
+from boku.archive import (
+    EV_DIR_INDEX,
+    MAP_DIR_INDEX,
+    SECTOR,
+    SUB_ARCHIVES,
+    Archive,
+    dir_arrays,
+    parse_pack,
+)
 from boku.events import Block, parse_block_table
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, words_of
 from boku.reinsert import (
@@ -27,11 +35,13 @@ from boku.reinsert import (
     MAP_WORK_AREA_END,
     ByteEdit,
     ReinsertRefused,
+    directory_edits,
     map_head_room,
     map_work_records,
     plan,
     sector_head_room,
 )
+from boku.relocate import PREFIX_FILLER, RelocationRefused, capacity, plan_layout
 from boku.sites import walk as walk_all_sites
 from tests import synth_archive as synth
 
@@ -367,8 +377,52 @@ def test_a_map_whose_child_6_would_pass_the_work_area_is_refused():
         attempt(biggest + 1)
 
 
-def test_a_member_that_outgrows_its_sectors_is_refused_and_says_how_far_over():
-    """Growth past a member's own sectors means moving every later member: out of scope."""
+# --- relocation: what happens when a member outgrows its sectors -------------------------------
+
+
+def relocated(archive: Archive, replacements, **kwargs) -> tuple[Archive, object]:
+    """Apply a plan's byte *and* sector edits, and read the result back as an archive.
+
+    The archive comes back over a span that starts at the arena — the filler before
+    `BOKU.BIN`, which a relocated member lives in — exactly as `read_back` reads a built
+    image in `tests/test_real_reinsert.py`. Without the wider span a relocated member
+    would be addressed at a negative offset, which is the failure this reading exists to
+    make impossible.
+    """
+    result = walk(archive)
+    the_plan = plan(archive, result, replacements, **kwargs)
+    prefix = bytes(PREFIX_FILLER.count * SECTOR)
+    blob = bytearray(prefix + archive.boku)
+    shift = len(prefix)
+    for edit in the_plan.edits:
+        if edit.file != "BOKU.BIN":
+            continue
+        assert blob[shift + edit.offset : shift + edit.end] == edit.old, edit.reason
+        blob[shift + edit.offset : shift + edit.end] = edit.new
+    exe = bytearray(archive.exe)
+    for edit in the_plan.edits:
+        if edit.file != "SCPS_100.88":
+            continue
+        assert exe[edit.offset : edit.end] == edit.old, edit.reason
+        exe[edit.offset : edit.end] = edit.new
+    for edit in the_plan.sectors:
+        start = (edit.lba - PREFIX_FILLER.start) * SECTOR
+        assert blob[start : start + len(edit.old)] == edit.old, edit.reason
+        blob[start : start + len(edit.new)] = edit.new
+    after = Archive.from_bytes(
+        bytes(exe), bytes(blob), source="relocated", base_lba=PREFIX_FILLER.start
+    )
+    after.require_clean()
+    return after, the_plan
+
+
+def test_a_map_that_outgrows_its_sectors_moves_into_the_arena_and_still_reads_back():
+    """The hard half of `PIPE-03`, at the boundary: one word more than the sectors hold.
+
+    The member's `.SEC` record gets a new `sector`, the container is rebased because the
+    arena is *below* it, every other record's field follows the rebase, and the line comes
+    back out of the moved member.
+    """
     archive = a_disc_with_one_line()
     member = archive.member("M_A01000.BIN")
     slack = sector_head_room(member)
@@ -376,14 +430,145 @@ def test_a_member_that_outgrows_its_sectors_is_refused_and_says_how_far_over():
     assert map_head_room(archive.blob(member)) > slack, "the work area would bind first"
     result = walk(archive)
 
-    def attempt(glyphs: int) -> None:
-        plan(archive, result, {"E0171.0": (0x100,) * glyphs + (END_WORD,)})
+    def attempt(glyphs: int) -> tuple[Archive, object]:
+        return relocated(archive, {"E0171.0": (0x100,) * glyphs + (END_WORD,)})
 
-    biggest = largest_that_fits(attempt)
-    with pytest.raises(ReinsertRefused, match="4 over, from") as raised:
-        attempt(biggest + 1)
-    assert "moving every later member" in str(raised.value)
-    assert "E0171.0" in str(raised.value)
+    moves = smallest_that_moves(archive, result, "E0171.0")
+    _after, stays = attempt(moves - 1)
+    assert stays.relocations == (), "the member moved before it had to"
+
+    words = (0x100,) * moves + (END_WORD,)
+    after, moved = attempt(moves)
+    (placement,) = moved.relocations
+    assert placement.member == "M_A01000.BIN"
+    assert placement.old_lba == member.lba
+    assert placement.lba == PREFIX_FILLER.start, "the first relocation takes the first sector"
+    assert placement.sectors == member.sectors + 1
+
+    assert after.member("M_A01000.BIN").lba == placement.lba
+    assert words_for(after)["E0171.0"] == words
+    # Two holes and no others: the arena the placement did not take, and the sectors it
+    # left — both derived from the placement, so a member laid over either shows up here.
+    assert after.gaps == [
+        (PREFIX_FILLER.start + placement.sectors, PREFIX_FILLER.count - placement.sectors),
+        (member.lba, member.sectors),
+    ]
+
+
+def smallest_that_moves(archive: Archive, result, line_id: str) -> int:
+    """The first glyph count at which the member holding `line_id` has to be relocated.
+
+    `largest_that_fits` wants a refusal, so relocation is raised as one; a caller has to
+    have ruled out the other limits binding first, or the bisection finds one of those.
+    """
+
+    def attempt(glyphs: int) -> None:
+        if plan(archive, result, {line_id: (0x100,) * glyphs + (END_WORD,)}).relocations:
+            raise ReinsertRefused("relocated")
+
+    return largest_that_fits(attempt) + 1
+
+
+def test_the_rebase_keeps_every_unmoved_member_exactly_where_it_was():
+    """A container's `.SEC` `sector` is relative, so rebasing moves the origin, not the member.
+
+    Two maps, one grown past its sectors: the other one's record has a different `sector`
+    field afterwards and its bytes are at the same LBA. That is the whole reason rebasing
+    is safe, and it is the part a reader has to take on trust unless it is asserted.
+    """
+    block = a_block([text_bytes((0x100, END_WORD)) + PAD])
+    big = a_block([text_bytes((0x100, 0x101, END_WORD)) + PAD])
+    archive = synthetic_disc(
+        maps=[("A01000", map_pack([(171, block)])), ("A01001", map_pack([(172, big)]))]
+    )
+    before = {m.short_name: m.lba for m in archive.members}
+    sectors_before = _sec_sectors(archive)
+    result = walk(archive)
+    words = (0x100,) * smallest_that_moves(archive, result, "E0171.0") + (END_WORD,)
+    after, the_plan = relocated(archive, {"E0171.0": words})
+
+    assert MAP_DIR_INDEX in the_plan.layout.bases, "the container was not rebased"
+    assert the_plan.layout.bases[MAP_DIR_INDEX] == PREFIX_FILLER.start
+    for member in after.members:
+        if member.short_name == "M_A01000.BIN":
+            continue
+        assert member.lba == before[member.short_name], f"{member.short_name} moved"
+    assert _sec_sectors(after)["M_A01001.BIN"] != sectors_before["M_A01001.BIN"], (
+        "the unmoved map's record kept its old sector field, so the rebase did not reach it"
+    )
+    assert words_for(after)["E0172.0"] == (0x100, 0x101, END_WORD)
+
+
+def _sec_sectors(archive: Archive) -> dict[str, int]:
+    """Each map's `sector` field as `M_FILES.SEC` carries it, straight out of the bytes."""
+    member = archive.member("M_FILES.SEC")
+    sec_name, parse = SUB_ARCHIVES["M_FILES.BIN"]
+    assert sec_name == "M_FILES.SEC"
+    return {record.key: record.sector for record in parse(archive.blob(member)).records}
+
+
+def test_a_top_level_member_relocates_by_its_two_directory_words():
+    """The other addressing mode, exercised directly: `lba[i]` and `size[i]`, nothing else.
+
+    No text-bearing member is top-level today (map packs and `EV` members are both inside
+    a sub-archive), so the only way this path is covered is to ask the layout for it.
+    """
+    archive = a_disc_with_one_line()
+    member = archive.member("F000.BIN")
+    size = member.sectors * SECTOR + 1
+    layout = plan_layout(archive, {member.short_name: size})
+    (placement,) = layout.placements
+    assert placement.lba == PREFIX_FILLER.start
+    assert layout.bases == {}, "a top-level member needs no container rebased"
+
+    arrays = dir_arrays(archive.exe)
+    edits = {e.offset: e for e in directory_edits(archive, layout)}
+    assert set(edits) == {
+        arrays.lba_offset(member.dir_index),
+        arrays.size_offset(member.dir_index),
+    }
+    assert edits[arrays.lba_offset(member.dir_index)].new == placement.lba.to_bytes(4, "little")
+    assert edits[arrays.size_offset(member.dir_index)].new == size.to_bytes(4, "little")
+
+
+def test_a_member_too_big_for_the_arena_is_refused_with_the_numbers():
+    """The room is finite, and running out has to say so rather than overlap something."""
+    archive = a_disc_with_one_line()
+    member = archive.member("M_A01000.BIN")
+    with pytest.raises(RelocationRefused, match="no run that long") as raised:
+        plan_layout(archive, {member.short_name: (PREFIX_FILLER.count + 1) * SECTOR})
+    assert str(PREFIX_FILLER.count) in str(raised.value)
+    assert raised.value.member == member.short_name
+
+
+def test_the_capacity_answer_separates_what_is_asked_for_from_what_is_net_new():
+    """`Capacity.needed` is the whole allocation; `net` discounts the hole left behind.
+
+    The gap between the two *is* the no-re-use policy, and the whole-translation answer
+    turns on it (`research/relocation.md` § "Does it fit?"), so both are asserted against
+    the member's own sector count rather than against each other.
+    """
+    archive = a_disc_with_one_line()
+    member = archive.member("M_A01000.BIN")
+    wanted = member.sectors * SECTOR + 1
+    answer = capacity(archive, {m.short_name: m.size for m in archive.members} | {
+        member.short_name: wanted
+    })
+    assert answer.members == 1, "a member that still fits was counted"
+    assert answer.needed == member.sectors + 1
+    assert answer.vacated == member.sectors
+    assert answer.net == 1
+    assert answer.fits
+
+
+def test_the_null_re_layout_moves_nothing_and_writes_nothing():
+    """Gate 1: every member asked for exactly the size it already has."""
+    archive = a_disc_with_one_line()
+    layout = plan_layout(archive, {m.short_name: m.size for m in archive.members})
+    assert layout.unchanged
+    assert layout.placements == ()
+    assert layout.free_after == layout.free_before == PREFIX_FILLER.count
+    assert directory_edits(archive, layout) == []
 
 
 def test_the_head_room_formula_is_the_one_the_research_computed():

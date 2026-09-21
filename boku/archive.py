@@ -77,8 +77,28 @@ class DirEntry:
         return (self.size + SECTOR - 1) // SECTOR
 
 
-def read_exe_dir(exe: bytes) -> list[DirEntry]:
-    """`g_cd_dir`'s three parallel arrays, located from the count word that follows them.
+@dataclass(frozen=True)
+class DirArrays:
+    """Where `g_cd_dir`'s three arrays start in the executable's own bytes.
+
+    `PIPE-03` writes `lba[i]` and `size[i]` when a member moves, so it needs the byte
+    offsets and not only the values `read_exe_dir` decodes from them.
+    """
+
+    count: int
+    lba: int
+    size: int
+    name: int
+
+    def lba_offset(self, index: int) -> int:
+        return self.lba + 4 * index
+
+    def size_offset(self, index: int) -> int:
+        return self.size + 4 * index
+
+
+def dir_arrays(exe: bytes) -> DirArrays:
+    """Locate `g_cd_dir`'s three parallel arrays from the count word that follows them.
 
     The count sits immediately after `name[]`, which follows `size[]`, which follows
     `lba[]` — so one address finds all three, and a rebuilt executable that moved them
@@ -90,9 +110,16 @@ def read_exe_dir(exe: bytes) -> list[DirEntry]:
     (count,) = struct.unpack_from("<I", exe, off)
     if not 1 <= count <= 4096 or off - 12 * count < 0:
         raise ArchiveError(f"g_cd_dir says {count} files; that is not this game's directory")
-    names = struct.unpack_from(f"<{count}I", exe, off - 4 * count)
-    sizes = struct.unpack_from(f"<{count}I", exe, off - 8 * count)
-    lbas = struct.unpack_from(f"<{count}I", exe, off - 12 * count)
+    return DirArrays(count, off - 12 * count, off - 8 * count, off - 4 * count)
+
+
+def read_exe_dir(exe: bytes) -> list[DirEntry]:
+    """`g_cd_dir` as a list of entries: a dev-time path, an absolute LBA and a size."""
+    arrays = dir_arrays(exe)
+    count = arrays.count
+    names = struct.unpack_from(f"<{count}I", exe, arrays.name)
+    sizes = struct.unpack_from(f"<{count}I", exe, arrays.size)
+    lbas = struct.unpack_from(f"<{count}I", exe, arrays.lba)
     out = []
     for i in range(count):
         start = names[i] - EXE_LOAD_BIAS
@@ -446,6 +473,9 @@ class Member:
     size: int
     is_directory_placeholder: bool = False
     """A `g_cd_dir` entry whose dev-time name has no extension: an ISO directory, not a file."""
+    base_lba: int = BOKU_BIN_LBA
+    """The disc LBA `offset` counts from. `BOKU.BIN`'s own start unless the archive was
+    read back over the filler before it, which is where `PIPE-03` relocates members to."""
 
     @property
     def short_name(self) -> str:
@@ -462,7 +492,7 @@ class Member:
 
     @property
     def lba(self) -> int:
-        return BOKU_BIN_LBA + self.offset // SECTOR
+        return self.base_lba + self.offset // SECTOR
 
     @property
     def sector_slack(self) -> int:
@@ -470,61 +500,125 @@ class Member:
         return (-self.size) % SECTOR
 
 
-def build_members(exe: bytes, boku: bytes) -> tuple[list[Member], list[str]]:
-    """Leaf members in archive order, plus every tiling problem found (empty = perfect).
+def build_members(
+    exe: bytes, boku: bytes, base_lba: int = BOKU_BIN_LBA
+) -> tuple[list[Member], list[str], list[tuple[int, int]]]:
+    """Leaf members in directory order, the problems found, and the sectors nobody claims.
 
-    The tiling check is the gate: each member must start where the previous one's last
-    sector ended, at both levels, and the records of a `.SEC` must end exactly on the
-    container's last sector. A directory that has drifted from the archive shows up here
-    rather than as a mis-aimed write later.
+    A **problem** is an inconsistency: a member that runs off the end of the bytes read,
+    two members whose sectors overlap, a `.SEC`'s records out of order, or live bytes no
+    member claims. Each means the directory has drifted from the archive, and finding it
+    here is what keeps a later write from being mis-aimed.
+
+    A **gap** is a run of sectors no member covers, reported as `(lba, sectors)`. The
+    retail archive has none — it tiles exactly — but `PIPE-03` relocates a member that has
+    outgrown its sectors and **zeroes the ones it leaves**, so a gap is the normal shape of
+    a built image and is not a problem *as long as it is zero*.
+
+    Coverage alone is weaker than the exact tiling this used to require, and in one way
+    that matters: coverage is invariant under a *permutation*. Two equal-sized records of
+    one `.SEC` with their `sector` fields swapped still cover every sector exactly once,
+    and a rebuild would then write one map's English into the other's bytes. `_record_order`
+    is what restores that, in the only form a relocated member leaves room for.
     """
     problems: list[str] = []
     entries = read_exe_dir(exe)
     total = len(boku) // SECTOR
-    inside = [e for e in entries if BOKU_BIN_LBA <= e.lba < BOKU_BIN_LBA + total]
+    inside = [e for e in entries if base_lba <= e.lba < base_lba + total]
     by_name = {e.name.rsplit("\\", 1)[-1]: e for e in inside}
     out: list[Member] = []
 
     def blob(e: DirEntry) -> bytes:
-        o = (e.lba - BOKU_BIN_LBA) * SECTOR
+        o = (e.lba - base_lba) * SECTOR
         return boku[o : o + e.size]
 
-    pos = 0
+    def member(index: int, sub: int | None, name: str, lba: int, size: int) -> Member:
+        return Member(
+            index,
+            sub,
+            name,
+            (lba - base_lba) * SECTOR,
+            size,
+            is_directory_placeholder=sub is None and "." not in name.rsplit("\\", 1)[-1],
+            base_lba=base_lba,
+        )
+
     for e in inside:
-        rel = e.lba - BOKU_BIN_LBA
-        if rel != pos:
-            problems.append(f"top-level: {e.name} starts at sector {rel}, expected {pos}")
-        pos = rel + e.sectors
         short = e.name.rsplit("\\", 1)[-1]
         if short in SUB_ARCHIVES:
             sec_name, parse = SUB_ARCHIVES[short]
-            recs = parse(blob(by_name[sec_name])).records
-            sub_pos = 0
-            for i, r in enumerate(recs):
-                if r.sector != sub_pos:
-                    problems.append(f"{short}: {r.key} at sector {r.sector}, expected {sub_pos}")
-                sub_pos = r.sector + (r.size + SECTOR - 1) // SECTOR
-                out.append(
-                    Member(e.index, i, f"{e.name}\\{r.key}", (rel + r.sector) * SECTOR, r.size)
-                )
-            if sub_pos != e.sectors:
-                problems.append(
-                    f"{short}: records end at sector {sub_pos}, container has {e.sectors}"
-                )
+            for i, r in enumerate(parse(blob(by_name[sec_name])).records):
+                out.append(member(e.index, i, f"{e.name}\\{r.key}", e.lba + r.sector, r.size))
         else:
-            out.append(
-                Member(
-                    e.index,
-                    None,
-                    e.name,
-                    rel * SECTOR,
-                    e.size,
-                    is_directory_placeholder="." not in short,
-                )
+            out.append(member(e.index, None, e.name, e.lba, e.size))
+
+    for index in {m.dir_index for m in out if m.sub_index is not None}:
+        problems += _record_order(
+            [m for m in out if m.dir_index == index and m.sub_index is not None]
+        )
+
+    covered = bytearray(total)
+    for m in sorted(out, key=lambda m: m.offset):
+        first = m.offset // SECTOR
+        if m.offset < 0 or first + m.sectors > total:
+            problems.append(
+                f"{m.short_name} spans sectors {first}..{first + m.sectors - 1} of an "
+                f"archive that has {total}"
             )
-    if pos != total:
-        problems.append(f"top-level ends at sector {pos}, {ARCHIVE_NAME} has {total}")
-    return out, problems
+            continue
+        for s in range(first, first + m.sectors):
+            if covered[s]:
+                problems.append(f"{m.short_name} overlaps another member at sector {s}")
+                break
+            covered[s] = 1
+    gaps: list[tuple[int, int]] = []
+    s = 0
+    while s < total:
+        if covered[s]:
+            s += 1
+            continue
+        end = s
+        while end < total and not covered[end]:
+            end += 1
+        gaps.append((base_lba + s, end - s))
+        if any(boku[s * SECTOR : end * SECTOR]):
+            problems.append(
+                f"sectors {base_lba + s}..{base_lba + end - 1} belong to no member and are "
+                f"not zero: the directory has drifted from the archive, or a member was "
+                f"moved without its old sectors being cleared"
+            )
+        s = end
+    return out, problems, gaps
+
+
+def _record_order(members: list[Member]) -> list[str]:
+    """Problems with one `.SEC`'s records: a member that went backwards without leaving.
+
+    The retail invariant is that record order *is* sector order, and coverage alone cannot
+    see it broken: two equal-sized records with their `sector` fields exchanged still tile
+    the container exactly, and a rebuild would then write one map's English into the
+    other's bytes.
+
+    A relocation breaks the invariant in exactly one way, and it is a way that names
+    itself: the moved member goes into the arena, which is **below `BOKU.BIN`**. So the
+    records still inside the archive must be in order — with zero holes allowed, because
+    that is what a member leaves when it goes — and the ones below it are unconstrained,
+    which is the whole point of being there.
+    """
+    problems: list[str] = []
+    position = 0
+    for member in sorted(members, key=lambda m: m.sub_index or 0):
+        if member.lba < BOKU_BIN_LBA:
+            continue
+        if member.lba < position:
+            problems.append(
+                f"{member.short_name} is record {member.sub_index} and starts at LBA "
+                f"{member.lba}, behind record {member.sub_index - 1 if member.sub_index else 0}"
+                f" which ends at {position}: the .SEC's records have been reordered"
+            )
+            continue
+        position = member.lba + member.sectors
+    return problems
 
 
 # --- the import, opened ------------------------------------------------------------------
@@ -538,7 +632,7 @@ class Archive:
 
     Everything downstream addresses bytes through this object, so there is one place that
     knows the archive is `BOKU.BIN` with a directory in `SCPS_100.88` and one place that
-    refuses an import whose tiling does not check out.
+    refuses an import whose directory disagrees with its bytes.
     """
 
     def __init__(
@@ -548,6 +642,7 @@ class Archive:
         exe: bytes | None = None,
         boku: bytes | None = None,
         source: str | None = None,
+        base_lba: int = BOKU_BIN_LBA,
     ) -> None:
         """Open an import. `exe`/`boku` supply the two files directly (`from_bytes`).
 
@@ -555,6 +650,9 @@ class Archive:
         over a directory — every attribute either kind has, both kinds have.
         """
         self.disc_dir = Path(disc_dir)
+        self.base_lba = base_lba
+        """The disc LBA the `boku` bytes start at. `BOKU.BIN`'s own 1046 for an import;
+        lower for an archive read back over the filler `PIPE-03` relocates members into."""
         files = self.disc_dir / "files"
         self.exe_path = files / EXE_NAME
         self.archive_path = files / ARCHIVE_NAME
@@ -576,16 +674,21 @@ class Archive:
         self._index()
 
     def _index(self) -> None:
-        self.members, self.problems = build_members(self.exe, self.boku)
+        # `gaps` is the sectors no member claims, `(lba, sectors)` -- empty on the retail
+        # archive, and where a relocated member's old sectors show up on a built one.
+        self.members, self.problems, self.gaps = build_members(self.exe, self.boku, self.base_lba)
         self._by_short: dict[str, Member] = {}
         for m in self.members:
             if m.short_name in self._by_short:
                 raise ArchiveError(f"two members are named {m.short_name}")
             self._by_short[m.short_name] = m
-        self._starts = [m.offset for m in self.members]
+        self._ordered = sorted(self.members, key=lambda m: m.offset)
+        self._starts = [m.offset for m in self._ordered]
 
     @classmethod
-    def from_bytes(cls, exe: bytes, boku: bytes, source: str = "<bytes>") -> Archive:
+    def from_bytes(
+        cls, exe: bytes, boku: bytes, source: str = "<bytes>", base_lba: int = BOKU_BIN_LBA
+    ) -> Archive:
         """The same archive over two byte strings rather than two files on disk.
 
         What `PIPE-05`'s round-trip gate reads a *built image* back through: the two files
@@ -593,13 +696,19 @@ class Archive:
         member map, the structural walk, the line ids — then works on the build's own
         output exactly as it works on the import. `source` only names them in messages.
         """
-        return cls(exe=exe, boku=boku, source=source)
+        return cls(exe=exe, boku=boku, source=source, base_lba=base_lba)
 
     def require_clean(self) -> None:
-        """Refuse an archive whose members do not tile it exactly."""
+        """Refuse an archive whose members overlap or run off its end.
+
+        Not a tiling check any more: a relocated member leaves a hole (`build_members`),
+        and a hole is reported as a gap. What is refused is a directory that disagrees
+        with the bytes — which is what would mis-aim a write.
+        """
         if self.problems:
             raise ArchiveError(
-                f"{self.source} does not tile: {self.problems[0]} ({len(self.problems)} problems)"
+                f"{self.source}'s directory disagrees with its bytes: {self.problems[0]} "
+                f"({len(self.problems)} problems)"
             )
 
     def member(self, short_name: str) -> Member:
@@ -613,7 +722,10 @@ class Archive:
 
     def owner(self, offset: int) -> Member | None:
         """The member whose bytes cover `offset`, or `None` if it falls in sector padding."""
-        m = self.members[bisect_right(self._starts, offset) - 1]
+        index = bisect_right(self._starts, offset) - 1
+        if index < 0:
+            return None
+        m = self._ordered[index]
         return m if offset < m.offset + m.size else None
 
     def exe_bytes(self, ram: int, n: int) -> bytes:

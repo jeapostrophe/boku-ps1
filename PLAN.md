@@ -318,9 +318,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       limits refuse with numbers at the boundary (`0x4000` block, `0x6400` work area, sector
       slack, array growth, SELECT line count). A pixel-width wrapper lays English into pages
       keeping voiced lines' page count and timers. One real line grown by a few words at all
-      19 copies re-extracts correctly and boots on Beetle PSX. **Left to do — the hard half:**
-      growth past a member's sector allocation (move members, rewrite `.SEC` sector fields
-      and `g_cd_dir`). Estimate from the samples' expansion (2.6 chars per glyph, 5.85 px per
+      19 copies re-extracts correctly and boots on Beetle PSX. **The hard half is built too** (`boku/relocate.py`,
+      `research/relocation.md`): a `.SEC` member's sector is `lhu`-relative to its container's
+      `g_cd_dir` LBA, so a member that outgrows its sectors is moved into the 765 filler
+      sectors before `BOKU.BIN` by REBASING its container there; top-level members move by their
+      two directory words. Proven: the first map relocated to LBA 281 with its old home zeroed
+      boots on Beetle PSX and draws the marker. **Left to do:** the allocator never re-uses
+      vacated sectors — the estimate needs 233 net sectors against the 765 available, but the
+      bump allocator asks for 10,860 and refuses; make it fill vacated runs. Earlier estimate,
+      now measured at 174 of 622 members (28%) outgrowing, worst 7,688 bytes over: Estimate from the samples' expansion (2.6 chars per glyph, 5.85 px per
       char): **150 of 632 text-bearing members (24%) would outgrow their sectors**, ~95
       sectors in all, worst `M_G16101` at 6,028 bytes over; only 6 maps would also pass
       `0x6400`, and no page needs more than 4 band lines — the container, not the box, is the

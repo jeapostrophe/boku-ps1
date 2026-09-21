@@ -12,9 +12,11 @@ from __future__ import annotations
 import pytest
 
 from boku.archive import (
+    BOKU_BIN_LBA,
     SECTOR,
     ArchiveError,
     build_members,
+    dir_arrays,
     entropy,
     parse_offtab,
     parse_pack,
@@ -174,29 +176,41 @@ def _two_members() -> tuple[bytes, bytes]:
 
 def test_a_sub_archive_expands_into_one_member_per_record():
     exe, blob = _two_members()
-    members, problems = build_members(exe, blob)
-    assert problems == []
+    members, problems, gaps = build_members(exe, blob)
+    assert (problems, gaps) == ([], [])
     assert [m.short_name for m in members] == ["_DATA", "EV0006.BIN", "EV0010.BIN", "EV.SEC"]
     assert [m.offset for m in members] == [0, SECTOR, 2 * SECTOR, 3 * SECTOR]
     assert [m.sub_index for m in members] == [None, 0, 1, None]
 
 
-def test_a_member_that_does_not_start_where_the_last_one_ended_is_a_problem():
-    """The tiling gate. Without it a stale directory aims every later write one sector off."""
+def test_a_member_the_directory_has_stopped_pointing_at_is_a_problem():
+    """A drifted directory leaves live bytes claimed by nobody, and that is the gate.
+
+    `PIPE-03` relocates members, so "every member starts where the last one ended" is no
+    longer true of a built archive — the sectors a relocation vacates are a hole. What
+    stays true is that a hole is **zero**: the build clears what it moves out of. So a
+    hole with bytes in it is the drift this used to catch, and a hole without is the
+    normal shape of a relocated image.
+
+    Moving `EV.SEC`'s entry also costs the records it holds, so the archive this builds is
+    a larger breakage than the hole alone — the hole is what is asserted, because it is
+    the part that stays true when the drifted entry is an ordinary member.
+    """
     exe, blob = _two_members()
-    _members, problems = build_members(exe, blob)
-    assert problems == []
+    _members, problems, gaps = build_members(exe, blob)
+    assert (problems, gaps) == ([], [])
     shifted = bytearray(exe)
-    # Move EV.SEC's own directory entry one sector later, leaving a hole.
-    entries = read_exe_dir(exe)
-    sec = next(e for e in entries if e.name.endswith("EV.SEC"))
-    off = synth.DIR_COUNT_ADDR - synth.EXE_LOAD_BIAS - 12 * len(entries) + 4 * sec.index
+    # Move EV.SEC's own directory entry one sector later, leaving its bytes behind.
+    sec = next(e for e in read_exe_dir(exe) if e.name.endswith("EV.SEC"))
+    off = dir_arrays(exe).lba_offset(sec.index)
     shifted[off : off + 4] = (sec.lba + 1).to_bytes(4, "little")
-    _members, problems = build_members(bytes(shifted), blob + bytes(SECTOR))
-    assert any("expected" in p for p in problems)
+    _members, problems, gaps = build_members(bytes(shifted), blob + bytes(SECTOR))
+    assert gaps and gaps[0][0] > BOKU_BIN_LBA, "the hole was not reported"
+    assert any("belong to no member and are not zero" in p for p in problems)
 
 
-def test_a_sec_whose_records_do_not_fill_its_container_is_a_problem():
+def test_a_sec_whose_records_do_not_fill_its_container_is_a_zeroed_gap():
+    """The other half of the rule above: an unclaimed run of zeros is reported, not refused."""
     ev_bin = bytes(3 * SECTOR)  # one sector more than the records account for
     blob, entries = synth.archive_of(
         [
@@ -206,8 +220,79 @@ def test_a_sec_whose_records_do_not_fill_its_container_is_a_problem():
     )
     builder = synth.ExeBuilder()
     builder.directory(entries)
-    _members, problems = build_members(builder.build(), blob)
-    assert any("records end at sector" in p for p in problems)
+    _members, problems, gaps = build_members(builder.build(), blob)
+    assert problems == []
+    assert gaps == [(BOKU_BIN_LBA + 2, 1)]
+
+
+def test_two_records_with_their_sectors_swapped_are_a_problem():
+    """Coverage cannot see a permutation, and a permutation mis-aims every write.
+
+    Two equal-sized records with their `sector` fields exchanged still cover every sector
+    of the container exactly once, so the overlap and gap checks are both silent — and a
+    rebuild would put `EV0006`'s English into `EV0010`'s bytes. The `.SEC` record order is
+    what says which is which, and it is checked because of that.
+    """
+    ev_bin = bytes(2 * SECTOR)
+    in_order = [(6, 100, 0), (10, 200, 1)]
+    swapped = [(6, 100, 1), (10, 200, 0)]
+    for records, wanted in ((in_order, False), (swapped, True)):
+        blob, entries = synth.archive_of(
+            [("\\_DATA\\EV.BIN", ev_bin), ("\\_DATA\\EV.SEC", synth.sec_ev(records))]
+        )
+        builder = synth.ExeBuilder()
+        builder.directory(entries)
+        _members, problems, gaps = build_members(builder.build(), blob)
+        assert gaps == [], "the swap left a hole; then coverage would have caught it"
+        assert any("records have been reordered" in p for p in problems) is wanted, problems
+
+
+def test_a_record_that_moved_into_the_arena_is_a_relocation_not_a_reordering():
+    """The one exception, and the line it is drawn on: below `BOKU.BIN` is the arena.
+
+    `PIPE-03` relocates record 1 into the filler and rebases the container to match, which
+    leaves the records out of order on purpose — record 1 below record 0 — and a zero hole
+    where it used to be. Nothing here may be reported, or every built image is refused.
+    """
+    arena = 2
+    base = BOKU_BIN_LBA - arena
+
+    def laid_out(records):
+        """`EV.BIN` + `EV.SEC` over the arena, with `EV.SEC` really holding `records`."""
+        blob, entries = synth.archive_of(
+            [
+                ("\\_DATA\\EV.BIN", bytes(2 * SECTOR)),
+                ("\\_DATA\\EV.SEC", synth.sec_ev(records)),
+            ]
+        )
+        return bytes(arena * SECTOR) + blob, entries
+
+    # Two passes: the records' `sector` fields are relative to the rebased container, so
+    # the layout has to exist before they can be written. `sec_ev`'s length depends only
+    # on the record count, so the second pass lands in exactly the same place.
+    _blob, entries = laid_out([(6, 100, 0), (10, 200, 0)])
+    ev_lba = next(lba for name, lba, _size in entries if name.endswith("EV.BIN"))
+    # Record 0 stays in the archive; record 1 is in the arena and the container is rebased
+    # to the arena's first sector, so both records count from `base`.
+    blob, entries = laid_out([(6, 100, ev_lba - base), (10, 200, 0)])
+    builder = synth.ExeBuilder()
+    builder.directory(
+        [(name, base if name.endswith("EV.BIN") else lba, size) for name, lba, size in entries]
+    )
+    members, problems, gaps = build_members(builder.build(), blob, base)
+    assert [m.lba for m in members if m.sub_index is not None] == [ev_lba, base], (
+        "the fixture did not put record 1 in the arena and record 0 in the archive"
+    )
+    assert any(lba < BOKU_BIN_LBA for lba, _count in gaps), "the arena was not read at all"
+    assert not any("reordered" in p for p in problems), problems
+
+    # The same two records with the out-of-order one left *inside* `BOKU.BIN` is the
+    # permutation, and it is reported. The boundary is the whole rule.
+    blob, entries = laid_out([(6, 100, 1), (10, 200, 0)])
+    builder = synth.ExeBuilder()
+    builder.directory(entries)
+    _members, problems, _gaps = build_members(builder.build(), blob, base)
+    assert any("reordered" in p for p in problems), problems
 
 
 def test_a_map_record_is_named_after_its_name_field():

@@ -191,8 +191,9 @@ def test_the_archive_tiles_exactly_as_the_note_measured(archive: Archive):
     (members,) = quoted_numbers(
         "boku-bin.md", r"`data/boku-bin-members\.tsv`: ([\d,]+) leaf members"
     )
-    _built, problems = build_members(archive.exe, archive.boku)
+    _built, problems, gaps = build_members(archive.exe, archive.boku)
     assert problems == []
+    assert gaps == [], "the retail archive tiles exactly; nothing is unclaimed"
     assert len(archive.members) == members
     assert sum(m.sectors for m in archive.members) == covered == total
     assert total == len(archive.boku) // 2048

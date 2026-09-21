@@ -97,6 +97,13 @@ XA_ATTR_DIRECTORY = 0x8000
 _READ_CHUNK_SECTORS = 64
 """Sectors per `read` while streaming a file; purely a syscall-count tradeoff."""
 
+FILLER_TO_FORM1_SUBHEADER = bytes([0, 0, SUBMODE_DATA, 0]) * 2
+"""What a converted filler sector's subheader becomes: file 0, channel 0, Form 1 data.
+
+The same value `BOKU.BIN`'s own sectors carry (`08` everywhere but its last, which adds
+the end-of-file and end-of-record bits). A member is a run of plain data sectors inside a
+file, so the run `PIPE-03` writes outside one carries no end marks either."""
+
 
 class DiscError(Exception):
     """The image is not the shape this module can read."""
@@ -225,7 +232,7 @@ class XaAttributes:
         return [name for bit, name in named if self.attributes & bit]
 
 
-def _form1_sectors(size: int) -> int:
+def form1_sectors(size: int) -> int:
     """Sectors a `size`-byte extent spans at 2048 bytes of user data per sector."""
     return (size + FORM1_DATA_SIZE - 1) // FORM1_DATA_SIZE
 
@@ -249,7 +256,7 @@ class DirEntry:
     @property
     def sector_count(self) -> int:
         """Form 1 sectors the extent spans (how many sectors a cooked read would take)."""
-        return _form1_sectors(self.size)
+        return form1_sectors(self.size)
 
 
 @dataclass(frozen=True)
@@ -387,7 +394,7 @@ class DiscImage:
         if size < 0:
             raise DiscError(f"file at sector {lba} has negative size {size}")
         remaining = size
-        count = _form1_sectors(size)
+        count = form1_sectors(size)
         for sector in self.iter_sectors(lba, count):
             if sector.form != 1:
                 raise DiscError(
@@ -426,6 +433,26 @@ class DiscImage:
             blocks.append(sector.data)
         start = offset % FORM1_DATA_SIZE
         return b"".join(blocks)[start : start + length]
+
+    def read_form1_span(self, lba: int, sectors: int) -> bytes:
+        """`sectors * 2048` bytes from `lba`, reading a zero-filled Form 2 sector as zeros.
+
+        A span that runs over filler holds sectors of both forms. Zero-filled Form 2
+        filler contributes its 2,048 zero bytes; a Form 2 sector carrying anything else is
+        real-time data, not filler, and is refused rather than silently flattened.
+        """
+        out = bytearray()
+        for sector in self.iter_sectors(lba, sectors):
+            if sector.form == 1:
+                out += sector.data
+                continue
+            if any(sector.data):
+                raise DiscError(
+                    f"sector {sector.lba} is Mode 2 Form 2 and not zero-filled; it is "
+                    f"real-time data, not filler, and holds no archive bytes"
+                )
+            out += bytes(FORM1_DATA_SIZE)
+        return bytes(out)
 
     def sha1_file(self, lba: int, size: int) -> str:
         digest = hashlib.sha1()
@@ -480,7 +507,7 @@ class DiscImage:
         so a zero length byte means "this sector's records are done", not "the directory is".
         """
         entries: list[DirEntry] = []
-        sector_count = _form1_sectors(size)
+        sector_count = form1_sectors(size)
         for sector in self.iter_sectors(lba, sector_count):
             if sector.form != 1:
                 raise DiscError(f"directory at sector {lba}: sector {sector.lba} is Form 2")
@@ -572,6 +599,49 @@ class DiscWriter(DiscImage):
                 f"sector {lba}: {len(data)} bytes of user data, Form 1 holds {FORM1_DATA_SIZE}"
             )
         new = edc.set_form1_data(old, data)
+        if new == old:
+            return None
+        self._write_raw(lba, new)
+        return SectorWrite(
+            lba=lba,
+            old_sha1=hashlib.sha1(old).hexdigest(),
+            new_sha1=hashlib.sha1(new).hexdigest(),
+        )
+
+    def write_data_sector(self, lba: int, data: bytes) -> SectorWrite | None:
+        """Replace sector `lba`'s user data, converting zero-filled Form 2 filler to Form 1.
+
+        `write_sector_data` refuses a Form 2 sector, and it is right to: Form 2 is XA, its
+        user data is 2,324 bytes and its streams are interleaved by channel. But the room
+        `PIPE-03` relocates a member into is the filler before `BOKU.BIN`, which belongs
+        to no file and is **zero-filled Form 2** (`boku.relocate.unclaimed_runs`), and the
+        game's loader reads Form 1 user data and nothing else. So a filler sector is
+        rewritten as Form 1: the sync pattern and header are carried through, both
+        subheader copies become `FILLER_TO_FORM1_SUBHEADER`, and EDC and ECC are
+        regenerated.
+
+        The conversion is refused unless the sector's own 2,324 user bytes are all zero,
+        because that is the only thing that distinguishes filler nobody owns from real XA
+        audio, and converting one sector of a voice stream would be silent damage.
+        """
+        old = self.read_raw(lba)
+        sector = parse_sector(old, lba)
+        if sector.form == 1:
+            return self.write_sector_data(lba, data)
+        if any(sector.data):
+            raise DiscError(
+                f"sector {lba} is Mode 2 Form 2 and its {len(sector.data)} user bytes are "
+                f"not all zero, so it is real-time data and not filler; refusing to "
+                f"rewrite it as a Form 1 data sector. Nothing was written."
+            )
+        raw = bytearray(old)
+        raw[SUBHEADER_OFFSET : SUBHEADER_OFFSET + SUBHEADER_SIZE] = FILLER_TO_FORM1_SUBHEADER
+        return self.write_sector_data_raw(lba, bytes(raw), data)
+
+    def write_sector_data_raw(self, lba: int, raw: bytes, data: bytes) -> SectorWrite | None:
+        """`write_sector_data` over a caller-supplied raw sector rather than the stored one."""
+        new = edc.set_form1_data(raw, data)
+        old = self.read_raw(lba)
         if new == old:
             return None
         self._write_raw(lba, new)

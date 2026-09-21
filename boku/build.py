@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import json
 import shutil
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -59,6 +59,7 @@ from boku.layout import (
     lay_out_select,
 )
 from boku.reinsert import ByteEdit, Plan, ReinsertRefused, check_disjoint, plan
+from boku.relocate import RelocationRefused, SectorEdit
 from boku.sites import SiteError, Walk, load
 from boku.staging import StagingRefused, staged
 from boku.translation import SampleScenes, TranslationError, TranslationSource
@@ -217,6 +218,72 @@ def apply_edit(
     )
 
 
+ARENA_FILE = "(no file)"
+"""What the manifest calls a sector that belongs to no file: `PIPE-03`'s relocation arena."""
+
+
+def verify_sectors(
+    image: DiscImage, edits: Sequence[SectorEdit], refused: type[Exception] = BuildRefused
+) -> None:
+    """Refuse unless every sector a relocation writes still holds what it expects.
+
+    The counterpart of `verify_edits` for the sectors outside every file. A Form 2 filler
+    sector reads as its 2,048 zero bytes (`DiscImage.read_form1_span`), so an arena that
+    has already been written into — a second build over a built image — is a refusal here
+    and not a member quietly laid over another one.
+    """
+    for edit in edits:
+        if edit.lba < 0 or edit.end > image.sector_count:
+            raise refused(
+                f"{edit.reason}: sectors {edit.lba}..{edit.end - 1} fall outside the "
+                f"{image.sector_count}-sector image. Nothing was written."
+            )
+        found = image.read_form1_span(edit.lba, edit.sectors)
+        if found != edit.old:
+            at = next(i for i in range(len(edit.old)) if found[i] != edit.old[i])
+            raise refused(
+                f"LBA {edit.lba + at // FORM1_DATA_SIZE}+0x{at % FORM1_DATA_SIZE:x} holds "
+                f"{found[at : at + 8].hex(' ')} and the build expects "
+                f"{edit.old[at : at + 8].hex(' ')} ({edit.reason}). Either this image is "
+                f"already patched, or it is not the dump these offsets were read from; "
+                f"nothing was written."
+            )
+
+
+def apply_sector_edit(
+    writer: DiscWriter, entries: dict[str, DirEntry], edit: SectorEdit, ledger: Ledger
+) -> None:
+    """Write whole sectors by LBA, converting Form 2 filler as it goes.
+
+    A relocation writes two runs and they are not both outside a file: the member's new
+    home is in the arena, which belongs to none, but the sectors it *vacates* are inside
+    `BOKU.BIN`. The manifest names the file a sector really belongs to, so a diff of the
+    built image can be checked against it row by row (`boku trial`).
+    """
+    writes = []
+    for i in range(edit.sectors):
+        write = writer.write_data_sector(
+            edit.lba + i, edit.new[i * FORM1_DATA_SIZE : (i + 1) * FORM1_DATA_SIZE]
+        )
+        if write is not None:
+            writes.append(write)
+    name, origin = _owning_file(entries, edit.lba)
+    ledger.add(writes, name, origin)
+
+
+def _owning_file(entries: Mapping[str, DirEntry], lba: int) -> tuple[str, int]:
+    """`(file name, that file's first LBA)` for `lba`, or `ARENA_FILE` and `lba` itself.
+
+    `Ledger.add` reports each sector's offset from the second value, so an arena sector's
+    is measured from the start of the run being written rather than from a file it is not
+    in.
+    """
+    for name, entry in entries.items():
+        if entry.lba <= lba < entry.lba + (entry.size + FORM1_DATA_SIZE - 1) // FORM1_DATA_SIZE:
+            return name, entry.lba
+    return ARENA_FILE, lba
+
+
 def write_image(
     source: Path,
     out_dir: Path,
@@ -226,6 +293,7 @@ def write_image(
     what: str = "build",
     suffix: str = "building",
     refused: type[Exception] = BuildRefused,
+    sectors: Sequence[SectorEdit] = (),
 ) -> WrittenImage:
     """Copy `source` to `out_dir/image.img` and apply `edits` to the copy, in place.
 
@@ -235,7 +303,9 @@ def write_image(
     """
     source = Path(source)
     out_dir = Path(out_dir).resolve()
-    entries = check_before_writing(source, out_dir, edits, what=what, refused=refused)
+    entries = check_before_writing(
+        source, out_dir, edits, what=what, refused=refused, sectors=sectors
+    )
     with staged(out_dir, suffix=suffix) as stage:
         image = stage / IMAGE_NAME
         shutil.copyfile(source, image)
@@ -243,8 +313,11 @@ def write_image(
         ledger = Ledger()
         with DiscWriter(image) as writer:
             verify_edits(writer, entries, edits, refused)
+            verify_sectors(writer, sectors, refused)
             for edit in edits:
                 apply_edit(writer, entries, edit, ledger)
+            for sector_edit in sectors:
+                apply_sector_edit(writer, entries, sector_edit, ledger)
             writer.flush()
         written = WrittenImage(
             image=out_dir / IMAGE_NAME,
@@ -265,6 +338,7 @@ def check_before_writing(
     *,
     what: str = "build",
     refused: type[Exception] = BuildRefused,
+    sectors: Sequence[SectorEdit] = (),
 ) -> dict[str, DirEntry]:
     """Everything that can be refused *before* the 660 MB copy, in one place.
 
@@ -279,6 +353,7 @@ def check_before_writing(
     with DiscImage(source) as reader:
         entries = file_entries(reader, refused)
         verify_edits(reader, entries, edits, refused)
+        verify_sectors(reader, sectors, refused)
     return entries
 
 
@@ -509,6 +584,7 @@ def build(
     # inside one would be applied over the rebuild at an offset the growth has already
     # moved -- and would verify against the *source* first, so nothing would notice.
     check_disjoint(edits)
+    sectors = list(the_plan.sectors) if the_plan else []
     result = BuildResult(
         written=None,
         plan=the_plan,
@@ -520,7 +596,7 @@ def build(
         binary_patches=tuple(binary_patches),
     )
     if dry_run:
-        check_before_writing(source, out_dir, edits, what=name)
+        check_before_writing(source, out_dir, edits, what=name, sectors=sectors)
         return result
     result.written = write_image(
         source,
@@ -528,6 +604,7 @@ def build(
         edits,
         manifest=lambda written: manifest_json(written, result, name),
         what=name,
+        sectors=sectors,
     )
     return result
 
@@ -577,6 +654,22 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
         },
         "members_rebuilt": sorted(result.plan.members_rebuilt) if result.plan else [],
         "member_growth": dict(sorted(result.plan.growth.items())) if result.plan else {},
+        "relocations": [
+            {
+                "member": placement.member,
+                "from_lba": placement.old_lba,
+                "to_lba": placement.lba,
+                "sectors": placement.sectors,
+                "was_sectors": placement.old_sectors,
+                "size": placement.size,
+            }
+            for placement in sorted(
+                result.plan.relocations if result.plan else (), key=lambda p: p.member
+            )
+        ],
+        "rebased_containers": (
+            {str(k): v for k, v in sorted(result.plan.layout.bases.items())} if result.plan else {}
+        ),
         "binary_patches": [
             {
                 "file": patch.file,
@@ -633,6 +726,18 @@ def format_summary(result: BuildResult) -> str:
         )
         for member, delta in sorted(result.plan.growth.items()):
             out.append(f"    {member}: {delta:+d} bytes")
+        for placement in sorted(result.plan.relocations, key=lambda p: p.member):
+            out.append(
+                f"    {placement.member}: LBA {placement.old_lba} -> {placement.lba}, "
+                f"{placement.old_sectors} -> {placement.sectors} sectors"
+            )
+        for index, lba in sorted(result.plan.layout.bases.items()):
+            out.append(f"    g_cd_dir[{index}] rebased to LBA {lba}")
+        if result.plan.relocations:
+            out.append(
+                f"    arena: {result.plan.layout.free_after} of "
+                f"{result.plan.layout.free_before} sectors left"
+            )
     if result.written:
         out.append(f"  {len(result.written.sectors)} sectors changed; {result.written.manifest}")
         if result.written.unchanged:
@@ -677,6 +782,7 @@ def main_build(
         EventError,
         LayoutError,
         ReinsertRefused,
+        RelocationRefused,
         SiteError,
         StagingRefused,
         TextError,

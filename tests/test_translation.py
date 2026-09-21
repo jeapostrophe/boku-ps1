@@ -1,10 +1,10 @@
 """The provisional reader for the draft samples, and the seam it sits behind.
 
 `PIPE-02` — the committed translation format — is Jay's decision and is not made here, so
-what is tested is only that the loader reads what `translation/samples/` *already
+what is tested is only that the loader reads what `translation/days/` *already
 contains*, and that the seam (`TranslationSource`) is what the build depends on rather
-than any particular file format. The three sample files are tracked, so the fixtures here
-are the real ones: the loader is checked against the drafts it exists to read.
+than any particular file format. The day files are tracked, so the fixtures here are the real
+ones: the loader is checked against the translation it exists to read.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from __future__ import annotations
 from boku import REPO_ROOT
 from boku.translation import PreEncoded, SampleScenes
 
-SAMPLES = REPO_ROOT / "translation" / "samples"
+SAMPLES = REPO_ROOT / "translation" / "days"
 
 
 def write(tmp_path, text: str):
