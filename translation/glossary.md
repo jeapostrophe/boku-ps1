@@ -142,6 +142,7 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | 一生の宝物 | | a treasure for life | | the thread of days 22–28 | `E2204.2`, `E2830.2` |
 | 〜を手に入れた / 〜を見つけた | | Got the ... / Found ... | | system messages | `E0307.0`, `E0670.0` |
 | 鍵がかかっている | | It's locked. | | | `E8026.1` |
+| ランドセル | randoseru | school backpack | | not *randoseru*: § 0 test 4 — English has the word; the red, sticker-covered one is Shirabe's | `E8014.0` |
 
 ## 4. Play: insects, sumo, fishing, kites
 
@@ -348,7 +349,7 @@ globeflower · コスモス cosmos · ひまわり sunflower · 朝顔 morning g
 うん yeah / mm-hm · ううん / ん〜ん nuh-uh · え？ / へ？ huh? · へぇ ohh / huh · ふ〜ん hmm ·
 わぁい yay · やったぁ I did it! / all right! · あれ？ huh? / wait · あ〜あ aww / (sigh) · げ〜 /
 げぇ ugh · ひぇ〜 eek · がっくし (groan) · ちぇっ tch · こら / こらこら hey! / now, now · よっしゃ
-all right! · よいしょ heave-ho · ふわぁ (yawn) / *yaaawn* · イ〜だ / イ〜ッ nyaah! · わっ！ boo! ·
+all right! · よいしょ heave-ho (the slow heave) · えいっ Hup! (the quick effort cry, `E1006.2`) · ふわぁ (yawn) / *yaaawn* · イ〜だ / イ〜ッ nyaah! · わっ！ boo! ·
 チュ！ *smooch* · はい、チーズ the aunt never says it — she says "What does Dad like best?"
 and the children shout the answer "Cheese!" (`E0445.5`–`.6`, `E0923.6`, `E1606.1`); translate
 literally. Laughter: style guide § 7.

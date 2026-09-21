@@ -23,7 +23,7 @@ There is no Japanese in these files. With an imported disc,
 | file | events | status |
 |---|---|---|
 | [day01.txt](day01.txt) | `E0103`–`E0190` (27 events, 85 lines), `E0001` | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20) |
-| [shared.txt](shared.txt) | 67 day-independent events (146 rows: 79 text, 36 menus, 31 voice-only): every one day 1 can reach, the nearest outdoors, and those days 2–7 handed the day files | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20); the extension verified against the scene data and `EVVER.BIN` the same day |
+| [shared.txt](shared.txt) | 76 day-independent events (158 rows: 89 text, 36 menus, 33 voice-only): every one day 1 can reach, the nearest outdoors, those days 2–7 handed the day files, and the nine `boku coverage` found no day file had asked for (Ken-bo's fur, the sisters' room, the far waters, the beach, Saori's camp) | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20); the extension verified against the scene data and `EVVER.BIN` the same day; the coverage nine translated and reviewed against the Japanese the same day |
 
 ## shared.txt
 

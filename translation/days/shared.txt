@@ -4,8 +4,10 @@
 # condition day 1 can satisfy, and (c) is placed where the day-1 flow can walk, from 15:30, when
 # E0185 sets the clock, to bedtime — plus the day-independent events the later day files found
 # missing (E0006/E0007, E8054, E4038/E4039, E8063, E4026), which belong here so that each event is
-# translated once (translation/days/README.md). E1605 carries a day-16 id but its condition (day > 0)
-# and placement (H10, every variant, every slot) make it day-independent, so it is here too.
+# translated once (translation/days/README.md), and the nine `boku coverage` found nobody had been
+# asked for (E1006, E8014, E4019, E4020, E8059-E8061, E8064, E8065). E1605 carries a day-16 id but
+# its condition (day > 0) and placement (H10, every variant, every slot) make it day-independent, so
+# it is here too.
 #
 # Whether the day-1 flow can leave the grounds is UNTESTED. The house and grounds are the G and H
 # bases (bible § 7); the first version of this file excluded the outdoors (A–E) on three grounds
@@ -28,11 +30,12 @@
 # already holds E0001, the other day-independent event of the day.
 #
 # Order: the afternoon indoors (E0022, E0221, E4029, the kitchen, dining room, washroom, hall,
-# altar room, Boku's room, the landing, the veranda, the television room), the grounds (the gate,
-# Ken-bo, the trellis, the garden animals, the sheds, the clay room, the workshop, behind it, the
-# kiln, the water), the nearest outdoors (the pond, the tool store, the Jizo, the beehive, the
-# secret-base approach, the beetle trees, the hill), meals (E0006, E0007, E0009, E0010), the evening (E4028,
-# E0020, the locked doors, E0002, E0023).
+# altar room, Boku's room, the landing, the sisters' room, the veranda, the television room), the
+# grounds (the gate, Ken-bo and his fur, the trellis, the garden animals, the sheds, the clay room,
+# the workshop, behind it, the kiln, the water), the nearest outdoors (the pond and the two far
+# waters, the tool store, the Jizo, the beehive, the secret-base approach, the beetle trees, the
+# hill), the far outdoors (the beach, Saori's camp), meals (E0006, E0007, E0009, E0010), the
+# evening (E4028, E0020, the locked doors, E0002, E0023).
 #
 # Two conventions this file needs that day01.txt did not. A [SEL] whose first row is the question
 # (style guide § 13, E0020.0) lists the question as the first option: "Take a bath? | Yes | No".
@@ -144,6 +147,16 @@ E4027.0	[SEL]	Which will you look at? | Insect-collecting kit | Picture diary
 E0835.0	(voice only)
 E0835.1	(unlabelled)	It's locked.
 
+# --- E8014: the sisters' room (G15), examined; no condition of its own, in every G15 variant and
+#     slot, but E0835 keeps the door locked until E0830 unbans him on day 8 (day08.txt), so first
+#     read that day. The object is Shirabe's: Moe, at fifteen, is past carrying one.
+E8014.0	(unlabelled)	A red school backpack with stickers stuck all over it is sitting here.
+# NOTE E8014.0: "school backpack" for randoseru, the stiff leather satchel every Japanese
+#   schoolchild carries, red for a girl in 1975. English has a natural word for the job (style
+#   guide § 0, test 4) and § 15 keeps only its listed words in Japanese — randoseru is not on
+#   the list, so it is English (reviewer, 2026-09-20; "randoseru" is the rejected alternative,
+#   for the glossary). "peta-peta" — stuck on again and again — is "stuck all over it" (§ 7).
+
 # --- E4014: the veranda (G17), examined; not at 7:00 or 18:00. Voice only.
 E4014.0	(voice only)
 
@@ -173,6 +186,24 @@ E8027.1	(unlabelled)	It's locked.
 E4041.0	(voice only)
 E4041.1	(voice only)
 E8053.0	(unlabelled)	The sky-blue hose fixed to the tap is glittering.
+
+# --- E1006: Ken-bo at his kennel (H06), talked to, while flag 45 is set and flag 49 is not — the
+#     giant-fish chain (bible § 8): after the dinner E0904 (day09.txt; flag 44, day > 8) where the
+#     uncle says a fly big enough needs "Ken-bo's fur", and until the fur is taken (flag 49; the
+#     item "Ken-bo's Fur", glossary § 4e). Boku apologises, the dog answers (voice only), the yank,
+#     the dog again (voice only). Not on day 30, not at 19:00 on day 11, and not from 19:00 on
+#     day 29 once its cutscene sequencer (flag 251) has run — the multi-map evenings (bible § 8).
+E1006.0	Boku	Sorry...
+E1006.1	(voice only)
+E1006.2	Boku	Hup!
+E1006.3	(voice only)
+# NOTE E1006.0: "gomen ne..." to the dog, before the pull — the plain apology, no name added.
+# NOTE E1006.2: "ei!" is the effort cry of the pull, not a word; "Hup!" is the nearest English
+#   grunt (style guide § 7; glossary § 8 has "heave-ho" for the slower yoisho, and this is the
+#   quick one). "There!" and "Yah!" were the alternatives — the first says more than a grunt,
+#   the second reads as a shout at the dog (reviewer, 2026-09-20). The disc's speaker operand on
+#   this line is slot 1 with the label BOKU; the label is what the renderer draws, and the line
+#   is his.
 
 # --- The garden animals (H09, H10): talk targets 13-15 and E1605's actor 12, all voice only.
 #     E1605 carries a day-16 id, but its condition is day > 0 and it sits in every H10 variant and
@@ -232,6 +263,17 @@ E4054.0	Boku	Cold...
 #     purpose. Both A01 maps are the default variant (no EVVER row), so it is there any day the
 #     outdoors is walkable (header) until the rod comes (day 3 at the earliest, E0307).
 E0004.0	Boku	Cold...
+
+# --- E4019 / E4020: the water at B15 (the dragonfly swarm) and at D03 (by Dragon God Pond): the
+#     same line, the same clip (0004_00) and the same way as E0004 / E4054 — before the rod,
+#     MOVIE 22 then .0. With H24 and A01 these are the four water's-edge spots where fishing
+#     (PROG 32) takes over once Boku has the rod (bible § 8 item 2). Both maps of each are the
+#     default variant (no EVVER row); B15 lies beyond the beehive (E8063's header) and D03 in the
+#     D bases (E8064's header) — any day those are walkable.
+E4019.0	Boku	Cold...
+E4020.0	Boku	Cold...
+# NOTE E4019.0 / E4020.0: identical source text to E0004.0 / E4054.0 (18 bytes, the same small
+#   "i"), identical English (bible § 8 item 4).
 
 # --- E8057 / E8058: the tool store and the little graves (A07), examined; in all four A07
 #     variants (01 is days 26-27 after the sun shower), any day the outdoors is walkable (header).
@@ -293,6 +335,46 @@ E8063.0	(unlabelled)	A big, big cracked, gata-pon tree.
 #     E0020. All three answers end the event; the flying itself is code, not script (its fixed
 #     strings are tako@*, glossary § 4d).
 E4026.0	[SEL]	Fly the kite? | Yes | No
+
+# --- E8059-E8061: the beach (C14), examined — the hut's roof, the sign, the boat; no condition,
+#     both C14 maps the default variant (no EVVER row). The C bases lie beyond the log bridge
+#     (A16 → C04; flag 42 == 2, the chopping of E0807, day08.txt), first crossed with Shirabe on
+#     day 14 (E1402-E1406, day14.txt; E1405 is this beach), and then any day the outdoors is
+#     walkable.
+E8059.0	(unlabelled)	A big hole in the tin roof. An old, beat-up beach hut.
+E8060.0	(unlabelled)	It says "taka... of... of... will be..."
+E8061.0	(unlabelled)	In the bottom of the boat, a dried-up starfish and a banana peel... and to top it off, a dead cat!
+# NOTE E8059.0: "totan" is corrugated galvanised sheet — "tin roof" in American; "onboro" is
+#   "beat-up"; "beach hut" is the glossary's (§ 2). Two fragments in the Japanese, two in English.
+# NOTE E8060.0: the sign has lost most of its characters (style guide § 14, bible § 6). What
+#   survives, in order: the first two syllables of a word, a gap, "of", a gap, "of", a gap, the
+#   object particle, a gap, and the polite verb ending that closes a notice — the sign starts
+#   legibly and ends legibly; the gaps are in the middle. § 14 says translated as partly legible,
+#   gaps kept, and § 8 kind 3 says the Japanese shows where it must: the word-start stays as the
+#   sound "taka" (a Japanese reader cannot complete it either), the two "of"s are the particles,
+#   the object particle has no English word and is absorbed, and the polite ending becomes the
+#   notice auxiliary "will be" — which English puts before its verb, so the line ends on a gap
+#   where the Japanese ends on the verb. Rejected (reviewer, 2026-09-20): all romanised
+#   ("...ta ka... ...no... ...shimasu") — unvoiced, so no ear to match, and an English reader
+#   gets nothing where a Japanese reader gets the skeleton of a polite notice; it also opened
+#   with a gap the source does not have. The frame "It says ..." is E8013.0's.
+# NOTE E8061.0: "shigai" is a carcass; "a dead cat" is what a nine-year-old says of one, at the
+#   same strength (style guide § 12). "omake ni" — thrown in on top — is "to top it off".
+
+# --- E8064 / E8065: Saori's camp by Dragon God Pond (D07), examined — her books and her pot; no
+#     condition, both D07 maps the default variant (no EVVER row). How the D bases are first
+#     reached is not in the data this file was written from; the bible's evidence is day 17 — the
+#     narration on D06 and D11 (E1706, E1707, day17.txt) and the secret shortcut the same day
+#     (E1754, flag 70; bible § 7) — and Saori herself is first met on day 18 (E1861, at B13). Any
+#     day after that the outdoors is walkable.
+E8064.0	(unlabelled)	Lots of books are piled up, with the smell of the campfire soaked into them.
+E8065.0	(unlabelled)	Found only a little leftover coffee in the bottom of the pot.
+# NOTE E8064.0: "shimitsuita" — the smell has soaked in and stayed — is "soaked into them";
+#   "takibi" is her campfire (bible § 3), not a bonfire.
+# NOTE E8065.0: "hakken" → "Found ...", the glossary's frame (§ 3, as E8022.0); "chotto dake" is
+#   "only a little" — the "only" is the Japanese "dake", not an addition; "nominokoshita" — left
+#   undrunk — is "leftover"; "o-nabe" is her cooking pot, the polite "o-" being just how a child
+#   names it.
 
 # --- E0006 / E0007: the breakfast chorus (G02), 7:00 and 8:00 — the frame every breakfast event
 #     hangs on (bible § 2). E0006 sits in all five breakfast variants (G02001-005, EVVER's hour < 8
@@ -419,11 +501,13 @@ E0023.1	Boku	Yeah. Good night, Uncle.
 # * Duplicates. E8055.1 = E8066.0; E0835.1 = E8026.1 = E8027.1 = E8028.1 = E8029.1; E0009.0 =
 #   E0103.0; E0004.0 = E4054.0; E0007.0-.1 = E0010.0-.1 (= E0604.0-.1, day06.txt); E4038.0 =
 #   E4039.0 (identical source text, identical English — bible § 8 item 4).
-# * Left out, and why. E0001 is in day01.txt. E4001, E8014, E0830, E0833 (the sisters' room) —
-#   E0835 keeps the door locked until day 8. E0670, E4022-E4024, E4042, E1006, E1005 (sugar water,
-#   fishing spots, the dog once the fish chain starts, morning glories) — their flags are set on
-#   later days, and E0670 is in day06.txt. E4015 (the toilet), E4065, E5002, E5040-E5042 — no
+# * Left out, and why. E0001 is in day01.txt. E4001, E0830, E0833 (the sisters' room) — E0835
+#   keeps the door locked until day 8; E8014 is here because no day file had asked for it. E0670,
+#   E4022-E4024, E4042, E1005 (sugar water, fishing spots, morning glories) — their flags are set
+#   on later days, and E0670 is in day06.txt. E4015 (the toilet), E4065, E5002, E5040-E5042 — no
 #   text. E0205 and E0206 (the beehive, the fallen bridge) are day-independent by condition but
-#   carry day-2 ids and live in day02.txt. The farther outdoors — E4019, E4020 (B15, D03), E8059-
-#   E8061 (C14), E8064-E8065 (D07) — is beyond a day-1 afternoon whatever the gate does, and waits
-#   for the day files that reach it.
+#   carry day-2 ids and live in day02.txt.
+# * Beyond day 1, by the coverage pass. E1006 (Ken-bo's fur), E4019 / E4020 (the far waters),
+#   E8059-E8061 (the beach) and E8064 / E8065 (Saori's camp) are day-independent by condition
+#   and reachable only from days 9, 6 / 17, 14 and 17 — their headers say when. They are here,
+#   not in a day file, so that each is translated once.

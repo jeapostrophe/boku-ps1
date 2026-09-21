@@ -290,7 +290,7 @@ is translated literally with the Japanese word showing in the line (Q3, ruled 20
 | `E1861.3`–`.5`, `.27` | *Boku wa Boku* | style guide § 1 |
 | `E1420.0`, `E2320.0` | the title in dialogue | style guide § 1 |
 | `E1701.7`, `E3042.3` | spelling a nickname out syllable by syllable | § 7 |
-| `E8060.0` | a sign with most characters weathered away | § 14 |
+| `E8060.0` | a sign with most characters weathered away — settled (review, 2026-09-20): an English notice skeleton with the gaps kept, the one legible word-start showing as sound ("taka"); if the sign texture is ever redrawn it should match | § 14 |
 | `hhon@5328.10`, `.40` | *chō* puns in the insect book; `.48`/`.49` the swapped names; `.3`, `.21`, `.29`, `.33`, `.37`, `.39`, `.44`, `.46`, `.51` entries about the Japanese name | glossary § 4a |
 
 ## 7. Map bases → places
@@ -352,11 +352,11 @@ said and found in each base [script], and the walkthroughs' route descriptions. 
 | C04 | far end of the log bridge | `E1403` |
 | C05 | where the thing appears, on the sunflower road | `E1306`, `E1905` [xneo] |
 | C07, C08 | sunflower fields (photo at C08) | `E1404`, `E1606` |
-| C14 / C15 | the beach (hut, boat) / its right end (the ear bone) | `E1405`, `E8059`, `E1506` |
+| C14 / C15 | the beach — a tin-roofed hut with a holed roof, a weathered notice, a beached boat / its right end (the ear bone) | `E1405`, `E8059`–`E8061`, `E1506` |
 | C18 | the Cape of Winds | `E1406` |
 | D03 | water by Dragon God Pond | `E4020` |
 | D06 | the air-raid shelter (the book) | `E1706`, `E2305` |
-| D07 | Saori's camp | `E1960`, `E8064` |
+| D07 | Saori's camp — her book pile, her cooking pot | `E1960`, `E8064`, `E8065` |
 | D11 / D16 | Mt. Teppen trailhead sign / summit cairn | `E1707`, `E2505`, `E2506` |
 | E02, E05, E08/E09 | the secret shortcut: far end / the hollow trunk / a hole in the cave | `E1754`, `E2606`, `E2405` |
 | I00–I43 | single-purpose close-ups (introductions I31/I32, ice shaver I06, desk I19, kites I36–I43, morning glory I00–I03…) | |
