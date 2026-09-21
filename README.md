@@ -11,7 +11,9 @@ SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools an
 > loads. **Days 1–7 of the script play in English on Beetle PSX**
 > (`./make.sh build-days`): proportional text in a band under the scene, page arrows, choice
 > menus, 708 lines laid out and reinserted with members relocated where they grew. The rest
-> of the script waits on that being played and judged; the speaker label is not drawn yet.
+> of the script waits on that being played and judged. Ruled 2026-09-20: the game's own font
+> with a width table, the smallest band, the tab-separated day files as the format, and the
+> programmatic redraw for the diary pages.
 
 ## Why the PS1 version
 

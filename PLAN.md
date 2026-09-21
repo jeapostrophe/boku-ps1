@@ -209,22 +209,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       (155 inked-unused + 24 blank; 347 if the sheet grows to its 1,680-slot VRAM ceiling) —
       not the 583 a heuristic scan suggested. English needs about 12 new cells. The font's
       VRAM page is unchanged across five sampled moments; row 240 is in use.
-- [ ] **[TXT-03]** **Choose how English gets on screen.** `[MINE: product]` — **the evidence is
-      in: look at `work/txt06/DECIDE.png`** (local; built by `work/txt06/`, described in
-      `research/font-candidates.md`). Recommendation on the table: horizontal band + the in-place
-      9-slot width table + Latin cells left-aligned in a sheet rebuilt at build time from the
-      contributor's disc (the bearing hook is then unnecessary); estimated fit over all 3,484
-      pages, three lines at 272 px: 57% at today's fixed 14 px, 99.3% with a width table on the
-      untouched sheet, ~100% re-aligned. Also Jay's: opaque vs translucent band, and band
-      height (72 rows = 4 lines; a 46-row band at Y=194 holds 3 and shows 26 more scene rows).
-      Original row — between (1) patch
-      the renderer to horizontal + variable width using the game's font, (2) the same with a
-      replacement glyph sheet, (3) leave the renderer alone and draw a subtitle overlay. A fourth lever worth mocking up
-      if the engine is rigidly full-width: two narrow Latin letters packed per 16-pixel cell,
-      which needs no renderer change at all. Brought
-      to Jay with `TXT-01`/`TXT-02` evidence and a mock-up of each viable option in a real box.
-      The decision is recorded in README § "The central risk". Harmed: the player, by
-      whichever option is chosen blind.
+- [x] **[TXT-03]** **Choose how English gets on screen.** RULED 2026-09-20 (Jay, from
+      `work/txt06/DECIDE.png`): advance model **(c1)** — the width table with the font sheet's
+      Latin cells left untouched, each glyph drawn at its native bearing — ranked best, with
+      (c2) re-aligned "very close" second, then fixed 8, then fixed 14. Band: "as little space
+      as possible" — **H = 37 at Y = 203, pitch 11, pen y 205**, and the translucent
+      ("additive") look is welcome; he is not confident everything fits, so the lint under that
+      box decides and reports rather than the band silently widening. The build adopts these
+      as defaults (`TXT-05`).
 - [x] **[TXT-04]** **The trial: one English line on screen in a rebuilt image.** PASSED on
       PCSX-Redux and on Beetle PSX, 2026-09-20 — **the approach is a go.** `./make.sh trial --line
       'M_H02001.BIN:c1:0:171.0' --text "Hello, Boku!"` (`boku/trial.py`) patches seven EXE words
@@ -271,15 +263,11 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       712-byte `dbg_font_init`); probably the ~2 KB in-house debug printer. Not available:
       PsyQ `Fnt*` (not linked), the PS-X header (never reaches RAM), zero runs (live BSS). Every injection inside an armips `.area`
       so overflow fails the build. Consider writing the new routine in C (`.importobj`). Harmed: the player.
-- [ ] **[TXT-06]** **The font.** If `TXT-03` needs a replacement sheet: a font under SIL OFL (or
-      drawn for the project) so the repo stays fully open, rendered to the engine's cell format
-      by a tool in the repo, with the width table generated from the same render.
-      `[MINE: product]` for the typeface itself — shortlist with licences verified at source
-      (`research/font-candidates.md`, `reference/fonts/SOURCES.md`): **Galmuri9** (OFL; same
-      9/6-px cap/x-height as the game's Latin, 51 chars per line, has every glyph needed)
-      recommended, then the game's own glyphs re-aligned (44), Ark Pixel 12 (45), Pixel
-      Operator (42). Harmed: the player (legibility at 320×240 on
-      a phone screen in Mode One is the hard case) and the repo's licence cleanliness.
+- [x] **[TXT-06]** **The font.** RULED 2026-09-20 (Jay): "The game sheet is good enough and I
+      like using the original if possible." No replacement typeface; the ~12 missing
+      punctuation cells (apostrophe, quotes, hyphen, em dash, horizontal parentheses) are drawn
+      into free cells as placeholder art the build already carries — redraw them to match the
+      sheet's weight when a hand is available. No new dependency.
 - [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
       (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
       line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
@@ -312,13 +300,11 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       serialise is the identity for all 4 `.SEC` indexes, 1,106 packs, 555 child-1 tables and
       2,352 event blocks**, with `Block.replace_entry` / `BlockTable.replace` as the
       reinserter's primitives. Reviewed twice (`~/.claude/session-notes/boku-ps1/`).
-- [ ] **[PIPE-02]** **The committed translation format.** `[MINE: contract]` — English and
-      project-written context notes only, keyed by id, one file per scene so diffs and PRs are
-      local, plain text that merges well, room for more than one candidate English per line. Our
-      own format, designed for agents and `TRN-06` — not `.po`/Weblate (Jay, 2026-09-20) — but
-      still plain enough that a person could write a whole translation in it by hand: the files
-      are the build's only interface to the script (README § "How the translation is made"). No
-      Japanese (README principles 2–3). Harmed: every contributor, and the agents that read and write it at scale.
+- [x] **[PIPE-02]** **The committed translation format.** RULED 2026-09-20 (Jay: "The tab format
+      is fine for now"): the format `translation/days/README.md` documents — one file per day plus
+      `shared.txt`; tab-separated line id, speaker, English; `//` page break; `[SEL]` rows with
+      `|`-separated fields, the question first; `(voice only)` rows; `#` notes. `boku/translation.py`
+      is its loader. Hand-writable, as the README's aspiration asks.
 - [ ] **[PIPE-03]** **Reinsertion.** The in-extent half is DONE (2026-09-20, `boku/reinsert.py`,
       `boku/layout.py`, `boku/translation.py`): every physical copy of a changed line is
       rebuilt bottom-up (message + pad → block → child-1 table → pack → `.SEC`), the original
@@ -472,8 +458,11 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       the day-1 entry typesets in the game's own 12×12 glyphs or in Galmuri9 — the agent
       recommends the game's glyphs (they belong on a crayon page; punctuation gaps are the
       cost). The rebuilt page imports as 2,268 byte edits, builds, and the image boots; the
-      diary screen itself was not reached headlessly. **Look at `work/diary/COMPARE.png` and
-      `panel-zoom.png`.** The ChatGPT redraw path is untested and is Jay's to try. Original row: Three textures of different kinds
+      diary screen itself was not reached headlessly. RULED 2026-09-20 (Jay): the diary pages take the
+      programmatic path with the game's own glyphs — "much more plausibly reliable than the
+      untested ChatGPT option". For the other categories he wants a full audit before choosing
+      (`research/textures-plan.md`, in progress), including the Wolf Girl's letter, which he
+      recalls as a texture lying on a log. Original row: Three textures of different kinds
       from `REC-08` — the census suggests `NIKKI_001`, `T_TITLE` `0x14`, `M_I18000` — (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
       the original style, quantise back to the original CLUT, and look at them in the game.
       If that fails, the fallback is Claude-drawn subtitles composited onto the texture. A third
