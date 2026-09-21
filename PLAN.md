@@ -467,7 +467,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       error) and never changes depth, size or VRAM origins; an edit propagates to every
       occurrence (287 for the most-copied minimap) as verified byte edits the image builder
       applies. PNG I/O is stdlib and checked against libpng.
-- [ ] **[GFX-02]** **Evaluate the redraw path on a sample.** Three textures of different kinds
+- [ ] **[GFX-02]** **Evaluate the redraw path on a sample.** The PROGRAMMATIC diary path is
+      prototyped (2026-09-20, `tools/diary/redraw.py`, `research/diary-redraw.md`): all 94 pages
+      share one panel geometry (93 identical; `NIKKI_047` has extra shading and still redraws),
+      the panel is blanked to paper and re-ruled horizontally with palette colours only, and
+      the day-1 entry typesets in the game's own 12×12 glyphs or in Galmuri9 — the agent
+      recommends the game's glyphs (they belong on a crayon page; punctuation gaps are the
+      cost). The rebuilt page imports as 2,268 byte edits, builds, and the image boots; the
+      diary screen itself was not reached headlessly. **Look at `work/diary/COMPARE.png` and
+      `panel-zoom.png`.** The ChatGPT redraw path is untested and is Jay's to try. Original row: Three textures of different kinds
       from `REC-08` — the census suggests `NIKKI_001`, `T_TITLE` `0x14`, `M_I18000` — (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
       the original style, quantise back to the original CLUT, and look at them in the game.
       If that fails, the fallback is Claude-drawn subtitles composited onto the texture. A third
