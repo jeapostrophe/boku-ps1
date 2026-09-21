@@ -14,7 +14,7 @@ claims against the disc and `HEAD` before working it. No time estimates — sect
 by dependency, and the project's pace is set by Fable throughput, which Jay has accepted.
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
-`REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-07` text renderer · `PIPE-01`–`PIPE-06`
+`REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
 pipeline · `TRN-01`–`TRN-07` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
@@ -265,9 +265,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       so overflow fails the build. Consider writing the new routine in C (`.importobj`). Harmed: the player.
 - [x] **[TXT-06]** **The font.** RULED 2026-09-20 (Jay): "The game sheet is good enough and I
       like using the original if possible." No replacement typeface; the ~12 missing
-      punctuation cells (apostrophe, quotes, hyphen, em dash, horizontal parentheses) are drawn
-      into free cells as placeholder art the build already carries — redraw them to match the
-      sheet's weight when a hand is available. No new dependency.
+      punctuation cells are placeholder art today — `TXT-08`. No new dependency.
+- [ ] **[TXT-08]** **Real glyphs for the punctuation the sheet lacks.** The ~12 cells the build
+      adds — `' " - — ( ) …` and friends — are placeholder art drawn by a script. Jay,
+      2026-09-20: redraw them to match the sheet's weight, or harvest them from a similar
+      openly licensed pixel font (Galmuri9, Ark Pixel 12 or Pixel Operator from
+      `research/font-candidates.md`, licences in `reference/fonts/SOURCES.md`), scaled to the
+      12×12 cell and checked in the game beside the sheet's own letters. Harvested cells are a
+      derived work of that font — record the source and licence in the build. Harmed: the
+      player, who reads an apostrophe in every third line.
 - [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
       (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
       line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
