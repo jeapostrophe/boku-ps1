@@ -19,7 +19,7 @@ pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `
 movies · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
-trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
+trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
 
 ---
 
@@ -452,7 +452,10 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`).
 - [ ] **[TRN-04]** **The full translation run** — a status table, not a churning row (Jay,
       2026-09-21: Fable translation is expensive; he spawns "do the next N days" himself when
-      the engineering is ready; this row only records where each unit stands). States, in
+      the engineering is ready; this row only records where each unit stands). **Waits on
+      `TRN-08`**: changing the packet and its format invalidates every state below (Jay,
+      2026-09-21) — days 1–7 and shared are held as the *first draft*, tag
+      `first-draft-2026-09-21`, to be re-translated through the new packet and compared. States, in
       order: **undrafted → drafted → reviewed** (an independent agent against the Japanese)
       **→ checked** (Jay has read it, comments applied) **→ rendered** (the lint's pixel fit and
       the page mock-ups say it would display — `TRN-08`) **→ finalized** (Jay has seen it in the
@@ -461,9 +464,9 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
       | unit | state | note |
       |---|---|---|
-      | `day01.txt` | checked | Jay's 2026-09-21 comments applied (rural, the Sorano house, bug-collecting) |
-      | `day02.txt`–`day07.txt` | reviewed | Jay's 2026-09-21 comments on days 3 and 5 applied (cafeteria, harusame, Great Luck) |
-      | `shared.txt` (76 events) | reviewed | includes the coverage nine |
+      | `day01.txt` | first draft, held | old packet; Jay's 2026-09-21 comments applied (rural, the Sorano house, bug-collecting) |
+      | `day02.txt`–`day07.txt` | first draft, held | old packet; Jay's comments on days 3 and 5 applied (cafeteria, harusame, Great Luck) |
+      | `shared.txt` (76 events) | first draft, held | old packet; includes the coverage nine |
       | days 8–31 + their day-independent events | undrafted | 24 day files; run in batches Jay sizes |
       | arrays / menus / overlays (308 lines) | undrafted | `TRN-09` |
       | diary entries (94), encyclopedia spreads, textures | undrafted | `GFX-04`, `GFX-06`; new text with no line ids |
@@ -489,7 +492,11 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       in pixels against the band; the missing half is a mock-up of each page drawn with the
       sheet's glyphs at the band geometry (the layout engine has the widths; no emulator), so
       a reviewer or Jay can eyeball a day's pages as images. That is the *rendered* state in
-      `TRN-04`'s chain. Bug: `parse_rulings` emits a style-guide
+      `TRN-04`'s chain. **Then the comparison** (Jay, 2026-09-21): re-translate days 1–7 and
+      `shared.txt` through the new packet and compare against the held first draft (tag
+      `first-draft-2026-09-21`; `git diff first-draft-2026-09-21 -- translation/days/`) — the
+      diff judges the packet as much as the lines, and the better line wins per line before
+      `TRN-04`'s table restarts from *drafted*. Bug: `parse_rulings` emits a style-guide
       heading that contains SETTLED even when no bullet under it is marked, so § 17 appears
       as an empty section. Agent shape: (b) one directed translator per day that receives the
       bible/glossary/guide once and the events one by one, with the parent doing the saving —
