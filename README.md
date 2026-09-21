@@ -9,11 +9,13 @@ SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools an
 > map and textures are decoded and written up under [research/](research/): the script is
 > 2,977 lines / ~75,000 glyphs, 180 textures carry Japanese, and the game checks nothing it
 > loads. **Days 1–7 of the script play in English on Beetle PSX**
-> (`./make.sh build-days`): proportional text in a band under the scene, page arrows, choice
-> menus, 708 lines laid out and reinserted with members relocated where they grew. The rest
-> of the script waits on that being played and judged. Ruled 2026-09-20: the game's own font
-> with a width table, the smallest band, the tab-separated day files as the format, and the
-> programmatic redraw for the diary pages.
+> (`./make.sh build-days`): proportional text in a translucent three-line band under the
+> scene, speaker labels in the original's `Uncle「…」` form, page arrows, choice menus; 745 of
+> 751 lines laid out and reinserted, members relocated where they grew, the map work area
+> raised so the biggest scene fits. The rest of the script waits on that being played and
+> judged. Ruled 2026-09-20: the game's own font with a width table, the smallest band, the
+> tab-separated day files as the format, and the programmatic redraw for the diary pages;
+> every texture that carries Japanese has a chosen path ([research/textures-plan.md](research/textures-plan.md)).
 
 ## Why the PS1 version
 
@@ -84,8 +86,8 @@ test it, so expect to find the places where it quietly assumed its own workflow.
 | | Content | Plan |
 |---|---|---|
 | 1 | Text drawn by the game's own renderer — dialogue, menus, item and insect names | **The priority.** |
-| 2 | Japanese text inside textures (the picture diary is the likely bulk) | After 1. Try image-model redraws in the original style; fall back to drawing subtitles onto the texture. |
-| 3 | Text inside FMVs (`__STR/*.IKI`) | Out of scope. Reopen only if subtitling textures turns out to extend cheaply to STR frames. |
+| 2 | Japanese text inside textures (197 images; the picture diary is 94 of them) | After 1. Three paths, chosen per image in [research/textures-plan.md](research/textures-plan.md): **programmatic** (138 — blank the flat panel and typeset the English with the game's own glyphs; the diary, the encyclopedia spreads, the UI plates), **redraw** (28 — stylised lettering, book covers, the farewell note on the log), **subtitle** composited beside the object (1). 30 stay Japanese by the charter — a shop sign is a shop sign. |
+| 3 | Narration inside the movies (`__STR/*.IKI`: the opening, the five endings) | In scope since 2026-09-20 — Jay, after playing: the opening "definitely needs subtitles". Engine-drawn subtitles over the movie if the player exposes a per-frame path, else burned in (PLAN `FMV-01`). |
 | 4 | Voices (`__STR/BOKU_XA.XAM`) | **Kept Japanese on purpose** — subtitles, not a dub (see above). |
 
 ## The central risk: the game writes vertically

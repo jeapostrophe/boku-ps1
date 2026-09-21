@@ -213,6 +213,18 @@ def test_the_opening_line_of_the_game_is_addressable_by_its_event_id(site_index:
     assert all(copy.site.container == "c1" for copy in copies)
 
 
+def test_the_index_walks_the_archive_that_is_already_open(site_index: SiteIndex, archive):
+    """One import, opened once -- `from_disc` is handed the `Archive` its caller holds.
+
+    `Archive.__init__` is the only thing that reads `BOKU.BIN`, and it reads all 109 MB
+    into memory. A caller that already has one and lets `from_disc` open its own reads the
+    file a second time and keeps 218 MB resident for as long as both live, which is what
+    the font build's step 1 was doing. Identity is the check: a second read is a second
+    object, and there is no cheaper way to tell them apart.
+    """
+    assert site_index.archive is archive
+
+
 def test_a_line_with_many_copies_returns_all_of_them_and_they_are_the_same_bytes(
     site_index: SiteIndex,
 ):

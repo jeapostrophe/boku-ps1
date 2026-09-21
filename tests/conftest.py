@@ -73,8 +73,9 @@ def archive(disc_dir: Path) -> Archive:
 
 
 @pytest.fixture(scope="session")
-def site_index(disc_dir: Path) -> SiteIndex:
-    return SiteIndex.from_disc(disc_dir)
+def site_index(disc_dir: Path, archive: Archive) -> SiteIndex:
+    """The walk, over the archive that is already open -- not a second copy of it."""
+    return SiteIndex.from_disc(disc_dir, archive=archive)
 
 
 # The three decodings of the whole disc, each done once for the session. Between them

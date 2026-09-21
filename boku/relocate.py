@@ -623,7 +623,7 @@ class SectorEdit:
     another member vacated, and in the arena — which belongs to no directory record, and so
     has no extent a `ByteEdit` could name — when it was not. Addressing every one of them by
     LBA is what lets one edit kind describe all of it, and a home inside the file is why
-    `boku.reinsert._check_no_double_write` exists. `old` and `new` are Form 1 user data — a
+    `boku.reinsert.check_no_double_write` exists. `old` and `new` are Form 1 user data — a
     whole number of 2,048-byte sectors.
     """
 

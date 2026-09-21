@@ -41,15 +41,17 @@ What it checks, and where each rule comes from
   is a real risk (`tools/reader/build.py` carries a third and checks it the same way), so
   they are compared rather than trusted.
 
-The label on line 1
--------------------
-The renderer draws labelled dialogue in the original's style, label and marks (style guide
-§ 9, settled as an early default). The build does not prepend it -- the label is a parsed
-field, and *which* marks and whether the label sits inside the box is the dialogue band's
-decision -- so the lint charges page 1's first line for the label's own cells plus
-`--label-marks`, and `--no-label` measures the bare English. A character the encoder has
-no cell for is charged at its fallback advance, which is deliberately the pessimistic way
-round for a limit nobody has settled.
+The label and the marks
+-----------------------
+The build dresses a message the way the Japanese was dressed: `boku.layout.original_marks`
+reads the opening mark, the closing mark and whether a label stood in front, and
+`lay_out_message` inserts `<speaker>「` before page 1's first word and `」` after the last
+page's last word, as text (style guide § 9). So this lint charges exactly those runs --
+page 1's first line loses the label's cells and the opening mark, the last page's last
+line carries the closing mark -- read through the same function over the same speaker
+field. `--no-label` measures the bare English, which is what `boku build --no-label`
+inserts. A character the encoder has no cell for is charged at its fallback advance, which
+is deliberately the pessimistic way round for a limit nobody has settled.
 """
 
 from __future__ import annotations
@@ -70,10 +72,14 @@ from boku.layout import (
     BoxSpec,
     CellMapEncoder,
     Encoder,
+    LabelledBox,
     LayoutError,
     StockEncoder,
+    label_allowance,
     lay_out_array,
     measure,
+    original_marks,
+    speaker_label,
     unencodable,
     wrap,
 )
@@ -87,18 +93,22 @@ from boku.script_store import (
     pages_fixed_by_voice,
     select_shape,
 )
-from boku.translation import SampleScenes, TranslationEntry
+from boku.translation import SampleScenes, TranslationEntry, select_fields
+
+# `LabelledBox`, `label_allowance`, `original_marks`, `speaker_label` and `select_fields`
+# are imported, not defined: the marks and the label's pixels live in `boku.layout` beside
+# the `lay_out_message` that inserts the same runs while a build lays words out, and a
+# `[SEL]` row's fields live beside the `TranslationEntry` they are read off. Nothing here
+# may define a second copy -- that is a lint and a build measuring different text.
 
 DEFAULT_SOURCES = (REPO_ROOT / "translation" / "days", REPO_ROOT / "translation" / "samples")
 """What `./make.sh lint-translation` lints when it is given nothing."""
 
-DEFAULT_CELLS = REPO_ROOT / "build" / "vwf" / "manifest.json"
-"""Where `tools/vwf/build_prototype.py` leaves the cell map, when it has been run."""
-
-LABEL_MARKS = "\u300c"
-"""The opening mark the original draws after a speaker label. Style guide § 9 leaves the
-choice between this and an English quotation mark to the dialogue band; both are one
-cell, so which one is charged does not change the verdict."""
+DEFAULT_CELLS = REPO_ROOT / "build" / "vwf" / "edits.json"
+"""The cell map, read out of the edit set `boku build --vwf` installs the renderer from
+(`./make.sh build-days` writes it, in every mode). It is deliberately the *same file* the
+build measures in: a lint pointed at a font file of its own passes lines the build then
+wraps differently, and every gate stays green while the two disagree."""
 
 
 # --- the additive-word heuristic ------------------------------------------------------------
@@ -326,42 +336,6 @@ def box_from(
     )
 
 
-def original_draws_label(record: dict, store: Store) -> bool:
-    """Did the Japanese open this message with `<speaker>\u300c`?
-
-    The label is inline in the source and a parsed field in the translation (style guide
-    § 9). Narration opens `\u300e` and an unlabelled examine message opens `\u300c` with nothing
-    before it, so the test is a `\u300c` that is *not* the first cell of the line.
-    """
-    japanese = store.japanese.get(record["id"])
-    if japanese is None or not japanese.pages or not japanese.pages[0]:
-        return False
-    first_column = japanese.pages[0][0]
-    return LABEL_MARKS in first_column[1:]
-
-
-def label_allowance(encoder: Encoder, speaker: str, marks: str) -> int:
-    """Pixels the label takes off the head of page 1's first line."""
-    return measure(encoder, f"{speaker}{marks}")
-
-
-@dataclass(frozen=True)
-class LabelledBox(BoxSpec):
-    """`box` with its **first line only** narrowed by the label drawn in front of it.
-
-    `BoxSpec` narrows the tail of a line -- the next-page pencil, which sits on the last
-    one. The label narrows the head, and only of page 1's first line, so it cannot be
-    subtracted from `width`: that takes the pixels off every line of the page and reports
-    a page that fits as one line too many.
-    """
-
-    reserve: int = 0
-
-    def width_of_line(self, number: int) -> int:
-        width = super().width_of_line(number)
-        return max(width - self.reserve, 1) if number == 1 else width
-
-
 def fit_page(
     encoder: Encoder, text: str, box: BoxSpec, reserve: int = 0
 ) -> tuple[list[str], list[int]]:
@@ -399,7 +373,8 @@ class Options:
     encoder: Encoder
     box: BoxSpec = DIALOGUE_BAND
     label: bool = True
-    label_marks: str = LABEL_MARKS
+    """Charge the label and marks the build inserts. There is no switch for *which* marks:
+    they are the ones the Japanese drew (`boku.layout.original_marks`), not a choice."""
     additive_words: tuple[str, ...] = ADDITIVE_WORDS
     additive: bool = True
 
@@ -476,19 +451,6 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
     _check_message(context, row, record)
 
 
-def select_fields(entry: TranslationEntry, prompts: int) -> tuple[tuple[str, ...], ...]:
-    """A `[SEL]` row's pipe fields as the box reads them: `(prompt lines, options)`.
-
-    A select whose box opens with a question spends its first `prompts` lines on it, and
-    the committed convention lists the question first -- style guide § 13,
-    `translation/days/README.md` § shared.txt, and that file's own header. The question is
-    not an option: it is neither counted against `g_select_lines` nor given a branch. The
-    reader reads a row the same way (`tools/reader/checks.py`), which is what lets the two
-    be held against each other.
-    """
-    return entry.options[:prompts], entry.options[prompts:]
-
-
 def _check_select(context: _Context, row: Row, record: dict, shape: tuple[int, int]) -> None:
     options, prompts = shape
     if not row.is_select:
@@ -556,6 +518,40 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
         context.say(row, check, severity, detail)
 
 
+def _dressed(
+    context: _Context, row: Row, record: dict, pages: Sequence[str]
+) -> tuple[int, list[str]]:
+    """`(pixels reserved at the head of page 1, the pages with the closing mark on)`.
+
+    Exactly what `boku.build.lay_out` will insert around this message, read through the
+    same `original_marks` over the same `speaker_label`: the label and the opening mark
+    lead page 1's first line, the closing mark ends the last page's last line. Charging
+    one and not the other is a page the lint passes and the build refuses -- measured at
+    up to 6 px, which is a whole bracket.
+    """
+    pages = list(pages)
+    if not context.options.label or not pages:
+        return 0, pages
+    marks = original_marks(original_bytes(record, context.table), context.table)
+    if marks.problem:
+        # The build refuses the line rather than dressing it in marks the original does
+        # not pair, so a lint that said nothing would pass a line that stays Japanese.
+        context.say(row, "original-marks", ERROR, marks.problem)
+    label = speaker_label(row.speaker)[0] if marks.labelled else ""
+    encoder = context.options.encoder
+    missing = unencodable(encoder, label + marks.opening + marks.closing)
+    if missing:
+        context.say(
+            row,
+            "unencodable",
+            ERROR,
+            f"the {encoder.name} draws no cell for {''.join(missing)!r} in the label and "
+            f"marks the build draws around this line",
+        )
+    pages[-1] = pages[-1] + marks.closing
+    return label_allowance(encoder, label, marks.opening), pages
+
+
 def _check_message(context: _Context, row: Row, record: dict) -> None:
     encoder = context.options.encoder
     box = context.options.box
@@ -579,9 +575,7 @@ def _check_message(context: _Context, row: Row, record: dict) -> None:
         context.say(
             row, "unencodable", ERROR, f"the {encoder.name} draws no cell for {''.join(missing)!r}"
         )
-    reserve = 0
-    if context.options.label and original_draws_label(record, context.store):
-        reserve = label_allowance(encoder, row.speaker, context.options.label_marks)
+    reserve, pages = _dressed(context, row, record, pages)
     for number, text in enumerate(pages, start=1):
         broken, widths = fit_page(encoder, text, box, reserve if number == 1 else 0)
         if len(broken) > box.lines:
@@ -595,13 +589,14 @@ def _check_message(context: _Context, row: Row, record: dict) -> None:
         for index, (broken_line, pixels) in enumerate(zip(broken, widths, strict=True), start=1):
             limit = box.width_of_line(index)
             if pixels > limit:
-                label = " (label included)" if reserve and number == 1 and index == 1 else ""
+                charged = reserve and number == 1 and index == 1
+                head = " (the label and opening mark included)" if charged else ""
                 context.say(
                     row,
                     "page-width",
                     ERROR,
                     f"page {number} line {index}: {pixels} px in {limit}, "
-                    f"{pixels - limit} over{label} ({broken_line!r} does not break)",
+                    f"{pixels - limit} over{head} ({broken_line!r} does not break)",
                 )
 
 
@@ -661,14 +656,14 @@ def _check_loader_agreement(rows: Sequence[Row]) -> Iterator[Finding]:
 
 
 def make_encoder(kind: str, cells: Path | None) -> Encoder:
-    """`stock` or `cellmap`; a cell map defaults to where the VWF build leaves one."""
+    """`stock` or `cellmap`; a cell map defaults to the edit set the build installs."""
     if kind == "stock":
         return StockEncoder.load()
     path = Path(cells) if cells is not None else DEFAULT_CELLS
     if not path.is_file():
         raise LayoutError(
             f"--encoder cellmap needs a character -> cell map and {path} is not there; "
-            f"run `uv run python tools/vwf/build_prototype.py`, or give --cells FILE"
+            f"run `./make.sh build-days`, or give --cells FILE to measure another font"
         )
     return CellMapEncoder.from_json(path)
 
@@ -801,8 +796,9 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         dest="label",
         action="store_false",
         help=(
-            "measure the bare English, without charging page 1's first line for the "
-            "speaker label the renderer draws in the original's style (style guide § 9)"
+            "measure the bare English, without charging the speaker label and the marks "
+            "the build draws around it in the original's style (style guide § 9). What "
+            "`boku build --no-label` inserts"
         ),
     )
     parser.add_argument(

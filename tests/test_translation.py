@@ -10,7 +10,7 @@ ones: the loader is checked against the translation it exists to read.
 from __future__ import annotations
 
 from boku import REPO_ROOT
-from boku.translation import PreEncoded, SampleScenes
+from boku.translation import PreEncoded, SampleScenes, TranslationEntry, select_fields
 
 SAMPLES = REPO_ROOT / "translation" / "days"
 
@@ -64,6 +64,25 @@ def test_a_row_with_no_tab_is_reported(tmp_path):
     source = write(tmp_path, "E1.0 A one\n")
     assert list(source) == []
     assert any("no tab" in problem for problem in source.problems)
+
+
+def test_a_selects_prompt_lines_are_read_off_the_front_and_are_not_options(tmp_path):
+    """The committed convention lists the box's question first (style guide § 13).
+
+    The row is parsed by the loader rather than built by hand, so what is split is the
+    same tuple the build and the lint split: counted as an option instead, every
+    prompt-bearing select in the game is one option short and the reader and the lint
+    disagree about the one check they share.
+    """
+    source = write(tmp_path, "E0404.6\t[SEL]\tWhat will you read? | Insects | Kites\n")
+    (entry,) = list(source)
+
+    assert select_fields(entry, 1) == (("What will you read?",), ("Insects", "Kites"))
+    assert select_fields(entry, 0) == ((), entry.options)
+    # A shape with more prompt lines than fields takes what is there rather than raising:
+    # the count mismatch is the lint's finding to report, not this function's.
+    assert select_fields(entry, 9) == (entry.options, ())
+    assert select_fields(TranslationEntry(line_id="E1.0"), 1) == ((), ())
 
 
 def test_pre_encoded_words_are_a_source_like_any_other():

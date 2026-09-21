@@ -15,6 +15,10 @@
 ;   -equ PEN_X, PEN_Y   dialogue: top-left of the first glyph cell
 ;   -equ LINE_PITCH     dialogue: rows between lines (stock 13)
 ;   -equ BAND_Y, BAND_H dialogue: the backing band's top row and height
+;   -equ BAND_BRIGHTNESS, BAND_BLEND
+;                       dialogue: g_dlgbox_fade[6], the band's brightness and blend
+;                       (semitrans + 1) while a message is up; stock 224, 1
+;   -equ MAP_AREA_EXTRA bytes added to the engine's 0x6400 map work area (arena.asm)
 ;   -equ SEL_X, SEL_Y   select: top-left of the first option row's first cell
 ;   -equ SEL_PITCH      select: rows between option rows
 ;   -equ SEL_PAD        select: the box's margin around the measured text
@@ -51,6 +55,7 @@ CELL             equ 12             ; glyph_draw's sprite is 12 x 12 (0x8002BB4C
 
 .include "dialogue.asm"
 .include "select.asm"
+.include "arena.asm"
 
 ; ---- the heap's first byte ---------------------------------------------------------------
 ; 0x80068AF0 is the bump pointer itself; the file carries its initial value, `main` zeroes

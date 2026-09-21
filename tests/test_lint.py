@@ -10,24 +10,43 @@ copies drift together (`~/.claude/CLAUDE.md` ENG-1).
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
 import pytest
 
-from boku.layout import DIALOGUE_BAND, StockEncoder
+from boku import REPO_ROOT
+from boku import layout as layout_module
+from boku import lint as lint_module
+from boku import translation as translation_module
+from boku.archive import EXE_NAME
+from boku.build import VWF_EDITS_FORMAT, load_edit_set
+from boku.glyphs import GlyphTable
+from boku.layout import (
+    DIALOGUE_BAND,
+    LABEL_MARKS,
+    LayoutError,
+    StockEncoder,
+    lay_out_message,
+    original_marks,
+)
 from boku.lint import (
     ADDITIVE_WORDS,
+    DEFAULT_CELLS,
     ERROR,
-    LABEL_MARKS,
     SOURCE_INTENSIFIERS,
     WARNING,
+    LabelledBox,
     Options,
     label_allowance,
     lint_rows,
     load_rows,
+    make_encoder,
+    select_fields,
     translation_paths,
 )
-from boku.script_store import load_store
+from boku.script_store import load_store, original_bytes
 from tests.synth_script import SynthStore, write_translation
 
 VOICED = "E9001.0"
@@ -235,7 +254,7 @@ def test_the_label_is_charged_to_page_one_line_one(store, tmp_path):
     finding = only(findings, "page-width")
     charged = widest * encoder.advance("M") + encoder.advance("M") * (len(speaker) + 1)
     assert f"{charged} px in {DIALOGUE_BAND.width}" in finding.message
-    assert "label included" in finding.message
+    assert "the label and opening mark included" in finding.message
 
 
 def test_the_label_narrows_only_page_one_s_first_line(store, tmp_path):
@@ -272,6 +291,78 @@ def test_the_label_narrows_only_page_one_s_first_line(store, tmp_path):
     over = run(store, tmp_path, [*rows, (UNVOICED, speaker, f"{text} M")], label=True)
     finding = only(over, "page-lines")
     assert f"{DIALOGUE_BAND.lines + 1} lines" in finding.message
+
+
+def one_message(tmp_path: Path, **message) -> object:
+    """A store holding one unvoiced message, dressed as `SynthStore.message` is told."""
+    synth = SynthStore.new(tmp_path)
+    synth.message(UNVOICED, [[5]], voiced=False, speaker="BOKU", slot=0, **message)
+    synth.scene("E9001", [UNVOICED])
+    return load_store(synth.write())
+
+
+def band_filler(encoder, head: int) -> str:
+    """Single-cell words filling every line of the band exactly, `head` px already spent."""
+    word, gap = encoder.advance("M"), encoder.advance(" ")
+    limits = [DIALOGUE_BAND.width_of_line(n) for n in range(1, DIALOGUE_BAND.lines + 1)]
+    count = (limits[0] - head + gap) // (word + gap)
+    count += sum((limit + gap) // (word + gap) for limit in limits[1:])
+    return " ".join(["M"] * count)
+
+
+def test_the_closing_mark_the_build_appends_is_charged_too(tmp_path):
+    """The band filled to the pixel, and the `」` the build puts after the last word.
+
+    The harm, seen on the days build: the lint charged the label and the opening mark and
+    nothing for the closer, so a page it passed was refused by `lay_out_message` -- and the
+    line stayed Japanese with every gate green. Both sides of that disagreement are asked
+    here rather than asserted from a number typed beside them: the same `original_marks`
+    the build dresses with says what the marks are, and `lay_out_message` is run over the
+    same text to show it really refuses.
+    """
+    store = one_message(tmp_path, marks=("", "」"))
+    encoder = StockEncoder.load()
+    table = GlyphTable.load()
+    record = store.lines[UNVOICED]
+    marks = original_marks(original_bytes(record, table), table)
+    assert marks.closing and marks.labelled, f"the fixture draws {marks}; this test needs both"
+    text = band_filler(encoder, label_allowance(encoder, "Boku", marks.opening))
+
+    laid = lay_out_message(
+        UNVOICED,
+        (text,),
+        original_bytes(record, table),
+        encoder,
+        DIALOGUE_BAND,
+        opening="Boku" + marks.opening,
+        closing=marks.closing,
+    )
+    assert laid.problems, "the build accepts this page, so there is nothing for the lint to catch"
+
+    findings = run(store, tmp_path, [(UNVOICED, "Boku", text)])
+    assert len(findings) == 1 and laid.problems[0].endswith(findings[0].message), (
+        f"the build refuses this page with {laid.problems} and the lint says {findings}"
+    )
+
+
+def test_an_unlabelled_speaker_field_is_charged_the_mark_and_nothing_else(tmp_path):
+    """`(unlabelled)` names nobody, and the build draws none of those twelve cells.
+
+    `boku.layout.speaker_label` is the one rule for what a speaker field draws, and the
+    build asks it; charging the raw field instead reserves a name-sized hole in front of a
+    line that has none, and the lint refuses pages the band shows perfectly well.
+    """
+    store = one_message(tmp_path)
+    encoder = StockEncoder.load()
+    table = GlyphTable.load()
+    marks = original_marks(original_bytes(store.lines[UNVOICED], table), table)
+    assert marks.labelled, f"the fixture draws {marks}; an unlabelled one charges nothing"
+    text = band_filler(encoder, label_allowance(encoder, "", marks.opening))
+
+    assert run(store, tmp_path, [(UNVOICED, "(unlabelled)", text)]) == []
+    assert label_allowance(encoder, "(unlabelled)", marks.opening) > label_allowance(
+        encoder, "", marks.opening
+    ), "the fixture's speaker field is free, so charging it would cost nothing"
 
 
 def test_an_array_item_that_grows_is_an_error(store, tmp_path):
@@ -335,3 +426,90 @@ def test_the_lint_agrees_with_the_build_s_own_loader(store, tmp_path):
     """`reader-vs-loader`: a row this module and `SampleScenes` read differently."""
     findings = run(store, tmp_path, GOOD, label=False)
     assert "reader-vs-loader" not in checks(findings)
+
+
+# --- one home per rule -------------------------------------------------------------------------
+
+
+def test_the_default_cell_map_is_the_edit_set_the_build_installs():
+    """The lint measures in the font `./make.sh build-days` actually writes into the image.
+
+    The path is read back out of `make.sh` -- the one place a recurring command is written
+    (this repo's CLAUDE.md) -- rather than retyped beside `DEFAULT_CELLS`, so the two
+    cannot drift together. The harm was measured: while this pointed at the prototype's
+    `manifest.json`, `--edits-only` wrote no manifest at all, so a lint and a build could
+    green each other's gates over two different fonts.
+    """
+    script = (REPO_ROOT / "make.sh").read_text(encoding="utf-8")
+    directory = re.search(r'local font="([^"]+)"', script)
+    name = re.search(r'--vwf "\$font/([^"]+)"', script)
+    assert directory and name, "make.sh no longer builds through a --vwf edit set"
+    assert REPO_ROOT / directory.group(1) / name.group(1) == DEFAULT_CELLS
+
+
+def write_edit_set(path: Path, cells: dict) -> Path:
+    """The smallest document `boku build --vwf` accepts, carrying `cells`."""
+    path.write_text(
+        json.dumps(
+            {
+                "format": VWF_EDITS_FORMAT,
+                "cells": cells,
+                "edits": [{"file": EXE_NAME, "offset": 0, "old": "00", "new": "01"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_the_lint_and_the_build_read_one_font_out_of_one_file(tmp_path):
+    """`--encoder cellmap` and `boku build --vwf` over the same file must measure alike.
+
+    Asserted as an equality between the two readers rather than against a width written
+    here: a hand-typed advance passes exactly when both readers drift together, which is
+    the moment the check was needed.
+    """
+    cells = {"A": {"id": 292, "advance": 9}, " ": {"id": 10, "advance": 4}}
+    path = write_edit_set(tmp_path / "edits.json", cells)
+    encoder = make_encoder("cellmap", path)
+    assert encoder.cells == load_edit_set(path).encoder.cells
+    assert encoder.advance("A") == cells["A"]["advance"]
+
+
+def test_with_no_cells_switch_the_default_is_read_and_named_when_it_is_missing(
+    tmp_path, monkeypatch
+):
+    """`--cells` overrides; without it the default is read, and a missing one is loud.
+
+    Silence is the failure mode that matters here -- a lint that quietly measured last
+    week's font would pass lines the build wraps differently -- so the refusal has to name
+    the file it wanted and the command that writes it.
+    """
+    default = write_edit_set(tmp_path / "edits.json", {"A": {"id": 1, "advance": 9}})
+    override = write_edit_set(tmp_path / "other.json", {"A": {"id": 2, "advance": 3}})
+    monkeypatch.setattr(lint_module, "DEFAULT_CELLS", default)
+
+    assert make_encoder("cellmap", None).advance("A") == 9
+    assert make_encoder("cellmap", override).advance("A") == 3
+
+    default.unlink()
+    with pytest.raises(LayoutError, match=re.escape(str(default))) as error:
+        make_encoder("cellmap", None)
+    assert "./make.sh build-days" in str(error.value)
+
+
+def test_the_rules_this_module_shares_are_defined_where_they_belong():
+    """The lint re-exports them; it does not own them.
+
+    The marks and the label's pixels belong beside `boku.layout.lay_out_message`, which
+    inserts the same runs while a build lays words out, and a `[SEL]` row's fields belong
+    beside the `TranslationEntry` they are read off. A second definition is a lint and a
+    build disagreeing about what is drawn around a line, or about which field is the
+    question -- silently, because both would still be internally consistent.
+    """
+    assert LabelledBox.__module__ == "boku.layout"
+    assert label_allowance.__module__ == "boku.layout"
+    assert select_fields.__module__ == "boku.translation"
+    assert lint_module.original_marks is layout_module.original_marks
+    assert lint_module.speaker_label is layout_module.speaker_label
+    assert lint_module.select_fields is translation_module.select_fields

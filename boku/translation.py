@@ -47,6 +47,23 @@ class TranslationEntry:
         return bool(self.options) or bool(self.prompts)
 
 
+def select_fields(entry: TranslationEntry, prompts: int) -> tuple[tuple[str, ...], ...]:
+    """A `[SEL]` row's pipe fields as the box reads them: `(prompt lines, options)`.
+
+    A select whose box opens with a question spends its first `prompts` lines on it, and
+    the committed convention lists the question first -- style guide § 13,
+    `translation/days/README.md` § shared.txt, and that file's own header. The question is
+    not an option: it is neither counted against `g_select_lines` nor given a branch. The
+    reader reads a row the same way (`tools/reader/checks.py`), which is what lets the two
+    be held against each other.
+
+    It lives beside `TranslationEntry` because that is what it reads: the lint and the
+    image build both split a row this way, and a second copy of the rule is a build and a
+    lint disagreeing about which field is the question.
+    """
+    return entry.options[:prompts], entry.options[prompts:]
+
+
 class TranslationSource(Protocol):
     """Anything that can list the English, keyed by line id."""
 

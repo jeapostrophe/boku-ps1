@@ -215,7 +215,12 @@ example. The flags that matter, all verified by running them:
   with no warning. Measured by arming at an address the PC had been *observed* to hold
   (0x800588a8): no hit in 400 frames without the flag, hit at frame 81 with it.
 * **`-interpreter`** — the arm64 dynarec dies with `Illegal instruction: 4` (exit 132, no output
-  at all) on `-run` with a retail BIOS. The debugger wants the dynarec off anyway.
+  at all) on `-run` with a retail BIOS. The debugger wants the dynarec off anyway. The windowed
+  arm64 build has its own limit: playing the day-1 build (Jay, 2026-09-20) it aborted at the
+  title screen's START, twice, with `Unimplemented LWC2 to GTE data register 15` — a GTE
+  instruction the game's own 3D code issues (none of `asm/*.asm` touches cop2, so the patch
+  cannot add one). Not reproduced on the stock disc yet; until it is, PCSX-Redux on arm64 is
+  a debugger, not a play-test target — DuckStation and Beetle are.
 
 ### Answering "can an agent with no display drive this?"
 

@@ -294,41 +294,43 @@ def test_every_line_the_build_did_not_write_is_byte_identical_to_the_import(
         )
 
 
-def test_the_build_and_the_lint_agree_about_which_lines_open_with_a_speaker(
+def test_the_build_and_the_lint_read_the_same_marks_off_every_message(
     archive: Archive, walk_reader, disc_dir: Path
 ):
-    """Two predicates, two representations, one rule — held against each other.
+    """One rule, two representations of the bytes — held against each other.
 
-    `boku.build.original_draws_label` reads the walk's raw words; `boku.lint`'s reads the
-    decoded store. They decide the same thing: whether page 1's first line carries the
-    label mark anywhere but its first cell. If they part company the lint charges the
-    label's pixels for a line the build wraps to the full box, so the build inserts
-    exactly the page the lint reports — silently, with both gates green.
+    `boku.layout.original_marks` is what dresses the English, and the build and the lint
+    reach it over different bytes: the build over the words the walk holds, the lint over
+    what `boku.script_store.original_bytes` reconstructs from the decoded store. Every
+    mark they disagree about is a run the build inserts and the lint does not charge (or
+    the reverse), which is a page refused by one gate and passed by the other — silently,
+    with both green. That is measured here over the whole script rather than assumed from
+    `GlyphTable.encode` being `decode`'s inverse.
     """
-    from boku.build import original_draws_label as from_words
     from boku.extract import SCRIPT_DIR_NAME
     from boku.glyphs import GlyphTable
-    from boku.lint import LABEL_MARKS
-    from boku.lint import original_draws_label as from_store
-    from boku.script_store import load_store
+    from boku.layout import original_marks
+    from boku.script_store import load_store, original_bytes
 
     store = load_store(Path(disc_dir) / SCRIPT_DIR_NAME)
-    mark = GlyphTable.load().from_character.get(LABEL_MARKS)
-    assert mark is not None, "the glyph table draws no label mark; this gate is vacuous"
-    checked = labelled = 0
+    table = GlyphTable.load()
+    checked = 0
+    seen: set[tuple[str, str, bool]] = set()
     for line_id, sites in walk_reader.by_line.items():
         record = store.lines.get(line_id)
         if record is None or not sites[0].kind.startswith("MSG"):
             continue
-        ours = from_words(walk_reader.raw(archive, sites[0]), mark)
-        theirs = from_store(record, store)
-        assert ours == theirs, (
-            f"{line_id}: the build says draws_label={ours} and the lint says {theirs}"
-        )
+        ours = original_marks(walk_reader.raw(archive, sites[0]), table)
+        theirs = original_marks(original_bytes(record, table), table)
+        assert ours == theirs, f"{line_id}: the build reads {ours} and the lint reads {theirs}"
         checked += 1
-        labelled += ours
+        seen.add((ours.opening, ours.closing, ours.labelled))
     assert checked > 1000, f"only {checked} messages compared; this gate would prove little"
-    assert 0 < labelled < checked, "every line or no line is labelled; the gate is vacuous"
+    # A labelled line, a bare opening and a closing mark all really occur, so the equality
+    # above is over all three runs the build inserts and not over one constant answer.
+    assert any(shape[2] for shape in seen), "no message is labelled; the gate is vacuous"
+    assert any(shape[0] and not shape[2] for shape in seen), "no message opens bare"
+    assert any(shape[1] for shape in seen), "no message closes; the closer is never charged"
 
 
 def test_every_refused_line_says_which_member_and_by_how_much(days_manifest: dict):

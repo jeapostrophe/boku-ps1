@@ -54,6 +54,7 @@ import struct
 import subprocess
 import sys
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -65,6 +66,8 @@ from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack  # noqa: E4
 from boku.disc import DiscImage, DiscWriter, SectorWrite  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
 from boku.importer import IMAGE_SHA1, sha1_of  # noqa: E402
+from boku.ppf import differing_spans  # noqa: E402
+from boku.reinsert import MAP_WORK_AREA_END  # noqa: E402
 from boku.sites import line_key_of, page_waits  # noqa: E402
 from boku.text import PlacedSite, SiteIndex, TextError  # noqa: E402
 from boku.translation import SampleScenes  # noqa: E402
@@ -114,10 +117,26 @@ class Layout:
     """Everything `PLAN TXT-03` leaves to Jay, as build inputs with the trial's defaults."""
 
     pen_x: int = 24
-    pen_y: int = 176
-    line_pitch: int = 13
-    band_y: int = 168
-    band_h: int = 72
+    pen_y: int = 205
+    line_pitch: int = 11
+    band_y: int = 203
+    band_h: int = 37
+    band_brightness: int = 168
+    band_blend: int = 2
+    """`g_dlgbox_fade[6]`, the level the band sits at while a message is up: stock is
+    (224, 1), opaque; (168, 2) is entry 5, additive over the scene -- the translucent look
+    Jay chose (2026-09-20; research/renderer-runtime.md § Q2 item 4)."""
+    map_area_extra: int = 0x1800
+    """Bytes added to the engine's `0x6400` map work area. It costs twice itself from the
+    gap between the fixed arena's end and the stack; `asm/arena.asm` holds the guard that
+    refuses a raise the measured stack depth cannot afford, and
+    research/vwf-prototype.md § "The map work area" the measurement."""
+    advance_model: str = "c2"
+    """`c2` (the default): each glyph re-aligned to column 0, advance = ink width plus the
+    gap. `c1`: the glyph stays at its native bearing and the advance is the ink's right
+    edge plus the gap. Jay ranked c1 above c2 on looks and gave lint the casting vote
+    (2026-09-20); under the ruled three-line band c1 needs a fourth line on far more pages
+    than c2 does, so c2 is what the build installs (`PLAN TXT-07` for both counts)."""
     sel_x: int = 48
     sel_y: int = 174
     sel_pitch: int = 13
@@ -141,12 +160,24 @@ class Layout:
         "sel_cursor_dx",
         "sel_cursor_dy",
         "fixed_advance",
+        "band_brightness",
+        "band_blend",
+        "map_area_extra",
     )
     """Fields `asm/vwf.asm` takes as `-equ NAME`, upper-cased."""
 
     def __post_init__(self) -> None:
         if self.sel_cursor_dx > 0:
             raise BuildRefused("--sel-cursor-dx must be <= 0: the box's corner is measured from it")
+        if self.advance_model not in ("c1", "c2"):
+            raise BuildRefused(f"--advance-model is c1 or c2, not {self.advance_model!r}")
+        if self.map_area_extra < 0 or self.map_area_extra % 4:
+            raise BuildRefused("--map-area-extra is a non-negative multiple of 4 (a word count)")
+
+    @property
+    def map_work_area_end(self) -> int:
+        """Where a map pack's children 0-5 must end under the patched engine."""
+        return MAP_WORK_AREA_END + self.map_area_extra
 
     @property
     def wrap_width(self) -> int:
@@ -280,9 +311,13 @@ at x + 1) does not bridge the gap to a repeat of itself: `...` read as a dash at
 
 
 def game_font(sheet: Sheet, layout: Layout) -> dict[str, Glyph]:
-    """The game's own Latin glyphs, shifted to column 0, advance = ink width + gap.
+    """The game's own Latin glyphs under `layout.advance_model`.
 
-    A glyph of `NARROW_INK` or less advances one more, for the shadow's sake.
+    `c1` keeps every cell's pixels where the sheet has them and advances the pen past the
+    ink's right edge plus the gap, so a glyph is drawn at its native bearing and nothing
+    on the sheet changes; `c2` shifts the ink to column 0 and advances by its width plus
+    the gap. Under either, a glyph of `NARROW_INK` or less advances one more, for the
+    shadow's sake.
     """
     glyphs = {}
     for character, glyph_id in native_ids().items():
@@ -292,8 +327,13 @@ def game_font(sheet: Sheet, layout: Layout) -> dict[str, Glyph]:
             continue
         left, right = ink
         width = right - left + 1
-        advance = width + layout.gap + (1 if width <= NARROW_INK else 0)
-        glyphs[character] = Glyph(tuple((row << left) & 0xFFF for row in rows), advance)
+        narrow = 1 if width <= NARROW_INK else 0
+        if layout.advance_model == "c1":
+            glyphs[character] = Glyph(rows, right + 1 + layout.gap + narrow)
+        else:
+            glyphs[character] = Glyph(
+                tuple((row << left) & 0xFFF for row in rows), width + layout.gap + narrow
+            )
     return glyphs
 
 
@@ -319,15 +359,17 @@ def free_cells() -> list[int]:
     return ids
 
 
-def allocate_cells(font: dict[str, Glyph]) -> dict[str, int]:
+def allocate_cells(font: dict[str, Glyph], untouched: set[str] = frozenset()) -> dict[str, int]:
     """Character -> glyph id, touching only cells the Japanese script never draws.
 
-    A character keeps its native cell when that cell is free; otherwise it takes the lowest
-    free cell no character is keeping, so the advance table stays as short as it can.
+    A character keeps its native cell when that cell is free, or when `untouched` says
+    its pixels are the sheet's own (the `c1` model draws nothing there); otherwise it takes
+    the lowest free cell no character is keeping, so the advance table stays as short as
+    it can.
     """
     free = free_cells()
     native = native_ids()
-    cells = {c: native[c] for c in font if native.get(c) in free}
+    cells = {c: native[c] for c in font if native.get(c) in free or c in untouched}
     kept = set(cells.values())
     spare = (i for i in free if i not in kept)
     for character in sorted(font):
@@ -337,6 +379,66 @@ def allocate_cells(font: dict[str, Glyph]) -> dict[str, int]:
             except StopIteration:
                 raise BuildRefused("the sheet has no free cell left for this font") from None
     return cells
+
+
+def place_font(
+    sheet: Sheet, layout: Layout, font: dict[str, Glyph], drawn: set[int]
+) -> tuple[dict[str, int], bytearray, dict[str, int]]:
+    """`(character -> cell, the advance table, the cells to redraw)` for one font.
+
+    `drawn` is every cell the Japanese script on this disc draws, and it is what keeps the
+    two halves of a cell honest. A character may keep its native cell only if this font
+    draws the pixels already there **and** nothing on the disc draws that cell: the sheet
+    and the advance table are both indexed by cell id and both are read for Japanese and
+    English alike, so a kept cell hands a Japanese page either new pixels or a new width.
+    Everything else is copied into a cell the script never draws.
+    """
+    native = native_ids()
+    untouched = {
+        c
+        for c in font
+        if c in native and font[c].rows == sheet.get(native[c]) and native[c] not in drawn
+    }
+    cells = allocate_cells(font, untouched)
+    # Only a cell whose pixels change is written, and only such a cell can clash.
+    redrawn = {c: glyph_id for c, glyph_id in cells.items() if c not in untouched}
+    clash = sorted(drawn & set(redrawn.values()))
+    if clash:
+        raise BuildRefused(
+            f"cells {clash} were about to be redrawn, and text on this disc draws them; "
+            f"the free-id list in {FONT_CANDIDATES.name} is wrong for this image"
+        )
+    table = bytearray([layout.fixed_advance]) * (max(cells.values()) + 1)
+    for character, glyph_id in cells.items():
+        table[glyph_id] = font[character].advance
+    narrowed = narrowed_cells(table, cells, drawn, layout.fixed_advance)
+    if narrowed:
+        raise BuildRefused(
+            "the advance table would change the width of "
+            + ", ".join(f"{glyph_id} ({character!r})" for glyph_id, character in narrowed)
+            + " -- cells the Japanese script still draws, which would then be drawn at "
+            "English widths and overlap. Those characters need free cells of their own."
+        )
+    return cells, table, redrawn
+
+
+def narrowed_cells(
+    table: Sequence[int], cells: dict[str, int], drawn: set[int], fixed_advance: int
+) -> list[tuple[int, str]]:
+    """`(cell, character)` for every cell `drawn` whose advance this font would change.
+
+    The advance table is one array indexed by cell id, and the hooked renderer reads it
+    for Japanese and English alike. So a cell that the script still draws and that this
+    font gives an English advance is a Japanese page drawn at English widths -- glyphs
+    overlapping, with no other symptom and every other gate green. The sibling of the two
+    pixel clash checks in `build`, for the other half of what a cell carries.
+    """
+    by_id = {glyph_id: character for character, glyph_id in cells.items()}
+    return sorted(
+        (glyph_id, by_id.get(glyph_id, ""))
+        for glyph_id in drawn
+        if glyph_id < len(table) and table[glyph_id] != fixed_advance
+    )
 
 
 # --- text -----------------------------------------------------------------------------
@@ -688,19 +790,18 @@ def byte_runs(old: bytes, new: bytes) -> list[tuple[int, int]]:
     """`(start, end)` of each differing run of `old` vs `new`, runs closer than
     `RUN_MERGE_GAP` joined. Equal-length inputs; an empty list means they are identical.
 
-    A per-byte loop, which is 11 ms over the 587 KB this build compares (measured);
-    `boku.ppf._differing_spans` is the blocked `memcmp`-first version for whole images.
+    The scan itself is `boku.ppf.differing_spans`, the one difference scanner in the tree;
+    this adds the merge. A span that stops at one of its 4 KiB block boundaries is
+    rejoined here like any other neighbour, because the gap to the next one is zero.
     """
     if len(old) != len(new):
         raise BuildRefused(f"byte_runs over {len(old)} and {len(new)} bytes")
     runs: list[list[int]] = []
-    for offset in range(len(old)):
-        if old[offset] == new[offset]:
-            continue
-        if runs and offset - runs[-1][1] <= RUN_MERGE_GAP:
-            runs[-1][1] = offset + 1
+    for start, end in differing_spans(old, new):
+        if runs and start - runs[-1][1] <= RUN_MERGE_GAP:
+            runs[-1][1] = end
         else:
-            runs.append([offset, offset + 1])
+            runs.append([start, end])
     return [(start, end) for start, end in runs]
 
 
@@ -805,12 +906,18 @@ LAYOUT_ARGUMENTS = (
     "sel_cursor_dx",
     "sel_cursor_dy",
     "gap",
+    "band_brightness",
+    "band_blend",
+    "map_area_extra",
 )
-"""`Layout` fields the command line sets (`--pen-x` ...)."""
+"""`Layout` fields the command line sets (`--pen-x` ...), plus `--advance-model`."""
 
 
 def build(args: argparse.Namespace) -> dict[str, object]:
-    layout = Layout(**{name: getattr(args, name) for name in LAYOUT_ARGUMENTS})
+    layout = Layout(
+        **{name: getattr(args, name) for name in LAYOUT_ARGUMENTS},
+        advance_model=args.advance_model,
+    )
     source, out = Path(args.image), Path(args.out).resolve()
     if (REPO / "disc").resolve() in [out, *out.parents]:
         raise BuildRefused("--out is under disc/, which no tool writes to")
@@ -824,7 +931,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
 
     archive = Archive(Path(args.disc))
     archive.require_clean()
-    index = SiteIndex.from_disc(Path(args.disc))
+    index = SiteIndex.from_disc(Path(args.disc), archive=archive)
     stock_exe = archive.exe
     font_offset, font_size = font_child_range(archive)
     stock_tim = archive.boku[font_offset : font_offset + font_size]
@@ -840,25 +947,17 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         font = load_glyph_file(Path(args.font))
     else:
         font = game_font(sheet, layout) | load_glyph_file(PLACEHOLDERS)
-    cells = allocate_cells(font)
     drawn = set().union(*(glyph_ids_in(raw) for raw in site_bytes.values()))
-    clash = sorted(drawn & set(cells.values()))
-    if clash:
-        raise BuildRefused(
-            f"cells {clash} were about to be redrawn, and text on this disc draws them; "
-            f"the free-id list in {FONT_CANDIDATES.name} is wrong for this image"
-        )
-    clash = sorted(code_glyph_ids(archive) & set(cells.values()))
+    cells, table, redrawn = place_font(sheet, layout, font, drawn)
+    clash = sorted(code_glyph_ids(archive) & set(redrawn.values()))
     if clash:
         raise BuildRefused(
             f"cells {clash} were about to be redrawn, and code on this disc draws them by "
             f"id (an immediate, a digit, or sysmsg's remap); the free-id list in "
             f"{FONT_CANDIDATES.name} is wrong for this image"
         )
-    table = bytearray([layout.fixed_advance]) * (max(cells.values()) + 1)
-    for character, glyph_id in cells.items():
+    for character, glyph_id in redrawn.items():
         sheet.put(glyph_id, font[character].rows)
-        table[glyph_id] = font[character].advance
     new_tim = bytes(sheet.data)
 
     work = out / "files"
@@ -886,7 +985,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         "asm": str(Path(args.asm)),
         "layout": layout.__dict__
         | {"wrap_width": layout.wrap_width, "select_width": layout.select_width},
-        "font": args.font or "the game's own Latin cells, re-aligned, plus placeholder-glyphs.txt",
+        "font": args.font or "the game's own Latin cells plus placeholder-glyphs.txt",
+        "cells_redrawn": len(redrawn),
+        "map_work_area_end": layout.map_work_area_end,
         "table": {
             "ram": f"0x{symbols['vwf_advance']:08X}",
             "ids": len(table),
@@ -924,9 +1025,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     if args.edits_only:
         # `manifest.json` is defined as the record of an image (see this file's docstring),
         # and this mode writes none, so any file of that name left here now describes an
-        # image that no longer matches these edits. It is removed rather than forged:
-        # `boku.lint.DEFAULT_CELLS` still points at it, and a lint that fails with "no
-        # cell map" is recoverable where one silently measuring last week's font is not.
+        # image that no longer matches the `edits.json` just written beside it. It is
+        # removed rather than left to be read as current.
         (out / "manifest.json").unlink(missing_ok=True)
         return provenance | {"edits": edits}
 
@@ -1072,6 +1172,13 @@ def main() -> int:
         parser.add_argument(
             f"--{name.replace('_', '-')}", type=int, default=getattr(defaults, name)
         )
+    parser.add_argument(
+        "--advance-model",
+        choices=("c1", "c2"),
+        default=defaults.advance_model,
+        help="c2 (default): ink re-aligned to column 0, advance = ink + gap; c1: the glyph "
+        "at its native bearing, advance to the ink's right edge (research/font-candidates.md)",
+    )
     args = parser.parse_args()
     try:
         manifest = build(args)
@@ -1089,7 +1196,9 @@ def main() -> int:
         changed = sum(len(edit["old"]) // 2 for edit in manifest["edits"])
         print(
             f"  {len(manifest['edits'])} byte edit(s) over {changed} bytes, "
-            f"{len(manifest['cells'])} glyph cells"
+            f"{len(manifest['cells'])} glyph cells ({manifest['cells_redrawn']} redrawn, "
+            f"model {manifest['layout']['advance_model']}); map work area "
+            f"{manifest['map_work_area_end']:#x}"
         )
         return 0
     print(

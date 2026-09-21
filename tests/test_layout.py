@@ -16,6 +16,7 @@ import pytest
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, PAGE_WORD, GlyphTable, words_of
 from boku.layout import (
     DIALOGUE_BAND,
+    SPEECH_MARKS,
     STOCK_ADVANCE,
     BoxSpec,
     CellMapEncoder,
@@ -28,6 +29,7 @@ from boku.layout import (
     unencodable,
     wrap,
 )
+from tests.test_vwf_prototype import vwf_layout, vwf_prototype
 
 CELLS = {
     " ": (10, 4),
@@ -83,16 +85,77 @@ def test_a_word_wider_than_the_box_is_reported_and_never_cut():
     assert laid.pages == (("abcabc",),), "the English came back whole"
 
 
-def test_the_guarded_last_line_gets_the_narrower_width_the_pencil_leaves():
-    """The next-page pencil sits at x >= 267 on a page that can show one, so line 4 is shorter."""
+def test_the_guarded_lines_get_the_narrower_width_the_pencil_leaves():
+    """The next-page pencil is stock at rows 220-229, which the ruled band's lines 2 and 3
+    cross, so every line from `guarded_from` on is shorter and line 1 is not."""
     encoder = StockEncoder(GlyphTable.load())
     assert DIALOGUE_BAND.width_of_line(1) == DIALOGUE_BAND.width
-    assert DIALOGUE_BAND.width_of_line(4) == DIALOGUE_BAND.guarded_width
     assert DIALOGUE_BAND.guarded_width < DIALOGUE_BAND.width
+    for number in range(DIALOGUE_BAND.guarded_from, DIALOGUE_BAND.lines + 1):
+        assert DIALOGUE_BAND.width_of_line(number) == DIALOGUE_BAND.guarded_width
     wide = "ab " * 40
     lines = wrap(encoder, wide, DIALOGUE_BAND)
     assert measure(encoder, lines[0]) <= DIALOGUE_BAND.width
-    assert measure(encoder, lines[3]) <= DIALOGUE_BAND.guarded_width
+    assert measure(encoder, lines[DIALOGUE_BAND.guarded_from - 1]) <= DIALOGUE_BAND.guarded_width
+
+
+def test_the_band_holds_the_lines_its_geometry_has_room_for():
+    """The last line's 12-row cell must end inside the band, and one more would not.
+
+    The geometry is the renderer's own -- `tools/vwf/build_prototype.Layout`, whose fields
+    are what `asm/vwf.asm` is assembled with (Jay's ruling, `research/vwf-prototype.md`
+    § "The ruled band") -- so moving the band or the pitch there and not here is a red
+    test rather than a `DIALOGUE_BAND` that quietly describes a band nothing draws.
+    """
+    layout = vwf_layout()
+    cell = 12  # a glyph cell is 12 rows (`research/font.md`), as `build_prototype.CELL` says
+    assert cell == vwf_prototype().CELL
+    fits = (layout.band_y + layout.band_h - layout.pen_y - cell) // layout.line_pitch + 1
+    assert DIALOGUE_BAND.lines == fits
+    assert DIALOGUE_BAND.width == layout.wrap_width
+
+
+# --- the speaker label and the marks, as text on the lines they sit on ----------------------
+
+
+def test_the_opening_run_leads_page_1_and_the_closing_run_ends_the_last_page():
+    """`Uncle「` is drawn in front of the first word and `」` after the last, as cells the
+    renderer draws like any other, and the wrap measures them where they are."""
+    encoder = cell_encoder()
+    laid = lay_out_message(
+        "E1.0",
+        ("abc abc", "abc"),
+        raw(1, PAGE_WORD, 7, 1, END_WORD),
+        encoder,
+        BoxSpec(width=999, lines=4),
+        opening="ai!",
+        closing="!",
+    )
+    assert laid.pages == (("ai!abc abc",), ("abc!",))
+    cells = {c: CELLS[c][0] for c in CELLS}
+    assert laid.words[:4] == (cells["a"], cells["i"], cells["!"], cells["a"])
+    assert laid.words[-3:] == (cells["c"], cells["!"], END_WORD)
+    assert laid.widths[0][0] == measure(encoder, "ai!abc abc")
+
+
+def test_the_opening_run_is_charged_to_line_1_and_the_break_moves_for_it():
+    """The narrowest red: the same page breaks a word earlier with the label in front."""
+    encoder = cell_encoder()
+    box = BoxSpec(width=measure(encoder, "abc abc abc"), lines=4)
+    plain = lay_out_message("E1.0", ("abc abc abc abc",), raw(1, END_WORD), encoder, box)
+    labelled = lay_out_message(
+        "E1.0", ("abc abc abc abc",), raw(1, END_WORD), encoder, box, opening="ab!"
+    )
+    assert plain.pages[0] == ("abc abc abc", "abc")
+    assert labelled.pages[0] == ("ab!abc abc", "abc abc")
+
+
+def test_a_mark_the_font_cannot_draw_is_reported_like_any_other_character():
+    encoder = cell_encoder()
+    laid = lay_out_message(
+        "E1.0", ("abc",), raw(1, END_WORD), encoder, BoxSpec(width=999, lines=4), opening="Z「"
+    )
+    assert any("draws no cell for 'Z「'" in problem for problem in laid.problems)
 
 
 # --- pages, which never move -------------------------------------------------------------------
@@ -236,6 +299,9 @@ def test_the_stock_encoder_spells_english_with_the_sheets_full_width_cells():
     assert encoder.advance("i") == encoder.advance("m") == STOCK_ADVANCE
     assert encoder.glyph("A") == table.to_glyph["A"]
     assert encoder.glyph("あ") is None, "a kana is not something English is spelled with"
+    # The marks a message is dressed with are the one exception: the sheet's own cells.
+    for mark in (*SPEECH_MARKS, *SPEECH_MARKS.values()):
+        assert encoder.glyph(mark) == table.from_character[mark]
 
 
 def test_the_cell_map_encoder_reads_the_shape_the_font_build_writes(tmp_path):

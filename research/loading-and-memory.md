@@ -223,14 +223,22 @@ None holds text.
   `lba[149]` in `g_nikki_lba` (`0x80048018`) at boot. What the ids mean:
   [text-outside-events.md](text-outside-events.md) § "The picture diary".
 
-## Making room (*proposals — none tested*)
+## Making room
+
+Proposals 1 and 2 are done and measured (2026-09-20; `asm/vwf.asm`, `asm/arena.asm`,
+[vwf-prototype.md](vwf-prototype.md) § "The map work area" holds the numbers: the stack's
+low-water mark, the margin the two raises leave, and the guard the assembler applies).
+3 and 4 remain proposals.
 
 1. **Every buffer address derives from one word.** Raising the initial `g_heap_top`
    (`0x80068AF0`) by N opens N bytes at `0x8008F3A4` that nothing else uses, and costs N of the
    margin at the top: `0x801FFFF0 − (0x801F41F4 + 0x6000)` = 24,060 bytes less the real stack
-   depth. That is the natural home for relocated arrays and new renderer code.
+   depth. That is the natural home for relocated arrays and new renderer code. *Done: the
+   width table and hook bodies live there.*
 2. **`0x6400` is a constant in three places** (`boot_load_resident`'s two bumps and
-   `map_commit`'s test and swap length). Raising it by Δ costs 2Δ of the same margin.
+   `map_commit`'s test and swap length). Raising it by Δ costs 2Δ of the same margin. *Done:
+   raised to `0x7C00`; an exhaustive immediate scan of the EXE and all seven overlays found no
+   fourth site (the `0x6400` at `0x80012308` is the sound work buffer's size).*
 3. **Child 3 is 8,286 bytes of every tight map** and is uploaded once by `map_init`. Uploading
    it in `map_commit`, before the swap, would let it live after child 6 and return 8 KB of the
    `0x6400` to text. 483 of 555 maps have one.
@@ -248,8 +256,10 @@ None holds text.
 * **`EV` head room.** Break at `0x8001A004` (after `file_load_async(30, …)` in `ev_list_step`)
   and log `*0x800278EC − g_ev_buf[*0x80024784 ^ 1]` and `*0x800278E4` per map across a
   playthrough; the maximum is the real figure. Start with `M_D07100` on days 22–31.
-* **Stack depth.** Fill `0x801F8000`–`0x801FFF00` with a pattern at `main`, play, and read the
-  lowest address touched. Bounds proposal 1 and 2.
+* **Stack depth.** *Measured* on one route (boot → day 1 → three map changes → SELECT → day
+  2) with `tools/vwf/stack-probe.lua` on PCSX-Redux and a sentinel fill on Beetle:
+  [vwf-prototype.md](vwf-prototype.md) § "The map work area". Menus, bug sumo and fishing are
+  unwalked.
 * **Work-area overrun.** Watch writes to `*0x800258D0 + 0x6400` (first word of the model pool)
   from `map_init`'s callees; should never fire on the shipped disc.
 * [tooling-setup.md](tooling-setup.md) reports RAM under PCSX-Redux not matching the file at

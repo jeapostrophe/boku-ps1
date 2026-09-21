@@ -27,21 +27,19 @@ select geometry are build arguments, and the typeface is an input file.
 ## Build and look
 
 ```sh
+./make.sh build-days                           # edits.json, then translation/days -> build/days/
 uv run python tools/vwf/build_prototype.py     # -> build/vwf/image.cue, manifest.json, files/
 tools/vwf/shoot.sh                             # both emulators -> work/txt05/shots/*.png
-
-# the same renderer with the reviewed translation instead of the sample lines:
-uv run python tools/vwf/build_prototype.py --days translation/days --out build/vwf-days
 ```
 
-The second form is how the real translation gets into the game today (§ "The reviewed
-translation, in place"): every line of days 1–7 and `shared.txt` that fits its site is
-written, the rest are listed. `boku build --translation translation/days --cells
-build/vwf/manifest.json` is the pipeline's version of the same thing — it lays lines out
-through `boku.layout.CellMapEncoder` on this build's `cells` map and can grow a member
-(`PIPE-03`) — but it does not apply this patch's executable words or the rebuilt sheet, so
-until the build moves into `boku` (`make.sh` verb, `TXT-05`'s last item) the image that
-draws English *proportionally* is this script's.
+`./make.sh build-days` is the real pipeline (2026-09-20): `build_prototype.py --edits-only`
+assembles the patch and rebuilds the sheet into `build/vwf/edits.json`, and `boku build
+--vwf` applies those edits beside the reinserter, laying every line out in the band's
+pixels with its speaker label and marks (§ "The speaker label"), growing members and
+relocating them (`PIPE-03`). The second form is the older in-place prototype: sample
+lines written where the Japanese sat, no growth (`--days translation/days` writes only the
+lines that fit their sites, § "The reviewed translation, in place"). It is kept for looking
+at the renderer in isolation, not for producing the translated image.
 
 `build_prototype.py --help` lists the layout arguments (`--pen-x --pen-y --line-pitch --band-y
 --band-h --gap`, and for selects `--sel-x --sel-y --sel-pitch --sel-pad --sel-cursor-dx
@@ -139,17 +137,117 @@ arrays of [text-outside-events.md](text-outside-events.md).
 the file, above every overlay): one data word moves the heap's first byte to `0x8008F800`. Chosen
 over the dead-code islands because it is the only candidate whose deadness was *measured* with
 write-breakpoints rather than inferred from missing references ([renderer-runtime.md](renderer-runtime.md)
-§ Q5), it is one contiguous `.area`, and it costs nothing but 1.1 KB of heap. Layout of this build
-(`manifest.json` → `gap`): `vwf_advance` **795 bytes** at `0x8008F3A4`; `vwf_select_xmax/ymax`
-at `0x8008F6C0`; `vwf_select_advance`, `vwf_step_s5_s0`, `vwf_step_v1_s0_s1`,
-`vwf_step_s1_s0_next`, `vwf_select_box` from `0x8008F6C8`; free again from `vwf_free` =
-`0x8008F7CC` — **52 bytes**. That is one more body. The surfaces still to hook (§ "The
+§ Q5), it is one contiguous `.area`, and it costs nothing but 1.1 KB of heap. Layout of the
+(c2) build (`edits.json` → `gap`): `vwf_advance` **812 bytes** at `0x8008F3A4`;
+`vwf_select_xmax/ymax` at `0x8008F6D0`; `vwf_select_advance`, `vwf_step_s5_s0`,
+`vwf_step_v1_s0_s1`, `vwf_step_s1_s0_next`, `vwf_select_box` from `0x8008F6D8`; free again
+from `vwf_free` = `0x8008F7DC` — **36 bytes**, which is not a whole body. The table is as
+long as the highest cell any English character was given, so it grows with the free-cell
+allocation, not with the font. The surfaces still to hook (§ "The
 fixed-pitch surfaces") need five to seven, about 240 bytes, so the next home is the 620-byte
 island at `0x80012E04` ([text-renderer.md](text-renderer.md) § 6 candidate 2), whose deadness is
 inferred, not measured — a write-breakpoint run like Q5's should precede it.
 
+### The ruled band, the advance model, and what fits (Jay, 2026-09-20)
+
+`TXT-03`/`TXT-06`/`TXT-07` were ruled on 2026-09-20 and are the build's defaults
+(`Layout` in `build_prototype.py`): **the smallest band** — 37 rows from y = 203, pen
+(24, 205), line pitch 11, **three lines** — **translucent** (`g_dlgbox_fade[6]` := entry 5's
+(168, additive) in place of (224, opaque): one data site in `asm/dialogue.asm`), **the game's
+own sheet** as the typeface, and advance model **(c2)**: each Latin glyph re-aligned to
+column 0 with the table advance its ink width + the gap (a 2-px-or-narrower ink gets one
+more, for the shadow). Jay ranked (c1) — the glyph left at its native bearing, advance to
+the ink's right edge — above it on looks and gave the lint the casting vote, and under this
+band (c1) needs a fourth line on far more pages than (c2) does (`PLAN TXT-07` for the
+counts, from `work/txt05b/lint-c1-3lines.txt` and `lint-c2-3lines.txt`); the band stays at
+37 rows, so (c2) is what the build installs and `--advance-model c1` stays available.
+
+Measured on the (c1) build: the Latin cells' advances are `i l` 8, `a n` 9, `A U` 11 — the
+bearings the sheet centres its glyphs with become white space between letters, so set text
+reads loose (`work/txt05b/shots/01…`); **682 of 751 lines written, 69 left Japanese**
+(`build/days/manifest.json` → `lines_refused`), none for bytes or a page count.
+
+Under either model **a character whose native cell the Japanese script draws is copied
+into a free cell** rather than kept where it is (`place_font`): the sheet and the advance
+table are both indexed by cell id and the hooked renderer reads them for a still-Japanese
+page too, so a kept cell hands that page an English width. Measured on this dump before the
+gate went in: 26 such cells under (c1) (the digits, `A B C L M P T X Z z`, `. : ? ! / +`)
+and one under (c2) (`/`).
+
+The pencil is stock at x ≥ 267, rows 220–229, which crosses lines 2 *and* 3 of this band
+(cells 216–227, 227–238), so `DIALOGUE_BAND` guards both at 238 px.
+
+### The speaker label (`TXT-05`'s "label design", decided 2026-09-20)
+
+**Form: the original's**, `Uncle「…」` — the label, then the corner brackets in horizontal
+form. Style guide § 9 (Q7) makes that the default and leaves 「」-vs-quotes to the band; the
+brackets win because the charter translates rather than localises (the marks are the
+original's signature), `Uncle "…"` reads as a citation, and `Uncle: ` drops the marks the
+ruling kept. Cost is the same as `: `: the brackets are drawn 4–5 px wide (advance 5; `『』`
+6) against `:` + space at 8 px, for two extra bytes a message. The sheet's own `「」『』`
+are vertical forms and lie on their sides horizontally (renderer-runtime.md § Q2), so the
+four are new placeholder glyphs in free cells (`tools/vwf/placeholder-glyphs.txt`).
+
+**Mechanism: the inserter, not the renderer.** `boku.layout.original_marks` reads what the
+Japanese drew — `「` after the first cell means a label, at the first cell a bare examine or
+chorus line, `『` narration, and the closing mark is the last cell before the end, absent
+(a split utterance) or, when it does not close the mark that opened the message, a refusal
+rather than a mark the inserter invented — and `boku.layout.lay_out_message` puts
+`<speaker>` + the opening mark
+in front of page 1's first word and the closing mark after the last page's last word, as
+text. The renderer draws them like any other cells; the wrap measures them on the lines
+they really occupy; a speaker outside style guide § 9's list is a refusal, not a misspelling
+on screen; a chorus keeps the original's bare `「…」` (the slot-12 chorus is unlabelled on
+the disc); narration is `『…』` with no label. A renderer hook would have needed a slot →
+name table and a draw call in the 52 free bytes, and the slot disagrees with the label in
+11 lines. **Bytes**: label glyphs + 2 per copy — `Uncle「…」` 14, `Boku「…」` 12, `Shirabe「…」`
+18. The build that added them grew 312 members by 154,048 bytes in all and left **550 of
+765 arena sectors** (the previous build, without labels but with the four-line band, 511:
+the shorter pages of a three-line band, refused, cost more than the labels).
+
+`boku lint` charges `speaker + 「` on line 1 (`label_allowance`), which is now exact for a
+labelled line because the cell map carries the bracket's real advance (it charged a 14-px
+fallback before). Not charged by the lint: the closing mark on the last line, and the bare
+marks of an unlabelled line — the build measures both, so a line the lint passes can be
+refused by up to 6 px on those lines (`work/txt05b/shots/03`, `04` show page 1 without and
+page 2 with the closing mark).
+
+### The map work area (`PIPE-03`; research/loading-and-memory.md § "Making room" 2)
+
+`M_H06001` was 628 bytes over `0x6400` with days 1–7 alone. The constant is **four
+instructions at three sites** — `boot_load_resident`'s bumps for A (`0x80012350`) and B
+(`0x80012370`), `map_commit`'s test `slti v0,v0,0x6401` (`0x80017748`) and swap length
+(`0x800177E0`) — all raised together to `0x6400 + MAP_AREA_EXTRA` in `asm/arena.asm`,
+default **`0x1800`** (`--map-area-extra`), i.e. `0x7C00`. Every other buffer address is
+bump-derived (the model pool, `g_bg_clut_save`, `g_bg_save`), the only other `0x6400`
+immediate in the executable is the sound work buffer, and no overlay holds one (scanned).
+`edits.json` records `map_work_area_end` and `boku build` hands it to the reinserter
+(`plan(work_area_end=)`), so the build refuses at the engine's real limit.
+
+**What it costs, measured**: the fixed arena ends 2 × `0x1800` = 12,288 bytes higher, under
+the level-C arena, `bg_swap_in`'s `0x6000` scratch and the stack. `tools/vwf/stack-probe.lua`
+on PCSX-Redux, retail layout, arrival sequence + free roam (14,000 frames): stack low-water
+**`0x801FF040`**, 4,016 bytes below the top, the level-C bump pointer never moved, and the
+gap from the scratch's end to that mark was **20,044 bytes**. The same on Beetle with the
+patched image, a sentinel poked into a save state (`tools/vwf/state_poke.py --fill/--scan`)
+over free roam, two map requests and the SELECT: low-water `0x801FF040` again. So 20,044 −
+1,116 (heap raise) − 12,288 leaves **6,640 bytes** past the measured depth; `arena.asm`
+refuses a raise that leaves less than 1.5 × the measured depth. Read back from the Beetle
+state: `g_map_load` `0x801B5A50`, `g_bg_clut_save` = B + `0x7C00`, level C `0x801F7650`.
+
+**Proven**: with the raise in, the arrival sequence, three map changes (`G14` → `G06` →
+`G01`), the SELECT and the day-2 `H06000` scene (`E0220`, `work/txt05b/shots/08`) all run
+on Beetle; `M_H06001` now lays out (relocated, 101 → 102 sectors). **Not proven**: loading a
+pack whose child 6 really lies past `0x6400` — that is only `M_H06001` on this disc, and
+`H06` loads `H06000` on days 2–12 and `H06002` from 16 (poked clock, § "Reaching …"), so the
+variant is condition-selected and was not reached; and the stack in menus, sumo and
+fishing. Under the full-translation estimate six maps pass `0x6400` by up to 5,926 bytes
+(`M_H06001`), inside this raise.
+
 ### No cell the Japanese script draws is touched
 
+Under (c1) this is trivially so: no Latin cell is written at all, and only a cell whose
+pixels change is gated. The rest of this section describes (c2), `--advance-model c2`.
 [font-candidates.md](font-candidates.md) § 7 accepted re-aligning Latin cells in place as
 "cosmetic" for the ten letters, the digits and the punctuation untranslated lines use. That is
 avoidable, so the build avoids it: an English character keeps its own cell only when that cell is
@@ -215,6 +313,7 @@ RAM addresses; executable file offset = RAM − `0x8000F800`, overlay file offse
 | `0x8002911C` | `g_dlgbox_x` (`s16`) | 260 | −5: tile 330 wide, fade off-screen |
 | `0x8002EA34`, `38`, `44`, `48` | `dialog_panel_draw` | `addiu s1,zero,0xF0` · `sh zero,0xA(s0)` · `addiu v0,v1,5` · `sh v0,8(s0)` | `addiu s1,zero,BAND_H` · `sh zero,8(s0)` · `addiu v0,zero,BAND_Y` · `sh v0,0xA(s0)` — `band2` |
 | `0x8002BF48` | `dialog_draw`, newline | `addiu s1,s1,0xD` | `addiu s1,s1,LINE_PITCH` (13: unchanged bytes by default) |
+| `0x80029138` | `g_dlgbox_fade[6]` (data) | `224, 1` (opaque) | `BAND_BRIGHTNESS, BAND_BLEND` (168, 2: additive, the translucent look) |
 | `0x8002BF5C`–`7C` | `dialog_draw`, advance | `lui v0,0x8003` · `lw v0,0x59E4(v0)` · `nop` · `andi v0,v0,0x10` · `beqz v0,+3` · `nop` · `j 0x8002BF80` · `addiu s1,s1,0xD` · `addiu s2,s2,0xE` | the nine instructions above |
 
 `g_text_flags & 0x10` still selects the newline rule at `0x8002BF1C`, but no longer the advance: a
@@ -232,6 +331,9 @@ ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 | `0x8002C3F4`, `FC` | `select_cursor_update`, pad | `andi v0,v1,0x8000` (LEFT +1) · `andi v0,v1,0x2000` (RIGHT −1) | `0x4000` (DOWN +1) · `0x1000` (UP −1) |
 | `0x80028E7C`… | `g_select_pos`, 12 × 5 × `{s16 x, s16 y}` | column tops ([text-renderer.md](text-renderer.md) § 1) | `(SEL_X, SEL_Y + i · SEL_PITCH)` ×5 per layout |
 | `0x80028E44`… | `g_select_rect[0..5]` | `(120,56,80,96)` … `(208,56,96,168)` | `(SEL_X + SEL_CURSOR_DX − SEL_PAD, SEL_Y − SEL_PAD, 80, 40)` |
+
+**Map work area** (`asm/arena.asm`): `0x80012350`, `0x80012370` `addiu s0,s0,0x6400` → `MAP_AREA`;
+`0x80017748` `slti v0,v0,0x6401` → `MAP_AREA + 1`; `0x800177E0` `addiu a2,zero,0x6400` → `MAP_AREA`.
 
 **`TITLE.OVL`** (`asm/title.asm`; the `.OVL` is a member of `BOKU.BIN` at `0x6533000`):
 
@@ -371,7 +473,16 @@ fires with `select_draw` every frame after it. Frames in `work/txt05/shots/`:
 Not measured: a select with a prompt line (`g_select_first`), a five-row layout, and the
 eight native menus. `select_width` (248 px) was not exercised — both options are short.
 
-## Measurements for `TXT-07` (dialogue, `band2` at Y = 168, H = 72, pen (24, 176), pitch 13)
+## Measurements for `TXT-07`
+
+**The ruled band** (Y = 203, H = 37, pen (24, 205), pitch 11; Beetle, 2026-09-20): three
+lines, cells at rows 205, 216, 227, the last shadow row 239 inside the band; 272 usable px;
+the pencil (x ≥ 267, rows 220–229) crosses lines 2 and 3, so both end before x ≈ 262;
+`Father「My son will be in your care for the / summer vacation.」` style pages set in three
+lines at (c1) widths (`work/txt05b/shots/`). Everything below was measured on the earlier
+72-row band and still holds for widths and clipping.
+
+### The 72-row band (Y = 168, H = 72, pen (24, 176), pitch 13)
 
 * **Band**: rows 168–239, the full 320 px, flat (224,224,224) on Beetle.
 * **Usable width**: 272 px with the left margin mirrored (what the builder wraps to); 296 px to
@@ -497,22 +608,23 @@ the bodies is § "The free space"'s next island.
 
 ## Not done
 
-* **SELECT on Beetle**: not reached (§ "Reaching the living room"); the code is proven on
-  PCSX-Redux only. **The extras screen** (surface 20) needs a save file. **`HHON`** is
-  documented, not patched. **The twelve other A-decision surfaces** of § "The fixed-pitch
-  surfaces" are a table, not code.
+* **The extras screen** (surface 20) needs a save file. **`HHON`** is documented, not
+  patched. **The twelve other A-decision surfaces** of § "The fixed-pitch surfaces" are a
+  table, not code. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
+  route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
   bodies add only the table byte.
 * **Text that grows**: everything is written in place — which is why `--days` writes 67 lines
   of 764 (§ "The reviewed translation, in place"); relocating and re-lengthening text is the
   pipeline's (`PIPE-03`/`PIPE-04`), and re-authoring the `0x8002` operands is the inserter's.
   The space-padding of array items is a consequence of writing in place and goes away with it.
-* **The speaker label** is inline plain text here ("Boku: "); how it is drawn is undecided.
-* **The translucent band and the 46-row band** are reachable (`--band-y 194 --band-h 46 --pen-y
-  198`; the fade entry is two data words not in the asm) but were not shot.
-* `make.sh` has no verb for this; the build lives outside `boku/` while that package is in flux
-  (`boku.text.check_placement` went away under it during this unit; the prototype now carries
-  the per-site hash check itself).
+* **The speaker label** is done in the pipeline build (§ "The speaker label"); the
+  prototype's own `--days --label` path still writes the older "Boku: " form.
+* **`H06001`** — the one pack whose child 6 passes `0x6400` — was not loaded in an emulator
+  (§ "The map work area"); the raise is proven not to break the maps that were.
+* **The 46-row band** is reachable (`--band-y 194 --band-h 46 --pen-y 198`) but was not
+  shot; the translucent 37-row band is the default and is what every shot under
+  `work/txt05b/shots/` shows.
 
 ## Open risks
 
@@ -523,5 +635,7 @@ the bodies is § "The free space"'s next island.
 * `vwf_select_xmax` is consumed by the first `select_box_draw` after a `select_draw`. Both
   runners keep that order; a third caller drawing the box first would see 0 and get the table's
   80 × 40.
-* Free-roam, menus and sumo were not sampled for primitive-buffer headroom (§ Q4).
+* Free-roam, menus and sumo were not sampled for primitive-buffer headroom (§ Q4), nor for
+  stack depth under the raised work area (§ "The map work area": 6,640 bytes past the
+  measured 4,016).
 * Confirmed on emulators only; EDC/ECC is regenerated and self-checked, but no disc was burned.

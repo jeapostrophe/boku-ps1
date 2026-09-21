@@ -41,7 +41,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import NamedTuple, Protocol
 
 from boku.glyphs import (
     END_WORD,
@@ -56,6 +56,11 @@ from boku.sites import page_waits
 
 STOCK_ADVANCE = 14
 """Every fixed-pitch surface steps 14 px per cell (`research/vwf-prototype.md`)."""
+
+SPEECH_MARKS = {"「": "」", "『": "』"}
+"""The marks the original draws around speech and narration, opening -> closing. The
+translation text carries none (style guide § 9); `original_marks` reads which the Japanese
+drew and `lay_out_message` puts them back around the English."""
 
 
 class LayoutError(Exception):
@@ -98,6 +103,11 @@ class StockEncoder:
         return cls(GlyphTable.load())
 
     def glyph(self, character: str) -> int | None:
+        # ASCII through the NFKC map. The marks a message is dressed with are the sheet's
+        # own cells, which the stock vertical renderer draws the right way up; no other
+        # non-ASCII character is something English is spelled with.
+        if character in SPEECH_MARKS or character in SPEECH_MARKS.values():
+            return self.table.from_character.get(character)
         return self.table.to_glyph.get(character)
 
     def advance(self, character: str) -> int:
@@ -204,14 +214,57 @@ class BoxSpec:
 
 DIALOGUE_BAND = BoxSpec(
     width=272,
-    lines=4,
-    guarded_from=4,
+    lines=3,
+    guarded_from=2,
     guarded_width=238,
     name="the dialogue band",
 )
-"""The band `TXT-04`/`TXT-05` draw in, measured on Beetle PSX at pen (24, 176), pitch 13:
-272 usable px, four clean lines, and the next-page pencil at x >= 267 on rows 220-229, so a
-fourth line must end before x ~ 262 = 24 + 238 (`research/vwf-prototype.md`)."""
+"""The band `TXT-05` draws in, as Jay ruled it (2026-09-20, the smallest of the mock-ups):
+37 rows from y = 203, pen (24, 205), line pitch 11 — three lines, 272 usable px with the
+left margin mirrored. The next-page pencil is stock at x >= 267, rows 220-229, which in
+this band crosses lines 2 and 3 (cells 216-227 and 227-238), so both must end before
+x ~ 262 = 24 + 238. Measured for the earlier 72-row band in `research/vwf-prototype.md`
+§ "Measurements for `TXT-07`"; re-measured for this one there, § "The ruled band"."""
+
+
+SPEAKER_LABELS = frozenset(
+    {
+        "Boku",
+        "Uncle",
+        "Aunt",
+        "Moe",
+        "Shirabe",
+        "Guts",
+        "Fat",
+        "Megane",
+        "Father",
+        "Monk",
+        "Boy",
+        "Woman",
+        "Saori",
+        "Narrator",
+        "All",
+    }
+)
+"""The English speaker labels of `translation/style-guide.md` § 9, which is their one home;
+`tests/test_build.py` derives its copy from that sentence so the two cannot drift."""
+
+UNLABELLED_SPEAKERS = frozenset({"", "(unlabelled)"})
+"""Speaker fields that name nobody: an examine description, or a row left blank."""
+
+
+def speaker_label(speaker: str) -> tuple[str, list[str]]:
+    """The label run drawn for a translation row's speaker field, and what is wrong with it.
+
+    A chorus row lists its members (`"Shirabe, Moe, Aunt"`) and is drawn as listed — the
+    original never labels a chorus, so `lay_out` only asks for one when the Japanese did
+    (`original_marks`). Every name must be a label of the style guide: a
+    misspelling would otherwise be drawn on screen exactly as typed.
+    """
+    if speaker in UNLABELLED_SPEAKERS:
+        return "", []
+    unknown = [name for name in speaker.split(", ") if name not in SPEAKER_LABELS]
+    return speaker, unknown
 
 
 # --- laying one line out ------------------------------------------------------------------------
@@ -238,30 +291,24 @@ class LaidOut:
         return max((w for page in self.widths for w in page), default=0)
 
 
-def wrap(
-    encoder: Encoder, text: str, box: BoxSpec, first_line: int = 1, reserve: int = 0
-) -> list[str]:
+def wrap(encoder: Encoder, text: str, box: BoxSpec, first_line: int = 1) -> list[str]:
     """Greedy word wrap by pixel width. `\\n` in `text` is a break the translator asked for.
 
     Greedy, not balanced: the engine draws left to right from a fixed pen, so the only
     thing a smarter algorithm would buy is evenness, and evenness is a typographic choice
     that is not this unit's to make.
 
-    `reserve` is pixels taken off the head of **line 1 only** — the speaker label drawn in
-    front of it. It cannot be subtracted from `box.width`, which would take the pixels off
-    every line of the page and report a page that fits as one line too many;
-    `boku.lint.LabelledBox` is the lint's form of the same rule, measured over decoded
-    text rather than over the words a build inserts.
+    The speaker label needs no special case here: `lay_out_message` puts it in front of
+    page 1's first word as text, so it is measured like any other run on that line.
+    `LabelledBox` is the lint's form of the same rule, narrowing line 1 by the label's
+    pixels over decoded text rather than over the words a build inserts.
     """
     out: list[str] = []
     for paragraph in text.split("\n"):
         line = ""
         for word in paragraph.split(" "):
             candidate = f"{line} {word}" if line else word
-            limit = box.width_of_line(first_line + len(out))
-            if first_line + len(out) == 1:
-                limit = max(limit - reserve, 1)
-            if line and measure(encoder, candidate) > limit:
+            if line and measure(encoder, candidate) > box.width_of_line(first_line + len(out)):
                 out.append(line)
                 line = word
             else:
@@ -278,18 +325,18 @@ def lay_out_message(
     box: BoxSpec = DIALOGUE_BAND,
     *,
     indent_continuations: bool = False,
-    reserve: int = 0,
+    opening: str = "",
+    closing: str = "",
 ) -> LaidOut:
     """One message: wrapped, paginated against the original's timers, encoded to words.
 
-    `reserve` is the speaker label's pixels, charged to **page 1's first line only** and
-    to no other (`wrap`). It is charged for a label **nothing draws yet**: `asm/` has no
-    speaker-label path and this function never emits `entry.speaker`, so today's image
-    loses the speaker name and wraps page 1's first line a word early. That is the
-    deliberate trade while `TXT-05`'s label design is open — the lint already charges the
-    same pixels (`boku.lint` § "The label on line 1"), and a build that measured without
-    them would pass lines the lint fails and, the day the label is drawn, run the English
-    underneath it. `--no-label` measures the bare English on both sides.
+    `opening` is the run drawn in front of page 1's first word — the speaker label and
+    the opening mark, `Uncle「` — and `closing` the run drawn after the last page's last
+    word, `」`. They are the original's style (style guide § 9, Q7) put back by the
+    inserter as text: the renderer draws them like any other cells, so it needs no
+    label path, and the wrap measures them where they really are, on line 1 of page 1
+    and the last line of the last page and nowhere else. The English itself carries no
+    marks; `original_marks` reads which ones the Japanese drew.
 
     `indent_continuations` re-emits the blank cell the Japanese puts after every `0x8001`.
     It is **off by default and that is deliberate**: `research/text-format.md` measured
@@ -307,19 +354,15 @@ def lay_out_message(
             f"{len(pages)}; pages turn on the voice clip's own frame countdown, so the "
             f"count is fixed and text may not move across a break"
         )
-    missing = unencodable(encoder, "".join(pages))
+    dressed = list(pages)
+    if dressed:
+        dressed[0] = opening + dressed[0]
+        dressed[-1] = dressed[-1] + closing
+    missing = unencodable(encoder, "".join(dressed))
     if missing:
         problems.append(f"{line_id}: the {encoder.name} draws no cell for {''.join(missing)!r}")
-    # The label opens the message, so its pixels are page 1's alone.
-    broken = [
-        wrap(encoder, page, box, reserve=reserve if number == 0 else 0)
-        for number, page in enumerate(pages)
-    ]
+    broken = [wrap(encoder, page, box) for page in dressed]
     widths = [[measure(encoder, line) for line in page] for page in broken]
-    if reserve and widths and widths[0]:
-        # The label's pixels are really on that line, so a finding quotes the real width
-        # against the real limit -- the same arithmetic `boku.lint.fit_page` reports with.
-        widths[0][0] += reserve
     for number, (page, page_widths) in enumerate(zip(broken, widths, strict=True), start=1):
         if len(page) > box.lines:
             problems.append(
@@ -470,3 +513,88 @@ def lay_out_select(
         widths=(tuple(widths),),
         problems=tuple(problems),
     )
+
+
+# --- the speaker label and the marks drawn around the English -----------------------------------
+#
+# One rule, three readers of it. `original_marks` says what the Japanese drew;
+# `lay_out_message` puts the same runs back as text while a build lays words out; and
+# `LabelledBox` charges their pixels while the lint measures decoded text. They live
+# together so neither the marks nor their width can be decided twice.
+
+LABEL_MARKS = "「"
+"""The opening mark the original draws after a speaker label. Style guide § 9 leaves the
+choice between this and an English quotation mark to the dialogue band; both are one
+cell, so which one is charged does not change the verdict."""
+
+
+class Marks(NamedTuple):
+    """What the Japanese drew around one message, read from its words."""
+
+    opening: str
+    """`「`, `『`, or empty when page 1's first line opens with none."""
+    closing: str
+    """The closing mark of `opening`, or empty — a split utterance has none (style guide
+    § 9: `E1405.1`-`.2`), and a mark that does not close `opening` is a `problem`."""
+    labelled: bool
+    """Glyphs stand before the opening mark: a speaker label, `おじ「`."""
+    problem: str = ""
+    """Why these marks could not be read as a pair, when they could not. The English is
+    dressed with what was read and the caller reports this; nothing is substituted."""
+
+
+def original_marks(original: bytes, table: GlyphTable) -> Marks:
+    """The marks and label the Japanese drew, so the English can be dressed the same way.
+
+    A labelled message opens `<speaker>「`; an examine message opens `「` with nothing in
+    front of it; narration opens `『`. The closing mark is the last cell before the end
+    word, when there is one — and it is `opening`'s own closer or it is a problem, because
+    `「…』` dressed as `「…』` is a mark the original does not draw there and `「…」` is a
+    guess at which half was wrong.
+
+    The bytes are the site's own: `boku.build` passes what the walk holds and `boku.lint`
+    what `boku.script_store.original_bytes` reconstructs, so both dress a line the same.
+    """
+    words = words_of(original)
+    ids = {table.from_character[mark]: mark for mark in SPEECH_MARKS}
+    closers = {table.from_character[mark]: mark for mark in SPEECH_MARKS.values()}
+    opening, labelled = "", False
+    for index, word in enumerate(words):
+        if word & 0x8000:
+            break
+        if word in ids:
+            opening, labelled = ids[word], index > 0
+            break
+    body = words[: words.index(END_WORD)] if END_WORD in words else words
+    closing = closers.get(body[-1], "") if body else ""
+    if opening and closing and SPEECH_MARKS[opening] != closing:
+        return Marks(
+            opening,
+            "",
+            labelled,
+            f"the Japanese opens {opening} and closes {closing}; the English would be "
+            f"dressed with marks the original does not pair",
+        )
+    return Marks(opening, closing, labelled)
+
+
+def label_allowance(encoder: Encoder, speaker: str, marks: str) -> int:
+    """Pixels the label takes off the head of page 1's first line."""
+    return measure(encoder, f"{speaker}{marks}")
+
+
+@dataclass(frozen=True)
+class LabelledBox(BoxSpec):
+    """`box` with its **first line only** narrowed by the label drawn in front of it.
+
+    `BoxSpec` narrows the tail of a line -- the next-page pencil, which sits on the last
+    one. The label narrows the head, and only of page 1's first line, so it cannot be
+    subtracted from `width`: that takes the pixels off every line of the page and reports
+    a page that fits as one line too many.
+    """
+
+    reserve: int = 0
+
+    def width_of_line(self, number: int) -> int:
+        width = super().width_of_line(number)
+        return max(width - self.reserve, 1) if number == 1 else width

@@ -227,8 +227,8 @@ def _difference_runs(old, new, size: int, chunk_size: int) -> Iterator[tuple[int
                 f"something is writing to them while we read"
             )
         # Almost every chunk of a 659 MB image is unchanged, and one `memcmp` settles it;
-        # without this, `_differing_spans` slices each equal chunk into 256 block pairs.
-        spans = _differing_spans(a, b) if a != b else ()
+        # without this, `differing_spans` slices each equal chunk into 256 block pairs.
+        spans = differing_spans(a, b) if a != b else ()
         for span_start, span_end in spans:
             if start is not None and start + len(data) == position + span_start:
                 data += b[span_start:span_end]
@@ -248,8 +248,13 @@ def _difference_runs(old, new, size: int, chunk_size: int) -> Iterator[tuple[int
 _SPAN_BLOCK = 4096
 
 
-def _differing_spans(a: bytes, b: bytes) -> Iterator[tuple[int, int]]:
+def differing_spans(a: bytes, b: bytes) -> Iterator[tuple[int, int]]:
     """Local `[start, end)` spans where `a` and `b` differ, in order.
+
+    Public because it is the only difference scanner in the tree: anything else that wants
+    the changed ranges of two equal-length blobs (`tools/vwf/build_prototype.py`'s
+    `byte_runs`, which merges near runs on top) merges over these spans rather than
+    carrying a second per-byte loop.
 
     Byte-by-byte comparison of a 659 MB image in Python is minutes; comparing 4 KiB
     blocks first is one `memcmp` per block and reduces the byte loop to the blocks that

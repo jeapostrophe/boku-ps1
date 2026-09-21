@@ -15,7 +15,8 @@ by dependency, and the project's pace is set by Fable throughput, which Jay has 
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
-pipeline · `TRN-01`–`TRN-07` translation · `GFX-01`–`GFX-03` textures · `REL-01`–`REL-03` release.
+pipeline · `TRN-01`–`TRN-07` translation · `GFX-01`–`GFX-03` textures · `FMV-01` movies ·
+`REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
 trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
@@ -244,13 +245,21 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `tools/vwf/build_prototype.py --days translation/days` lays real day files in place: **67
       of 764 reviewed lines fit in place, 697 need the reinserter's growth** — so the next step
       is the build moving into `boku build`, applying the VWF EXE words and rebuilt sheet as
-      byte edits beside the reinserter and relocation. **Left to do:** that integration; SELECT
-      on Beetle; the two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and
-      their arrays, the 23 computed-id `glyph_draw` sites (not covered by the free-cell gate),
-      the em dash (113 translated lines use it; the prototype cell map is ASCII-only),
-      `...` reading as a dash under the shadow, the speaker-label design, watching the heap
-      gap under the four overlays / a save / a full day, and moving the build from
-      `tools/vwf/` into `boku` behind a `make.sh` verb once `TXT-03`/`TXT-06` are ruled.
+      byte edits beside the reinserter and relocation. **Done since (2026-09-20):** that
+      integration (`./make.sh build-days` → `boku build --vwf`); SELECT reached on Beetle;
+      the em dash and `...`; speaker labels in the original's form — `Uncle「…」`, the four
+      bracket glyphs added to the sheet, inserted as text by `boku.build.lay_out_message`
+      from what the Japanese drew (`original_marks`), so the renderer is unchanged; the map
+      work area raised from `0x6400` to `0x7C00` (`asm/arena.asm`: two bump sites, the
+      `map_commit` bound, the swap length) with the stack low-water measured at 4,016 bytes
+      on both emulators and the assembler refusing a raise under 1.5× that — `M_H06001`'s 43
+      lines now lay out; Jay's band and advance rulings are the build's defaults. Under that
+      band the advance model was decided by lint (`TXT-07`): **c2**. **Left to do:** load
+      `H06001` itself (condition-selected, never reached — the raised bound is exercised
+      only by maps under the old limit; `tools/vwf/state_poke.py` can request the map); the
+      two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and their arrays, the 23
+      computed-id `glyph_draw` sites (not covered by the free-cell gate), and watching the
+      heap gap and stack under the four overlays / a save / menus, sumo and fishing.
       Original row: Per `TXT-03`: armips source in the repo, horizontal
       advance, per-glyph width table, wrapping inside the existing box, free space located in
       the executable (it is exactly `0x80000` bytes — check the tail and dead debug code). Every
@@ -274,11 +283,27 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       12×12 cell and checked in the game beside the sheet's own letters. Harvested cells are a
       derived work of that font — record the source and licence in the build. Harmed: the
       player, who reads an apostrophe in every third line.
+- [ ] **[TXT-09]** **Hold voiced pages long enough to read.** Jay, 2026-09-20, after playing
+      day 1: the Japanese subtitles were paced for someone also *listening*; an English reader
+      is slower and the page is gone. Voiced pages auto-advance when the voice ends and ○
+      switches to manual (`research/text-format.md`, `research/renderer-runtime.md`). Find
+      what can hold a voiced page past the voice's end — the page-break timer word, the voice
+      key's end sector, or a renderer-side hold before auto-advance — and its cost per page; a
+      MIPS hold that waits N ticks or for ○ after the voice ends is the fallback. Fable (RE).
+      Jay calls it a stretch and suspects refused and cut-off lines made it look worse than it
+      is — so measure after those are fixed, on a page that fits. Harmed: the player, who
+      loses the end of every long line.
 - [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
       (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
       line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
       next-page pencil, and overflow is clipped silently at x = 319 — the engine never wraps,
-      so the inserter breaks lines and `PIPE-06` measures them in pixels. Still to measure:
+      so the inserter breaks lines and `PIPE-06` measures them in pixels. **Under Jay's band
+      (H=37, Y=203, pitch 11, three lines, lines 2–3 ending before 238 px for the pencil),
+      days 1–7 + shared, 764 rows: advance model c1 (sheet untouched) needs a 4th line on 68
+      pages, a 5th on 8 and overflows 3 SELECT rows; c2 (cells re-aligned) leaves 4 pages by
+      lint and 6 by the stricter build (`E0771.0`, `E0772.0`, `E0772.1`, `E0773.1`,
+      `E0773.2`, `E4028.11`). Jay ranked c1 > c2 with "lint decides fit" (2026-09-20), so the
+      build is c2; c1 stays behind `--advance-model c1`.** Still to measure:
       every other surface. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
@@ -467,8 +492,9 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       diary screen itself was not reached headlessly. RULED 2026-09-20 (Jay): the diary pages take the
       programmatic path with the game's own glyphs — "much more plausibly reliable than the
       untested ChatGPT option". For the other categories he wants a full audit before choosing
-      (`research/textures-plan.md`, in progress), including the Wolf Girl's letter, which he
-      recalls as a texture lying on a log. Original row: Three textures of different kinds
+      — written, `research/textures-plan.md`, including the Wolf Girl's letter (Saori's
+      farewell note on the log at her empty camp, `M_I14000`, the one plot-bearing string
+      with no line id: redraw). Original row: Three textures of different kinds
       from `REC-08` — the census suggests `NIKKI_001`, `T_TITLE` `0x14`, `M_I18000` — (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
       the original style, quantise back to the original CLUT, and look at them in the game.
       If that fails, the fallback is Claude-drawn subtitles composited onto the texture. A third
@@ -481,7 +507,27 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 - [ ] **[GFX-03]** **Translate the textures** per `GFX-02`, category by category, recording for
       each texture id what was done. Redrawn images are tracked (README principle 2);
       a subtitled texture is tracked only as its subtitle text and placement, composited onto
-      the contributor's import at build time; originals are never tracked. Harmed: the player.
+      the contributor's import at build time; originals are never tracked. The audit
+      (`research/textures-plan.md`, 2026-09-20) gives every one of the 197 images a path: 138
+      programmatic, 28 redraw, 1 subtitle, 30 stay. **Order:** the title menu first
+      (`T_TITLE`, four lines, programmatic — Jay, 2026-09-20: it "needs to be translated
+      early"), then the diary, then the rest; and before the 18 insect spreads, one breakpoint
+      at `hhon_text_draw_v` with the book open decides whether their body text is the
+      renderer's `hhon@5328` lines (already ids) or baked pixels (new text) — the audit's one
+      unsettled question. Harmed: the player.
+
+## Movies
+
+- [ ] **[FMV-01]** **Subtitle the movies.** Jay, 2026-09-20, after playing: the opening
+      cutscene "definitely needs subtitles" — this reverses README row 3, which had the
+      `.IKI` movies out of scope. `translation/voice-only.md` already lists what they say: the
+      opening monologue and the five epilogues, the narrator, ruled Q11 (b) (translate;
+      engine subtitles preferred). Two ways: (a) a renderer hook that draws our text over STR
+      playback, timed by frame — needs the movie player's per-frame path in the EXE and the
+      `MOVIE` number → file table; (b) re-encode the frames with the text burned in — the
+      STR codec, ~300 MB of video, quality loss. Measure (a)'s feasibility first (Fable, RE);
+      `[MINE: product]` between them after that. Harmed: the player, who misses the
+      narration that frames the whole game.
 
 ## Release
 

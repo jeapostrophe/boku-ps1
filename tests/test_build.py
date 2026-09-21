@@ -8,25 +8,40 @@ that used to be decided nowhere at all.
 from __future__ import annotations
 
 import json
+import re
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
 
+from boku import REPO_ROOT
 from boku.archive import ARCHIVE_NAME, EXE_NAME
 from boku.build import (
     BuildRefused,
     EditSet,
     build,
     check_no_sector_clash,
+    lay_out,
     load_edit_set,
-    original_draws_label,
 )
-from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_to_bytes
-from boku.layout import DIALOGUE_BAND, CellMapEncoder, lay_out_message
-from boku.lint import LABEL_MARKS, fit_page, label_allowance
-from boku.reinsert import ByteEdit
+from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, GlyphTable, words_to_bytes
+from boku.layout import (
+    DIALOGUE_BAND,
+    LABEL_MARKS,
+    SPEAKER_LABELS,
+    BoxSpec,
+    CellMapEncoder,
+    Marks,
+    StockEncoder,
+    label_allowance,
+    lay_out_message,
+    original_marks,
+    speaker_label,
+)
+from boku.lint import fit_page
+from boku.reinsert import MAP_WORK_AREA_END, ByteEdit
 from boku.relocate import SectorEdit
-from boku.translation import SampleScenes
+from boku.translation import SampleScenes, TranslationEntry
 
 
 def test_a_translation_file_the_loader_could_not_read_stops_the_build(tmp_path):
@@ -167,8 +182,8 @@ def one_page_original(pages: int = 1) -> bytes:
     return words_to_bytes(words)
 
 
-def test_the_label_narrows_line_1_of_page_1_and_no_other_line():
-    """The build reserves exactly what the lint charges, and in the same place.
+def test_the_label_narrows_line_1_of_page_1_exactly_as_the_lint_charges_it():
+    """The build draws `<speaker>「` as text on line 1; the lint reserves its pixels there.
 
     Derived from `boku.lint.fit_page`, the other implementation of the rule, rather than
     from a transcribed expectation: if the two ever disagree a line the lint passes would
@@ -177,18 +192,17 @@ def test_the_label_narrows_line_1_of_page_1_and_no_other_line():
     reserve = label_allowance(CELLS, LABELLED, LABEL_MARKS)
     assert reserve > 0, "the fixture reserves nothing; this test would prove nothing"
     laid = lay_out_message(
-        "E1.0", (PAGE,), one_page_original(), CELLS, DIALOGUE_BAND, reserve=reserve
+        "E1.0", (PAGE,), one_page_original(), CELLS, DIALOGUE_BAND, opening=LABELLED + LABEL_MARKS
     )
     broken, widths = fit_page(CELLS, PAGE, DIALOGUE_BAND, reserve)
-    assert list(laid.pages[0]) == broken
+    assert [line.removeprefix(LABELLED + LABEL_MARKS) for line in laid.pages[0]] == broken
     assert list(laid.widths[0]) == widths
 
 
-def test_the_reserve_changes_the_break_at_all_which_is_what_makes_the_gate_above_bite():
-    """The narrowest red: without the reserve the same page breaks somewhere else."""
-    reserve = label_allowance(CELLS, LABELLED, LABEL_MARKS)
+def test_the_label_changes_the_break_at_all_which_is_what_makes_the_gate_above_bite():
+    """The narrowest red: without the label the same page breaks somewhere else."""
     with_label = lay_out_message(
-        "E1.0", (PAGE,), one_page_original(), CELLS, DIALOGUE_BAND, reserve=reserve
+        "E1.0", (PAGE,), one_page_original(), CELLS, DIALOGUE_BAND, opening=LABELLED + LABEL_MARKS
     )
     without = lay_out_message("E1.0", (PAGE,), one_page_original(), CELLS, DIALOGUE_BAND)
     assert with_label.pages != without.pages
@@ -196,9 +210,13 @@ def test_the_reserve_changes_the_break_at_all_which_is_what_makes_the_gate_above
 
 def test_the_label_is_charged_to_page_1_only():
     """Page 2 opens under no label, so it gets the whole box."""
-    reserve = label_allowance(CELLS, LABELLED, LABEL_MARKS)
     laid = lay_out_message(
-        "E1.0", (PAGE, PAGE), one_page_original(pages=2), CELLS, DIALOGUE_BAND, reserve=reserve
+        "E1.0",
+        (PAGE, PAGE),
+        one_page_original(pages=2),
+        CELLS,
+        DIALOGUE_BAND,
+        opening=LABELLED + LABEL_MARKS,
     )
     plain = lay_out_message("E1.0", (PAGE,), one_page_original(), CELLS, DIALOGUE_BAND)
     assert list(laid.pages[1]) == list(plain.pages[0])
@@ -210,14 +228,164 @@ def words_bytes(*words: int) -> bytes:
     return words_to_bytes(words)
 
 
-def test_a_message_the_japanese_opened_with_a_speaker_is_the_one_that_reserves(tmp_path):
-    """`「` after the first cell means a label; at the first cell it is an examine line."""
-    mark = 999
-    assert original_draws_label(words_bytes(5, 6, mark, 7, END_WORD), mark)
-    assert not original_draws_label(words_bytes(mark, 5, 6, END_WORD), mark)
+def test_the_marks_are_read_off_the_japanese_message_and_the_label_is_where_they_were():
+    """`「` after the first cell means a label; at the first cell an examine line; `『` is
+    narration; the closing mark is the last cell before the end, when there is one."""
+    table = GlyphTable.load()
+    open_, close, narr_open, narr_close = (
+        table.from_character[c] for c in ("「", "」", "『", "』")
+    )
+    assert original_marks(words_bytes(5, 6, open_, 7, close, END_WORD), table) == Marks(
+        "「", "」", True
+    )
+    assert original_marks(words_bytes(open_, 5, 6, close, END_WORD), table) == Marks(
+        "「", "」", False
+    )
+    assert original_marks(words_bytes(narr_open, 5, narr_close, END_WORD), table) == Marks(
+        "『", "』", False
+    )
+    # A split utterance: the opening half has no closing mark, the closing half no opening.
+    assert original_marks(words_bytes(5, open_, 6, 7, END_WORD), table) == Marks("「", "", True)
+    assert original_marks(words_bytes(6, 7, close, END_WORD), table) == Marks("", "」", False)
     # The mark on line 2 is quoted speech inside the body, not this line's speaker.
-    assert not original_draws_label(words_bytes(5, NEWLINE_WORD, 6, mark, END_WORD), mark)
-    assert not original_draws_label(words_bytes(5, 6, mark, END_WORD), None)
+    assert original_marks(words_bytes(5, NEWLINE_WORD, 6, open_, END_WORD), table) == Marks(
+        "", "", False
+    )
+    assert original_marks(words_bytes(5, 6, END_WORD), table) == Marks("", "", False)
+
+
+class NoArchive:
+    """Only what `lay_out` reads of an `Archive` before it reaches a message: the three
+    select tables, which a message never asks about."""
+
+    def exe_bytes(self, address: int, size: int) -> bytes:
+        return bytes(size)
+
+
+@dataclass(frozen=True)
+class OneSite:
+    """Only what `lay_out` reads of a `Walk`: one message site, and its original words."""
+
+    original: bytes
+    kind: str = "MSG"
+    line_id: str = "E1.0"
+
+    @property
+    def by_line(self) -> dict[str, list[OneSite]]:
+        return {self.line_id: [self]}
+
+    @property
+    def site(self) -> OneSite:
+        return self
+
+    def raw(self, archive: object, site: object) -> bytes:
+        return self.original
+
+
+def dressed(original: bytes, speaker: str, label: bool = True):
+    """`lay_out`'s MSG branch over one synthetic original, and what it did to the English."""
+    walk = OneSite(original)
+    entry = TranslationEntry(line_id=walk.line_id, speaker=speaker, pages=("hello there",))
+    results = lay_out(
+        NoArchive(),
+        walk,
+        [entry],
+        StockEncoder.load(),
+        BoxSpec(width=9999, lines=4),
+        label=label,
+    )
+    assert len(results) == 1
+    return results[0]
+
+
+def marked(*marks: str) -> dict[str, int]:
+    table = GlyphTable.load()
+    return {mark: table.from_character[mark] for mark in marks}
+
+
+@pytest.mark.parametrize(
+    ("shape", "speaker", "prefix", "suffix", "problem"),
+    [
+        ("labelled", "Uncle", "Uncle「", "」", False),
+        ("labelled", "(unlabelled)", "「", "」", False),
+        ("labelled", "Unlce", "Unlce「", "」", True),
+        ("bare", "Uncle", "「", "」", False),
+        ("narration", "Uncle", "『", "』", False),
+        ("unclosed", "Uncle", "Uncle「", "hello there", False),
+        ("mismatched", "Uncle", "Uncle「", "hello there", True),
+    ],
+)
+def test_a_message_is_dressed_the_way_its_own_japanese_was(shape, speaker, prefix, suffix, problem):
+    """The build's MSG branch, over every shape of marks the script actually draws.
+
+    The speaker field is a *field*: it is drawn only where the Japanese drew a label
+    (`original_marks`), and what it draws is `speaker_label`'s answer -- so a bare `「`
+    line gains no name however the row is filled in, narration is never labelled, and
+    `(unlabelled)` costs nothing. A mark that does not close the one that opened the
+    message is a problem and not a substitution: the line stays Japanese.
+    """
+    cells = marked("「", "」", "『", "』")
+    words = {
+        "labelled": (5, 6, cells["「"], 7, cells["」"], END_WORD),
+        "bare": (cells["「"], 5, 6, cells["」"], END_WORD),
+        "narration": (cells["『"], 5, 6, cells["』"], END_WORD),
+        "unclosed": (5, cells["「"], 6, 7, END_WORD),
+        "mismatched": (5, cells["「"], 6, cells["』"], END_WORD),
+    }[shape]
+    result = dressed(words_bytes(*words), speaker)
+    page = result.laid_out.pages
+    assert page[0][0].startswith(prefix), f"{page[0][0]!r} does not open {prefix!r}"
+    assert page[-1][-1].endswith(suffix), f"{page[-1][-1]!r} does not end {suffix!r}"
+    assert bool(result.problems) == problem, result.problems
+
+
+def test_no_label_leaves_the_english_undressed():
+    """`--no-label` is the whole of the other branch: no name, and neither mark."""
+    cells = marked("「", "」")
+    original = words_bytes(5, 6, cells["「"], 7, cells["」"], END_WORD)
+    assert dressed(original, "Uncle", label=False).laid_out.pages == (("hello there",),)
+    assert dressed(original, "Uncle").laid_out.pages == (("Uncle「hello there」",),)
+
+
+def test_a_closing_mark_that_does_not_close_the_opening_one_is_never_substituted():
+    """`「…』` is a pair the original does not draw, and the narrowest place to see it.
+
+    `original_marks` used to take the last cell as the closer whatever it was, so a line
+    opening `「` and ending `』` was re-dressed as `Uncle「…』` -- marks invented by the
+    inserter. The closer is dropped and the line reported instead, which leaves it
+    Japanese rather than wrong on screen.
+    """
+    table = GlyphTable.load()
+    cells = marked("「", "』", "」")
+    mixed = original_marks(words_bytes(5, cells["「"], 6, cells["』"], END_WORD), table)
+    assert mixed == Marks("「", "", True, mixed.problem)
+    assert mixed.problem and "「" in mixed.problem and "』" in mixed.problem
+    matching = original_marks(words_bytes(5, cells["「"], 6, cells["」"], END_WORD), table)
+    assert matching == Marks("「", "」", True), "the matching pair is still read as a pair"
+
+
+def test_the_label_set_is_the_style_guides_and_a_name_outside_it_is_refused():
+    """The labels are `translation/style-guide.md` § 9's sentence, derived here rather
+    than retyped, so a label added to the guide and not to the build is a red test."""
+    guide = (REPO_ROOT / "translation" / "style-guide.md").read_text(encoding="utf-8")
+    sentence = re.search(r"English labels: ([^.]+)\.", re.sub(r"\s+", " ", guide))
+    assert sentence, "the style guide no longer lists the English labels in one sentence"
+    assert set(sentence.group(1).split(", ")) == SPEAKER_LABELS
+    assert speaker_label("Uncle") == ("Uncle", [])
+    assert speaker_label("Shirabe, Moe, Aunt") == ("Shirabe, Moe, Aunt", [])
+    assert speaker_label("(unlabelled)") == ("", [])
+    assert speaker_label("") == ("", [])
+    assert speaker_label("Unlce") == ("Unlce", ["Unlce"])
+
+
+def test_an_edit_set_says_which_work_area_the_engine_it_installs_has():
+    """An edit set that raised the map work area must make the reinserter measure against
+    it; one that says nothing installs the retail engine; a lowered figure is nonsense."""
+    edit = ByteEdit(file=EXE_NAME, offset=0, old=b"\x01", new=b"\x02", reason="x")
+    assert EditSet((edit,), {"format": 1}).work_area_end == MAP_WORK_AREA_END
+    assert EditSet((edit,), {"map_work_area_end": 0x7C00}).work_area_end == 0x7C00
+    with pytest.raises(BuildRefused, match="map_work_area_end"):
+        _ = EditSet((edit,), {"map_work_area_end": 0x1000}).work_area_end
 
 
 # --- a patch a relocation would also write ---------------------------------------------------

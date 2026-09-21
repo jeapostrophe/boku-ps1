@@ -35,7 +35,7 @@ from __future__ import annotations
 import json
 import shutil
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from boku import __version__, edc
@@ -43,7 +43,6 @@ from boku.archive import (
     ARCHIVE_NAME,
     DEFAULT_DISC_DIR,
     EXE_NAME,
-    SECTOR,
     Archive,
     ArchiveError,
 )
@@ -51,7 +50,7 @@ from boku.arrays import ArrayError, SelectTables
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
 from boku.events import EventError
-from boku.glyphs import GlyphTable, TextError, words_of
+from boku.glyphs import GlyphTable, TextError
 from boku.importer import ImportRefused, check_out_dir, sha1_of
 from boku.layout import (
     DIALOGUE_BAND,
@@ -64,13 +63,22 @@ from boku.layout import (
     lay_out_array,
     lay_out_message,
     lay_out_select,
+    original_marks,
+    speaker_label,
 )
-from boku.lint import LABEL_MARKS, label_allowance, select_fields
-from boku.reinsert import ByteEdit, Plan, ReinsertRefused, check_disjoint, plan
+from boku.reinsert import (
+    MAP_WORK_AREA_END,
+    ByteEdit,
+    Plan,
+    ReinsertRefused,
+    check_disjoint,
+    check_no_double_write,
+    plan,
+)
 from boku.relocate import RelocationRefused, SectorEdit
 from boku.sites import SiteError, Walk, load
 from boku.staging import StagingRefused, staged
-from boku.translation import SampleScenes, TranslationError, TranslationSource
+from boku.translation import SampleScenes, TranslationError, TranslationSource, select_fields
 
 DEFAULT_IMAGE = Path("disc/image.img")
 BUILD_ROOT = Path("build")
@@ -265,30 +273,13 @@ def check_no_sector_clash(
 ) -> None:
     """Refuse a caller's byte patch that a relocation would also write, by LBA.
 
-    `boku.reinsert` makes this check over the edits *it* produces; a patch handed in from
-    outside — `TXT-05`'s renderer edit set — was never in that set, and the two kinds are
-    verified against different reads and applied in different passes, so an overlap makes
-    the image depend on which ran last.
-
-    The trap it is watching for: a `TITLE.OVL` array translated into more bytes than it
-    had relocates the overlay, and the font build's overlay patch then writes the sectors
-    the overlay abandoned — a corrupt image with every other gate green.
+    The trap: a `TITLE.OVL` array translated into more bytes relocates the overlay, and
+    the font build's overlay patch then writes the sectors the overlay abandoned — a
+    corrupt image with every other gate green. `check_no_double_write` makes the same
+    check over the edits the reinserter produces; a patch handed in from outside
+    (`TXT-05`'s renderer edit set) was never in that set.
     """
-    by_lba = {lba for edit in sectors for lba in range(edit.lba, edit.end)}
-    if not by_lba:
-        return
-    for patch in patches:
-        if patch.file != ARCHIVE_NAME:
-            continue
-        first = archive.base_lba + patch.offset // SECTOR
-        last = archive.base_lba + (patch.end - 1) // SECTOR
-        clash = by_lba.intersection(range(first, last + 1))
-        if clash:
-            raise BuildRefused(
-                f"{patch.reason} writes {ARCHIVE_NAME}+0x{patch.offset:x}, which lands on "
-                f"LBA {min(clash)} — a sector a relocation also writes. One of them would "
-                f"be lost; rebuild the patch against the moved member. Nothing was written."
-            )
+    check_no_double_write(patches, sectors, archive, refused=BuildRefused)
 
 
 def apply_sector_edit(
@@ -448,6 +439,24 @@ class EditSet:
         """The font these edits install, ready to measure English in."""
         return CellMapEncoder.from_document(self.document, "the edit set")
 
+    @property
+    def work_area_end(self) -> int:
+        """The map work area the patched engine tests against (`asm/arena.asm`).
+
+        A map pack's children 0-5 must fit below it, and the reinserter must measure
+        against the engine the image will run, not the retail one: an edit set that
+        raised the constant and a build that still refused at `0x6400` would leave
+        `M_H06001`'s lines in Japanese for a limit that no longer exists. An edit set
+        that says nothing installs the retail engine.
+        """
+        value = self.document.get("map_work_area_end", MAP_WORK_AREA_END)
+        if not isinstance(value, int) or value < MAP_WORK_AREA_END:
+            raise BuildRefused(
+                f"the edit set's map_work_area_end is {value!r}; the engine's work area "
+                f"is {MAP_WORK_AREA_END:#x} or a patch that raised it"
+            )
+        return value
+
 
 def load_edit_set(path: Path) -> EditSet:
     """Read an `edits.json`, refusing anything this build could not apply safely.
@@ -536,24 +545,6 @@ class LineResult:
         return self.laid_out is not None and not self.problems
 
 
-def original_draws_label(original: bytes, mark_cell: int | None) -> bool:
-    """Did the Japanese open this message with `<speaker>「`?
-
-    `boku.lint.original_draws_label` asks the same question of the *decoded* store; this
-    asks it of the words the walk read, which is what a build has in its hand. An examine
-    message opens `「` with nothing in front of it and narration opens `『`, so the test
-    is the mark somewhere other than the first cell of page 1's first line.
-    """
-    if mark_cell is None:
-        return False
-    first_line: list[int] = []
-    for word in words_of(original):
-        if word & 0x8000:
-            break
-        first_line.append(word)
-    return mark_cell in first_line[1:]
-
-
 def lay_out(
     archive: Archive,
     walk: Walk,
@@ -570,7 +561,7 @@ def lay_out(
     back with its numbers and the caller decides (README § "Who this is for").
     """
     selects = SelectTables(archive)
-    mark_cell = GlyphTable.load().from_character.get(LABEL_MARKS) if label else None
+    table = GlyphTable.load() if label else None
     out: list[LineResult] = []
     for entry in translation:
         sites = walk.by_line.get(entry.line_id)
@@ -617,12 +608,24 @@ def lay_out(
                 prompts,
             )
         elif kind == "MSG":
-            # No `entry.speaker` guard: the lint charges the mark's own pixels for a
-            # labelled line whose translation row left the speaker blank, and a build that
-            # charged nothing there would insert the very line the lint reports.
-            reserve = 0
-            if original_draws_label(original, mark_cell):
-                reserve = label_allowance(encoder, entry.speaker, LABEL_MARKS)
+            # The marks follow the original and the label is the translation's speaker
+            # field: `Uncle「...」` where the Japanese had `おじ「...」`, bare `「...」`
+            # where it had that (a chorus, an examine line), `『...』` for narration. A
+            # blank speaker on a labelled line draws the bare mark, which is what the
+            # lint charges for it, so the two keep reporting the same line.
+            opening = closing = ""
+            problems: tuple[str, ...] = ()
+            if table is not None:
+                marks = original_marks(original, table)
+                name, unknown = speaker_label(entry.speaker) if marks.labelled else ("", [])
+                opening, closing = name + marks.opening, marks.closing
+                problems = tuple(
+                    f"{entry.line_id}: speaker {who!r} is not a label of "
+                    f"translation/style-guide.md § 9 and would be drawn as typed"
+                    for who in unknown
+                )
+                if marks.problem:
+                    problems += (f"{entry.line_id}: {marks.problem}",)
             laid = lay_out_message(
                 entry.line_id,
                 entry.pages,
@@ -630,8 +633,11 @@ def lay_out(
                 encoder,
                 box,
                 indent_continuations=indent_continuations,
-                reserve=reserve,
+                opening=opening,
+                closing=closing,
             )
+            if problems:
+                laid = replace(laid, problems=laid.problems + problems)
         elif kind.startswith("ARR"):
             if entry.is_select:
                 out.append(
@@ -707,6 +713,7 @@ def build(
     skip_unfitted: bool = False,
     dry_run: bool = False,
     name: str = DEFAULT_BUILD_NAME,
+    work_area_end: int = MAP_WORK_AREA_END,
 ) -> BuildResult:
     """Read an import and a translation, and write a patched image (`PIPE-04`).
 
@@ -715,6 +722,9 @@ def build(
     line refuses the whole build. Either way the English is never shortened.
 
     `dry_run` does everything up to the copy and writes nothing — the lint report.
+
+    `work_area_end` is the map work area of the engine the image will run
+    (`EditSet.work_area_end`); a build with no renderer patch measures against retail.
     """
     box = box or DIALOGUE_BAND
     encoder = encoder or StockEncoder.load()
@@ -748,7 +758,9 @@ def build(
                 f"and leave the rest in Japanese, or give the text more room."
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
-        the_plan, refused = _plan_what_fits(archive, walk, words, in_place, skip_unfitted)
+        the_plan, refused = _plan_what_fits(
+            archive, walk, words, in_place, skip_unfitted, work_area_end
+        )
         lines = [
             LineResult(line.line_id, line.laid_out, line.problems + refused.get(line.line_id, ()))
             for line in lines
@@ -794,6 +806,7 @@ def _plan_what_fits(
     words: dict[str, tuple[int, ...]],
     in_place: bool,
     skip_unfitted: bool,
+    work_area_end: int = MAP_WORK_AREA_END,
 ) -> tuple[Plan, dict[str, tuple[str, ...]]]:
     """Plan the reinsertion, optionally dropping the lines that do not fit and retrying.
 
@@ -805,7 +818,10 @@ def _plan_what_fits(
     refused: dict[str, tuple[str, ...]] = {}
     while True:
         try:
-            return plan(archive, walk, words, in_place=in_place), refused
+            return (
+                plan(archive, walk, words, in_place=in_place, work_area_end=work_area_end),
+                refused,
+            )
         except ReinsertRefused as error:
             if not skip_unfitted or not error.lines:
                 raise
@@ -979,6 +995,7 @@ def main_build(
             skip_unfitted=skip_unfitted,
             dry_run=dry_run,
             name=name,
+            work_area_end=(edit_set.work_area_end if edit_set is not None else MAP_WORK_AREA_END),
         )
     except (
         ArchiveError,

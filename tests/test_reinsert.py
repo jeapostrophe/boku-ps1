@@ -15,6 +15,7 @@ against the tightest map and the largest `EV` member on the real disc.
 
 from __future__ import annotations
 
+import re
 import struct
 from dataclasses import replace
 
@@ -384,6 +385,41 @@ def test_a_map_whose_child_6_would_pass_the_work_area_is_refused():
     biggest = largest_that_fits(attempt)
     with pytest.raises(ReinsertRefused, match="4 bytes over, from 24 bytes of head room"):
         attempt(biggest + 1)
+
+
+def test_a_raised_work_area_accepts_the_map_the_retail_limit_refuses():
+    """`map_commit`'s limit is a patchable word, so the reinserter's copy has to move too.
+
+    One pack and one line, planned three times: refused at the retail `MAP_WORK_AREA_END`,
+    refused one byte short of what it needs, and planned when `work_area_end` is raised by
+    exactly the overflow the refusal reported. Every number is taken from the pack and
+    from the refusal -- the boundary by `largest_that_fits`, the shortfall out of the
+    message -- so the test cannot agree with a stale constant. Without the seam, a build
+    that raised the engine's limit in the executable would go on dropping lines that fit,
+    and the receipt would look like a normal `--skip-unfitted` run.
+    """
+    block = a_block([text_bytes((0x100, 0x101, END_WORD)) + PAD])
+    sample = map_pack([(171, block)], work_records=2, filler=4)
+    filler = 4 + map_head_room(sample) - 24
+    archive = synthetic_disc(
+        maps=[("A01000", map_pack([(171, block)], work_records=2, filler=filler))]
+    )
+    member = archive.member("M_A01000.BIN")
+    result = walk(archive)
+
+    def attempt(glyphs: int, **kwargs) -> None:
+        plan(archive, result, {"E0171.0": (0x100,) * glyphs + (END_WORD,)}, **kwargs)
+
+    over = largest_that_fits(attempt) + 1
+    with pytest.raises(ReinsertRefused, match=f"{MAP_WORK_AREA_END:#x} bytes less") as raised:
+        attempt(over)
+    shortfall = int(re.search(r"(\d+) bytes over", str(raised.value)).group(1))
+    assert sector_head_room(member) > 24 + shortfall, "the sector limit would bind first"
+
+    one_short = MAP_WORK_AREA_END + shortfall - 1
+    with pytest.raises(ReinsertRefused, match=f"{one_short:#x} bytes less"):
+        attempt(over, work_area_end=one_short)
+    attempt(over, work_area_end=MAP_WORK_AREA_END + shortfall)
 
 
 # --- relocation: what happens when a member outgrows its sectors -------------------------------

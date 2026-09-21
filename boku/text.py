@@ -109,9 +109,17 @@ class SiteIndex:
             self._by_key.setdefault(entry.line_key, []).append(entry)
 
     @classmethod
-    def from_disc(cls, disc_dir: Path = DEFAULT_DISC_DIR) -> SiteIndex:
-        """Walk a contributor's own import and place every site it finds."""
-        archive, result = load(disc_dir)
+    def from_disc(
+        cls, disc_dir: Path = DEFAULT_DISC_DIR, *, archive: Archive | None = None
+    ) -> SiteIndex:
+        """Walk a contributor's own import and place every site it finds.
+
+        `archive` is the import already open, handed in rather than opened again: an
+        `Archive` holds all 109 MB of `BOKU.BIN` in memory, so a caller that has one and
+        does not pass it reads the file a second time and keeps 218 MB resident for as
+        long as both live. `boku.sites.load` checks the same things either way.
+        """
+        archive, result = load(disc_dir, archive=archive)
         placed = []
         for site in result.sites:
             file_name = EXE_NAME if site.file == "EXE" else ARCHIVE_NAME

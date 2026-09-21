@@ -43,7 +43,8 @@ The three measured limits, and where they come from
   because `map_init` hands the bytes from `+0x34` on to `map_anim_init` as a work array
   (`research/loading-and-memory.md` § "Map packs"). `map_commit` tests only
   `pack[+0x34] > 0x6400`; the work-area allowance is the stricter figure the research
-  computes, and it is what `head_room` reports.
+  computes, and it is what `head_room` reports. `0x6400` is the retail engine's word and a
+  renderer patch may raise it, so every caller can hand its own in (`MAP_WORK_AREA_END`).
 * **A member that outgrows its own sectors has to move.** `research/boku-bin.md` measured
   the slack (min 16 bytes, median 1,246) and that it is zero-filled everywhere, which is
   why a shrinking member has its tail zeroed here rather than left holding its own old
@@ -51,8 +52,10 @@ The three measured limits, and where they come from
   sectors the other moving members vacate plus a finite arena
   (`boku.relocate.PREFIX_FILLER`); running out is a refusal, with the numbers.
 
-Neither the `0x4000` nor the `0x6400` limit has been watched in an emulator yet — the
-research asks for that before anything relies on them (`PLAN PIPE-03`).
+The `0x4000` event-block limit has not been watched in an emulator yet — the research asks
+for that before anything relies on it (`PLAN PIPE-03`). The map work area has: `asm/arena.asm`
+raises `0x6400` to `0x7C00`, and a build over that raise was run on both emulators
+(`research/vwf-prototype.md` § "The map work area").
 """
 
 from __future__ import annotations
@@ -96,7 +99,13 @@ EVENT_BLOCK_LIMIT = 0x4000
 """The `EV` member buffer a demand-loaded block is read into (`ev_list_step`)."""
 
 MAP_WORK_AREA_END = 0x6400
-"""`map_commit`'s test on the word at pack `+0x34`, and the size of arena half "A"."""
+"""`map_commit`'s test on the word at pack `+0x34`, and the size of arena half "A".
+
+The retail engine's limit, and so the default. It is a **patchable** number, not a law of
+the format: a renderer patch that moves the work area raises it, and the reinserter must
+then measure against the engine the image will actually run — hence the `work_area_end`
+keyword on `plan`, `_rebuilt_map` and `map_head_room`. A build that raised the engine's
+limit and left this one alone would refuse lines that fit."""
 
 MAP_WORK_RECORD_BYTES = 12
 """One animated object's work record, allocated from child 6's address once the map is live."""
@@ -206,21 +215,24 @@ def map_work_records(child0: bytes) -> int:
     return child0[after_placements + 0x18 + 8 * records]
 
 
-def map_head_room(pack_bytes: bytes) -> int:
+def map_head_room(pack_bytes: bytes, work_area_end: int = MAP_WORK_AREA_END) -> int:
     """Bytes a map pack's children 0-5 may still grow by before `map_commit` breaks.
 
-    `0x6400 - child6_offset - 12 * animated objects`. A null child 6 is not tested by the
-    engine (`0 > 0x6400` is false), so it has no limit here either.
+    `work_area_end - child6_offset - 12 * animated objects`. A null child 6 is not tested
+    by the engine (`0 > work_area_end` is false), so it has no limit here either.
+
+    `work_area_end` is the engine's limit **as the image being built will run it**, which
+    a renderer patch may have raised; it defaults to the retail `MAP_WORK_AREA_END`.
     """
     pack = parse_pack(pack_bytes)
     if pack is None:
         raise ReinsertRefused("not a pack; a map file is a seven-child pack")
     child6 = pack.entries[6][0] if len(pack.entries) > 6 else 0
     if not child6:
-        return MAP_WORK_AREA_END
+        return work_area_end
     child0_offset, child0_size = pack.entries[0]
     work = map_work_records(pack_bytes[child0_offset : child0_offset + child0_size])
-    return MAP_WORK_AREA_END - child6 - MAP_WORK_RECORD_BYTES * work
+    return work_area_end - child6 - MAP_WORK_RECORD_BYTES * work
 
 
 def sector_head_room(member: Member) -> int:
@@ -380,7 +392,10 @@ def _rebuilt_block(data: bytes, messages: Mapping[int, _Message], where: str) ->
 
 
 def _rebuilt_map(
-    member: Member, blob: bytes, per_block: Mapping[int, dict[int, _Message]]
+    member: Member,
+    blob: bytes,
+    per_block: Mapping[int, dict[int, _Message]],
+    work_area_end: int = MAP_WORK_AREA_END,
 ) -> bytes:
     """A whole map pack with its child-1 table, its pack table and its blocks rebuilt."""
     pack = parse_pack(blob)
@@ -395,13 +410,13 @@ def _rebuilt_map(
     children = list(pack.children)
     children[MAP_PACK_BLOCK_TABLE] = table.serialise()
     rebuilt = replace(pack, children=tuple(children)).serialise()
-    room = map_head_room(rebuilt)
+    room = map_head_room(rebuilt, work_area_end)
     if room < 0:
-        was = map_head_room(blob)
+        was = map_head_room(blob, work_area_end)
         raise ReinsertRefused(
             f"{member.short_name}: child 6 would start at "
             f"{struct.unpack_from('<I', rebuilt, CHILD6_OFFSET_FIELD)[0]:#x} and everything "
-            f"before it must fit {MAP_WORK_AREA_END:#x} bytes less "
+            f"before it must fit {work_area_end:#x} bytes less "
             f"{MAP_WORK_RECORD_BYTES} per animated object — {-room} bytes over, from "
             f"{was} bytes of head room (research/loading-and-memory.md § Map packs)",
             [m.site.line_id for block in per_block.values() for m in block.values()],
@@ -557,6 +572,7 @@ def plan(
     *,
     in_place: bool = False,
     arena: Sequence[Run] | None = None,
+    work_area_end: int = MAP_WORK_AREA_END,
 ) -> Plan:
     """Every byte range one set of new lines would change, with nothing written yet.
 
@@ -568,6 +584,10 @@ def plan(
     that is `TXT-04`'s rule, the only thing a code-file array can do, and what the trial
     image is built with. Otherwise the enclosing structures are rebuilt bottom up and the
     limits above are enforced.
+
+    `work_area_end` is the map work area of the engine **this build installs**: a renderer
+    patch that raises `map_commit`'s limit hands the new value in, and a caller that does
+    not gets the retail one (`MAP_WORK_AREA_END`).
     """
     sites: list[Site] = []
     for line_id in replacements:
@@ -615,7 +635,7 @@ def plan(
         if member.dir_index == EV_DIR_INDEX:
             rebuilt = _rebuilt_block(blob, structural[short_name][0], f"{short_name} (EV.BIN)")
         else:
-            rebuilt = _rebuilt_map(member, blob, structural[short_name])
+            rebuilt = _rebuilt_map(member, blob, structural[short_name], work_area_end)
         rebuilt_members.append(short_name)
         blobs[short_name] = rebuilt
         if len(rebuilt) != member.size:
@@ -656,7 +676,7 @@ def plan(
     edits.sort(key=lambda e: (e.file, e.offset))
     check_disjoint(edits)
     check_sectors_disjoint(sectors)
-    _check_no_double_write(edits, sectors, archive)
+    check_no_double_write(edits, sectors, archive)
     return Plan(
         edits=tuple(edits),
         members_rebuilt=tuple(rebuilt_members),
@@ -668,16 +688,24 @@ def plan(
     )
 
 
-def _check_no_double_write(
-    edits: Sequence[ByteEdit], sectors: Sequence[SectorEdit], archive: Archive
+def check_no_double_write(
+    edits: Sequence[ByteEdit],
+    sectors: Sequence[SectorEdit],
+    archive: Archive,
+    refused: type[Exception] = ReinsertRefused,
 ) -> None:
     """A sector may not be written both through `BOKU.BIN` and by LBA.
 
     The two edit kinds are verified against different reads and applied in different
-    passes, so an overlap would make the image depend on which ran last. Members are
-    sector-aligned and a relocated one is written only by LBA, so this cannot happen.
+    passes, so an overlap would make the image depend on which ran last. For the edits
+    *this module* plans it cannot happen — members are sector-aligned and a relocated one
+    is written only by LBA — but a patch handed in from outside was never in that set, so
+    `boku.build.check_no_sector_clash` asks the same question of those and names its own
+    refusal through `refused`.
     """
     by_lba = {lba for edit in sectors for lba in range(edit.lba, edit.end)}
+    if not by_lba:
+        return
     for edit in edits:
         if edit.file != ARCHIVE_NAME:
             continue
@@ -685,9 +713,10 @@ def _check_no_double_write(
         last = archive.base_lba + (edit.end - 1) // SECTOR
         clash = by_lba.intersection(range(first, last + 1))
         if clash:
-            raise ReinsertRefused(
-                f"{edit.reason} writes {ARCHIVE_NAME} over LBA {min(clash)}, which a "
-                f"relocation also writes; one of them would be lost"
+            raise refused(
+                f"{edit.reason} writes {ARCHIVE_NAME}+0x{edit.offset:x}, which lands on "
+                f"LBA {min(clash)} — a sector a relocation also writes. One of them would "
+                f"be lost; nothing was written."
             )
 
 

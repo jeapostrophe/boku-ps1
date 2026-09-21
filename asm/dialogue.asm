@@ -51,6 +51,22 @@
 .endif
 .endarea
 
+; ---- g_dlgbox_fade[6]: the band's look while a message is up --------------------------------
+; Seven {s16 brightness, s16 semitrans+1} entries at 0x80029120; msg_open raises
+; g_dlgbox_level to 6 and the panel draws entry 6 under a DR_TPAGE with abr 1 (additive), so
+; a semi-transparent entry leaves the scene visible as a pale wash. Entry 5 is (168, 2).
+; (research/text-renderer.md § "The translucent variant"; renderer-runtime.md § Q2 item 4.)
+.org 0x80029138
+.area 4
+.if ORIGINAL
+    .dh     224                     ; stock: brightness 224
+    .dh     1                       ; stock: opaque
+.else
+    .dh     BAND_BRIGHTNESS
+    .dh     BAND_BLEND
+.endif
+.endarea
+
 ; ---- dialog_panel_draw: the right-hand strip becomes a band ("band2") ---------------------
 ; s0 -> the TILE: x at +8, y at +0xA, w at +0xC, h at +0xE; v1 = g_dlgbox_x. The stock code
 ; stores y = 0 and x = v1 + 5. Swapping the two store offsets frees the second immediate, so
