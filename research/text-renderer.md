@@ -170,7 +170,10 @@ any image. **V** = vertical, **H** = horizontal, adv = glyph advance / line step
 
 `BUMPER`, `ENDOTI` and `ZUKAN` draw no glyphs themselves (`ZUKAN` only runs a SELECT). The diary
 (`NIKKI`) has no glyph path at all: its pages are TIMs. Digits next to labels are sprites from
-`number_draw` / `number_draw_b` (`0x800400F8`, `0x800402D8`), not font glyphs. The inline walkers
+`number_draw` / `number_draw_b` (`0x800400F8`, `0x800402D8`), not font glyphs. *Aliases:*
+[text-outside-events.md](text-outside-events.md) and `symbols/loading.symbols.tsv` call
+`number_draw_b` `number_draw2`, and surface 3's `hhon_text_draw_v` (`0x8007C278`)
+`hhon_entry_draw` — one function each, two names. The inline walkers
 of surfaces 9, 17, 19, 20, 25, 26 are copies of one source routine (same special-glyph nudge).
 
 **Corrections this makes to [text-format.md](text-format.md):** the system-message array is

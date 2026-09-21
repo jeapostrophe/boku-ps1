@@ -123,11 +123,11 @@
 80037698	specimen_label_draw	FUNC	six glyph ids as immediates; no caller found
 800377F8	winloss_draw	FUNC	two glyph ids as immediates + sprite numbers
 800400F8	number_draw	FUNC	sprite digits (not font glyphs)
-800402D8	number_draw2	FUNC	sprite digits (not font glyphs)
+800402D8	number_draw2	FUNC	sprite digits (not font glyphs); = number_draw_b in text-renderer.md
 80036700	g_smallkana_ids	CONST	3 glyph ids nudged by line_draw; copies in TITLE.OVL 0x80079BD4 and MUSI.OVL 0x8007A8B8 hold 4
 80036708	g_insect_name_remap	CONST	s16[4] ids, s16[4] name lines
 8007B410	hhon_page_draw	FUNC	HHON.OVL
-8007C278	hhon_entry_draw	FUNC	HHON.OVL: own vertical walker, x -= 14 per 0x8001
+8007C278	hhon_entry_draw	FUNC	HHON.OVL: own vertical walker, x -= 14 per 0x8001; = hhon_text_draw_v in text-renderer.md
 80084F64	musi_move_draw	FUNC	MUSI.OVL
 8007C604	musi_hint_draw	FUNC	MUSI.OVL
 8007EDB0	musi_rank_draw	FUNC	MUSI.OVL

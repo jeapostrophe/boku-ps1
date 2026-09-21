@@ -98,7 +98,9 @@ Array text does **not** funnel through one routine. Besides `dialog_draw`, `sele
 (text-format.md), there are **seven copies of an inline horizontal line walker** — `line_draw`
 in the EXE, four in `TITLE` (`0x8007CB54`, `0x8007CC4C`, `0x8007FA94`, `0x80080680`), two in
 `MUSI` — and `HHON` has its own vertical one (`hhon_entry_draw` `0x8007C278`: `x −= 14` at
-`0x8001`, stop at `0x8000`). The horizontal walkers share three rules that are keyed on
+`0x8001`, stop at `0x8000`). *Aliases:* [text-renderer.md](text-renderer.md) calls that same
+function `hhon_text_draw_v` (its surface 3) and calls `number_draw2` below `number_draw_b`;
+this file and `symbols/loading.symbols.tsv` use the first name of each pair. The horizontal walkers share three rules that are keyed on
 **glyph ids**, which matters if the glyph table is rebuilt:
 
 * glyph `0x0D` (the vertical long-vowel mark) is drawn as `0x0E` (the horizontal one);

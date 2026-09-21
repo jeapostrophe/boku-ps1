@@ -49,7 +49,7 @@ address	image	name	kind	note
 8003c5ec	exe	sys_title_draw	function	line n of 0x8003DA4C at (0x88|0x82, 0x48), horizontal 12 px
 8003fea4	exe	cage_hud_draw	function	insect name, then icons placed at x + count*12
 800400f8	exe	number_draw	function	sprite digits (not font glyphs)
-800402d8	exe	number_draw_b	function	sprite digits (not font glyphs)
+800402d8	exe	number_draw_b	function	sprite digits (not font glyphs); = number_draw2 in text-outside-events.md
 800416e8	exe	item_menu_draw	function	item names (text_draw_line_h) and descriptions (text_draw_h at 0xB8, 0x7E)
 80041fe4	exe	kite_menu_draw	function	kite names at x=0x30
 800437f4	exe	text_draw_line_h	function	(u16 *s, x, y): one line, 12 px
@@ -101,5 +101,5 @@ address	image	name	kind	note
 8007edb0	MUSI	musi_grid_labels_draw	function
 80084f64	MUSI	musi_move_name_draw	function	line n of MUSI +0x2C at (0x8C, 0xA0|0xB4)
 800850d8	MUSI	musi_line_draw	function	horizontal, y=0x68
-8007c278	HHON	hhon_text_draw_v	function	VERTICAL, hard-coded: y += 12, newline x -= 14
+8007c278	HHON	hhon_text_draw_v	function	VERTICAL, hard-coded: y += 12, newline x -= 14; = hhon_entry_draw in text-outside-events.md
 8007c1c4	HHON	hhon_text_scroll_v	function	VERTICAL, hard-coded, scrolled by a3, drawn through glyph_draw_layer

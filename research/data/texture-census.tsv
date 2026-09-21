@@ -751,14 +751,14 @@ _DATA_MI31.BIN__001af4	1	\_DATA\MI31.BIN	4	32	64	1	no	other	none	n/a	n/a	insect 
 _DATA_MI43.BIN__001c08	1	\_DATA\MI43.BIN	4	64	32	2	no	other	none	n/a	n/a	insect or kite model texture
 _DATA_M_FILES.BIN_M_C02000.BIN__0033d0	13	\_DATA\M_FILES.BIN\M_C02000.BIN;\_DATA\M_FILES.BIN\M_C02100.BIN;\_DATA\M_FILES.BIN\M_C05000.BIN;\_DATA\M_FILES.BIN\M_C05100.BIN;\_DATA\M_FILES.BIN\M_C12000.BIN;\_DATA\M_FILES.BIN\M_C12100.BIN;\_DATA\M_FILES.BIN\M_E01000.BIN;\_DATA\M_FILES.BIN\M_E01100.BIN …+5	4	32	64	1	no	other	none	n/a	n/a	map pack artwork: background strip atlas or a 98x79 watercolour minimap, no lettering seen
 _DATA_MDLTIM.RTM__008c0c	1	\_DATA\MDLTIM.RTM	4	28	64	1	no	other	none	n/a	n/a	shared model texture atlas: faces, insects, clothing
-_DATA_KAGO.BIN__002784	1	\_DATA\KAGO.BIN	4	24	72	3	no	other	none	numerals	n/a	measuring-scale strip: 0-9 plus mm / cm / infinity; Latin and numerals only
+_DATA_KAGO.BIN__002784	1	\_DATA\KAGO.BIN	4	24	72	3	no	other	none	n/a	n/a	green cage bars (GFX-03 re-look, 2026-09-20: not the number strip the first pass took it for)
 _DATA_MI48.BIN__001b38	1	\_DATA\MI48.BIN	4	24	64	1	no	other	none	n/a	n/a	insect or kite model texture
 _DATA_MI49.BIN__001988	1	\_DATA\MI49.BIN	4	24	64	1	no	other	none	n/a	n/a	insect or kite model texture
-_DATA_NUMBER.TIM__000000	1	\_DATA\NUMBER.TIM	4	144	10	3	no	other	none	numerals	n/a	measuring-scale strip: 0-9 plus mm / cm / infinity; Latin and numerals only
+_DATA_NUMBER.TIM__000000	1	\_DATA\NUMBER.TIM	4	144	10	3	no	other	none	numerals	n/a	the game's general-purpose number font, 144x10 4bpp: 0-9 plus mm / infinity / . / cm in 18 cells (research/textures-plan.md section 'Composed text')
 _DATA_MDLTIM.RTM__004ecc	1	\_DATA\MDLTIM.RTM	4	40	32	1	no	other	none	n/a	n/a	shared model texture atlas: faces, insects, clothing
 _DATA_MDLTIM.RTM__00894c	1	\_DATA\MDLTIM.RTM	4	32	40	1	no	other	none	n/a	n/a	shared model texture atlas: faces, insects, clothing
 _DATA_TA06.BIN__000b28	1	\_DATA\TA06.BIN	4	32	40	8	no	other	none	n/a	n/a	insect or kite model texture
-_DATA_KAGO2.BIN__000000	1	\_DATA\KAGO2.BIN	4	120	10	2	no	other	none	numerals	n/a	measuring-scale strip: 0-9 plus mm / cm / infinity; Latin and numerals only
+_DATA_KAGO2.BIN__000000	1	\_DATA\KAGO2.BIN	4	120	10	2	no	other	none	numerals	n/a	a second, narrower number strip, 120x10 4bpp in 15 cells - a different image from NUMBER.TIM, not a copy of it
 _DATA_DAMMY2.BIN__000000	3	\_DATA\DAMMY2.BIN;\_DATA\DAMMY3.BIN;\_DATA\MZ.BIN	4	32	32	1	no	other	none	n/a	n/a	no lettering seen on the contact sheet
 _DATA_FS04.BIN__000dc8	1	\_DATA\FS04.BIN	4	32	32	1	no	other	none	n/a	n/a	no lettering seen on the contact sheet
 _DATA_MDLTIM.RTM__003a80	1	\_DATA\MDLTIM.RTM	4	32	32	1	no	other	none	n/a	n/a	shared model texture atlas: faces, insects, clothing

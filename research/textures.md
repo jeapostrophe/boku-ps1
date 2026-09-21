@@ -1,20 +1,27 @@
 # Textures — where Japanese is baked into pixels (PLAN `REC-08`)
 
 Everything here was measured on the dump identified in [disc-recon.md](disc-recon.md) unless it
-is marked *hypothesis*. The per-image list is [`data/texture-census.tsv`](data/texture-census.tsv);
-the tools that produce it live in `work/rec08/` (gitignored, stdlib plus Pillow for PNG output):
+is marked *hypothesis*. The per-image list is [`data/texture-census.tsv`](data/texture-census.tsv),
+and it is generated in two halves.
+
+**The half that is tracked** is [`tools/textures/classify.py`](../tools/textures/classify.py),
+run as `./make.sh texture-census`. Its rule table is the written record of what was seen on
+which image, keyed by the distinct-image id rather than by the sheet-local `T####` labels, and
+it writes the census. It handles no pixels and no Japanese, which is why it can live here.
+
+**The half that is not** is the look itself: the extractor and the sheets it is done from live
+in `work/rec08/` (gitignored, stdlib plus Pillow for PNG output), because they hold the game's
+own images.
 
 ```
-uv run --no-project --with pillow python work/rec08/extract.py --report   # PNGs + metadata
+uv run --no-project --with pillow python work/rec08/extract.py --report   # PNGs + distinct.tsv
 uv run --no-project --with pillow python work/rec08/sheets.py             # contact sheets
-uv run --no-project python           work/rec08/classify.py               # the tracked census
 uv run --no-project --with pillow python work/rec08/group.py <name> <id regex> [per] [scale]
 uv run --no-project --with pillow python work/rec08/one.py <id> [--clut N] [--crop x,y,w,h] [--scale N]
 ```
 
-`extract.py` regenerates every PNG and the metadata TSV from `disc/files/` alone. Nothing under
-`disc/` is written. `classify.py`'s rule table is the written record of what was seen on which
-image, keyed by the distinct-image id rather than by the sheet-local `T####` labels.
+`extract.py` regenerates every PNG and `work/rec08/distinct.tsv` — the inventory the classifier
+reads — from `disc/files/` alone. Nothing under `disc/` is written.
 
 ## Method
 
@@ -138,7 +145,10 @@ how the 94 pages map onto the 30-odd days — `NIKKI.SEC`'s ids run 0–100 with
 
 ## The kinds of Japanese-in-texture, and how hard each looks to redraw
 
-Easiest first.
+Easiest first. This ladder is about **what the pixels are**, not about what is going to be done
+with them: `GFX-03` audited all 197 and chose a path for each, and 138 of them are neither a
+redraw nor a subtitle but a programmatic re-typeset. [textures-plan.md](textures-plan.md) is
+that decision, image by image; where the two disagree about a path, it wins.
 
 1. **Menu and settings text on a flat or transparent ground** — the title screen's four menu
    lines plus `PRESS START BUTTON`, the settings screen's audio options, `設定`/`OFF` plates.
@@ -147,8 +157,10 @@ Easiest first.
    atlases) — field labels ("size / average / largest / cm"), bait and tackle names, and dozens of
    small oval buttons carrying one to three characters ("back", "look", "net"). Flat ground, but
    many small pieces spread over large atlases, and English is wider than two kana. The
-   insect-catch result badges (`MITIM.BIN`: a "rare" starburst, "BIG!", size crowns) and the
-   production/copyright strip belong here too — transparent ground, one word each.
+   insect-catch result badges (`MITIM.BIN`: a "rare" starburst, "BIG!", size crowns) belong here
+   too — transparent ground, one word each. The production/copyright strip is the same *kind* of
+   image, flat type on transparent, but it is the publisher's own credit line and `GFX-03` leaves
+   it alone (**N**): translating it is the owner's call, not the audit's.
 3. **Encyclopedia and diary pages** — the insect book (`MZKAN0`, `MZKAN1`; note `MZKAN.BIN`
    without a digit is a sprite set, not a page), the kite book
    (`TZKAN`), the 94 diary pages. A paragraph each, plain type, flat page: mechanically easy,
@@ -162,12 +174,18 @@ Easiest first.
    a beach notice about tides, a superhero poster, a model-kit box, a farewell note in
    handwriting on a notepad. These are painted *into* the scene, at an angle, with shading,
    weathering and perspective, and several are plot-bearing rather than scenery. A clean redraw
-   means repainting the object; the composited-subtitle fallback (README principle 2) is the
-   realistic option for most of them.
+   means repainting the object. The audit's answer for the 27 images in this class is **22 N, 4
+   R, 1 S**: most are scenery the charter leaves in Japanese, the four close-up screens the
+   player chose to examine are redrawn, and the composited-subtitle fallback (README principle
+   2) is used for exactly one image, the beach notice board.
 
-Two things that look like text and are not: the ruler/measurement strip (`NUMBER.TIM`,
-`KAGO*.BIN`) is digits plus `mm` and `cm` unit marks, and the publisher logo screen (`T_BUMPER`)
-is Latin logotype. Neither needs translation.
+Two things that look like text and are not: `NUMBER.TIM`, which is the game's general-purpose
+**number font** and not the measuring strip this census first took it for
+([textures-plan.md](textures-plan.md) § "Composed text" is where it is identified, with the
+routines that draw it and the second, narrower strip at `\_DATA\KAGO2.BIN` `0x0` — a different
+image, 120×10 in 15 cells against `NUMBER.TIM`'s 144×10 in 18); and the publisher logo screen
+(`T_BUMPER`), which is Latin logotype. Neither needs translation. `\_DATA\KAGO.BIN` `0x2784`
+was in that family too until the `GFX-03` re-look: it is green cage bars.
 
 ## The glyph sheet
 

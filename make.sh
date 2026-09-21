@@ -21,6 +21,13 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh textures export --help for the switches)
   textures import DIR           read edited PNGs and report the patches they imply
                                 at every place each image is stored
+  texture-census                regenerate research/data/texture-census.tsv -- what every
+                                distinct image is and whether it carries Japanese -- from
+                                work/rec08/distinct.tsv (REC-08's extractor writes that
+                                from your import; research/textures.md says how)
+  texture-plan                  regenerate research/data/texture-plan.tsv: the path chosen
+                                for each text-bearing image (GFX-03). Reads the tracked
+                                census, so it needs no disc
   trial [arguments]             build the TXT-04 trial image into build/trial/
                                 (./make.sh trial --help for the switches)
   build [arguments]             build a patched image from your import and a
@@ -181,6 +188,14 @@ case "$verb" in
         ;;
     textures)
         exec uv run boku textures "$@"
+        ;;
+    texture-census)
+        exec uv run python tools/textures/classify.py "$@"
+        ;;
+    texture-plan)
+        # The gate is tests/test_texture_plan.py: it regenerates the plan and diffs it
+        # against the tracked copy, so a rule edit that was never run here is caught.
+        exec uv run python tools/textures/make_plan.py "$@"
         ;;
     trial)
         exec uv run boku trial "$@"
