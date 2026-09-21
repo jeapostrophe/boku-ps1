@@ -247,6 +247,7 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `--font` input. Real lines measured to the pixel against the mock-ups. **Left to do:**
       SELECT menus (a real hook), the two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and
       their arrays, the 23 computed-id `glyph_draw` sites (not covered by the free-cell gate),
+      the em dash (113 translated lines use it; the prototype cell map is ASCII-only),
       `...` reading as a dash under the shadow, the speaker-label design, watching the heap
       gap under the four overlays / a save / a full day, and moving the build from
       `tools/vwf/` into `boku` behind a `make.sh` verb once `TXT-03`/`TXT-06` are ruled.
@@ -382,11 +383,17 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       translation applied reproduces the original image byte for byte; made red on purpose
       once, per `ENG-1`, by perturbing one line. Harmed: everyone downstream of a reinserter
       that silently corrupts.
-- [ ] **[PIPE-06]** **Translation lints.** Every id present exactly once; control codes (waits,
-      choice structure) match the source line's; every character encodable; every line within
-      its box per `TXT-07` — the fix for an overflow is another page or box, never a shorter
-      translation. Runs in `make.sh test` so a PR cannot merge a line that overflows.
-      Harmed: the player; the maintainer reviewing PRs by eye.
+- [x] **[PIPE-06]** **Translation lints.** DONE 2026-09-20: `./make.sh lint-translation`
+      (`boku/lint.py`): every id exists in the store and at most once across files; SELECT
+      options 1:1 in order (the question row is not an option); voiced page count equals the
+      disc's; every character encodable by the chosen encoder (`--encoder stock|cellmap`);
+      every page fits the band in pixels through `boku/layout` (label reserve on line 1 only;
+      pencil rule for lines 4–5); array lines within their site; and the additive-word check
+      from the pilot as a WARNING (list-based, "so" dropped for precision). Agrees exactly with
+      the reader's `--check` on the shared facts. Run over days 1–7 + shared with the VWF cell
+      map: zero page or SELECT errors; **113 lines use an em dash the prototype cell map lacks**
+      (`TXT-05`/`TXT-06`: add the glyph); the two sample files that duplicated day 4/6 lines
+      were deleted.
 
 ## Translation
 
@@ -402,13 +409,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `translation/QUESTIONS.md` is the record of the rulings; three sample scenes under
       `translation/samples/`. `translation/glossary.md` is written but still uncommitted
       pending Jay's ruling on committing its Japanese word lists (`[MINE: contract]`).
-- [ ] **[TRN-02]** **Scene assembly for the translator.** From `REC-05`: each unit of translation
-      work is a whole scene as a flow graph (`work/rec05/scenes.py --dump` already renders one
-      locally; the 83 dinner-quiz lines need "this is day d's question" as context; map base →
-      place name and flag meanings come from the walkthroughs, not the disc), with speakers, choices and branches, the box
-      limits, the bible and glossary, the day's events from the walkthroughs, and neighbouring
-      scenes' settled English. Err toward too much context — the model has the window for it.
-      Harmed: translation quality.
+- [x] **[TRN-02]** **Scene assembly for the translator.** DONE 2026-09-20: `./make.sh packet
+      --day N` (`boku/packets.py`, `boku/script_store.py`) writes one local Markdown packet per
+      scene under `work/packets/` — where/when, cast by slot, the flow graph as played (SELECT
+      options with targets, edge conditions, hand-overs), every line with id/speaker/voiced/the
+      Japanese laid out by page and column/capacity facts, the dinner-quiz day context, the
+      day's bible entry, the glossary rows whose source term occurs, the settled rulings in
+      brief, and the neighbouring scenes' settled English — plus `--for-review`. Deterministic.
+      Finishing it found two real parser defects (an en-dash day range that lost day 10's
+      context; glossary rows keyed on the wrong column).
 - [ ] **[TRN-03]** **Design and pilot the agent workflow.** The PILOT is DONE (2026-09-20): all 27
       day-1 scenes plus `E0001` translated by one Fable agent given the whole scene graph, the
       bible, glossary and style guide (`translation/days/day01.txt`, 86 lines, 120 pages, no

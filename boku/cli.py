@@ -13,6 +13,8 @@ from boku.archive import DEFAULT_DISC_DIR
 from boku.build import DEFAULT_BUILD_NAME, DEFAULT_IMAGE, IMAGE_NAME, main_build
 from boku.extract import SCRIPT_DIR_NAME, main_extract
 from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
+from boku.lint import add_arguments as add_lint_arguments
+from boku.packets import add_arguments as add_packet_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
 from boku.textures import DEFAULT_OUT_DIR as TEXTURES_OUT_DIR
@@ -410,6 +412,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     texture_import.set_defaults(
         run=lambda args: main_textures_import(args.disc, args.dir, args.nearest)
+    )
+
+    add_packet_arguments(
+        subcommands.add_parser(
+            "packet",
+            help="assemble a local translator packet per scene for a day or an event list",
+            description=(
+                "PLAN TRN-02: one Markdown file per scene holding everything a translator "
+                "agent needs -- the scene as the game plays it, every line with its Japanese "
+                "and its capacity, the day's bible entry, the glossary rows whose term "
+                "occurs in the scene, the settled style rulings, and the neighbouring "
+                "scenes' English. A packet is the game's own text, so it is written under "
+                "the gitignored work/ and is never tracked."
+            ),
+        )
+    )
+
+    add_lint_arguments(
+        subcommands.add_parser(
+            "lint",
+            help="check the committed translation files against the script store",
+            description=(
+                "PLAN PIPE-06: every id exists and is translated once, select options map "
+                "1:1, a voiced message keeps its page count, every character has a cell, "
+                "every page fits its box in pixels, an array item fits its site, and the "
+                "pilot's additive-word heuristic warns. Nothing is rewritten and nothing is "
+                "shortened to fit: a finding reports what is over and by how much. Exits "
+                "non-zero when there is an error, zero on warnings alone."
+            ),
+        )
     )
 
     return parser

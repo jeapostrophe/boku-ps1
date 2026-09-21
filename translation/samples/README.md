@@ -6,10 +6,13 @@ Three contrasting scenes translated in full under the policies of
 arguments; Jay ruled on 2026-09-20 and the samples were re-checked against the settled policy.
 Their `#` notes keep the rejected renderings for comparison.
 
+Two of the three have since been folded into the day files, which are the reviewed home of
+those lines (`E0404`/`E0406` in [../days/day04.txt](../days/day04.txt), `E0650` in
+[../days/day06.txt](../days/day06.txt)); the sample files were deleted so that no id is
+translated twice. The one that remains covers days not yet translated:
+
 | file | events | what it exercises |
 |---|---|---|
-| [family-E0404-E0406.txt](family-E0404-E0406.txt) | `E0404`, `E0406` — day 4, after dinner: shaved ice on the veranda side of the house | the mealtime set phrases, `-kun`, Uncle/Auntie self-reference, a choice menu, Shirabe's bossy register, a repeat branch |
-| [kids-E0650.txt](kids-E0650.txt) | `E0650` — first meeting with all three boys at the secret base | rough-boy register, nicknames, `-chan`, the "Fat" joke whose Japanese glosses an English word |
 | [narrator-E2805-E3180.txt](narrator-E2805-E3180.txt) | `E2805` — day 28, the fever night; `E3179`–`E3180` — day 31, the goodbye | the adult narrator against the child, `Onii-chan`, an invented mimetic, the house-rule callback |
 
 ## File format (provisional — the real one is PLAN `PIPE-01`'s)

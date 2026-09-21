@@ -31,6 +31,16 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh patch --help for the switches)
   apply-patch ORIG PATCH --out FILE
                                 apply one of our patches, checking both hashes
+  packet [arguments]            assemble the local translator packets for a day or an
+                                event list into work/packets/ -- the scene as the game
+                                plays it, every line with its Japanese and its capacity,
+                                and the policy narrowed to that scene. Never tracked
+                                (./make.sh packet --help for the switches)
+  lint-translation [arguments]  check the committed translation files against your
+                                import's script store: ids, select shape, page counts,
+                                encodable characters, pixel fit, array byte sizes, and
+                                the additive-word heuristic
+                                (./make.sh lint-translation --help for the switches)
   test [pytest arguments]       run the test suite
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
@@ -147,6 +157,12 @@ case "$verb" in
         ;;
     apply-patch)
         exec uv run boku apply-patch "$@"
+        ;;
+    packet)
+        exec uv run boku packet "$@"
+        ;;
+    lint-translation)
+        exec uv run boku lint "$@"
         ;;
     test)
         exec uv run pytest "$@"
