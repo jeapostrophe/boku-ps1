@@ -305,6 +305,21 @@ def scene_day(scene: dict) -> tuple[int | None, bool]:
     return None, False
 
 
+def scene_dated_day(scene: dict) -> int | None:
+    """The day the *data* fixes this scene to, or `None` when nothing does.
+
+    The companion to `scene_day` for everything that **labels or groups by** a day. A
+    derived day is one `day==N` inside the entry condition, routinely one branch of an
+    `|` whose sibling covers the other days, so printing it as the scene's day states a
+    falsehood: `E1006` derives day 11 from
+    `… & day!=30 & ((day==11 & hour!=19) | (day!=11 & hour>6)) & …`, whose second branch
+    is every day but 11, so `day_allows` puts the event on every day of the month but 30.
+    `scene_plays_on` answers the other question, "can this day reach the scene".
+    """
+    day, derived = scene_day(scene)
+    return None if derived else day
+
+
 def scene_plays_on(scene: dict, day: int) -> bool:
     """Can `day` reach this scene? The one predicate every per-day view asks.
 
@@ -313,8 +328,8 @@ def scene_plays_on(scene: dict, day: int) -> bool:
     derived day (`scene_day`) and a missing day are both compatible with the scene firing
     on other days, and dropping a scene the player meets is the failure that matters.
     """
-    dated, derived = scene_day(scene)
-    if dated is not None and not derived:
+    dated = scene_dated_day(scene)
+    if dated is not None:
         return dated == day
     return day_allows(scene["when"].get("condition"), day)
 
@@ -328,8 +343,10 @@ def scene_hour(scene: dict) -> int | None:
 
 
 def scene_sort_key(scene: dict) -> tuple:
-    """Day, then the hour or time slot the script names, then the event id."""
-    day, _ = scene_day(scene)
+    """The day the data dates the scene to, then the hour or time slot the script names,
+    then the event id. A day only derived from the condition is not a day to sort under
+    (`scene_dated_day`): those scenes order by hour with the rest of the undated tail."""
+    day = scene_dated_day(scene)
     hour = scene_hour(scene)
     slots = scene["where"]["time_slots"] or ""
     slot_hour = min((SLOT_HOUR.get(c, 99) for c in slots), default=99)

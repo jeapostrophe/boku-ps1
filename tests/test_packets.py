@@ -34,12 +34,19 @@ from boku.packets import (
     table_rows,
     write_packets,
 )
-from boku.script_store import load_store
+from boku.script_store import load_store, scene_day
 from tests.synth_script import SynthStore, write_translation
 
 VOICED = "E9001.0"
 CHOICE = "E9001.1"
 VOICE_ONLY = "E9001.2"
+
+GATED_EVENT = "E9011"
+GATED = f"{GATED_EVENT}.0"
+GATED_CONDITION = "((hour<18 & day!=15) | (day==11 & hour>19))"
+"""`E1006`'s shape, and the same string `tests.test_coverage.BRANCH_CONDITION` uses:
+`script_store.scene_day` derives day 11 from it, and its left branch plays on day 1. The
+day the fixture asserts against is the one `scene_day` derives, never a retyped 11."""
 
 
 @pytest.fixture
@@ -54,6 +61,25 @@ def store(tmp_path: Path):
         quiz={"routines": [15], "quiz": [{"day": 1, "message": 0, "answer": 2}]},
     )
     return load_store(synth.write())
+
+
+@pytest.fixture
+def gated(tmp_path: Path):
+    """`(store, derived day)` for one scene the data gives no day and a condition does.
+
+    The quiz row is written for the day `scene_day` derives, so the packet has every
+    day-keyed section it could get wrong: the header, the bible's § 4 entry, and the
+    "on day d this event asks" line.
+    """
+    synth = SynthStore.new(tmp_path)
+    synth.message(GATED, [[4]], voiced=False)
+    scene = synth.scene(GATED_EVENT, [GATED], day=None)
+    scene["when"]["condition"] = GATED_CONDITION
+    scene["when"]["meal_hour"] = None
+    day, derived = scene_day(scene)
+    assert derived and day is not None, "the fixture no longer derives a day from its condition"
+    scene["dinner_quiz"] = {"routines": [15], "quiz": [{"day": day, "message": 0, "answer": 2}]}
+    return load_store(synth.write()), day
 
 
 @pytest.fixture
@@ -122,6 +148,33 @@ def test_the_quiz_says_which_day_each_question_belongs_to(store, builder):
     assert "day d's question" in packet
     assert f"On day {row['day']} this event asks `E9001.{row['message']}`" in packet
     assert f"answer index {row['answer']}" in packet
+
+
+def test_a_day_derived_from_the_condition_is_not_printed_as_the_scene_s_day(gated):
+    """The header a translator reads first must not name a day the scene is not fixed to.
+
+    `scene_day`'s second return says the day was read off one `day==N` *inside* the entry
+    condition -- routinely one branch of an `|` whose sibling covers the other days, as in
+    `E1006` -- so it is not the day the scene plays on. Printed as "Day N", it is a
+    translator writing day-N context into a scene the player meets on other days.
+    """
+    store, day = gated
+    packet = PacketBuilder.build(store, Policy.load(), [], False).scene_packet(store.scenes[0])
+    line = next(row for row in packet.splitlines() if row.startswith("* **Day**"))
+    assert f"**Day**: {day}" not in line
+    assert "any day" in line
+    assert f"day=={day}" in line, "the header must name the test the day was read off"
+
+
+def test_a_derived_day_pulls_in_no_day_keyed_context(gated):
+    """The same rule below the header: the bible's day entry and the quiz's day row are
+    context for a day this scene is not fixed to, and read as fact once they are in the
+    packet. The quiz table itself stays -- it says which day each question belongs to."""
+    store, day = gated
+    packet = PacketBuilder.build(store, Policy.load(), [], False).scene_packet(store.scenes[0])
+    assert "## The day, from the story bible" not in packet
+    assert f"On day {day} this event asks" not in packet
+    assert "## The per-day quiz" in packet
 
 
 def test_for_review_puts_the_current_english_beside_the_line(store, tmp_path):

@@ -46,6 +46,7 @@ from boku.script_store import (
     ordered_scenes,
     page_count,
     pages_fixed_by_voice,
+    scene_dated_day,
     scene_day,
     scene_hour,
     scenes_named,
@@ -491,6 +492,26 @@ def _capacity(record: dict) -> str:
     return "; ".join(parts)
 
 
+def _day_text(scene: dict) -> str:
+    """The `Day` line of the header: the day the data fixes the scene to, or that none does.
+
+    The data dates an event by its id, and that day is the only day it fires on. A
+    `day==N` inside the entry condition is not that -- it is one test among the rest,
+    routinely one branch of an `|` whose sibling covers the other days -- so the header
+    leaves the day open and points at the condition bullet below rather than reprinting
+    it (`script_store.scene_day`, `scene_dated_day`).
+    """
+    day, derived = scene_day(scene)
+    if day is None:
+        return "any (day-independent)"
+    if not derived:
+        return str(day)
+    return (
+        f"any day -- see the entry condition below; its `day=={day}` is one test among "
+        f"the rest, not the day this scene plays on"
+    )
+
+
 @dataclass
 class _Neighbours:
     previous: dict | None = None
@@ -539,7 +560,9 @@ class PacketBuilder:
 
     def scene_packet(self, scene: dict) -> str:
         event = scene["event"]
-        day, derived = scene_day(scene)
+        # Only a dated day selects day-keyed context (the bible's § 4 entry, the quiz's
+        # row for the day); what the header says about a derived one is `_day_text`.
+        dated = scene_dated_day(scene)
         lines: list[str] = []
         add = lines.append
 
@@ -553,16 +576,16 @@ class PacketBuilder:
             "finding, so a flag is a real signal."
         )
         add("")
-        lines += self._where(scene, day, derived)
+        lines += self._where(scene)
         lines += self._cast(scene)
         lines += self._flow(scene)
         lines += self._lines(scene)
-        lines += self._quiz(scene, day)
-        lines += self._context(scene, day)
+        lines += self._quiz(scene, dated)
+        lines += self._context(scene, dated)
         lines += self._neighbours(scene)
         return "\n".join(lines).rstrip() + "\n"
 
-    def _where(self, scene: dict, day: int | None, derived: bool) -> list[str]:
+    def _where(self, scene: dict) -> list[str]:
         where, when = scene["where"], scene["when"]
         hour = scene_hour(scene)
         bases = ", ".join(
@@ -575,8 +598,7 @@ class PacketBuilder:
         out = [
             "## Where and when",
             "",
-            f"* **Day**: {day if day is not None else 'any (day-independent)'}"
-            + (" (read off the entry condition, not stated in the data)" if derived else ""),
+            f"* **Day**: {_day_text(scene)}",
             f"* **Hour**: {hour if hour is not None else 'not fixed'}"
             + (f"; time slot(s) {where['time_slots']}" if where["time_slots"] else ""),
             f"* **Place**: {bases or 'unknown'} (maps {', '.join(where['maps']) or 'none'})",
@@ -896,7 +918,8 @@ class PacketBuilder:
         out = [
             f"# Day {day} -- the scenes, in order",
             "",
-            f"{len(scenes)} scene(s) the extract dates to day {day}, in the order this "
+            f"{len(scenes)} scene(s) day {day} can reach (`script_store.scene_plays_on`, "
+            f"so a scene the data gives no day of its own is here too), in the order this "
             f"project reads them (day, then the hour or time slot the script names, then the "
             f"event id). One packet per scene sits beside this file. Day-independent events "
             f"a day's flow can reach are a judgement the data does not make -- "
@@ -975,7 +998,7 @@ def main_packet(
         print(f"packet: {error}", file=sys.stderr)
         return 2
     if not scenes:
-        print(f"packet: the store dates no scene to day {day}", file=sys.stderr)
+        print(f"packet: no scene in the store plays on day {day}", file=sys.stderr)
         return 2
     sources = translations or [DAYS_DIR]
     builder = PacketBuilder.build(store, Policy.load(), sources, for_review)

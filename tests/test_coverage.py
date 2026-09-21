@@ -42,7 +42,14 @@ from boku.coverage import (
     summarise,
 )
 from boku.lint import load_rows, translation_paths
-from boku.script_store import day_allows, load_store, scenes_of_day
+from boku.script_store import (
+    day_allows,
+    load_store,
+    ordered_scenes,
+    scene_dated_day,
+    scene_day,
+    scenes_of_day,
+)
 from tests.synth_script import SynthStore, write_translation
 
 DAY_EVENT = "E0199"
@@ -344,6 +351,34 @@ def test_a_day_read_off_one_branch_of_an_or_does_not_take_the_event_off_other_da
     day_one = by_id(coverage(store, rows, 1, UNCHECKED))[BRANCH]
     assert day_one.scope == ANY_DAY
     assert f"day=={BRANCH_DAY}" in day_one.scope_reason
+
+
+def test_only_a_day_the_data_dates_is_a_scene_s_own_day(store):
+    """The other half of the `E0710`/`E1006` trap, and the one a *reader* falls into.
+
+    `scene_day` answers "is there a day in or behind this scene", which two tools read as
+    "this is the scene's day" and printed -- the coverage report's scope and the packets'
+    header. Anything that labels or groups by a day asks this instead.
+    """
+    by_event = store.scenes_by_event
+    assert scene_dated_day(by_event[DAY_EVENT]) == 1
+    assert scene_day(by_event[BRANCH_EVENT]) == (BRANCH_DAY, True)
+    assert scene_dated_day(by_event[BRANCH_EVENT]) is None
+    assert scene_dated_day(by_event[FREE_EVENT]) is None
+
+
+def test_a_derived_day_does_not_sort_a_scene_in_among_the_dated_days(store):
+    """Play order asks the same question, and got the same answer wrong.
+
+    Keyed on the derived day, a scene the data gives no day sorts under it: it lands
+    between two dated days in every per-day view, and the hour column of the section it
+    is actually printed in restarts at it. It belongs with the scenes that have no day of
+    their own, ordered by the hour or slot the script names -- so `FREE_EVENT`, same slot
+    and a lower id, comes first.
+    """
+    order = [scene["event"] for scene in ordered_scenes(store)]
+    assert order.index(BRANCH_EVENT) > order.index(DATED_EVENT)
+    assert order.index(FREE_EVENT) < order.index(BRANCH_EVENT)
 
 
 def test_a_day_independent_event_whose_condition_excludes_the_day_is_left_out(store, rows):

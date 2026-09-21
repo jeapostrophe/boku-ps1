@@ -376,7 +376,10 @@ def _order(result: LineCoverage) -> tuple:
 # --- the report --------------------------------------------------------------------------------
 
 SCOPE_HEADINGS = {
-    DAY: "events this day's own data dates here",
+    DAY: (
+        "events this day reaches by its own day, by its id, or by a `day==N` in its "
+        "condition -- each row says which"
+    ),
     ANY_DAY: "day-independent events -- no day in the data (translation/days/shared.txt)",
     SURFACE: "non-event surfaces -- menus, books, the title screen (no day file covers these)",
 }

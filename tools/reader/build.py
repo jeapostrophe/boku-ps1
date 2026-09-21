@@ -52,6 +52,7 @@ for directory in (ROOT, HERE):
 
 from checks import SHAPE_KINDS, Problem, check, select_fields, select_shape  # noqa: E402
 
+from boku.script_store import scene_dated_day  # noqa: E402
 from boku.translation import SampleScenes, TranslationEntry  # noqa: E402
 
 DEFAULT_SCRIPT_DIR = ROOT / "disc" / "script"
@@ -175,19 +176,24 @@ def load_store(script_dir: Path) -> Store:
 
 # --- play order -------------------------------------------------------------------------------
 
-_DAY_EQ = re.compile(r"\bday==(\d+)\b")
 _HOUR = re.compile(r"\bhour(==|>=|<=|>|<)(\d+)\b")
 
+ANY_DAY_TEXT = "any day"
+"""What a scene not fixed to a day reads as, wherever this site prints a day."""
 
-def scene_day(scene: dict) -> tuple[int | None, bool]:
-    """`(day, derived)` — the extractor's day, else one read off a `day==N` condition."""
-    day = scene["when"]["day"]
-    if day is not None:
-        return day, False
-    found = _DAY_EQ.findall(scene["when"].get("condition") or "")
-    if len(set(found)) == 1:
-        return int(found[0]), True
-    return None, False
+ANY_DAY_ANCHOR = "day-none"
+"""The calendar section those scenes are listed under."""
+
+
+def day_text(scene: dict) -> str:
+    """How this scene's day reads in a heading, a fact list or a table cell.
+
+    Every day this site prints, groups by or sorts on is
+    `boku.script_store.scene_dated_day`'s, which is `None` for a day only derived from
+    the entry condition.
+    """
+    day = scene_dated_day(scene)
+    return ANY_DAY_TEXT if day is None else f"day {day}"
 
 
 HOUR_TEXT = {
@@ -232,8 +238,10 @@ def scene_hour(scene: dict) -> SceneHour | None:
 
 
 def scene_sort_key(scene: dict) -> tuple:
-    """Day, then the hour or time slot where the script says one, then the event id."""
-    day, _ = scene_day(scene)
+    """The day the data dates the scene to, then the hour or the time slot where the
+    script says one, then the event id. A derived day is not one (`scene_dated_day`), so
+    those scenes order by hour among the tail the calendar lists under "any day"."""
+    day = scene_dated_day(scene)
     hour = scene_hour(scene)
     ordering = hour.ordering if hour is not None else None
     slots = scene["where"]["time_slots"] or ""
@@ -807,13 +815,15 @@ def scene_page(
     neighbours: tuple[dict | None, dict | None],
 ) -> str:
     event = scene["event"]
-    day, derived = scene_day(scene)
+    day = scene_dated_day(scene)
     hour = scene_hour(scene)
-    day_text = "undated" if day is None else f"day {day}{' (from condition)' if derived else ''}"
+    when_text = day_text(scene)
     previous, following = neighbours
-    links = ['<a href="index.html">index</a>']
-    if day is not None:
-        links.append(f'<a href="index.html#day-{day}">{esc(day_text)}</a>')
+    anchor = ANY_DAY_ANCHOR if day is None else f"day-{day}"
+    links = [
+        '<a href="index.html">index</a>',
+        f'<a href="index.html#{anchor}">{esc(when_text)}</a>',
+    ]
     if previous is not None:
         links.append(
             f'<a href="{scene_href(previous["event"])}">&larr; {esc(previous["event"])}</a>'
@@ -830,10 +840,10 @@ def scene_page(
         f"slot {k}: {', '.join(str(m) for m in v)}" for k, v in scene["actors"].items()
     )
     body = [
-        f'<h1>{esc(event)} <span class="sub">{esc(day_text)}</span></h1>',
+        f'<h1>{esc(event)} <span class="sub">{esc(when_text)}</span></h1>',
         facts(
             [
-                ("when", esc(day_text) + (f", {esc(hour.text())}" if hour is not None else "")),
+                ("when", esc(when_text) + (f", {esc(hour.text())}" if hour is not None else "")),
                 (
                     "condition",
                     f"<code>{esc(scene['when']['condition'])}</code>"
@@ -913,7 +923,7 @@ def scene_page(
         body.append(f"<h2>Notes from the translation files</h2>{blocks}")
 
     return page(
-        f"{event} — {day_text} — scene reader",
+        f"{event} — {when_text} — scene reader",
         "\n".join(body),
         heading_nav=bar(links),
     )
@@ -1034,7 +1044,7 @@ def index_page(
 ) -> str:
     by_day: dict[int | None, list[dict]] = {}
     for scene in scenes:
-        by_day.setdefault(scene_day(scene)[0], []).append(scene)
+        by_day.setdefault(scene_dated_day(scene), []).append(scene)
     total = SceneCounts(
         lines=sum(scene_counts(s, translation, flags).lines for s in scenes),
         translated=sum(scene_counts(s, translation, flags).translated for s in scenes),
@@ -1069,8 +1079,11 @@ def index_page(
         + "</p>",
         "<h2>The calendar</h2>",
         '<p class="legend">Scenes in the order the game plays them: day, then the hour or '
-        "time slot the script names, then the event id. A day marked <em>cond.</em> was read "
-        "off the event's own condition, not from the day table. <strong>over</strong> counts "
+        "time slot the script names, then the event id. A scene the data gives no day of "
+        "its own is listed under <em>any day</em> with the condition it plays behind — "
+        "including one whose condition tests a single <code>day==N</code>, routinely one "
+        "branch of an <code>|</code> whose sibling covers the rest of the month. "
+        "<strong>over</strong> counts "
         "lines the translator marked <code># OVERFLOW</code> — a page that does not fit the "
         "dialogue band, translated in full anyway; <strong>shape</strong> counts lines whose "
         "English cannot take the original's shape, which is the "
@@ -1080,25 +1093,28 @@ def index_page(
     body.append(
         '<p class="legend">'
         + " ".join(
-            f'<a href="#day-{d}">{d}</a>' if d is not None else '<a href="#day-none">undated</a>'
+            f'<a href="#day-{d}">{d}</a>'
+            if d is not None
+            else f'<a href="#{ANY_DAY_ANCHOR}">{ANY_DAY_TEXT}</a>'
             for d in days
         )
         + "</p>"
     )
     for day in days:
-        anchor = f"day-{day}" if day is not None else "day-none"
-        title = f"Day {day}" if day is not None else "Undated"
+        anchor = f"day-{day}" if day is not None else ANY_DAY_ANCHOR
+        title = f"Day {day}" if day is not None else ANY_DAY_TEXT.capitalize()
         rows = []
         for scene in by_day[day]:
             counts = scene_counts(scene, translation, flags)
             hour = scene_hour(scene)
-            _, derived = scene_day(scene)
             when = hour.text() if hour is not None else f"slot {scene['where']['time_slots']}"
-            if derived:
-                when += " (cond.)"
+            # In the any-day section the condition is what puts the scene in front of the
+            # player at all, so it is shown instead of the day this table has no cell for.
+            gate = scene["when"]["condition"] if day is None else ""
+            when_cell = esc(when) + (f" <code>{esc(gate)}</code>" if gate else "")
             rows.append(
                 f'<tr><td><a href="{scene_href(scene["event"])}">{esc(scene["event"])}</a></td>'
-                f"<td>{esc(when)}</td>"
+                f"<td>{when_cell}</td>"
                 f"<td>{esc(', '.join(scene['where']['bases']))}</td>"
                 f"<td>{esc(', '.join(scene['where']['triggers']))}</td>"
                 f'<td class="num">{counts.lines}</td>'
@@ -1139,13 +1155,12 @@ def speaker_pages(
             line_id = node["line"]
             japanese = store.japanese.get(line_id)
             english = translation.english_rows(line_id)
-            day, _ = scene_day(scene)
             flag = "".join(f' <span class="badge flag">{m}</span>' for m in flags.marks(line_id))
             rows.append(
                 f"<tr>"
                 f'<td><a href="{scene_href(scene["event"])}#{esc(node["node"])}">'
                 f"{esc(line_id)}</a>{flag}</td>"
-                f"<td>{esc('undated' if day is None else f'day {day}')}</td>"
+                f"<td>{esc(day_text(scene))}</td>"
                 f"<td>{esc(japanese.plain() if japanese else '(voice only)')}</td>"
                 f"<td>{english_cell(store, translation, line_id, english)}</td>"
                 f"</tr>"
@@ -1453,7 +1468,11 @@ SELFTEST_SCENES = [
         "id": 9002,
         "copies": 1,
         "in_ev": False,
-        "when": {"day": None, "meal_hour": None, "condition": "(day==4 & hour>=19)"},
+        # `E1006`'s shape: the `day==2` is one branch of an `|` whose sibling covers every
+        # other day but 15, so the day derived from it is not the day this scene plays on
+        # -- the reader must say "any day", show the gate, and sort it with the scenes the
+        # data gives no day rather than ahead of the day-3 scenes.
+        "when": {"day": None, "meal_hour": None, "condition": "((day==2 | day!=15) & hour>=19)"},
         "where": {"maps": ["I06002"], "bases": ["I06"], "time_slots": "2", "triggers": {"auto": 1}},
         "cast": [],
         "actors": {"1": [6]},
@@ -1632,6 +1651,13 @@ def selftest() -> int:
             [s["event"] for s in ordered_scenes(store)] == ["E9001", "E9003", "E9002"],
             f"play order: {[s['event'] for s in ordered_scenes(store)]}",
         )
+        # A derived day is not a day to sort under either. E9002 derives day 2, and sorting
+        # by that puts it ahead of the day-3 scenes -- between the dated days, where the
+        # hour column of the section it is printed in restarts for no visible reason.
+        _require(
+            [s["event"] for s in ordered_scenes(store)][-1] == "E9002",
+            "a scene whose day is only derived sorts with the tail the data gives no day",
+        )
 
         page_text = (out / "scene-E9001.html").read_text(encoding="utf-8")
         _require(
@@ -1673,8 +1699,17 @@ def selftest() -> int:
 
         second = (out / "scene-E9002.html").read_text(encoding="utf-8")
         _require(
-            "day 4 (from condition)" in second,
-            "a day read off the condition must be shown as derived",
+            "day 2" not in second,
+            "a day read off a `day==N` inside the condition is not the day the scene plays "
+            "on, and must never be printed as one",
+        )
+        _require(
+            "any day" in second and "day==2" in second,
+            "a condition-gated scene must say its day is open and show the gate",
+        )
+        _require(
+            f"<title>E9002 — {ANY_DAY_TEXT} — scene reader</title>" in second,
+            "the page title says the same about the day as the heading does",
         )
         _require(
             "Lines no node reaches" in second and "E9002.1" in second,
@@ -1722,7 +1757,20 @@ def selftest() -> int:
         )
 
         index = (out / "index.html").read_text(encoding="utf-8")
-        _require('id="day-3"' in index and 'id="day-4"' in index, "the calendar must list days")
+        _require('id="day-3"' in index, "the calendar must list the days the data dates")
+        _require(
+            'id="day-2"' not in index and 'id="day-none"' in index,
+            "a scene whose only day is a `day==N` inside its condition belongs with the "
+            "day-independent scenes, not under that day's heading",
+        )
+        # `find`, not `index`: an absent string must fail through `_require` with the
+        # sentence below, not raise a ValueError from inside the check.
+        section = index.find('id="day-none"')
+        row = index.find("scene-E9002.html")
+        _require(
+            0 <= section < row and "day==2" in index,
+            "and its row must sit in that section, with the condition it plays behind",
+        )
         _require("6 translated" in index, "the index must count what is translated")
         _require("before 14:00" in index, "the calendar must not print a bound as a clock time")
         _require(
@@ -1732,6 +1780,12 @@ def selftest() -> int:
 
         speaker = (out / "speaker-BOKU.html").read_text(encoding="utf-8")
         _require("E9001.0" in speaker, "a speaker page must list that speaker's lines")
+        oji = (out / "speaker-OJI.html").read_text(encoding="utf-8")
+        _require(
+            "E9002.0" in oji and "day 2" not in oji and "any day" in oji,
+            "a speaker page dates each line by the scene it is in, so it too must not date "
+            "one by a day read off a branch of the condition",
+        )
 
         # Now one file with four planted defects, each of which must be named.
         _, dirty_problems, _ = build_site(script, root / "out2", [dirty])
