@@ -8,10 +8,10 @@ SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools an
 > scene (`./make.sh trial`). The archive, text format, event scripts, font, renderer, memory
 > map and textures are decoded and written up under [research/](research/): the script is
 > 2,977 lines / ~75,000 glyphs, 180 textures carry Japanese, and the game checks nothing it
-> loads. The reinserter, image builder and patch emit exist and the null round
-> trip reproduces the original image byte for byte; a variable-width dialogue renderer runs
-> on both emulators as a prototype. Days 1–7 of the script are translated and reviewed
-> (`translation/days/`); the rest waits on in-game testing of what exists.
+> loads. **Days 1–7 of the script play in English on Beetle PSX**
+> (`./make.sh build-days`): proportional text in a band under the scene, page arrows, choice
+> menus, 708 lines laid out and reinserted with members relocated where they grew. The rest
+> of the script waits on that being played and judged; the speaker label is not drawn yet.
 
 ## Why the PS1 version
 
@@ -158,7 +158,7 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, trial, patch, apply-patch, test, lint
+make.sh              every recurring command: import, extract, build-days, patch, apply-patch, test, lint, smoke
 boku/                the Python package: import, extract, trial, patch, apply-patch
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import

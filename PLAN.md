@@ -361,47 +361,23 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       **Growth is this row's problem, never the translation's**
       (README § "Who this is for"): relocate, use the filler sectors (`PIPE-04`), or write new
       packing/compression and its MIPS decoder. Harmed: the player.
-- [ ] **[PIPE-04]** **Image build.** The general builder exists (2026-09-20, `boku/build.py`,
-      `boku build` / `./make.sh build`): a translation source + encoder + verified byte edits
-      → an image under `build/`, atomic and deterministic; `boku trial` is now a configuration
-      of it. **Left to do:** growth beyond a member's extent (with `PIPE-03`), and the VWF
-      font/asm build moving in from `tools/vwf/` (with `TXT-05`). Earlier note — `boku/edc.py` regenerates EDC/ECC —
-      gated by recomputing **all 280,170 sectors of the real disc** with 0 mismatches — and
-      `DiscWriter.write_file_bytes` patches a byte range inside a file's extent, validating
-      every sector before writing the first; `boku trial` builds atomically into `build/` and
-      proves diff ≡ manifest and a byte-identical null build. **Left to do:** the general build
-      that applies a whole translation (it needs `PIPE-03`), and growth beyond a file's
-      extent. Original row: Patch sectors in place and keep the image length identical
-      (`RSH-01` §1.4): 226,000 sectors of XA/STR sit behind `BOKU.BIN` at positions the
-      executable addresses directly, and PPF cannot grow an image. Own Mode 2 Form 1 sector
-      writer that regenerates EDC and ECC (ECC computed with the header zeroed) — wrong EDC/ECC
-      is what works in emulators and fails on hardware. If text outgrows its files, the
-      candidate arena is the 765 filler sectors before `BOKU.BIN`, *after* proving nothing seeks
-      there. `mkpsxiso`/`dumpsxiso` 2.30 stay installed as the escape hatch. Output is deterministic:
-      same inputs, same image hash. Harmed: Mode One, which pins that hash; hardware users, if
-      EDC/ECC is wrong.
-- [ ] **[PIPE-05]** **Patch emit and the round-trip gate.** Patch emit is DONE (2026-09-20):
-      `./make.sh patch` writes a PPF3, an xdelta and `PATCH.json` (size/CRC32/MD5/SHA-1 of base
-      and result); `./make.sh apply-patch` verifies the base first and the result after, and
-      never touches the original. Proven on the trial image with three independent appliers —
-      ours, Icarus's `applyppf3`, and retro-trainer's Rust `apply_ppf` — and our record stream
-      is byte-identical to `makeppf3`'s. Mode One's applier wants PPF3, ignores the
-      blockcheck and reads records to EOF, so no FILE_ID.DIZ trailer. xdelta 3.2.0: `-A ""`
-      *is* the armor switch (off; our applier supplies the hashes) and it no longer leaks
-      paths. The whole-pipeline **round-trip gate is DONE** too: extract → reinsert every one of the
-      6,193 sites with its own words through the full rebuild (632 members) → build → image
-      byte-identical to the original; flipping one glyph makes it red. **Left to do:** nothing
-      but keeping it green as `PIPE-03` grows. Original row: Emit xdelta (what the scene expects; `xdelta3 -e -9 -S lzma -B <≥ image size> -A ""` —
-      the default 64 MB window silently bloats the patch and the default header leaks build
-      paths) and PPF3 (Mode One's patcher; DuckStation also applies a same-named `.ppf` beside
-      a CHD), stating size, CRC32, MD5 and SHA-1 of base and result. None of the
-      stock appliers reliably refuses a wrong base (PPF3's check is prompt-and-continue,
-      DuckStation's is unimplemented, xdelta3 before 3.2.0 does not verify the source), so our
-      own apply command verifies the base hash first and the instructions lead with hashing.
-      The standing gate for the whole pipeline: import → extract → reinsert with **no**
-      translation applied reproduces the original image byte for byte; made red on purpose
-      once, per `ENG-1`, by perturbing one line. Harmed: everyone downstream of a reinserter
-      that silently corrupts.
+- [x] **[PIPE-04]** **Image build.** DONE 2026-09-20: `./make.sh build-days` assembles the VWF
+      (`tools/vwf/build_prototype.py --edits-only` → `build/vwf/edits.json`: 80 verified byte
+      runs over the EXE, `TITLE.OVL` and the font sheet, plus the cell map) and runs `boku
+      build --vwf … --translation translation/days` — layout in the band with the cell-map
+      encoder, reinsertion with growth and relocation, EDC/ECC, atomic, deterministic (same
+      SHA-1 twice). Days 1–7 + shared: 708 lines laid out, 310 members rebuilt, 53 relocated,
+      511 of 765 arena sectors left; re-extraction shows all 708 correct at all 2,264 copies
+      and all 2,279 untranslated lines unchanged. `./make.sh patch` then emits PPF + xdelta.
+      Deferred nowhere: the 43 refused lines are one member, `M_H06001`, 628 bytes over the
+      `0x6400` work-area limit — `PIPE-03`'s "making room" mechanisms, now in `TXT-05`'s queue
+      as the next engineering item.
+- [x] **[PIPE-05]** **Patch emit and the round-trip gate.** DONE 2026-09-20: `./make.sh patch`
+      writes PPF3 + xdelta + `PATCH.json` (size/CRC32/MD5/SHA-1 of base and result), proven
+      against Icarus's `applyppf3` and retro-trainer's Rust applier; `./make.sh apply-patch`
+      verifies before and after. The round-trip gate — every one of 6,193 sites reinserted
+      through the full rebuild reproduces the original image byte for byte — is a standing
+      test, and the null build stays identical with the VWF path in place.
 - [x] **[PIPE-06]** **Translation lints.** DONE 2026-09-20: `./make.sh lint-translation`
       (`boku/lint.py`): every id exists in the store and at most once across files; SELECT
       options 1:1 in order (the question row is not an option); voiced page count equals the
@@ -437,7 +413,7 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       brief, and the neighbouring scenes' settled English — plus `--for-review`. Deterministic.
       Finishing it found two real parser defects (an en-dash day range that lost day 10's
       context; glossary rows keyed on the wrong column).
-- [ ] **[TRN-03]** **Design and pilot the agent workflow.** The PILOT is DONE (2026-09-20): all 27
+- [x] **[TRN-03]** **Design and pilot the agent workflow.** The PILOT is DONE (2026-09-20): all 27
       day-1 scenes plus `E0001` translated by one Fable agent given the whole scene graph, the
       bible, glossary and style guide (`translation/days/day01.txt`, 86 lines, 120 pages, no
       overflow), then reviewed line by line against the Japanese by an independent Fable agent
@@ -445,10 +421,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       clean, structure exact, nine one-line problems, all applied. Verdict: the method produced
       the charter's register. Lessons now in `translation/days/README.md`: keep the `# UNSURE`
       flags (four of six drew a finding); the recurring defect is *additive* words the
-      Japanese lacks, so the review/lint pass checks for them. **Left to do:** the workflow as
-      a repeatable thing — translate → review → apply, per day, with the additive-word check —
-      rather than three hand-launched agents; and reading the result in the game (an image
-      built from a day file with the VWF prototype). Original row: Fable sub-agents under a dynamic
+      Japanese lacks, so the review/lint pass checks for them. The workflow ran for days 2–7 and shared.txt as
+      the same three steps per day — one Fable translator with the scene graph and the bible,
+      one independent Fable reviewer against the Japanese, one applier — launched by hand, with
+      `boku packet` and `boku lint` now covering the packet and the checks; and the result is
+      readable in the game (`./make.sh build-days`, `TXT-05`). A `Workflow` script for the
+      three steps is worth writing when translation resumes, and needs Jay's opt-in to run.
+      Original row: Fable sub-agents under a dynamic
       workflow (needs Jay's opt-in at launch, `AGT-1`): translate → independent review against
       the source → consistency pass against glossary and neighbours → lint. Pilot on one
       in-game day, read the result in the game, fix the workflow before scaling. Apply what

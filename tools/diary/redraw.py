@@ -383,16 +383,17 @@ def measure_page(texture: Texture, panel: Panel = PANEL) -> PageMeasure:
         )
     elif median([lum(panel.left, y) for y in rows]) < 240:
         m.notes.append(
-            f"column {panel.left} is not paper: the blank would paint over the page's own "
-            f"left edge"
+            f"column {panel.left} is not paper: the blank would paint over the page's own left edge"
         )
     if median([lum(x, panel.bottom) for x in range(PAGE_W)]) <= 240:
         m.notes.append(f"row {panel.bottom} is not paper: Panel.bottom is past the page")
     if median([lum(x, panel.bottom + 2) for x in range(PAGE_W)]) >= 200:
         m.notes.append(f"row {panel.bottom + 2} is not the desk: Panel.bottom is short")
     if top_edge >= panel.top:
-        m.notes.append(f"the ruled page starts at row {top_edge}, at or below the paper row "
-                       f"{panel.top} every other page has")
+        m.notes.append(
+            f"the ruled page starts at row {top_edge}, at or below the paper row "
+            f"{panel.top} every other page has"
+        )
     late = [y for y in crayon if y >= panel.repaint_top]
     if late:
         m.notes.append(f"crayon inside the repainted rectangle, rows {late}")
@@ -612,9 +613,7 @@ class BdfFace(Face):
                 bits = int(hex_row, 16)
                 span = len(hex_row) * 4
                 rows[y] = tuple(
-                    entry.off_x + c
-                    for c in range(entry.width)
-                    if (bits >> (span - 1 - c)) & 1
+                    entry.off_x + c for c in range(entry.width) if (bits >> (span - 1 - c)) & 1
                 )
             inked = [c for r in rows for c in r]
             if inked:
@@ -899,9 +898,9 @@ def verb_compare(args) -> int:
     # or a glyph landed a row off, which is the pair of mistakes `measure` cannot see.
     zoom, top = 6, PANEL.top - 5
     crops = [
-        _scaled(b, 1).crop((0, top, PAGE_W, PAGE_H)).resize(
-            (PAGE_W * zoom, (PAGE_H - top) * zoom), Image.NEAREST
-        )
+        _scaled(b, 1)
+        .crop((0, top, PAGE_W, PAGE_H))
+        .resize((PAGE_W * zoom, (PAGE_H - top) * zoom), Image.NEAREST)
         for _, b in panels
     ]
     cw, ch = crops[0].size
@@ -930,8 +929,7 @@ def verb_build(args) -> int:
     edits = patches_for(texture, result.tim)
     print(
         f"{len(edits)} byte edit(s), {sum(len(e.new) for e in edits)} bytes, "
-        f"over {texture.copies} occurrence(s)"
-        + ("  [placeholder entry]" if placeholder else "")
+        f"over {texture.copies} occurrence(s)" + ("  [placeholder entry]" if placeholder else "")
     )
     out = build(
         source=args.image,

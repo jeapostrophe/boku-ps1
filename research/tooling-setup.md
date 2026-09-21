@@ -414,7 +414,10 @@ also a failure, not a note: otherwise a gate could pass without its assertion ev
 that reaches the first dialogue line on Beetle, with each frame's meaning; frames are
 `retro_run` calls counted from 1. `tools/redux/boot-to-dialogue.lua` needs different numbers
 for the same boot because it counts GPU vsyncs and its CD timing is not Beetle's. Both are
-right about their own emulator; never copy one schedule into the other.
+right about their own emulator; never copy one schedule into the other. A driver that reads
+the pad back out of RAM to see whether a press landed must read **`0x8007276A`**, the level
+word: `0x80072766` is edge-only — pressed *this frame* — and reads 0 again on the next
+([renderer-runtime.md](renderer-runtime.md) § Q9).
 
 **Speed**: ~760–850 frames per second on this Mac, one core, software rendering — a cold boot
 to the first dialogue is about eight seconds of wall clock. Two such boots produce a

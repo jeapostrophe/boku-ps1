@@ -1,6 +1,7 @@
 """`TXT-05` prototype: proportional horizontal dialogue, built into a copy of your image.
 
     uv run python tools/vwf/build_prototype.py            # -> build/vwf/image.cue
+    uv run python tools/vwf/build_prototype.py --edits-only   # -> build/vwf/edits.json
 
 What it does, in order, refusing before the 660 MB copy if anything is off:
 
@@ -14,7 +15,14 @@ What it does, in order, refusing before the 660 MB copy if anything is off:
    `asm/dialogue.asm` twice (first with `ORIGINAL=1`, which must reproduce the retail
    executable byte for byte -- that is the check on every "stock:" comment in the source),
    and encodes the lines of `prototype-lines.tsv` against each site's size and page count.
-4. Copies the image, checks that every range it is about to replace holds the bytes
+4. Writes `edits.json` -- the renderer patch as a machine-readable edit set: every
+   `(file, offset, old bytes, new bytes)` run it would write into `SCPS_100.88` and
+   `BOKU.BIN` (the executable's words and free-space table, the rebuilt overlays, the
+   rebuilt font sheet), plus the character map and the width table. **That file is the
+   whole interface to `boku build`**, which applies it as verified `ByteEdit`s beside a
+   translation that may *grow* (`PIPE-03`/`PIPE-04`) -- the thing this script, writing in
+   place, cannot do. `--edits-only` stops here and never copies the image.
+5. Copies the image, checks that every range it is about to replace holds the bytes
    `disc/files` says it does, writes through `boku.disc.DiscWriter` (fresh EDC/ECC), and
    emits `manifest.json`: every sector, every executable word, the character map.
 
@@ -92,6 +100,9 @@ SCREEN_WIDTH = 320
 
 PAGE_BREAK = " // "
 """How `translation/samples/` writes a page boundary."""
+
+EDITS_NAME = "edits.json"
+"""The edit set `boku build --vwf` reads (`boku.build.load_edit_set` is its one reader)."""
 
 
 class BuildRefused(Exception):
@@ -662,6 +673,53 @@ def assemble(
     return {image.name: patched[image.equate].read_bytes() for image in images}, symbols
 
 
+RUN_MERGE_GAP = 32
+"""Unchanged bytes two differing runs may straddle before they are emitted separately.
+
+Purely a size knob on `edits.json`: merging costs `old`/`new` bytes that are equal and
+saves an entry. The font sheet's cells are four bit-planes sharing a nibble, so a redrawn
+cell is twelve six-byte runs 126 bytes apart -- far enough that none of them merge, which
+is what keeps the sheet's edit set the ~2.5 KB it actually changes rather than the whole
+27 KB image.
+"""
+
+
+def byte_runs(old: bytes, new: bytes) -> list[tuple[int, int]]:
+    """`(start, end)` of each differing run of `old` vs `new`, runs closer than
+    `RUN_MERGE_GAP` joined. Equal-length inputs; an empty list means they are identical.
+
+    A per-byte loop, which is 11 ms over the 587 KB this build compares (measured);
+    `boku.ppf._differing_spans` is the blocked `memcmp`-first version for whole images.
+    """
+    if len(old) != len(new):
+        raise BuildRefused(f"byte_runs over {len(old)} and {len(new)} bytes")
+    runs: list[list[int]] = []
+    for offset in range(len(old)):
+        if old[offset] == new[offset]:
+            continue
+        if runs and offset - runs[-1][1] <= RUN_MERGE_GAP:
+            runs[-1][1] = offset + 1
+        else:
+            runs.append([offset, offset + 1])
+    return [(start, end) for start, end in runs]
+
+
+def file_edits(
+    file_name: str, base: int, stock: bytes, patched: bytes, reason: str
+) -> list[dict[str, object]]:
+    """The edit-set entries for one patched blob living at `base` inside `file_name`."""
+    return [
+        {
+            "file": file_name,
+            "offset": base + start,
+            "old": stock[start:end].hex(),
+            "new": patched[start:end].hex(),
+            "reason": f"{reason} +0x{start:x}",
+        }
+        for start, end in byte_runs(stock, patched)
+    ]
+
+
 def changed_words(stock: bytes, patched: bytes, gap: range) -> list[dict[str, str]]:
     """Every changed executable word outside the gap (file offsets), which the manifest hashes."""
     out = []
@@ -756,7 +814,12 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     source, out = Path(args.image), Path(args.out).resolve()
     if (REPO / "disc").resolve() in [out, *out.parents]:
         raise BuildRefused("--out is under disc/, which no tool writes to")
-    if not args.skip_image_hash and sha1_of(source) != IMAGE_SHA1:
+    # `--edits-only` never opens the image: the edits come from `disc/files/` through
+    # `Archive` and `SiteIndex`, and every one of them carries the bytes it expects, which
+    # is a stronger check on the dump than its hash. Digesting 660 MB to set a bool the
+    # mode does not use is the whole of what this guard would do there.
+    hash_image = not args.skip_image_hash and not args.edits_only
+    if hash_image and sha1_of(source) != IMAGE_SHA1:
         raise BuildRefused(f"{source} is not the dump the addresses were measured on")
 
     archive = Archive(Path(args.disc))
@@ -801,18 +864,71 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     work = out / "files"
     work.mkdir(parents=True, exist_ok=True)
     (work / "font-sheet.tim").write_bytes(new_tim)
+    # `Archive.blob` copies, and each overlay is wanted three times below; cut once.
+    stock_overlays = {name: archive.blob(archive.member(name)) for name in DRAWING_OVERLAYS}
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
-        Image(name, archive.blob(archive.member(name)), OVERLAY_BASE) for name in DRAWING_OVERLAYS
+        Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
     patched, symbols = assemble(
         Path(args.armips), Path(args.asm), images, bytes(table), layout, work
     )
     patched_exe = patched[EXE_NAME]
     patched_overlays = {
-        name: patched[name]
-        for name in DRAWING_OVERLAYS
-        if patched[name] != archive.blob(archive.member(name))
+        name: patched[name] for name in DRAWING_OVERLAYS if patched[name] != stock_overlays[name]
     }
+    gap_range = range(symbols["vwf_advance"] - EXE_LOAD_BIAS, symbols["vwf_free"] - EXE_LOAD_BIAS)
+
+    provenance = {
+        "format": 1,
+        "source_sha1": IMAGE_SHA1 if hash_image else None,
+        # A scratch `--asm /tmp/variant.asm` is the natural way to try an assembly change,
+        # and it is not under the repo, so the path is recorded as it was given.
+        "asm": str(Path(args.asm)),
+        "layout": layout.__dict__
+        | {"wrap_width": layout.wrap_width, "select_width": layout.select_width},
+        "font": args.font or "the game's own Latin cells, re-aligned, plus placeholder-glyphs.txt",
+        "table": {
+            "ram": f"0x{symbols['vwf_advance']:08X}",
+            "ids": len(table),
+            "sha1": hashlib.sha1(table).hexdigest(),
+        },
+        "gap": {
+            "ram": f"0x{symbols['vwf_advance']:08X}",
+            "first_free_byte": f"0x{symbols['vwf_free']:08X}",
+            "hooks": {
+                name: f"0x{symbols[name]:08X}"
+                for name in sorted(symbols)
+                if name.startswith("vwf_") and name not in ("vwf_advance", "vwf_free")
+            },
+            "sha1": hashlib.sha1(patched_exe[gap_range.start : gap_range.stop]).hexdigest(),
+        },
+        "cells": {
+            character: {"id": cells[character], "advance": font[character].advance}
+            for character in sorted(cells)
+        },
+    }
+    edits = file_edits(EXE_NAME, 0, stock_exe, patched_exe, "VWF executable patch")
+    edits += file_edits(ARCHIVE_NAME, font_offset, stock_tim, new_tim, "VWF font sheet")
+    for name in sorted(patched_overlays):
+        edits += file_edits(
+            ARCHIVE_NAME,
+            archive.member(name).offset,
+            stock_overlays[name],
+            patched_overlays[name],
+            f"VWF {name} patch",
+        )
+    edits.sort(key=lambda edit: (edit["file"], edit["offset"]))
+    (out / EDITS_NAME).write_text(
+        json.dumps(provenance | {"edits": edits}, indent=2) + "\n", encoding="utf-8"
+    )
+    if args.edits_only:
+        # `manifest.json` is defined as the record of an image (see this file's docstring),
+        # and this mode writes none, so any file of that name left here now describes an
+        # image that no longer matches these edits. It is removed rather than forged:
+        # `boku.lint.DEFAULT_CELLS` still points at it, and a lint that fails with "no
+        # cell map" is recoverable where one silently measuring last week's font is not.
+        (out / "manifest.json").unlink(missing_ok=True)
+        return provenance | {"edits": edits}
 
     specs = load_lines(Path(args.lines))
     unfitted: list[dict[str, str]] = []
@@ -898,33 +1014,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         'FILE "image.img" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n', encoding="ascii"
     )
 
-    gap_range = range(symbols["vwf_advance"] - EXE_LOAD_BIAS, symbols["vwf_free"] - EXE_LOAD_BIAS)
-    manifest = {
-        "format": 1,
-        "source_sha1": IMAGE_SHA1 if not args.skip_image_hash else None,
+    manifest = provenance | {
         "result_sha1": sha1_of(image),
-        "layout": layout.__dict__
-        | {"wrap_width": layout.wrap_width, "select_width": layout.select_width},
-        "font": args.font or "the game's own Latin cells, re-aligned, plus placeholder-glyphs.txt",
-        "table": {
-            "ram": f"0x{symbols['vwf_advance']:08X}",
-            "ids": len(table),
-            "sha1": hashlib.sha1(table).hexdigest(),
-        },
-        "gap": {
-            "ram": f"0x{symbols['vwf_advance']:08X}",
-            "first_free_byte": f"0x{symbols['vwf_free']:08X}",
-            "hooks": {
-                name: f"0x{symbols[name]:08X}"
-                for name in sorted(symbols)
-                if name.startswith("vwf_") and name not in ("vwf_advance", "vwf_free")
-            },
-            "sha1": hashlib.sha1(patched_exe[gap_range.start : gap_range.stop]).hexdigest(),
-        },
-        "cells": {
-            character: {"id": cells[character], "advance": font[character].advance}
-            for character in sorted(cells)
-        },
         "exe_words": changed_words(stock_exe, patched_exe, gap_range),
         "lines": [
             {
@@ -968,22 +1059,39 @@ def main() -> int:
     parser.add_argument("--asm", default=str(ASM))
     parser.add_argument("--armips", default=str(DEFAULT_ARMIPS))
     parser.add_argument("--skip-image-hash", action="store_true", help="for repeat builds")
+    parser.add_argument(
+        "--edits-only",
+        action="store_true",
+        help=(
+            f"write {EDITS_NAME} and stop: the renderer patch as byte edits for `boku build "
+            f"--vwf`, with no 660 MB copy and no text written in place"
+        ),
+    )
     defaults = Layout()
     for name in LAYOUT_ARGUMENTS:
         parser.add_argument(
             f"--{name.replace('_', '-')}", type=int, default=getattr(defaults, name)
         )
+    args = parser.parse_args()
     try:
-        manifest = build(parser.parse_args())
+        manifest = build(args)
     except BuildRefused as error:
         print(f"build_prototype: {error}", file=sys.stderr)
         return 1
     table, gap = manifest["table"], manifest["gap"]
-    print(f"wrote {Path(parser.parse_args().out) / 'image.cue'}")
+    out = Path(args.out)
+    print(f"wrote {out / EDITS_NAME if args.edits_only else out / 'image.cue'}")
     print(
         f"  advance table: {table['ids']} bytes at {table['ram']}, then "
         f"{' '.join(gap['hooks'])}; gap free from {gap['first_free_byte']}"
     )
+    if args.edits_only:
+        changed = sum(len(edit["old"]) // 2 for edit in manifest["edits"])
+        print(
+            f"  {len(manifest['edits'])} byte edit(s) over {changed} bytes, "
+            f"{len(manifest['cells'])} glyph cells"
+        )
+        return 0
     print(
         f"  {len(manifest['exe_words'])} executable words, {len(manifest['cells'])} glyph "
         f"cells, {len(manifest['lines'])} lines, {len(manifest['sectors'])} sectors"

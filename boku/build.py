@@ -39,12 +39,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from boku import __version__, edc
-from boku.archive import ARCHIVE_NAME, DEFAULT_DISC_DIR, EXE_NAME, Archive, ArchiveError
+from boku.archive import (
+    ARCHIVE_NAME,
+    DEFAULT_DISC_DIR,
+    EXE_NAME,
+    SECTOR,
+    Archive,
+    ArchiveError,
+)
 from boku.arrays import ArrayError, SelectTables
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
 from boku.events import EventError
-from boku.glyphs import TextError
+from boku.glyphs import GlyphTable, TextError, words_of
 from boku.importer import ImportRefused, check_out_dir, sha1_of
 from boku.layout import (
     DIALOGUE_BAND,
@@ -58,6 +65,7 @@ from boku.layout import (
     lay_out_message,
     lay_out_select,
 )
+from boku.lint import LABEL_MARKS, label_allowance, select_fields
 from boku.reinsert import ByteEdit, Plan, ReinsertRefused, check_disjoint, plan
 from boku.relocate import RelocationRefused, SectorEdit
 from boku.sites import SiteError, Walk, load
@@ -250,15 +258,49 @@ def verify_sectors(
             )
 
 
+def check_no_sector_clash(
+    patches: Sequence[ByteEdit],
+    sectors: Sequence[SectorEdit],
+    archive: Archive,
+) -> None:
+    """Refuse a caller's byte patch that a relocation would also write, by LBA.
+
+    `boku.reinsert` makes this check over the edits *it* produces; a patch handed in from
+    outside — `TXT-05`'s renderer edit set — was never in that set, and the two kinds are
+    verified against different reads and applied in different passes, so an overlap makes
+    the image depend on which ran last.
+
+    The trap it is watching for: a `TITLE.OVL` array translated into more bytes than it
+    had relocates the overlay, and the font build's overlay patch then writes the sectors
+    the overlay abandoned — a corrupt image with every other gate green.
+    """
+    by_lba = {lba for edit in sectors for lba in range(edit.lba, edit.end)}
+    if not by_lba:
+        return
+    for patch in patches:
+        if patch.file != ARCHIVE_NAME:
+            continue
+        first = archive.base_lba + patch.offset // SECTOR
+        last = archive.base_lba + (patch.end - 1) // SECTOR
+        clash = by_lba.intersection(range(first, last + 1))
+        if clash:
+            raise BuildRefused(
+                f"{patch.reason} writes {ARCHIVE_NAME}+0x{patch.offset:x}, which lands on "
+                f"LBA {min(clash)} — a sector a relocation also writes. One of them would "
+                f"be lost; rebuild the patch against the moved member. Nothing was written."
+            )
+
+
 def apply_sector_edit(
     writer: DiscWriter, entries: dict[str, DirEntry], edit: SectorEdit, ledger: Ledger
 ) -> None:
     """Write whole sectors by LBA, converting Form 2 filler as it goes.
 
-    A relocation writes two runs and they are not both outside a file: the member's new
-    home is in the arena, which belongs to none, but the sectors it *vacates* are inside
-    `BOKU.BIN`. The manifest names the file a sector really belongs to, so a diff of the
-    built image can be checked against it row by row (`boku trial`).
+    A relocation writes on both sides of `BOKU.BIN`'s extent: the sectors a member vacates
+    are inside it, and its new home is inside it too when it was given a run another moving
+    member vacated, or in the arena — which belongs to no file — when it was not
+    (`boku.relocate.FreeSpace`). The manifest names the file a sector really belongs to, so
+    a diff of the built image can be checked against it row by row (`boku trial`).
     """
     writes = []
     for i in range(edit.sectors):
@@ -381,6 +423,103 @@ def verify_written_sectors(image: Path, records: Sequence[SectorRecord]) -> list
     return bad
 
 
+# --- the renderer patch, read as an edit set -----------------------------------------------------
+
+VWF_EDITS_FORMAT = 1
+"""The `edits.json` shape `tools/vwf/build_prototype.py --edits-only` writes."""
+
+
+@dataclass(frozen=True)
+class EditSet:
+    """A renderer patch read from disk: its byte edits and the font it was built with.
+
+    The font build (`tools/vwf/`) and the image build (this package) share exactly one
+    file. It carries the *bytes* of the patch — the executable's words and free-space
+    table, the rebuilt overlays, the rebuilt font sheet — and the character -> cell map
+    the same build derived them from, so an image cannot be written with one build's
+    executable and another build's widths.
+    """
+
+    edits: tuple[ByteEdit, ...]
+    document: dict
+
+    @property
+    def encoder(self) -> CellMapEncoder:
+        """The font these edits install, ready to measure English in."""
+        return CellMapEncoder.from_document(self.document, "the edit set")
+
+
+def load_edit_set(path: Path) -> EditSet:
+    """Read an `edits.json`, refusing anything this build could not apply safely.
+
+    Every entry becomes a `ByteEdit`, so the `old` bytes are verified against the image
+    before a sector is written exactly as a reinserted line's are — there is no second
+    trust path for a patch that happens to come from a file.
+    """
+    path = Path(path)
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise BuildRefused(f"{path}: {error}") from error
+    if not isinstance(document, dict) or document.get("format") != VWF_EDITS_FORMAT:
+        raise BuildRefused(
+            f"{path} is not a format {VWF_EDITS_FORMAT} edit set; "
+            f"`uv run python tools/vwf/build_prototype.py --edits-only` writes one"
+        )
+    entries = document.get("edits")
+    if not isinstance(entries, list) or not entries:
+        raise BuildRefused(f"{path} carries no `edits`; an empty patch is not a renderer")
+    edits: list[ByteEdit] = []
+    for number, entry in enumerate(entries, start=1):
+        where = f"{path.name} edit {number}"
+        if not isinstance(entry, dict) or {"file", "offset", "old", "new"} - set(entry):
+            raise BuildRefused(f"{where} is not a (file, offset, old, new) record")
+        if entry["file"] not in (EXE_NAME, ARCHIVE_NAME):
+            raise BuildRefused(
+                f"{where} writes {entry['file']!r}; a patch may only write "
+                f"{EXE_NAME} and {ARCHIVE_NAME}"
+            )
+        try:
+            old, new = bytes.fromhex(entry["old"]), bytes.fromhex(entry["new"])
+            offset = int(entry["offset"])
+        except (TypeError, ValueError) as error:
+            raise BuildRefused(f"{where}: {error}") from error
+        if offset < 0:
+            raise BuildRefused(f"{where}: offset {offset} is negative")
+        if len(old) != len(new):
+            raise BuildRefused(
+                f"{where}: {len(old)} bytes replaced by {len(new)}; an edit never changes "
+                f"a file's length (PIPE-04 keeps every LBA)"
+            )
+        if not old:
+            # An empty edit writes nothing and is invisible to every range check that
+            # follows -- `check_disjoint` and `check_no_sector_clash` both measure
+            # `offset..end - 1`, which is empty here. It can only be a malformed file.
+            raise BuildRefused(f"{where} is zero bytes long; an edit writes something")
+        edits.append(
+            ByteEdit(
+                file=entry["file"],
+                offset=offset,
+                old=old,
+                new=new,
+                reason=str(entry.get("reason", where)),
+            )
+        )
+    edits.sort(key=lambda edit: (edit.file, edit.offset))
+    check_disjoint(edits)
+    edit_set = EditSet(edits=tuple(edits), document=document)
+    try:
+        # The font's bytes and the widths English is measured with are the two halves of
+        # one build, and this file is the only place they are held together. A document
+        # carrying edits and no cell map would install a sheet and then be measured in
+        # the stock 14-px font; that is refused here, not two calls later in another
+        # module's voice.
+        _ = edit_set.encoder
+    except LayoutError as error:
+        raise BuildRefused(f"{path}: {error}") from error
+    return edit_set
+
+
 # --- a translation, laid out -------------------------------------------------------------------
 
 
@@ -397,6 +536,24 @@ class LineResult:
         return self.laid_out is not None and not self.problems
 
 
+def original_draws_label(original: bytes, mark_cell: int | None) -> bool:
+    """Did the Japanese open this message with `<speaker>「`?
+
+    `boku.lint.original_draws_label` asks the same question of the *decoded* store; this
+    asks it of the words the walk read, which is what a build has in its hand. An examine
+    message opens `「` with nothing in front of it and narration opens `『`, so the test
+    is the mark somewhere other than the first cell of page 1's first line.
+    """
+    if mark_cell is None:
+        return False
+    first_line: list[int] = []
+    for word in words_of(original):
+        if word & 0x8000:
+            break
+        first_line.append(word)
+    return mark_cell in first_line[1:]
+
+
 def lay_out(
     archive: Archive,
     walk: Walk,
@@ -405,6 +562,7 @@ def lay_out(
     box: BoxSpec,
     *,
     indent_continuations: bool = False,
+    label: bool = True,
 ) -> list[LineResult]:
     """Turn every entry of a translation into words, collecting the lints it failed.
 
@@ -412,6 +570,7 @@ def lay_out(
     back with its numbers and the caller decides (README § "Who this is for").
     """
     selects = SelectTables(archive)
+    mark_cell = GlyphTable.load().from_character.get(LABEL_MARKS) if label else None
     out: list[LineResult] = []
     for entry in translation:
         sites = walk.by_line.get(entry.line_id)
@@ -440,16 +599,30 @@ def lay_out(
         kind = sites[0].kind.split("+")[0]
         if kind.startswith("SEL"):
             select_type, variant = (int(part) for part in kind[3:].split("."))
+            shape = selects.shape(select_type, variant)
+            # A box that opens with a question spends its first lines on it, and the
+            # committed row lists the question first; the provisional loader has no field
+            # for that, so the split is made here with the lint's own rule rather than
+            # with a second reading of the convention.
+            prompts, options = entry.prompts, entry.options
+            if not prompts:
+                prompts, options = select_fields(entry, shape[1])
             laid = lay_out_select(
                 entry.line_id,
-                entry.options,
+                options,
                 original,
-                selects.shape(select_type, variant),
+                shape,
                 encoder,
                 box,
-                entry.prompts,
+                prompts,
             )
         elif kind == "MSG":
+            # No `entry.speaker` guard: the lint charges the mark's own pixels for a
+            # labelled line whose translation row left the speaker blank, and a build that
+            # charged nothing there would insert the very line the lint reports.
+            reserve = 0
+            if original_draws_label(original, mark_cell):
+                reserve = label_allowance(encoder, entry.speaker, LABEL_MARKS)
             laid = lay_out_message(
                 entry.line_id,
                 entry.pages,
@@ -457,6 +630,7 @@ def lay_out(
                 encoder,
                 box,
                 indent_continuations=indent_continuations,
+                reserve=reserve,
             )
         elif kind.startswith("ARR"):
             if entry.is_select:
@@ -529,6 +703,7 @@ def build(
     binary_patches: Sequence[ByteEdit] = (),
     in_place: bool = False,
     indent_continuations: bool = False,
+    label: bool = True,
     skip_unfitted: bool = False,
     dry_run: bool = False,
     name: str = DEFAULT_BUILD_NAME,
@@ -546,6 +721,7 @@ def build(
     lines: list[LineResult] = []
     the_plan: Plan | None = None
     edits = list(binary_patches)
+    archive: Archive | None = None
 
     source_problems = tuple(getattr(translation, "problems", ()) or ())
     if source_problems and not skip_unfitted:
@@ -562,6 +738,7 @@ def build(
             encoder,
             box,
             indent_continuations=indent_continuations,
+            label=label,
         )
         problems = [p for line in lines for p in line.problems]
         if problems and not skip_unfitted:
@@ -585,6 +762,8 @@ def build(
     # moved -- and would verify against the *source* first, so nothing would notice.
     check_disjoint(edits)
     sectors = list(the_plan.sectors) if the_plan else []
+    if archive is not None:
+        check_no_sector_clash(binary_patches, sectors, archive)
     result = BuildResult(
         written=None,
         plan=the_plan,
@@ -755,14 +934,40 @@ def main_build(
     skip_unfitted: bool,
     dry_run: bool,
     binary_patches: Sequence[ByteEdit] = (),
+    vwf: Path | None = None,
+    label: bool = True,
 ) -> int:
-    """`boku build`. Every refusal reaches the contributor as one sentence."""
+    """`boku build`. Every refusal reaches the contributor as one sentence.
+
+    `vwf` is a `TXT-05` edit set. It brings both halves of that build — the executable,
+    overlay and font-sheet bytes, and the character map those bytes were derived from —
+    so `--cells` is only needed to measure in a *different* font from the one being
+    installed, which is a mistake more often than an intention.
+    """
     out_dir = Path(out_dir) if out_dir else BUILD_ROOT / name
     try:
         translation = (
             SampleScenes.from_directory(Path(translation_dir)) if translation_dir else None
         )
-        encoder = CellMapEncoder.from_json(Path(cell_map)) if cell_map else StockEncoder.load()
+        edit_set = load_edit_set(Path(vwf)) if vwf else None
+        if edit_set is not None:
+            binary_patches = [*binary_patches, *edit_set.edits]
+        installed = edit_set.encoder if edit_set is not None else None
+        if cell_map:
+            chosen = CellMapEncoder.from_json(Path(cell_map))
+            if installed is not None and chosen.cells != installed.cells:
+                # Measuring in one font and drawing in another is invisible until it is on
+                # screen: the lines wrap where the measured font says and the pen steps
+                # where the installed one does. It is a legitimate experiment, so it is
+                # said out loud rather than refused.
+                print(
+                    f"boku build: measuring in {cell_map} but installing the font in "
+                    f"{vwf}; the two cell maps differ, so wrapping will not match the "
+                    f"pen. Drop --cells to measure in the font being installed."
+                )
+            encoder: Encoder = chosen
+        else:
+            encoder = installed or StockEncoder.load()
         result = build(
             source=Path(source) if source else DEFAULT_IMAGE,
             out_dir=out_dir,
@@ -770,6 +975,7 @@ def main_build(
             translation=translation,
             encoder=encoder,
             binary_patches=binary_patches,
+            label=label,
             skip_unfitted=skip_unfitted,
             dry_run=dry_run,
             name=name,
@@ -804,6 +1010,7 @@ __all__ = [
     "BuildRefused",
     "BuildResult",
     "ByteEdit",
+    "EditSet",
     "Ledger",
     "LineResult",
     "ReinsertRefused",
@@ -811,9 +1018,11 @@ __all__ = [
     "WrittenImage",
     "apply_edit",
     "build",
+    "check_no_sector_clash",
     "file_entries",
     "format_summary",
     "lay_out",
+    "load_edit_set",
     "verify_edits",
     "verify_written_sectors",
     "write_image",

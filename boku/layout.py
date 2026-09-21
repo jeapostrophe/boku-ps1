@@ -124,18 +124,24 @@ class CellMapEncoder:
             document = json.loads(Path(path).read_text(encoding="utf-8"))
         except (OSError, ValueError) as error:
             raise LayoutError(f"{path}: {error}") from error
+        return cls.from_document(document, Path(path).name)
+
+    @classmethod
+    def from_document(cls, document: object, where: str = "cell map") -> CellMapEncoder:
+        """The same map from an already-parsed document, so a caller holding one — the
+        `TXT-05` edit set — compares and measures without re-reading the file."""
         cells = document.get("cells", document) if isinstance(document, dict) else None
         if not isinstance(cells, dict) or not cells:
             raise LayoutError(
-                f"{path} holds no `cells` map; a font build writes one character -> "
+                f"{where} holds no `cells` map; a font build writes one character -> "
                 f'{{"id": <cell>, "advance": <pixels>}} per entry'
             )
         out: dict[str, tuple[int, int]] = {}
         for character, entry in cells.items():
             if len(character) != 1 or not isinstance(entry, dict) or "id" not in entry:
-                raise LayoutError(f"{path}: {character!r} -> {entry!r} is not a cell entry")
+                raise LayoutError(f"{where}: {character!r} -> {entry!r} is not a cell entry")
             out[character] = (int(entry["id"]), int(entry.get("advance", STOCK_ADVANCE)))
-        return cls(out, name=f"cell map {Path(path).name}")
+        return cls(out, name=f"cell map {where}")
 
     def glyph(self, character: str) -> int | None:
         entry = self.cells.get(character)
@@ -232,19 +238,30 @@ class LaidOut:
         return max((w for page in self.widths for w in page), default=0)
 
 
-def wrap(encoder: Encoder, text: str, box: BoxSpec, first_line: int = 1) -> list[str]:
+def wrap(
+    encoder: Encoder, text: str, box: BoxSpec, first_line: int = 1, reserve: int = 0
+) -> list[str]:
     """Greedy word wrap by pixel width. `\\n` in `text` is a break the translator asked for.
 
     Greedy, not balanced: the engine draws left to right from a fixed pen, so the only
     thing a smarter algorithm would buy is evenness, and evenness is a typographic choice
     that is not this unit's to make.
+
+    `reserve` is pixels taken off the head of **line 1 only** — the speaker label drawn in
+    front of it. It cannot be subtracted from `box.width`, which would take the pixels off
+    every line of the page and report a page that fits as one line too many;
+    `boku.lint.LabelledBox` is the lint's form of the same rule, measured over decoded
+    text rather than over the words a build inserts.
     """
     out: list[str] = []
     for paragraph in text.split("\n"):
         line = ""
         for word in paragraph.split(" "):
             candidate = f"{line} {word}" if line else word
-            if line and measure(encoder, candidate) > box.width_of_line(first_line + len(out)):
+            limit = box.width_of_line(first_line + len(out))
+            if first_line + len(out) == 1:
+                limit = max(limit - reserve, 1)
+            if line and measure(encoder, candidate) > limit:
                 out.append(line)
                 line = word
             else:
@@ -261,8 +278,18 @@ def lay_out_message(
     box: BoxSpec = DIALOGUE_BAND,
     *,
     indent_continuations: bool = False,
+    reserve: int = 0,
 ) -> LaidOut:
     """One message: wrapped, paginated against the original's timers, encoded to words.
+
+    `reserve` is the speaker label's pixels, charged to **page 1's first line only** and
+    to no other (`wrap`). It is charged for a label **nothing draws yet**: `asm/` has no
+    speaker-label path and this function never emits `entry.speaker`, so today's image
+    loses the speaker name and wraps page 1's first line a word early. That is the
+    deliberate trade while `TXT-05`'s label design is open — the lint already charges the
+    same pixels (`boku.lint` § "The label on line 1"), and a build that measured without
+    them would pass lines the lint fails and, the day the label is drawn, run the English
+    underneath it. `--no-label` measures the bare English on both sides.
 
     `indent_continuations` re-emits the blank cell the Japanese puts after every `0x8001`.
     It is **off by default and that is deliberate**: `research/text-format.md` measured
@@ -283,8 +310,16 @@ def lay_out_message(
     missing = unencodable(encoder, "".join(pages))
     if missing:
         problems.append(f"{line_id}: the {encoder.name} draws no cell for {''.join(missing)!r}")
-    broken = [wrap(encoder, page, box) for page in pages]
+    # The label opens the message, so its pixels are page 1's alone.
+    broken = [
+        wrap(encoder, page, box, reserve=reserve if number == 0 else 0)
+        for number, page in enumerate(pages)
+    ]
     widths = [[measure(encoder, line) for line in page] for page in broken]
+    if reserve and widths and widths[0]:
+        # The label's pixels are really on that line, so a finding quotes the real width
+        # against the real limit -- the same arithmetic `boku.lint.fit_page` reports with.
+        widths[0][0] += reserve
     for number, (page, page_widths) in enumerate(zip(broken, widths, strict=True), start=1):
         if len(page) > box.lines:
             problems.append(

@@ -215,6 +215,22 @@ def build_parser() -> argparse.ArgumentParser:
             "cells at a fixed 14 px"
         ),
     )
+    # `--vwf` installs a renderer, so it is the opposite of "leave the executable alone";
+    # accepting both would silently honour one and produce neither the stock-renderer
+    # image a contributor asked for nor a coherent VWF one.
+    renderer = builder.add_mutually_exclusive_group()
+    renderer.add_argument(
+        "--vwf",
+        type=Path,
+        metavar="FILE",
+        help=(
+            "a TXT-05 renderer edit set (build/vwf/edits.json, written by "
+            "`tools/vwf/build_prototype.py --edits-only`): the executable words, the "
+            "rebuilt overlays and the rebuilt font sheet, applied as verified byte edits, "
+            "and the character map they were derived from. It replaces the TXT-04 "
+            "renderer immediates, which patch the same words"
+        ),
+    )
     builder.add_argument(
         "--disc",
         type=Path,
@@ -244,13 +260,21 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="lay the translation out and report what fits, writing nothing",
     )
-    builder.add_argument(
+    renderer.add_argument(
         "--no-renderer-patch",
         action="store_true",
         help=(
             "leave the executable alone; without it the TXT-04 renderer and band words "
             "are applied, because English drawn vertically down the right-hand strip is "
-            "illegible"
+            "illegible. Not combinable with --vwf, which installs a renderer"
+        ),
+    )
+    builder.add_argument(
+        "--no-label",
+        action="store_true",
+        help=(
+            "wrap page 1's first line to the full box instead of reserving the speaker "
+            "label's pixels in front of it (the lint's --no-label, for the same reason)"
         ),
     )
     builder.set_defaults(
@@ -263,7 +287,11 @@ def build_parser() -> argparse.ArgumentParser:
             args.name,
             args.skip_unfitted,
             args.dry_run,
-            () if args.no_renderer_patch else tuple(w.edit() for w in patch_words(True, True)),
+            ()
+            if (args.no_renderer_patch or args.vwf)
+            else tuple(w.edit() for w in patch_words(True, True)),
+            args.vwf,
+            not args.no_label,
         )
     )
 

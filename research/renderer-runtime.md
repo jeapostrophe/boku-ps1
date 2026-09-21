@@ -162,7 +162,9 @@ of play and sumo are not covered.
 
 Active-high, pressed = 1: **`0x20` = ○, `0x40` = ✕**, `0x10` = △, `0x80` = □ (one button at a
 time, 3-frame presses; the word follows the press within 2 vsyncs). So: ○ stops the voice; ○ or ✕
-turns the page.
+turns the page. **It is edge-only — set for the frame a button goes down and 0 again after —
+and `0x8007276A` is the level word, the one the cursor code reads** (the surfaces agent), so a
+driver sampling `0x80072766` to confirm a held press will read 0 and conclude nothing happened.
 
 ## Q8 — the two `MUSI` call sites
 

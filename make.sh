@@ -27,6 +27,13 @@ usage: ./make.sh <verb> [arguments]
                                 translation into build/image/, rebuilding every
                                 container a grown line moves
                                 (./make.sh build --help for the switches)
+  build-days [arguments]        the whole thing: assemble the TXT-05 renderer into
+                                build/vwf/edits.json, then build the reviewed
+                                translation (days 1-7 + shared.txt) through it into
+                                build/days/ -- proportional English, every line laid
+                                out in the dialogue band's pixels, containers grown
+                                and members relocated where a line outgrew its
+                                sectors. Extra arguments go to `boku build`
   patch [arguments]             emit the release patches into build/patch/
                                 (./make.sh patch --help for the switches)
   apply-patch ORIG PATCH --out FILE
@@ -128,6 +135,20 @@ cmd_smoke() {
     return "$status"
 }
 
+# TXT-05 + PIPE-03/04 in one command: the renderer patch is assembled and emitted as an
+# edit set, then the image build applies it beside the reviewed translation. Two steps and
+# not one because the font build needs armips and the image build does not, and because the
+# edit set is the artefact the two agree through (boku.build.load_edit_set).
+cmd_build_days() {
+    local font="build/vwf"
+    echo "== 1/2: assembling the TXT-05 renderer -> $font/edits.json =="
+    uv run python tools/vwf/build_prototype.py --edits-only --out "$font"
+    echo
+    echo "== 2/2: building translation/days through it -> build/days/ =="
+    uv run boku build --vwf "$font/edits.json" --translation translation/days \
+        --name days --out build/days --skip-unfitted "$@"
+}
+
 verb="${1:-}"
 shift || true
 
@@ -151,6 +172,9 @@ case "$verb" in
         ;;
     build)
         exec uv run boku build "$@"
+        ;;
+    build-days)
+        cmd_build_days "$@"
         ;;
     patch)
         exec uv run boku patch "$@"
