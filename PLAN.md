@@ -454,7 +454,8 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       2026-09-21: Fable translation is expensive; he spawns "do the next N days" himself when
       the engineering is ready; this row only records where each unit stands). States, in
       order: **undrafted → drafted → reviewed** (an independent agent against the Japanese)
-      **→ checked** (Jay has read it, comments applied) **→ finalized** (Jay has seen it in the
+      **→ checked** (Jay has read it, comments applied) **→ rendered** (the lint's pixel fit and
+      the page mock-ups say it would display — `TRN-08`) **→ finalized** (Jay has seen it in the
       game, formatted and displayed correctly). Workflow per unit: `boku packet` (`TRN-08`) →
       translator → reviewer → applier → `boku lint` → Jay.
 
@@ -480,11 +481,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       timers, column splits — a translator asked not to let constraints bend the translation
       should not be handed the constraints; the lint holds them. Keep: the neighbouring scenes'
       English (it comes from the day files — `PacketBuilder._neighbours` → `settled`), the
-      voice clip reference per line, and — Jay: "plausible" — a way to *listen* to it (XA
-      extraction of the clip — measured 2026-09-21, `research/tooling-setup.md` § XA: ffmpeg
-      demuxes a raw sector slice out of the box — then a Japanese speech-to-text pass, since the
-      translating model cannot hear; a transcript with timing is what it gets; also answers
-      what a `(voice only)` node such as `E0202.6` is). Bug: `parse_rulings` emits a style-guide
+      voice clip reference per line. Closed as *no* (Jay, 2026-09-21): listening to the clip
+      for intonation — the translating model cannot hear, and hand-judging or an ML pass is not
+      worth it; `research/tooling-setup.md` § XA keeps the decode fact. **Add: a render check**
+      (Jay, 2026-09-21) — before a line is finalized in the game, a pass with our own rendering
+      model says it *would* display: `boku lint --encoder cellmap` already measures every page
+      in pixels against the band; the missing half is a mock-up of each page drawn with the
+      sheet's glyphs at the band geometry (the layout engine has the widths; no emulator), so
+      a reviewer or Jay can eyeball a day's pages as images. That is the *rendered* state in
+      `TRN-04`'s chain. Bug: `parse_rulings` emits a style-guide
       heading that contains SETTLED even when no bullet under it is marked, so § 17 appears
       as an empty section. Agent shape: (b) one directed translator per day that receives the
       bible/glossary/guide once and the events one by one, with the parent doing the saving —

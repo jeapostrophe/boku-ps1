@@ -20,10 +20,11 @@ characters, `research/vwf-prototype.md` § TXT-07) is translated in full anyway 
 There is no Japanese in these files. With an imported disc,
 `python3 work/rec05/scenes.py --dump 171 184` prints the source beside them.
 
-A unit's state is one of **undrafted → drafted → reviewed → checked → finalized**: drafted by a
-translator; reviewed by an independent agent against the Japanese; checked once Jay has read it
-and his comments are applied; finalized once he has seen it in the game, formatted and displayed
-correctly. `PLAN.md` `TRN-04` holds the table.
+A unit's state is one of **undrafted → drafted → reviewed → checked → rendered → finalized**:
+drafted by a translator; reviewed by an independent agent against the Japanese; checked once Jay
+has read it and his comments are applied; rendered once our own layout says every page would
+display (`boku lint --encoder cellmap`'s pixel fit, and the page mock-ups of `PLAN` `TRN-08`);
+finalized once he has seen it in the game, formatted and displayed correctly. `PLAN.md` `TRN-04` holds the table.
 
 | file | events | status |
 |---|---|---|
