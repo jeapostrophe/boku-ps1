@@ -1,0 +1,265 @@
+# Day 4 — August 4. Shirabe's guided tour; the watermelon thief and the howl; shaved ice
+# (PLAN TRN-04). Every event whose id is E04xx (day = id / 100), in the order the game plays
+# them. No day-independent event is handed over to by an E04xx event (the hand-overs are all to
+# maps: G02, G17, D16, A14, I06, G01, I05). Format: translation/days/README.md. Policies:
+# style-guide.md (all rulings settled 2026-09-20), glossary.md, bible.md § 4 (day 4).
+#
+# Morning: E0401 (breakfast, 7:00) and E0402 (8:00, the invitation), then E0471 on the veranda;
+# the tour is four forced scenes in a chain of flags — E0442 the bridge (flag 18), E0443 the
+# Jizo (19), E0444 the nectar flowers (20), E0445 the sunflowers by the pond and the photograph
+# (21). Day: E0423, E0433, E0472, E0410, E0412, and E0405 in the watermelon field. Evening:
+# E0404 (dinner, 19:00), E0406 (the shaved ice), E0434, E0441, E0446.
+#
+# E0404 and E0406 were translated and reviewed in translation/samples/family-E0404-E0406.txt;
+# their English is reused here word for word, not re-translated. The sample labels the
+# slot-12 chorus "All"; this file names the members, as shared.txt does for the same slot.
+
+# --- E0401: breakfast (G02), 7:00. Forced. Shirabe makes her offer before the chorus.
+E0401.0	Shirabe	Hey... Shirabe will show you the fun places.
+E0401.1	Boku	Huh?
+E0401.2	Shirabe	I'll show you fun places — thiiis many, a whole mountain of them. // So you be lots and lots, extra-specially grateful.
+E0401.3	Shirabe	Shirabe's been here longer than you, after all. // Kyahaha!
+E0401.4	(voice only)
+E0401.5	Uncle	Well then — itadakimaasu!
+E0401.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
+# NOTE E0401.2, page 2: "lots and lots ... grateful" is the same phrase as her E0406.1 in the
+#   sample — she says it twice today, and the English keeps the echo. This file spells the
+#   mannerism "lots and lots" (here, E0441.2, E0446.0); E0406.1/.11 keep the sample's
+#   "lots-and-lots" because they are reused from it verbatim — a known drift, reviewed
+#   2026-09-20, to be resolved when the sample is next revised.
+# NOTE E0401.5-.6: the stretched "-maasu" of the source (glossary § 3); day 1's E0103.0 is the
+#   unstretched form.
+
+# --- E0402: after breakfast (G02), 8:00. Forced. Ends on the veranda (MAP G17).
+E0402.0	Uncle	Gochisosama deshita.
+E0402.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0402.2	Boku	Hey...?
+E0402.3	Shirabe	Well then, shall we get going?
+E0402.4	Boku	Eeek...
+E0402.5	Shirabe	You don't want to? Even though Shirabe says she'll go with you? // Don't want to? Don't want to? You dooon't want to!
+E0402.6	Moe	Pipsqueak, don't be so unreasonable.
+E0402.7	Shirabe	Aaah — you said that name!
+E0402.8	Boku	Wh-what's that?
+E0402.9	Aunt	It's Shirabe's nickname at school.
+E0402.10	Aunt	Onee-chan! You mustn't.
+E0402.11	Moe	But Shirabe won't do as she's told, so...
+E0402.12	Shirabe	Well then! I'll be waiting on the veranda, all right? // Bayoyooon!
+E0402.13	Aunt	Hm-hm...
+# NOTE E0402.6: "Pipsqueak" is the glossary's one word for the banned nickname (§ 1); Moe uses
+#   it first, Boku is warned off it at E0445.16, and day 30 turns on it.
+# NOTE E0402.10: the mother calls Moe "Onee-chan" — kept as a name (style guide § 2).
+# NOTE E0402.12: "Bayoyooon!" is the glossary's spelling of her exit line (§ 3).
+
+# --- E0471: the veranda (G17), 8:00. Forced. Ken-bo answers her (.1, .5, voice only); she runs
+#     off toward the bridge; the narrator over the empty veranda.
+E0471.0	Shirabe	Ken-bo!
+E0471.1	(voice only)
+E0471.2	Shirabe	So you came after all... I'm a sinful woman, aren't I.
+E0471.3	Shirabe	Well then, scurry along behind Shirabe. // For now, I'll go ahead to the bridge, all right?
+E0471.4	Narrator	For me, it was with a creature that somehow took a frightful amount of trouble... // that I had the first encounter of my life.
+E0471.5	(voice only)
+# NOTE E0471.2: she says "watashi", not "Shirabe", for once — the femme fatale is a lady.
+# NOTE E0471.4: the Japanese puts the creature on page 1 and "the first encounter of my life" on
+#   page 2; the English keeps that order with a cleft ("it was with... // that I had..."), so what
+#   is on screen is what is being said (style guide § 13). "Took a frightful amount of trouble"
+#   is the literal "tema no kakaru" (bible § 3: "terribly high-maintenance"). "Scurry" in .3 is
+#   "tata-tto", a brisk trot.
+
+# --- E0442: the bridge over the Yukino River (A06), after E0471 (flag 208), until the bridge
+#     is done (flag 18). Forced. She runs off at the end.
+E0442.0	Shirabe	This was all falling apart, and our dad went bang-bang and fixed it.
+E0442.1	Boku	Ohh, he's like a carpenter, then.
+E0442.2	Shirabe	This tiny river is called the Yukino River, you know.
+E0442.3	Boku	Hmmm, I see. Hey, is "Yuki" as in snow?
+E0442.4	Shirabe	Yeah, the snow that falls from the sky.
+E0442.5	Boku	Ohh, so this is a place where it snows.
+E0442.6	Shirabe	It doesn't at all, where you're from?
+E0442.7	Boku	Yeah, only once in a while.
+E0442.8	Shirabe	Hm-hm. You poor thing. // ...But really, it's because it's a river where lots of fireflies come popping out... // that it came to be called the Yukino River, they say.
+E0442.9	Boku	Huh...? Why would that be?
+E0442.10	Shirabe	What?
+E0442.11	Boku	How come fireflies popping out gets it named "snow"?
+E0442.12	Shirabe	...Th-that's...
+E0442.13	Boku	Ohh. So you don't know.
+E0442.14	Shirabe	That's not it! // It's that no matter what happens, I'm not to tell you of all people... // Dad said so — absolutely, absolutely, absolutely.
+E0442.15	Shirabe	It's an absolute secret!
+# NOTE E0442.0: "borotchi" is her childish word for worn-out, "tonkan" the sound of hammering
+#   (a real mimetic word → an English sound word, style guide § 7).
+# NOTE E0442.3, .11: the river's name is kept as Yukino so that "Yuki — as in snow?" has
+#   something to ask about (glossary § 2, style guide § 8 kind 3). "Poko-poko" (.8, .11) is a
+#   real popping sound and becomes "popping out".
+# NOTE E0442.14-.15: she never explains the fireflies; day 5 (E0502) does.
+
+# --- E0443: the fortune-telling Jizo (A11), after the bridge (flag 18 → 19). Forced. .1 and .7
+#     are the hits on its head (voice only); the fortunes they draw are the executable's fixed
+#     array (glossary § 4e), not lines here.
+E0443.0	Shirabe	This Jizo-sama, you see...
+E0443.1	(voice only)
+E0443.2	Shirabe	Oh...? // With you along, it's the worst. // This is a Jizo-sama that can tell fortunes. // Want to try it too? I'll give you special permission.
+E0443.3	Boku	I... // I can't go hitting a Jizo-sama.
+E0443.4	Shirabe	Then do you want a walloping from me?
+E0443.5	Boku	That's not fair...
+E0443.6	Boku	Jizo-sama, I'm sorry.
+E0443.7	(voice only)
+E0443.8	Shirabe	Kyahaha, how dismal. // Well then, I'll go on ahead.
+# NOTE E0443.2, page 2: "saitei" — her fortune came out lowest, and she blames his company.
+# NOTE E0443.8: the speaker operand on the disc is slot 0, Boku; the inline label, the text and
+#   the laugh are Shirabe's (scenes/E0443.json, speaker_mismatches). Labelled Shirabe, as
+#   day01.txt does for E0114.8. "Saenai" is his fortune: a dud. Reviewed 2026-09-20: "dismal"
+#   does both jobs — a dismal result, and her lady-diction — where "dreary" tilted to gloomy.
+
+# --- E0444: the nectar flowers (A15), after the Jizo (flag 19 → 20). Forced. .4 is her sucking
+#     the nectar, .6 Boku trying it (voice only).
+E0444.0	Shirabe	Sloooow. // Keeping a lady waiting — you really are a hopeless person.
+E0444.1	Boku	I'm sorry...
+E0444.2	Shirabe	Well, Shirabe is a very kind girl, so she'll make a special exception and forgive you.
+E0444.3	Shirabe	This flower, you see...
+E0444.4	(voice only)
+E0444.5	Shirabe	The nectar inside is ever so sweet and delicious.
+E0444.6	(voice only)
+E0444.7	Boku	Oh, it's true! This is nice. // Hey, what's this flower called?
+E0444.8	Shirabe	If I remember right... // it's called a purple suck-suck.
+E0444.9	Boku	Hmmm, I see.
+E0444.10	Shirabe	That's right, nihihi. Now, the next one.
+# NOTE E0444.8: "purple suck-suck" is the glossary's rendering of her made-up flower name (§ 3);
+#   the real flower is not named here.
+
+# --- E0445: the sunflowers by the pond (A03), after the flowers (flags 18-20 → 21). Forced. The
+#     aunt is waiting with the camera; .7 is the shutter (voice only). The photograph is
+#     day 4's ending event (bible § 4).
+E0445.0	Boku	Huh? It's Auntie.
+E0445.1	Aunt	Hm-hm...... // The two of you, getting along... // I thought I'd take a picture of that, so I was waiting here.
+E0445.2	Shirabe	Our mom used to be a photographer in Tokyo, way back... Impressive, isn't it?
+E0445.3	Boku	A photographer?
+E0445.4	Aunt	But I was an assistant. I got married before I was a proper one, and ended up here, so... // Now then, you two — line up, line up.
+E0445.5	Aunt	Okay — what does Dad like best?
+E0445.6	Shirabe	Cheese!
+E0445.7	(voice only)
+E0445.8	Aunt	Well then, when the photo's ready, I'll show it to you. // When you go home, you show it to Yuzuki-san too. // I'm sure she'll be pleased!
+E0445.9	Shirabe	Yuzuki? Whooo's that?
+E0445.10	Boku	She's my mom.
+E0445.11	Aunt	You'll have to tell your mom you behaved yourself properly, won't you.
+E0445.12	Boku	Yeah.
+E0445.13	Aunt	Now then, you two get along nicely, all right?
+E0445.14	Shirabe	Shirabe thinks she'll head home now too. // Past here, the bridge has fallen down, and... // over that way, there's a huge beehive, and... // ...you go keep watch over the watermelon field or something, all right?
+E0445.15	Shirabe	It was fun, just a little bit. See you...
+E0445.16	Shirabe	But even you calling me Pipsqueak — I won't haaave it!
+# NOTE E0445.5-.6: the aunt's camera call and Shirabe's answer (slot 4, hers alone), translated
+#   literally (glossary § 8: she never says "say cheese").
+# NOTE E0445.8: Yuzuki is Boku's mother (glossary § 1); the aunt uses "-san" of her sister-in-law
+#   and Shirabe has never heard the name.
+# NOTE E0445.14: the game telling the player where the day's blocks are — the fallen bridge
+#   (A16) and the beehive (A13) — and sending him to the watermelon field, where E0405 waits.
+# NOTE E0445.16: "ya~da yo" — she stretches her refusal; the vowel is stretched in the English
+#   (style guide § 7). Reviewed 2026-09-20: "made" → "even you" is right, and the stretch on
+#   "haaave" is a legitimate § 7 placement.
+
+# --- E0423: the kitchen (G03), after the photograph (flag 21), talking to the aunt. Once.
+E0423.0	Aunt	I hope that photo from earlier came out well.
+
+# --- E0433: the dining room (G02), 12:00-15:00, talking to Moe, once the corn is in (flag 17,
+#     set on day 3). .1 on a repeat. --- E0472: the same room → close-up I05, same flag; no text.
+E0433.0	Moe	Even the way she is, Shirabe has her cute side, you know. // Boku-kun, look after her, okay?
+E0433.1	Moe	Ugh... my stomach's so tight. I ate too much cooorn.
+
+# --- E0410: the workshop (H26), before 16:00, talking to the uncle. .1 on a repeat.
+E0410.0	Uncle	So, you went on a date with Shirabe? Being a boy is tough, one way or another.
+E0410.1	Uncle	Uncle would like to go on a date with somebody too...
+
+# --- E0412: the living room (G01), from 16:00, talking to the uncle: fishing advice, seven
+#     pages. .1 on a repeat.
+E0412.0	Uncle	Boku-kun, when you fish in the ponds and rivers around here... // be careful not to fall in the water. // Hardly any anglers come around here, so there's a tremendous number of fish. // When the water's clear and you can see the fish well... // it's good to watch how the fish move and time setting the hook by that. // Where you can't see them so well, putting on a light float as a marker might be a good idea. // But you mustn't let the fish spot you either, Boku-kun.
+E0412.1	Uncle	Listen. // Either watch how the fish move directly and time setting the hook by that... // or, when you can't see well, put on a light float as a marker.
+# NOTE E0412.0: "setting the hook" and "float" are the glossary's fishing terms (§ 4c).
+
+# --- E0405: the watermelon field (A14), before 18:00, from day 4 on (not day 6), once Boku has
+#     seen the wrecked watermelon (flag 22 = 1). Forced. .0-.4 in the field; cut to D16 for the
+#     howl (.5, voice only); back to the field for .6-.7. Sets flag 22 = 2, which day 5's pact
+#     with Guts (E0551) requires. The thief is unnamed until then: "Boy" (glossary § 1).
+E0405.0	Narrator	The watermelon thief was a local child who looked every inch the brawny sort. // And then, my usual habit began.
+E0405.1	Boku	Hic!
+E0405.2	Boy	Is somebody there?
+E0405.3	Boku	Hic!
+E0405.4	Narrator	I am done for! The moment I thought that...
+E0405.5	(voice only)
+E0405.6	Boy	Tch! Has some wild dog come down or something...
+E0405.7	Narrator	That roar, from somewhere far off, from deep in the depths of the mountains... // rang out lonely and sad, utterly out of keeping with the clamor of the summer hills...
+# NOTE E0405.0, page 2: "my usual habit" is the hiccup (glossary § 3, "Hic!"); the narrator names
+#   it the same way at E6004.18.
+# NOTE E0405.5: the howl — the thing in the woods, a voice-only clip (bible § 3, voice-only.md).
+# NOTE E0405.7: "otakebi" is a war cry or roar, not the dog-word "howl" — the narrator does not
+#   say what made it. "Satoyama" → "the hills" after the father's first use (glossary § 7). The
+#   sentence runs across the two pages as one (style guide § 6): the Japanese has its one verb
+#   on page 2, so page 1 is the subject and its source, page 2 the verb and how it sounded.
+#   Reviewed 2026-09-20: "roar" is defensible ("cry" would keep the ambiguity a shade better);
+#   the earlier draft's second verb on page 1 was the pilot's additive class and is gone.
+
+# --- E0404: after dinner (G02), 19:00. Forced. Reused word for word from
+#     samples/family-E0404-E0406.txt. .6 on a first playthrough; .7 replaces it when the
+#     register R >= 1 (what sets it is not established — research/event-scripts.md, PROG 14).
+E0404.0	Uncle	Gochisosama deshita.
+E0404.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0404.2	Uncle	Whew, it's another hot one tonight.
+E0404.3	Aunt	Then shall I make us some shaved ice?
+E0404.4	Aunt	What syrup do you like on your shaved ice?
+E0404.5	Boku	Ummm, let's see...
+E0404.6	[SEL]	Melon | Strawberry | Lemon | Mizore
+E0404.7	[SEL]	Melon | Strawberry | Lemon | Mizore | Rainbow Special
+E0404.8	Aunt	All right, I'll get started right away.
+# NOTE E0404.6-.7: "Mizore" is the clear sugar syrup (Q10.7, glossary § 5); every option leads
+#   to .8.
+
+# --- E0406: the shaved ice (G01, from 19:00; close-up I06). Reused word for word from the
+#     sample. lflag counts visits: .0 close-up, .1-.8 first serving, .9-.10 asking for seconds,
+#     .11-.14 the second serving.
+E0406.0	Boku	Whoa, that's amazing!
+E0406.1	Shirabe	You make sure you're properly, lots-and-lots grateful while you eat that.
+E0406.2	Aunt	Shirabe, honestly, you... // Boku-kun, there's as much ice as you could ever want, so eat plenty. // Living this deep in the mountains, with no doctor anywhere near... // if you catch a cold, or get stung by a bee, you can't just run off to a hospital. // So ice is something we keep ready at all times.
+E0406.3	Moe	And what with one thing and another, we've all turned out pretty sturdy.
+E0406.4	Shirabe, Moe, Boku, Aunt	Hahaha.
+E0406.5	Uncle	That reminds me, Boku-kun. You mustn't go playing tricks on beehives. // When Uncle was a little brat, he once knocked a beehive down with a fishing rod... // and got chased by a whole cloud of bees. Oh, that was a terrible time.
+E0406.6	Boku	Okay, Uncle. I understand. // I would never, ever do a thing like that.
+E0406.7	Boku	Auntie, gochisosama!
+E0406.8	Aunt	You're welcome. It was nothing fancy.
+E0406.9	Aunt	Oh, Boku-kun. Seconds on the shaved ice, is it?
+E0406.10	Aunt	But don't eat so much that you upset your tummy.
+E0406.11	Shirabe	You make sure you're properly, lots-and-lots, grateful-to-DEATH while you eat that.
+E0406.12	Aunt	Shirabe, honestly, you...
+E0406.13	Shirabe, Moe, Boku, Aunt	Hahaha.
+E0406.14	Boku	Auntie, gochisosama deshita!
+# NOTE E0406.5: the game telling the player how to open the forest (the sample's note); Boku's
+#   promise in .6 is the joke. E0406.8 is the set reply to gochisosama (glossary § 3).
+
+# --- E0434: the television room (G06), from 19:00, talking to Moe. .1 on a repeat.
+E0434.0	Moe	Ehehe... // Shaved ice is low in calories, which is niiice.
+E0434.1	Moe	I'd like to make this my staple food.
+
+# --- E0441: the television room (G06), from 19:00, talking to Shirabe. .0 the first time if
+#     Boku walked out on the tour, .1 on a repeat; .2 instead if the tour was completed
+#     (flag 21). --- E0446: the same room, any hour, once the tour is complete.
+E0441.0	Shirabe	You! Shirabe went to all the trouble of waiting to show you all sorts of things, and... // you go off somewhere partway through — you really are ungrateful!
+E0441.1	Shirabe	Honestly... what can you be thinking...
+E0441.2	Shirabe	Today was lots and lots of fun, wasn't it? // Next time, I'll take you even farther...
+E0446.0	Shirabe	Today was lots and lots of fun, wasn't it? // Next time, I'll take you even farther...
+# NOTE E0441.0-.2: the speaker operand on the disc is slot 2, the aunt, on all three; the inline
+#   label, the text and the voice are Shirabe's (scenes/E0441.json, speaker_mismatches). Labelled
+#   Shirabe.
+# NOTE E0446.0 = E0441.2 except for her final particle ("wa" for "yo") — the same English, since
+#   the lady-register is already in the sentence.
+
+# NOTES — the day
+# * Register. Shirabe carries the day: third-person "Shirabe" (E0401.0, E0444.2, E0445.14);
+#   the Japanese has "watashi" only twice, when she plays the lady (E0471.2) and when she
+#   threatens him (E0443.4, "from me"); prim, over-grown-up diction ("a lady", "special
+#   permission", "hopeless person", "how dismal");
+#   her coinages stay as sounds (Bayoyooon, nihihi, kyahaha). Boku: short, literal, deadpan
+#   ("Ohh. So you don't know."). The aunt: quick and warm, "Auntie" in Boku's mouth, "all right?"
+#   for her endings. The uncle: teacherly (E0412), "Uncle" of himself (E0410.1, E0406.5). The
+#   narrator: full sentences, no contractions, past tense.
+# * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
+#   original's. The longest pages (E0412.0 p6, E0441.0 p1, E0445.4 p1) are under 100 characters
+#   — no page reaches the fourth line of the dialogue band; no OVERFLOW on day 4.
+# * Duplicates. E0402.0 = E0404.0 = E0010.0 and E0402.1 = E0404.1 = E0010.1 (shared.txt);
+#   E0401.6 = E0009.1's stretched form; E0446.0 ≈ E0441.2 (see the note).
+# * Not lines. E0472 (no text). E5033 / E5034 (Moe, 12:00-15:00 on day 4 with the corn in,
+#   G01 / G03) are talk targets with no text on the disc.
