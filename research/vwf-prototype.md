@@ -1,47 +1,75 @@
-# The dialogue renderer patch, prototyped (PLAN `TXT-05`; measurements for `TXT-07`)
+# The renderer patch, prototyped (PLAN `TXT-05`; measurements for `TXT-07`)
 
-A working proportional, horizontal dialogue renderer: armips source applied to a copy of the
+A working proportional, horizontal text renderer: armips source applied to a copy of the
 contributor's image, booted headlessly on PCSX-Redux and on Beetle PSX, and looked at.
 **Measured** = read off a build or a screenshot made on 2026-09-20 with the tools named here;
 the screenshots are the game's pixels, so they stay in the gitignored `work/txt05/` and are
-described, not shown. Scope is the **dialogue surface only** — `msg_open` → `dialog_open` →
-`dialog_draw` → `glyph_draw`, plus the ant-count message, the one other caller of `dialog_open`.
-Engine facts are cited from their homes: [text-renderer.md](text-renderer.md) (the walker, the
-9 slots, free space), [renderer-runtime.md](renderer-runtime.md) (what the emulator confirmed),
-[font.md](font.md) (the sheet), [font-candidates.md](font-candidates.md) (advance models, free
-cells, the mock-ups this is compared with).
+described, not shown. Engine facts are cited from their homes: [text-renderer.md](text-renderer.md)
+(the walkers, the 9 slots, free space), [renderer-runtime.md](renderer-runtime.md) (what the
+emulator confirmed), [font.md](font.md) (the sheet), [font-candidates.md](font-candidates.md)
+(advance models, free cells, the mock-ups this is compared with), [text-outside-events.md](text-outside-events.md)
+(the arrays behind the other surfaces).
 
-Nothing here takes `TXT-03` or `TXT-06` from Jay: pen, band, line pitch and glyph gap are build
-arguments, and the typeface is an input file.
+Nothing here takes `TXT-03` or `TXT-06` from Jay: pen, band, line pitch, glyph gap and the
+select geometry are build arguments, and the typeface is an input file.
+
+**Surfaces, in the order a player meets them** (numbers are [text-renderer.md](text-renderer.md) § 3's):
+
+| surface | state |
+|---|---|
+| 1 dialogue (`dialog_draw`) | **done, proven on both emulators** |
+| 17 memory-card messages, 19 config labels (`TITLE.OVL` walkers) | **done, proven on both emulators** |
+| 20 extras labels (`TITLE.OVL`) | patched and assembled against the retail bytes; the screen needs a save file, so not shot |
+| 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
+| 3, 4 the insect book's two walkers (`HHON.OVL`) | **documented only**, not patched: § "The `HHON` walkers" |
+| the other 17 fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
 
 ## Build and look
 
 ```sh
 uv run python tools/vwf/build_prototype.py     # -> build/vwf/image.cue, manifest.json, files/
 tools/vwf/shoot.sh                             # both emulators -> work/txt05/shots/*.png
+
+# the same renderer with the reviewed translation instead of the sample lines:
+uv run python tools/vwf/build_prototype.py --days translation/days --out build/vwf-days
 ```
 
+The second form is how the real translation gets into the game today (§ "The reviewed
+translation, in place"): every line of days 1–7 and `shared.txt` that fits its site is
+written, the rest are listed. `boku build --translation translation/days --cells
+build/vwf/manifest.json` is the pipeline's version of the same thing — it lays lines out
+through `boku.layout.CellMapEncoder` on this build's `cells` map and can grow a member
+(`PIPE-03`) — but it does not apply this patch's executable words or the rebuilt sheet, so
+until the build moves into `boku` (`make.sh` verb, `TXT-05`'s last item) the image that
+draws English *proportionally* is this script's.
+
 `build_prototype.py --help` lists the layout arguments (`--pen-x --pen-y --line-pitch --band-y
---band-h --gap`), `--font FILE`, `--lines FILE` and `--asm FILE`. It needs armips
+--band-h --gap`, and for selects `--sel-x --sel-y --sel-pitch --sel-pad --sel-cursor-dx
+--sel-cursor-dy`), `--font FILE`, `--lines FILE` and `--asm FILE`. It needs armips
 ([tooling-setup.md](tooling-setup.md)); `shoot.sh` needs the emulator variables documented there.
 The build reads the import under `disc/` and never writes there.
 
 | tracked file | what it is |
 |---|---|
-| `asm/dialogue.asm` | the patch; every site carries the retail instructions as an `ORIGINAL` block |
-| `tools/vwf/build_prototype.py` | sheet rebuild, advance table, armips, text, image writes, manifest |
-| `tools/vwf/placeholder-glyphs.txt` | seven placeholder cells (space `' " - ( ) ~`) and the glyph-file format |
-| `tools/vwf/prototype-lines.tsv` | which sample line or layout fixture goes over which arrival-sequence line |
-| `tools/vwf/shoot.sh` | the two headless runs and the frames worth keeping |
+| `asm/vwf.asm` | the file armips assembles: opens the executable, includes the surfaces, holds the free space (table, variables, hook bodies), then opens `TITLE.OVL` |
+| `asm/dialogue.asm` | the dialogue surface; every site carries the retail instructions as an `ORIGINAL` block |
+| `asm/select.asm` | SELECT menus: the two hooks, cursor, pad, and the two geometry tables |
+| `asm/title.asm` | the three `TITLE.OVL` walkers, routed through the width table |
+| `tools/vwf/build_prototype.py` | sheet rebuild, advance table, armips over the executable and the overlays, text, image writes, manifest |
+| `tools/vwf/placeholder-glyphs.txt` | eight placeholder cells (space `' " - ( ) ~ —`) and the glyph-file format |
+| `tools/vwf/prototype-lines.tsv` | which sample line or fixture goes over which site: dialogue, selects, array items |
+| `tools/vwf/reach-select.lua` | PCSX-Redux driver that reaches `E0112.1` from free roam (a map poke, § "Reaching the living room"), drives the select with the pad and reports `select_open` / `select_draw` |
+| `tools/vwf/shoot.sh` | the headless runs and the frames worth keeping |
 
 ## Design
 
-**The advance lives in the nine slots, in place; no trampoline.** `dialog_draw` spends
-`0x8002BF5C…0x8002BF7C` re-reading `g_text_flags` to choose `y += 13` or `x += 14`. With every
-caller horizontal that test is dead, and nine instructions are exactly enough for a table lookup
-**once the R3000's load delay is respected** — which the 8-instruction sketch in
-[text-renderer.md](text-renderer.md) § 4b does not (it uses `v0` in the instruction after
-`lhu v0`, and `v1` straight after `lbu v1`). The version that fits fetches the table byte
+### Dialogue: the advance lives in the nine slots, in place
+
+`dialog_draw` spends `0x8002BF5C…0x8002BF7C` re-reading `g_text_flags` to choose `y += 13` or
+`x += 14`. With every caller horizontal that test is dead, and nine instructions are exactly
+enough for a table lookup **once the R3000's load delay is respected** — which the 8-instruction
+sketch in [text-renderer.md](text-renderer.md) § 4b does not (it uses `v0` in the instruction
+after `lhu v0`, and `v1` straight after `lbu v1`). The version that fits fetches the table byte
 unconditionally and puts the range test in its delay slot:
 
 ```
@@ -60,51 +88,125 @@ The unconditional fetch is safe: a glyph word is below `0x8000`, so the address 
 `vwf_advance + 0x7FFF`, inside main RAM. All nine slots are used; anything more (a bearing, kerning)
 needs a jump out.
 
+### Every other surface: one `jal` per walker, bodies in the free space
+
+The other walkers have no dead instructions to spend, but each has one thing the dialogue loop
+lacks: the pen step is a lone `addiu pen,pen,12` whose next instruction is not a branch, so it can
+become a `jal` to a ten-word body that adds `vwf_advance[id]` instead. `ra` is free at every one
+(every walker saved its own and `jal glyph_draw` clobbers it each glyph); the bodies write only
+`at` and `t9`, so whatever the delay slot loaded — the next `a0`, a loop constant in `v0` — survives.
+Where the step itself sits in a branch delay slot (`text_draw_line_h`, the extras walkers) the
+`jal` takes the pointer step's slot instead and the body steps the pointer too. One macro,
+`vwf_lookup_at`, is the lookup; a body is that plus its add. The bodies are named by what they
+touch: `vwf_step_s5_s0` is "pen `s5`, id at `-2(s0)`".
+
+### SELECT: columns become rows, measured every frame
+
+Stock `select_draw` (`0x8002C234`) draws each option down a column whose top is
+`g_select_pos[layout][line]`, steps `y += 12` (`0x8002C2D0`), and `select_box_draw` draws a
+50 %-black tile from `g_select_rect[type − 1]`; the cursor sprite sits 24 px *above* the column
+and the pad maps LEFT/RIGHT (or, with four or more options, a two-column scheme) onto the cursor
+([text-renderer.md](text-renderer.md) § 1, § 4c). The patch (`asm/select.asm`):
+
+* **Rows.** `g_select_pos` is rewritten so every layout is the same five row origins,
+  `(SEL_X, SEL_Y + i · SEL_PITCH)`; a layout with *n* lines reads the first *n* (a prompt line,
+  where the layout has one, is row 0). The step becomes `jal vwf_select_advance`, whose delay slot
+  is the stock `lhu a0,0(s1)`: the body adds the table advance to `s2` (x) and leaves `s0` (y).
+* **The box hugs the text.** The body also records the pen's furthest x and the last row's y in
+  two words of the free space (`vwf_select_xmax`, `vwf_select_ymax`). `select_box_draw` runs after
+  `select_draw` in both runners (the event op at `0x8002D0E0…E8` and `select_run_ptr` at
+  `0x8002D158…60`), so its `lhu` of the table's w and h becomes `jal vwf_select_box`, which returns
+  `w = xmax + SEL_PAD − rect.x`, `h = ymax + 12 + SEL_PAD − rect.y` and zeroes `xmax`. A caller
+  that never measured — the controls-help screen draws the type-7 box without `select_draw` — gets
+  the table's w and h, because `xmax` is 0 then. `g_select_rect` entries 0–5 hold the corner:
+  `SEL_PAD` left of the cursor and above the first row; entry 6 is untouched.
+* **Cursor and pad.** The cursor's two immediates become `SEL_CURSOR_DX/DY` from the row origin.
+  In `select_cursor_update` the "fewer than four options" test becomes always-true (one word:
+  `slti v0,s1,4` → `addiu v0,zero,1`), so the two-column block never runs, and that block's two
+  masks are re-keyed: DOWN (`0x4000`) = +1, UP (`0x1000`) = −1. Clamping at both ends is stock.
+* **Text.** A select site's English is one option per line; the line count must equal the
+  layout's (`encode_select` counts the stock `0x8001`s), and no option may be wider than
+  `select_width` = from `SEL_X` to the pen's right margin (the engine clips at the screen edge).
+
+Sixteen executable words plus the two tables (240 + 48 bytes), and two bodies in the free space.
+The eight native menus (`select_run_ptr`: the insect cage, `TAKO`, `MUSI`, `HHON` ×2, `ZUKAN`)
+use the same three routines and the same tables, so they change with it; their texts are the S
+arrays of [text-outside-events.md](text-outside-events.md).
+
+### The free space
+
 **The table lives in the heap-raise gap**, `0x8008F3A4…0x8008F7FF` (1,116 bytes, already inside
 the file, above every overlay): one data word moves the heap's first byte to `0x8008F800`. Chosen
 over the dead-code islands because it is the only candidate whose deadness was *measured* with
 write-breakpoints rather than inferred from missing references ([renderer-runtime.md](renderer-runtime.md)
-§ Q5), it is one contiguous `.area`, and it costs nothing but 1.1 KB of heap. This build's table is
-**793 bytes** (`vwf_advance` = `0x8008F3A4`); the gap is free again from `vwf_free` =
-`0x8008F6C0` (320 bytes). The islands stay untouched for the hooks the other surfaces will need.
+§ Q5), it is one contiguous `.area`, and it costs nothing but 1.1 KB of heap. Layout of this build
+(`manifest.json` → `gap`): `vwf_advance` **795 bytes** at `0x8008F3A4`; `vwf_select_xmax/ymax`
+at `0x8008F6C0`; `vwf_select_advance`, `vwf_step_s5_s0`, `vwf_step_v1_s0_s1`,
+`vwf_step_s1_s0_next`, `vwf_select_box` from `0x8008F6C8`; free again from `vwf_free` =
+`0x8008F7CC` — **52 bytes**. That is one more body. The surfaces still to hook (§ "The
+fixed-pitch surfaces") need five to seven, about 240 bytes, so the next home is the 620-byte
+island at `0x80012E04` ([text-renderer.md](text-renderer.md) § 6 candidate 2), whose deadness is
+inferred, not measured — a write-breakpoint run like Q5's should precede it.
 
-**No cell the Japanese script draws is touched.** [font-candidates.md](font-candidates.md) § 7
-accepted re-aligning Latin cells in place as "cosmetic" for the ten letters, the digits and the
-punctuation untranslated lines use. That is avoidable, so the build avoids it: an English
-character keeps its own cell only when that cell is in the free list of
-[font-candidates.md](font-candidates.md) § 1 (parsed from that file, not copied); every other
-character — `A B C L M P T X Z z`, the digits, `. : ? ! / + %`, and the seven glyphs the sheet
-lacks — is drawn into a free cell. 87 characters: 53 in place, 34 in free cells (the junk symbols
-`゛ ‘ ’ ± ÷ ￥ → ← ↑`, nine unused kana, then unused kanji from 292 up to 792, which is what makes
-the table 793 long). Table entries for every other id are 14. A build-time gate walks all text
-sites of the import and refuses if any of them draws a cell about to change. Consequences:
-untranslated dialogue, the code-drawn digits (`52 + n`) and the 20 fixed-pitch surfaces look
-exactly as they did, and **the English space is its own blank cell** (id 10, advance 4) — id 0
-stays the 14-px Japanese space and indent cell. The inserter must therefore encode English through
-the character map the build emits (`manifest.json` → `cells`), not through NFKC of
+### No cell the Japanese script draws is touched
+
+[font-candidates.md](font-candidates.md) § 7 accepted re-aligning Latin cells in place as
+"cosmetic" for the ten letters, the digits and the punctuation untranslated lines use. That is
+avoidable, so the build avoids it: an English character keeps its own cell only when that cell is
+in the free list of [font-candidates.md](font-candidates.md) § 1 (parsed from that file, not
+copied); every other character — `A B C L M P T X Z z`, the digits, `. : ? ! / + %`, and the eight
+glyphs the sheet lacks — is drawn into a free cell. 88 characters: 53 in place, 35 in free cells
+(the junk symbols `゛ ‘ ’ ± ÷ ￥ → ← ↑`, nine unused kana, then unused kanji from 292 up to 794,
+which is what makes the table 795 long). Table entries for every other id are 14. Consequences:
+untranslated dialogue, the code-drawn digits (`52 + n`) and the fixed-pitch surfaces look exactly
+as they did, and **the English space is its own blank cell** (id 10, advance 4) — id 0 stays the
+14-px Japanese space and indent cell. The inserter must therefore encode English through the
+character map the build emits (`manifest.json` → `cells`), not through NFKC of
 `data/glyph-table.tsv`.
 
-**The font is a build input.** A glyph file is `glyph U+XXXX advance N` plus twelve rows of
-twelve `.`/`#`, ink starting at column 0 (`tools/vwf/placeholder-glyphs.txt` is one). With no
-`--font`, glyphs are the game's own Latin cells read from the contributor's `ONMEM.BIN`, shifted
-to column 0, advance = ink width + `--gap` (1), plus the placeholder file. With `--font`, that file
-supplies every glyph; cell allocation, table and asm are unchanged. A baker for an OFL face
-(`TXT-06`) only has to write that format. The rebuilt sheet (`build/vwf/files/font-sheet.tim`) is
-disc-derived and never tracked.
+**Two gates refuse a cell that would change under something that draws it.** The first walks
+every text site of the import — messages, selects, arrays — and refuses if any draws a cell about
+to be redrawn. The second, `code_glyph_ids`, covers what no site can show: it scans every `jal
+glyph_draw` / `glyph_draw_layer` in the executable and the four drawing overlays and resolves
+the `a0` each passes — an immediate (`addiu/ori a0,zero,n`), or the digit pattern `addiu a0,r,0x34`
+(ten ids), plus `sysmsg_draw`'s 13 → 14 remap. On this image that is 25 ids: 13, 14, 15, 40,
+52–61, 343, 344, 440, 503, 543, 605, 618, 898, 1004, 1209, 1456 — the same list
+[font.md](font.md) § "The draw code" was read from by hand, now derived from the bytes. Made red
+on purpose: with 1209 pretended free the *text* gate already refuses (an array draws it); with
+**40** (`％`, only `TITLE`'s `extras_numbers_draw` draws it) the text gate passes and the code gate
+refuses with "code on this disc draws them by id". The nudge tables (`0x80036700`, `TITLE
+0x80079BD4`, `MUSI 0x8007A8B8`) shift glyphs, they do not choose them, so they add nothing.
 
-**`ORIGINAL=1` checks the comments.** Each site in `asm/dialogue.asm` has two arms: the patch,
-and the instructions the retail file holds there. The build assembles the `ORIGINAL` arm first and
-refuses unless the executable comes back byte-identical, so a wrong "stock:" line is a build
-error, not a stale comment. Made red on purpose: `0x16` → `0x17` at `msg_open` reports "first
-difference at RAM 0x8002CFC8". Other gates made red the same way: a 1,200-byte table ("Area at
-8008f3a4 overflowed by 84 bytes"), an English line larger than its site, a page count that
-differs from the original's, a free list that wrongly includes id 4.
+### The font is a build input
+
+A glyph file is `glyph U+XXXX advance N` plus twelve rows of twelve `.`/`#`, ink starting at
+column 0 (`tools/vwf/placeholder-glyphs.txt` is one). With no `--font`, glyphs are the game's own
+Latin cells read from the contributor's `ONMEM.BIN`, shifted to column 0, advance = ink width +
+`--gap` (1), **plus one more when the ink is 2 px or narrower** — the shadow is a copy at x + 1,
+and at ink + gap it filled the gap between two dots, so `...` read as a dash (the blemish the
+first build recorded; § "What the screenshots show"). Now `.` `,` `:` `;` advance 4 and `i l ! ' |
+I` 3. **Proven on the current build**: `beetle-E0171.3.png` ("Boku: ...Huh?", `E0650.16` over
+`E0171.3`) shows three separate dots, each with its own shadow and a paper column between —
+zoomed 4× to check. With `--font`, that file supplies every glyph and advance; cell
+allocation, table and asm are unchanged. A baker for an OFL face (`TXT-06`) only has to write that format. The rebuilt sheet
+(`build/vwf/files/font-sheet.tim`) is disc-derived and never tracked.
+
+### `ORIGINAL=1` checks the comments
+
+Each site has two arms: the patch, and the instructions the retail file holds there. The build
+assembles the `ORIGINAL` arm first over a copy of the executable **and of every drawing overlay**
+and refuses unless each comes back byte-identical, so a wrong "stock:" line is a build error,
+not a stale comment. Made red on purpose: `0x16` → `0x17` at `msg_open` reports "first difference
+at RAM 0x8002CFC8". Other gates made red the same way: a 1,200-byte table ("Area at 8008f3a4
+overflowed by 84 bytes"), an English line larger than its site, a page count that differs from the
+original's, a select with the wrong line count, a free list that wrongly includes id 4.
 
 ## The patched sites
 
-21 words of `SCPS_100.88` plus the table, in eight `.area`s (the newline pitch is an area whose
-default leaves its word unchanged). RAM addresses; file = RAM −
-`0x8000F800`.
+RAM addresses; executable file offset = RAM − `0x8000F800`, overlay file offset = RAM −
+`0x80079A08`. Every site is an armips `.area`.
+
+**Dialogue** (`asm/dialogue.asm`, 21 words):
 
 | RAM | function | stock | patched |
 |---|---|---|---|
@@ -114,38 +216,90 @@ default leaves its word unchanged). RAM addresses; file = RAM −
 | `0x8002EA34`, `38`, `44`, `48` | `dialog_panel_draw` | `addiu s1,zero,0xF0` · `sh zero,0xA(s0)` · `addiu v0,v1,5` · `sh v0,8(s0)` | `addiu s1,zero,BAND_H` · `sh zero,8(s0)` · `addiu v0,zero,BAND_Y` · `sh v0,0xA(s0)` — `band2` |
 | `0x8002BF48` | `dialog_draw`, newline | `addiu s1,s1,0xD` | `addiu s1,s1,LINE_PITCH` (13: unchanged bytes by default) |
 | `0x8002BF5C`–`7C` | `dialog_draw`, advance | `lui v0,0x8003` · `lw v0,0x59E4(v0)` · `nop` · `andi v0,v0,0x10` · `beqz v0,+3` · `nop` · `j 0x8002BF80` · `addiu s1,s1,0xD` · `addiu s2,s2,0xE` | the nine instructions above |
-| `0x80068AF0` | heap bump pointer, initial value | `0x8008F3A4` | `0x8008F800` |
-| `0x8008F3A4`… | (zeros) | | `vwf_advance`: `u8` per glyph id, `TABLE_IDS` entries |
 
 `g_text_flags & 0x10` still selects the newline rule at `0x8002BF1C`, but no longer the advance: a
 caller passing `vertical = 1` would now draw garbage. The two callers patched above are the only
 ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 
-On the disc the build changed 17 sectors: 7 of the executable, 6 of the font TIM (`ONMEM.BIN`
-child 2 starts at `BOKU.BIN + 0x5F94AA0`), 4 of text. Every range is compared with the import's
-bytes before it is replaced, every text site is re-hashed (`boku.text.check_placement`), every
-written sector gets fresh EDC/ECC and is re-verified, and `manifest.json` lists them.
+**SELECT** (`asm/select.asm`):
+
+| RAM | function | stock | patched |
+|---|---|---|---|
+| `0x8002C2D0` | `select_draw`, step | `addiu s0,s0,0xC` (y += 12) | `jal vwf_select_advance` (delay slot `lhu a0,0(s1)` kept) |
+| `0x8002C1D0`, `DC` | `select_box_draw` | `lhu v0,4(s1)` (w) · `lhu v0,6(s1)` (h) | `jal vwf_select_box` · `move v0,v1` |
+| `0x8002C3D4`, `DC` | `select_cursor_update`, sprite | `addiu a1,a1,-2` · `addiu a2,a2,-0x18` | `SEL_CURSOR_DX` (−18) · `SEL_CURSOR_DY` (−2) |
+| `0x8002C3E0` | `select_cursor_update`, pad | `slti v0,s1,4` | `addiu v0,zero,1` |
+| `0x8002C3F4`, `FC` | `select_cursor_update`, pad | `andi v0,v1,0x8000` (LEFT +1) · `andi v0,v1,0x2000` (RIGHT −1) | `0x4000` (DOWN +1) · `0x1000` (UP −1) |
+| `0x80028E7C`… | `g_select_pos`, 12 × 5 × `{s16 x, s16 y}` | column tops ([text-renderer.md](text-renderer.md) § 1) | `(SEL_X, SEL_Y + i · SEL_PITCH)` ×5 per layout |
+| `0x80028E44`… | `g_select_rect[0..5]` | `(120,56,80,96)` … `(208,56,96,168)` | `(SEL_X + SEL_CURSOR_DX − SEL_PAD, SEL_Y − SEL_PAD, 80, 40)` |
+
+**`TITLE.OVL`** (`asm/title.asm`; the `.OVL` is a member of `BOKU.BIN` at `0x6533000`):
+
+| RAM | walker | stock | patched |
+|---|---|---|---|
+| `0x8007CDD8` | 17, memory-card messages (pen `s5`) | `addiu s5,s5,0xC` | `jal vwf_step_s5_s0` |
+| `0x8007FBC4`, `D4` | 19, config labels (pen `s0` via `v1`, ids at `s1`) | `addiu v1,s0,0xC` · `addiu s0,v1,4` (line 1 letter-spaced) | `jal vwf_step_v1_s0_s1` · `move s0,v1` |
+| `0x8008045C`, `68` | 20a, extras label 5 (pen `s1`) | `addiu s0,s0,2` · `addiu s1,s1,0xC` (in a branch delay slot) | `jal vwf_step_s1_s0_next` · `nop` |
+| `0x80080790`, `A8`, `B0` | 20b, extras labels 0–4 | `addiu v1,s1,0xC` (next is a branch) · `addiu s1,v1,4` (lines 0, 3) · `addiu s0,s0,2` | `move v1,s1` · `move s1,v1` · `jal vwf_step_s1_s0_next` |
+
+**Free space**: `0x80068AF0` heap bump pointer `0x8008F3A4` → `0x8008F800`; `0x8008F3A4…` the
+table, variables and bodies listed above.
+
+On the disc this build changed 36 sectors: 7 of the executable, 6 of the font TIM (`ONMEM.BIN`
+child 2 starts at `BOKU.BIN + 0x5F94AA0`), 3 of `TITLE.OVL`, and the text (dialogue in the map
+packs, the selects, the three EXE arrays). Every range is compared with the import's bytes before
+it is replaced, every text site is re-hashed against the walk, every written sector gets fresh
+EDC/ECC and is re-verified, and `manifest.json` lists them.
 
 ## What is on the disc, and why those lines
 
-The prototype writes **in place**, so a site takes whichever sample line fits its bytes and has
-its page count; the English is from `translation/samples/` but is not the translation of these
-sites. `E0171.0` (44 bytes) holds 21 characters — "Whoa, that's amazing!" fits exactly, no label.
-Arrival-sequence sites are 22–152 bytes for 1–2 pages, so the longest real page possible is 41
-characters; wrap, overflow, line count, digits and the new punctuation are exercised by three
-labelled fixtures. `E0177.0` and everything from `E0179` on are left Japanese on purpose.
+The prototype writes **in place**, so a site takes whichever sample line or fixture fits its
+bytes and has its page count; the English is a reviewed line from `translation/days/` (the
+sample scenes moved there; the loader reads both directories) but is not the
+translation of these sites. `E0171.0` (44 bytes) holds 21 characters — "Whoa, that's amazing!"
+fits exactly, no label. Arrival-sequence sites are 22–152 bytes for 1–2 pages, so the longest
+real page possible is 41 characters; wrap, overflow, line count, digits and the new punctuation
+are exercised by three labelled fixtures. `E0177.0` and everything from `E0179` on are left
+Japanese on purpose.
+
+Selects: `E0112.1` and `E0202.3` are the game's plain yes/no (14 bytes: "Yes"/"No" fits
+exactly); `E0022.0` (48 bytes, prompt + 2) and `E0020.0` (36 bytes) take short fixtures.
+`E0176.0` (34 bytes) takes `E0114.2`, the shortest one-page day-1 line that fits.
+
+### The reviewed translation, in place (`--days translation/days`)
+
+`build/vwf-days/` is the same patch with `translation/days/*.txt` (days 1–7 and
+`shared.txt`, 764 lines) in place of the sample lines, read through the provisional loader
+`boku.translation.SampleScenes` — the same reader `boku build` uses, so the two agree on what a
+row means. Measured on this build: **67 lines fit their sites and are written; 697 do not
+and stay Japanese**, every one for the same reason — the English needs more bytes than the
+site holds (typically 2–2.5×: `E0171.0` 106 for 44, `E0171.1` 324 for 152) — none for a page
+count, an option count or a missing glyph (the day files' em dash `—` is now the eighth
+placeholder cell; before it, 22 lines were refused for the glyph). The 67 are the short
+ones: `E0112.1` "Yes / No", `E0140.0` "H-hello.", `E0140.6` "Huh?", `E0107.0` "Huh...?".
+The list is `manifest.json` → `unfitted`, one entry per line with the numbers, and the
+summary prints it; nothing is shortened. **So the translation cannot be seen in the game
+from an in-place build**, and the number that matters for `PIPE-03`/`PIPE-04` is that 91 %
+of the reviewed lines need the container to grow. Array
+items keep their word count — the readers count terminators to find item *n* — so an item's
+spare words are English spaces before its terminator (zeros after it were drawn as 14-px
+Japanese spaces at the head of the next item: measured, the config screen's "Rumble" came out
+42 px to the right until this was fixed). Memory-card messages 0, 1, 4, 6 and the five config
+labels are fixtures cut to the stock bytes ("Tone" for サウンド: 10 bytes is four glyphs).
 
 ## What the screenshots show
 
-Both emulators, same image (`799e4536…`), frames in `work/txt05/shots/` (`beetle-*` are
-320×240 native; `redux-seq-*` are PCSX-Redux's downscaled capture, state-relative frame numbers).
-The two agree in every frame compared.
+Both emulators, same image, frames in `work/txt05/shots/` (`beetle-*` are 320×240 native;
+`redux-*` are PCSX-Redux's capture, state-relative or boot-relative frame numbers). The two agree
+in every frame compared.
+
+### Dialogue
 
 * **Proportional spacing is right.** "Boku: Okay, Uncle. I understand." and "I would never, ever
-  do a thing like that." read as set type: `i`/`l` take 2 px, `m`/`w` 10, no collisions, no
-  floating letters. Measured on Beetle, the wrapped line "Aunt: What syrup do you like on your
-  shaved" has ink from x = 24 to x = **291**; the build predicted 269 px of advance, i.e. last
-  ink at 24 + 269 − 2 = 291. **Exact.**
+  do a thing like that." read as set type: `i`/`l` take 3 px now, `m`/`w` 10, no collisions, no
+  floating letters. Measured on Beetle in the first build, the wrapped line "Aunt: What syrup do
+  you like on your shaved" had ink from x = 24 to x = **291** against a predicted 269 px of
+  advance, i.e. last ink at 24 + 269 − 2 = 291. **Exact.**
 * **Shadows intact**: each glyph has its grey copy right and below; nothing clipped, because ink
   starts at column 0 and the widest ink (`/`, `_`) is 11 px, inside the 12-px sprite.
 * **Wrap and indent**: the builder's break lands "ice?" on line 2 at x = 24 — no indent, since
@@ -161,17 +315,61 @@ The two agree in every frame compared.
 * **Pages still turn on their timers** and the last page closes with the clip; the whole sequence
   plays hands-off with the operands untouched.
 * **Compared with the mock-ups** (`work/txt06/out/font-game-realigned.png`, `DECIDE.png` § A row
-  (c2)): same glyphs, same band, same pen, and the same widths to the pixel —
-  `fonts.game_font('realigned').width()` gives 269 / 228 / 127 for the three lines the build
-  measured at 269 / 228 / 127. Differences: the real frame has the pencil (not in the mock-ups);
-  the placeholder punctuation was redrawn, so `' " - ( ) ~` differ by a pixel or two; and one thing
-  the mock-up also shows but does not call out — **`...` reads as a short dash**, because each
-  2-px dot's shadow fills the 1-px gap to the next. A font-metric matter (`.` advance 3 → 4), left
-  alone here because the typeface is `TXT-06`'s.
+  (c2)): same glyphs, same band, same pen, and the same widths to the pixel in the first build
+  (`fonts.game_font('realigned').width()` 269 / 228 / 127 for the three lines measured at 269 /
+  228 / 127). Differences: the real frame has the pencil (not in the mock-ups); the placeholder
+  punctuation was redrawn, so `' " - ( ) ~` differ by a pixel or two; and, in the first build,
+  **`...` read as a short dash**, because each 2-px dot's shadow filled the 1-px gap to the next —
+  the narrow-ink rule above is the fix, and it widens lines with many `i l . ,` by a pixel each.
 
 Most informative frames: `beetle-E0174.0-wrapped.png`, `beetle-E0175.0-overflow.png`,
 `beetle-E0171.1-page1-arrow.png`, `beetle-E0177.2-five-lines.png`, `beetle-E0182-japanese.png`,
 `redux-seq-01720.png`.
+
+### `TITLE.OVL`: the card-check, continue and config screens
+
+Reached from a cold boot (Beetle: START at 3300, then CIRCLE at 3600 for the card check, or DOWN
+×1 / ×3 and CIRCLE for continue / config; Redux: START at 2430, the same presses from 2700).
+
+* **Card check** (`beetle-title-card-check.png`, `redux-title-card-check.png`): "Checking card"
+  set proportionally at (36, 160) in the wooden frame, dark text with shadow, over the stock
+  second line `【メモリーカードを抜かないで下さい】` still at its 12-px pitch — one walker, two
+  pitches, keyed on the id. Surface 17's hook is right.
+* **Continue with no card** (`beetle-title-no-file.png`, `redux-title-no-file.png`): "No file
+  here" (message 4) proportional, the `!` book icon above. The extras entry shows the same
+  message, so surface 20's screen is not reachable without a save.
+* **Config** (`beetle-title-config.png`, `redux-title-config.png`): "Message / Tone / Pad /
+  Rumble" at x = 40 and "On" at the stock line-4 x of 88, all proportional, hand cursor on line
+  0; the right-hand panel (`音声＋字幕` …) is a texture. Line 1's stock 16-px letter-spacing is
+  gone — with proportional glyphs it read as a mistake.
+
+### SELECT on screen (PCSX-Redux; `reach-select.lua`, frames state-relative)
+
+`E0112` — the uncle's veranda question, day 1, 15:00–17:59 in the living room `G01` — is the
+first SELECT a player meets, and the only one in the afternoon's free hour. Reached as
+§ "Reaching the living room" says; then ○ at the uncle (`dialog_open(24, 176, 0)` fires),
+○ again to cancel the clip, ○ to turn the page, and `select_open(msg 1, type 1, variant 1)`
+fires with `select_draw` every frame after it. Frames in `work/txt05/shots/`:
+
+* **`redux-E0112.0-line.png`**: the uncle's line, Japanese (its English is 106 bytes for a
+  44-byte site), drawn horizontally in the band at the stock 14-px pitch — the untranslated
+  path through the patched `dialog_draw`, in a scene the arrival sequence never showed.
+* **`redux-select-E0112.1-yes.png`**: **two rows**, "Yes" at (48, 174) and "No" at (48, 187)
+  — `SEL_X`, `SEL_Y`, `SEL_PITCH` 13 — proportional (`Y` 8 px, `e` 6, `s` 5; "Yes" is 19 px
+  wide, "No" 13), the **hand cursor beside the row** at x ≈ 30 on "Yes" (`SEL_CURSOR_DX` −18,
+  `DY` −2 puts its top two rows above the cell), and the **box hugging the text**: the 50 %
+  tile runs from x = 24 (`SEL_X + SEL_CURSOR_DX − SEL_PAD`) to about x = 73 (`xmax` 67 + pad
+  6) and from y = 168 to about 205 (`ymax` 187 + 12 + 6) — the stock table would have drawn
+  80 × 96 at (120, 56). No line of the dialogue band under it: the band had closed.
+* **`redux-select-E0112.1-no-after-DOWN.png`**: after DOWN, the cursor sits beside "No";
+  the rows and the box are unchanged. **`…-yes-after-UP.png`**: UP puts it back. **The pad is
+  re-keyed**, as § "Cursor and pad" says; LEFT/RIGHT do nothing.
+* **`redux-E0112.2-after-select.png`**: ○ on "No" closes the select and the next line
+  (`E0112.2`, Japanese) opens in the band — the event continues, `flag_set(255, cursor)`
+  took the answer.
+
+Not measured: a select with a prompt line (`g_select_first`), a five-row layout, and the
+eight native menus. `select_width` (248 px) was not exercised — both options are short.
 
 ## Measurements for `TXT-07` (dialogue, `band2` at Y = 168, H = 72, pen (24, 176), pitch 13)
 
@@ -179,8 +377,9 @@ Most informative frames: `beetle-E0174.0-wrapped.png`, `beetle-E0175.0-overflow.
 * **Usable width**: 272 px with the left margin mirrored (what the builder wraps to); 296 px to
   the screen edge.
 * **Characters per line**: the sample lines written average **5.85 px per character → 46 per
-  272-px line**; the fullest real line is 43 characters in 269 px. (Mock-up estimate: 43.6
-  wrapped.)
+  272-px line** in the first build; the narrow-ink rule adds a pixel to each `i l . , : ; ! '`, so
+  a line heavy in them loses one or two characters. The fullest real line is 43 characters in
+  269 px. (Mock-up estimate: 43.6 wrapped.)
 * **Lines per page**: line *n* has ink rows 177 + 13(n−1) … +9 for caps, +1 for the shadow.
   **Four lines are clean** (last shadow row 225). A fifth draws completely (ink 229–237, shadow
   238) but sits on the bottom edge, inside any CRT's overscan. The pencil occupies x ≥ 267 on rows
@@ -190,30 +389,139 @@ Most informative frames: `beetle-E0174.0-wrapped.png`, `beetle-E0175.0-overflow.
   fixture (345 px) draws to x = 319 and the rest is simply not there: no wrap, no wrap-around to
   the left, nothing else disturbed. The engine has no wrap logic, so the inserter must break
   lines and a lint must measure them in pixels with this table.
+* **Selects**: a row may take `select_width` = 320 − 24 − `SEL_X` = **248 px** at the default
+  `SEL_X` 48 (the box is measured, so nothing else caps it); five rows at pitch 13 from y = 174
+  end at row 238.
 * **Primitive cost** is unchanged per glyph (3 × `SPRT`); the longest page here is 56 glyphs.
+
+## The fixed-pitch surfaces
+
+Every horizontal surface of [text-renderer.md](text-renderer.md) § 3 rows 5–26, read again at
+the instruction level (2026-09-20, `work/txt01/d`; the R3000 rules: one load-delay slot, one
+branch-delay slot; every function here saves `ra`). Decision: **A** = route through the width
+table with a `jal` hook; **B** = keep the fixed pitch; **C** = untouched, the surface never draws
+Latin from the re-aligned range (immediates, digits, one-glyph rows). Status: **proven** = on
+screen on both emulators; **assembled** = in `asm/` and checked against the retail bytes, screen
+not reached; **table** = this row is the whole specification.
+
+| # | image · function | step instruction (stock) | pen · id | decision | status |
+|---|---|---|---|---|---|
+| 5a | EXE `text_draw_right` `0x80035360` — not right-aligned: a count pass steps `s2 += 12` per glyph, then the draw pass walks the line backwards, `s2 −= 12` before each draw, so glyph 0 lands at x | `0x8003539C addiu s1,s1,1` (count; id at `-2(s0)`, delay slot `lh v0,0(s0)`) · `0x800353B0 addiu s2,s2,0xC` (branch delay slot) · `0x800353C0 addiu s2,s2,-0xC` (draw; id at `0(s0)`, delay slot `lh a0,0(s0)`) | `s2` · `s0` | **A**: `539C → jal` {`s2 += w[-2(s0)]; s1 += 1`}, `53B0 → nop`, `53C0 → jal` {`s2 −= w[0(s0)]`}; the bodies must not write `v0`/`a0` | table |
+| 5b | EXE `help_line_draw` `0x80035448` (pitch 10) | `0x80035490 addiu s1,s1,0xA`; delay slot `addiu s0,s0,2` so the id is at `-2(s0)` in the body | `s1` · `-2(s0)` | **A**, body = `vwf_step_s1_s0` (pen `s1`, id `-2(s0)`) | table |
+| 6 | EXE `date_label_draw` `0x80037544` | none: five immediates at `x, x+0xD, x+0x25, x+0x3A/0x41` plus sprite digits | — | **C**; a translation re-points the ids and re-tunes the literals | table |
+| 7 | `date_label_draw_b` | unreferenced | — | **C** | table |
+| 8 | EXE `count_label_draw` `0x800377F8` | none: `0x26A`, `0x4B9` at offsets chosen by digit count | — | **C** | table |
+| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with a contract change**: body `s3 += w; s2 += w` and `0x80037B3C → nop`, so the return value becomes the pixel width; then the five consumers of `12 × count` must take it as pixels — EXE `cage_hud_draw` `0x8003FF98…A0` (`sll/addu/sll` → `move v1,v0` + nops), `HHON 0x8007C46C…74` (same), `MUSI 0x8007D474…7C`, and the two right-aligning `8 − n` blocks `MUSI 0x8007D918…30` and `0x8007D874…8C` (the latter through `sllv … s5`, whose `s5` is not settled statically — an emulator question before it is patched). The vertical path (`a3 ≠ 0`) has no traced caller | table (blocked on reach: the cage HUD needs a caught insect) |
+| 10 | EXE `mc_slot_labels_draw` `0x8003A7A4` — really the fortune result (`大吉！` …), three glyphs stacked vertically at x `0x9A` | rows, not a pen | — | **C** | table |
+| 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table |
+| 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | table |
+| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body can serve both by reloading `v0` and `v1` | table |
+| 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | |
+| 15 | `TITLE 0x8007BB60` (save date) | none: `0x3C` at `s1`, `0x1B8` at `+0xC`, digits, `0x157` at `+0x30` | — | **C** | table |
+| 16 | `TITLE 0x8007C8EC` (slot digits, `0x5B0`) | none | — | **C** | table |
+| 17 | `TITLE 0x8007CB54` (memory-card messages; `0x8007CC4C` is inside it, not a second walker) | `0x8007CDD8 addiu s5,s5,0xC` | `s5` · `-2(s0)` | **A** | **proven** |
+| 18 | `TITLE 0x8007CF7C` (card-screen yes/no, 5 raw glyphs at `0x80081480`) | `0x8007D050 addiu s1,s1,0xC`; after glyph index 1 (`0x8007D03C addiu v0,zero,1`) the step is `+0x30` (`0x8007D04C`) — the word gap | `s1` · `lh 2·s0(s4)` | **B** for now: "Yes"/"No" is 3 + 2 glyphs, so the split index and the gap literal change with the text; a hook would need the index-based id fetch | table |
+| 19 | `TITLE 0x8007FA94` (config) | `0x8007FBC4 addiu v1,s0,0xC` | `v1 = s0 +` · `-2(s1)` | **A** | **proven** |
+| 20a | `TITLE 0x800803D8` (extras label 5) | `0x80080468` in a branch delay slot; hook at `0x8008045C addiu s0,s0,2` | `s1` · `-2(s0)` | **A** | assembled |
+| 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | assembled |
+| 21 | `TITLE 0x80080484` (extras numbers `／ 3 1 ％`) | none | — | **C** | table |
+| 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **C** | table |
+| 23 | `MUSI 0x8007C604` (button hint, 7 glyphs, bound `slti 7`) | x recomputed from the index: `0x8007C700 sll a1,a1,2` + `addiu a1,a1,0x78` | index | **B**: the glyph count is a code constant; hooking means recomputing x as a prefix sum | table |
+| 24 | `MUSI 0x8007EDB0` (strength labels, 3 rows × 3 cells) | x from the index at 16 px (`0x8007EE1C`) and 12 px (`0x8007EE78`), bounds `slti 2`/`3` | index | **B**: the row stride and bounds fix the cell count, so a translation rewrites the array and the bounds anyway | table |
+| 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table (sumo is days of play away) |
+| 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | table |
+
+Counts: **A** 12 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 19, 20a, 20b, 25, 26; 13 and 14 ride on
+12), of which 2 proven and 2 assembled; **B** 3 (18, 23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21,
+22). The "six copies of one walker" are not register-identical — pens `s3`, `s5`, `v1`+`s0`,
+`v1`+`s1`, `s1`, `s1`; id pointers `s0` or `s1` — so the bodies are per shape: `vwf_step_s1_s0`
+serves four surfaces (5b, 11, 25, 26), the three in `asm/vwf.asm` serve `TITLE`, and 5a, 9, 12
+need one each. Every body is ten words; with 52 bytes left in the gap the next ones go to the
+`0x80012E04` island (§ "The free space").
+
+## Reaching the living room (why the SELECT proof is Redux-only)
+
+Measured 2026-09-20 on this build, reading RAM from `tools/vwf/reach-select.lua` and its
+throwaway ancestors, while looking for a pad-only route from the end of the arrival sequence
+to `E0112`:
+
+* **The field is tank-controlled** (the game's own controls screen, SELECT at the title:
+  UP walks forward, LEFT/RIGHT turn, DOWN turns about, ○ talks / examines, ✕ runs, △/□ the
+  sub-screen). A turn is **44 angle units per frame** (4096 = a full turn; `actor + 0x10`),
+  a walk **≈ 7.3 units per frame**. The previous attempt at this route held screen directions
+  and never left the room for that reason.
+* **Actors**: `g_actors` `0x80027778` is a `u32` pointer per slot (Boku 0, the uncle 1 …);
+  an actor is `{s32 x @0, y @4, z @8}` in 1/16 units and `s16 angle @0x10`. **Talk** needs
+  Boku facing the actor within ±0x155 (≈ 30°): `0x80031424` compares the bearing between two
+  actors (`0x800351D0`) with Boku's angle; a ○ from 542 units away, facing him, opened
+  nothing, one from ≈ 240 units did.
+* **The room is sealed.** The live map's exit list is `*0x80026BE8` → `{u32 count, then
+  0x2C-byte records: four `(s16 x, s16 z)` corners at 4-byte spacing, a centre at +0x20/+0x24,
+  the target's base name at +0x28}`, scanned every field frame by `0x800208A4` (containment
+  test `0x800209A8`, then `map_go` `0x80017954`). **`G14100` has one record → `G13`;
+  `G13100` has one record → `G14`.** Boku's room on day 1 at 15:34 has no walkable exit, on
+  either emulator; every heading from both halves, and every wall-following pair of legs,
+  came back to the other half (the sweeps are in `work/txt05/sweep*/`). The examine zones
+  (`*0x80026BFC`, 36-byte records) list four for `G14`; walking into zone 0 — `E0001`'s
+  window narration, `examine:z0` — stops 7 units short of it at the desk, and ○ there, at
+  twelve headings, opened nothing. Whatever opens the door (a flag, `E0001`, the clock) was
+  not found; `G01103` itself has six exits (`G02`, `G17`, three to `G06`, `G10`), so the rest
+  of the house is walkable once out.
+* **The route used instead** performs the map change the `MAP` opcode performs: `map_request`
+  `0x80017A04` copies the base name to `0x80026C48`, points `0x80026BD0` at the request block
+  `0x80026C20`, sets `0x80024728 = 1` and bit 1 of `0x80024714`; `0x80017A5C` then calls
+  `map_go`, which sets bit 0. Writing those words from Lua in free roam loads `G01103` (the
+  variant the clock picks: 15:34, so `E0112`'s hour test already holds), spawns Boku at
+  (−163, 1531) facing 0 and the uncle at (−484, 1035), and the clock, the events and the
+  talk are the game's. From there: RIGHT 8 frames (angle 352, bearing to the uncle 374), UP
+  50, ○. `shoot.sh` runs it; `reach-select.lua` prints every exit record of every map it
+  enters, which is the tool for finding the real route.
+* **Beetle** has no RAM access, so the same proof there needs either that route or a test
+  image whose arrival sequence ends with `MAP:G01` — one operand of `E0186`'s bytecode — which
+  was not built. The SELECT code path is identical on both (the patch is the same bytes; the
+  dialogue and TITLE hooks agree on both to the pixel), so the risk left is Beetle-specific
+  drawing of the 50 % tile, not the logic.
+
+## The `HHON` walkers
+
+**Documented only; not patched, not reached.** `HHON.OVL` is the insect book, which needs
+the insect-collecting kit (`E0107`, day 1 evening at the desk) and then an entry in the book
+— the sub-screen (△) reached from free roam on this route is the item menu (`item_menu_draw`,
+surface 12: the desk, the calendar, the radio-calisthenics card), not the book. The two
+walkers are [text-renderer.md](text-renderer.md) § 4c's: each swaps which register takes
+`+0xC` and turns `x −= 0xE; y = 0x20` into `y += pitch; x = left` — four immediates or
+registers each plus new origins — and their texts are the `HHON` arrays of
+[text-outside-events.md](text-outside-events.md). Decision **A** (route the step through the
+width table with a `jal` body) once the hook site's registers are read; the free space for
+the bodies is § "The free space"'s next island.
 
 ## Not done
 
-* **SELECT menus** (`select_draw`): still vertical, fixed 12; needs a real hook (no spare slots).
-* **The `HHON` walkers** (two vertical walkers in the overlay).
-* **The 20 fixed-pitch surfaces and the arrays behind them**: untouched, and still pixel-identical
-  because no Japanese cell moved. When they are translated they will use the left-aligned English
-  cells at a fixed 12-px step and look gappy until each gets its own advance.
-* **Kerning, bearings, glyphs wider than 12**: none; the nine slots are full.
-* **Text that grows**: everything is written in place; relocating and re-lengthening text is the
-  pipeline's (`PIPE-04`), and re-authoring the `0x8002` operands is the inserter's.
+* **SELECT on Beetle**: not reached (§ "Reaching the living room"); the code is proven on
+  PCSX-Redux only. **The extras screen** (surface 20) needs a save file. **`HHON`** is
+  documented, not patched. **The twelve other A-decision surfaces** of § "The fixed-pitch
+  surfaces" are a table, not code.
+* **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
+  bodies add only the table byte.
+* **Text that grows**: everything is written in place — which is why `--days` writes 67 lines
+  of 764 (§ "The reviewed translation, in place"); relocating and re-lengthening text is the
+  pipeline's (`PIPE-03`/`PIPE-04`), and re-authoring the `0x8002` operands is the inserter's.
+  The space-padding of array items is a consequence of writing in place and goes away with it.
 * **The speaker label** is inline plain text here ("Boku: "); how it is drawn is undecided.
 * **The translucent band and the 46-row band** are reachable (`--band-y 194 --band-h 46 --pen-y
   198`; the fade entry is two data words not in the asm) but were not shot.
-* `make.sh` has no verb for this; the build lives outside `boku/` while that package is in flux.
+* `make.sh` has no verb for this; the build lives outside `boku/` while that package is in flux
+  (`boku.text.check_placement` went away under it during this unit; the prototype now carries
+  the per-site hash check itself).
 
 ## Open risks
 
 * The heap gap was watched through boot, title and the arrival sequence only
   ([renderer-runtime.md](renderer-runtime.md) § Q5): `MUSI`/`HHON`/`ZUKAN`/`TAKO`, a save and a full
-  day are unwatched. A write into the table would show as wrong spacing, not a crash.
-* The free-cell list covers text sites, arrays and known code immediates; the build's own gate
-  re-checks only text sites. The 23 computed-id `glyph_draw` sites ([font.md](font.md)) are
-  covered by neither.
+  day are unwatched. A write into the table would show as wrong spacing, not a crash; a write
+  into the hook bodies would crash.
+* `vwf_select_xmax` is consumed by the first `select_box_draw` after a `select_draw`. Both
+  runners keep that order; a third caller drawing the box first would see 0 and get the table's
+  80 × 40.
 * Free-roam, menus and sumo were not sampled for primitive-buffer headroom (§ Q4).
 * Confirmed on emulators only; EDC/ECC is regenerated and self-checked, but no disc was burned.

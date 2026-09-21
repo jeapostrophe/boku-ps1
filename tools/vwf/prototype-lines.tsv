@@ -2,7 +2,8 @@
 # shows: research/renderer-runtime.md § "Reaching the first dialogue"). Tab-separated.
 #
 #   site    a line id (research/text-format.md § "Proposed line id"); every physical copy is written
-#   source  a line id in translation/samples/ (its English is read from there), or `fixture`
+#   source  a line id in translation/days/ or translation/samples/ (its English is read from
+#           there), or `fixture`
 #   label   yes = prefix the sample's speaker, "Boku: ..."
 #   wrap    yes = break lines at spaces to the band's width; no = leave the page as written
 #   text    fixtures only: layout tests, not translation. ` // ` is a page break, \n a line break
@@ -19,6 +20,29 @@ E0171.3	E0650.16	yes	yes
 E0174.0	fixture	no	yes	Aunt: What syrup do you like on your shaved ice? // Hm?
 E0174.1	E0404.0	yes	yes	
 E0175.0	fixture	no	no	(No wrap) "The quick brown fox jumps over the lazy dog." // ~
-E0176.0	E2805.4	no	yes	
+E0176.0	E0114.2	no	yes
 E0177.1	E0650.18	no	yes	
 E0177.2	fixture	no	yes	Line 1\nLine 2\nLine 3\nLine 4\nLine 5 // 67890
+# SELECT sites: one option per line (\n), no page breaks; the count must equal the layout's
+# line count (a prompt line included). Which of these a headless run reaches is recorded in
+# research/vwf-prototype.md; E0112.1 and E0202.3 are the game's plain yes/no.
+E0112.1	fixture	no	no	Yes\nNo
+E0022.0	fixture	no	no	Which book?\nBugs\nKites
+E0020.0	fixture	no	no	A bath?\nYes\nNo
+# Array items drawn by TITLE.OVL's walkers (research/text-renderer.md § 3 rows 17, 19, 20),
+# written in place, so each fixture is cut to the stock item's bytes and is not a
+# translation: the memory-card check screen (exe@8003D5F0), the config screen
+# (exe@8003D9BC) and the extras labels (exe@8003DA00).
+exe@8003D5F0.0	fixture	no	no	Checking card
+exe@8003D5F0.1	fixture	no	no	No memory card
+exe@8003D5F0.4	fixture	no	no	No file here
+exe@8003D5F0.6	fixture	no	no	Load which?
+exe@8003D9BC.0	fixture	no	no	Message
+exe@8003D9BC.1	fixture	no	no	Tone
+exe@8003D9BC.2	fixture	no	no	Pad
+exe@8003D9BC.3	fixture	no	no	Rumble
+exe@8003D9BC.4	fixture	no	no	On
+exe@8003DA00.1	fixture	no	no	Insects
+exe@8003DA00.3	fixture	no	no	Item
+exe@8003DA00.4	fixture	no	no	Ending
+exe@8003DA00.5	fixture	no	no	Quiz rate

@@ -244,8 +244,16 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       sheet is rebuilt at build time from the contributor's disc with Latin cells
       left-aligned in FREE cells (cells the Japanese script draws are never moved, and a gate
       refuses if one would change), so untranslated pages are unchanged; the typeface is a
-      `--font` input. Real lines measured to the pixel against the mock-ups. **Left to do:**
-      SELECT menus (a real hook), the two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and
+      `--font` input. Real lines measured to the pixel against the mock-ups. **More proven since** (`asm/vwf.asm`, `select.asm`, `title.asm`): SELECT menus draw as
+      horizontal rows in the band with a cursor beside the row, up/down and ○ working (proven
+      on PCSX-Redux via a scripted map change; not yet reached on Beetle — Boku's room is
+      sealed on day 1 and the game is tank-controlled); the title / no-file / config screens on
+      both emulators; the ORIGINAL gate now covers the EXE and four overlays; the `...` fix.
+      `tools/vwf/build_prototype.py --days translation/days` lays real day files in place: **67
+      of 764 reviewed lines fit in place, 697 need the reinserter's growth** — so the next step
+      is the build moving into `boku build`, applying the VWF EXE words and rebuilt sheet as
+      byte edits beside the reinserter and relocation. **Left to do:** that integration; SELECT
+      on Beetle; the two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and
       their arrays, the 23 computed-id `glyph_draw` sites (not covered by the free-cell gate),
       the em dash (113 translated lines use it; the prototype cell map is ASCII-only),
       `...` reading as a dash under the shadow, the speaker-label design, watching the heap

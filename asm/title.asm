@@ -1,0 +1,90 @@
+; TITLE.OVL's fixed-pitch horizontal walkers, routed through the width table (PLAN TXT-05,
+; prototype). Included by vwf.asm inside `.open TITLE_PATH, 0x80079A08`; the hook bodies it
+; jumps to live in the executable's free space (vwf.asm), which every overlay can see.
+;
+; Each walker steps its pen by a literal 12 after `jal glyph_draw`; the step becomes a jal
+; to a body that adds vwf_advance[id] instead. Bodies write only at and t9, so whatever a
+; delay slot loaded (a0, v0) survives. Sites and registers: research/vwf-prototype.md
+; § "The fixed-pitch surfaces" (surfaces 17, 19, 20 of research/text-renderer.md § 3).
+
+; ---- surface 17: the memory-card messages (EXE array 0x8003D5F0), walker 0x8007CB54 ----
+; Pen s5; s0 was stepped past the word before the draw, so the id is at -2(s0).
+.org 0x8007CDD8
+.area 4
+.if ORIGINAL
+    addiu   s5, s5, 0xC             ; stock: x += 12; delay slot `lhu a0,0(s0)` reloads a0
+.else
+    jal     vwf_step_s5_s0
+.endif
+.endarea
+
+; ---- surface 19: the config labels (EXE array 0x8003D9BC), walker 0x8007FA94 ----------
+; Pen s0 through v1; the id pointer is s1, stepped before the draw. Line 1 (s3 == 1) was
+; letter-spaced 16 instead of 12 by the third word, which the proportional pen drops.
+.org 0x8007FBC4
+.area 5*4
+.if ORIGINAL
+    addiu   v1, s0, 0xC             ; stock: x + 12
+    addiu   v0, zero, 1
+    bne     s3, v0, 0x8007FBD8
+    move    s0, v1                  ; stock: every line
+    addiu   s0, v1, 4               ; stock: line 1 only, 4 more
+.else
+    jal     vwf_step_v1_s0_s1
+    addiu   v0, zero, 1             ; (unchanged, delay slot)
+    bne     s3, v0, 0x8007FBD8      ; (unchanged)
+    move    s0, v1                  ; (unchanged)
+    move    s0, v1
+.endif
+.endarea
+
+; ---- surface 20a: extras label 5 (EXE array 0x8003DA00), walker 0x800803D8 -------------
+; Pen s1; the step sits in the loop branch's delay slot, so the jal takes the pointer
+; step's slot instead: the id is still at -2(s0) there, and the body steps s0 itself.
+.org 0x8008045C
+.area 4
+.if ORIGINAL
+    addiu   s0, s0, 2               ; stock: next word; delay slot `andi v0,a0,0x8000` is kept
+.else
+    jal     vwf_step_s1_s0_next
+.endif
+.endarea
+
+.org 0x80080468
+.area 4
+.if ORIGINAL
+    addiu   s1, s1, 0xC             ; stock: x += 12, in the delay slot of `beqz v0`
+.else
+    nop
+.endif
+.endarea
+
+; ---- surface 20b: extras labels 0-4, walker 0x80080680 -----------------------------------
+; Pen s1 through v1; lines 0 and 3 were letter-spaced 16. The step becomes a copy (x + 0)
+; because the instruction after it is a branch; the advance is added at the pointer step.
+.org 0x80080790
+.area 4
+.if ORIGINAL
+    addiu   v1, s1, 0xC             ; stock: x + 12
+.else
+    move    v1, s1
+.endif
+.endarea
+
+.org 0x800807A8
+.area 4
+.if ORIGINAL
+    addiu   s1, v1, 4               ; stock: lines 0 and 3, 4 more
+.else
+    move    s1, v1
+.endif
+.endarea
+
+.org 0x800807B0
+.area 4
+.if ORIGINAL
+    addiu   s0, s0, 2               ; stock: next word; delay slot `move a1,zero` is kept
+.else
+    jal     vwf_step_s1_s0_next
+.endif
+.endarea

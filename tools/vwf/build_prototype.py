@@ -23,6 +23,13 @@ glyphs are the game's own Latin cells from the contributor's disc plus the place
 punctuation in `placeholder-glyphs.txt`. The rebuilt sheet is disc-derived: it lives under
 `build/` and is never tracked.
 
+`--days translation/days` takes the English from the reviewed day files instead of the
+sample lines (`boku.translation.SampleScenes`, the provisional reader both share): every
+message and select whose id the import knows is laid out and written in place; a line that
+does not fit its site, or has the wrong page or option count, is left Japanese and listed
+in the summary and in `manifest.json` -> `unfitted` -- never cut, never silently dropped.
+The `--lines` fixtures then only fill sites the day files do not cover (the array items).
+
 Standard library only. `boku` is imported read-only for the disc writer, the EDC check and
 the text-site index; nothing under `boku/` is modified by or for this script.
 """
@@ -50,19 +57,31 @@ from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack  # noqa: E4
 from boku.disc import DiscImage, DiscWriter, SectorWrite  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
 from boku.importer import IMAGE_SHA1, sha1_of  # noqa: E402
-from boku.sites import page_waits  # noqa: E402
-from boku.text import PlacedSite, SiteIndex, check_placement  # noqa: E402
+from boku.sites import line_key_of, page_waits  # noqa: E402
+from boku.text import PlacedSite, SiteIndex, TextError  # noqa: E402
+from boku.translation import SampleScenes  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-ASM = REPO / "asm/dialogue.asm"
+ASM = REPO / "asm/vwf.asm"
 GLYPH_TSV = REPO / "research/data/glyph-table.tsv"
 FONT_CANDIDATES = REPO / "research/font-candidates.md"
 SAMPLES = REPO / "translation/samples"
+DAYS = REPO / "translation/days"
 PLACEHOLDERS = HERE / "placeholder-glyphs.txt"
 DEFAULT_LINES = HERE / "prototype-lines.tsv"
 DEFAULT_ARMIPS = Path.home() / "Dev/dist/armips/build/armips"
 
 EXE_LOAD_BIAS = 0x8000F800
+EXE_HEADER = 0x800
+"""The PS-X EXE header; the code starts after it (RAM 0x80010000)."""
+OVERLAY_BASE = 0x80079A08
+"""Where every `.OVL` loads (`research/text-renderer.md` § 3)."""
+GLYPH_DRAW = 0x8002BA2C
+GLYPH_DRAW_LAYER = 0x8002B9FC
+DRAWING_OVERLAYS = ("TITLE.OVL", "TAKO.OVL", "MUSI.OVL", "HHON.OVL")
+"""The overlays with `glyph_draw` call sites (`research/text-outside-events.md`)."""
+SYSMSG_REMAP = {13: 14}
+"""`sysmsg_draw` draws id 13 as 14 (`research/text-outside-events.md` § Readers)."""
 FONT_MEMBER = "ONMEM.BIN"
 FONT_CHILD = 2
 CELL = 12
@@ -88,14 +107,45 @@ class Layout:
     line_pitch: int = 13
     band_y: int = 168
     band_h: int = 72
+    sel_x: int = 48
+    sel_y: int = 174
+    sel_pitch: int = 13
+    sel_pad: int = 6
+    sel_cursor_dx: int = -18
+    sel_cursor_dy: int = -2
     fixed_advance: int = 14
     gap: int = 1
     """Pixels between one glyph's ink and the next, for glyphs measured from their ink."""
+
+    ARMIPS_EQUATES = (
+        "pen_x",
+        "pen_y",
+        "line_pitch",
+        "band_y",
+        "band_h",
+        "sel_x",
+        "sel_y",
+        "sel_pitch",
+        "sel_pad",
+        "sel_cursor_dx",
+        "sel_cursor_dy",
+        "fixed_advance",
+    )
+    """Fields `asm/vwf.asm` takes as `-equ NAME`, upper-cased."""
+
+    def __post_init__(self) -> None:
+        if self.sel_cursor_dx > 0:
+            raise BuildRefused("--sel-cursor-dx must be <= 0: the box's corner is measured from it")
 
     @property
     def wrap_width(self) -> int:
         """The pen's left margin mirrored on the right."""
         return SCREEN_WIDTH - 2 * self.pen_x
+
+    @property
+    def select_width(self) -> int:
+        """What an option row may take: from the row's origin to the pen's right margin."""
+        return SCREEN_WIDTH - self.pen_x - self.sel_x
 
 
 # --- glyphs ---------------------------------------------------------------------------
@@ -212,8 +262,17 @@ def native_ids() -> dict[str, int]:
     return mapping
 
 
+NARROW_INK = 2
+"""Ink this wide or narrower gets one more pixel of advance, so that its shadow (the copy
+at x + 1) does not bridge the gap to a repeat of itself: `...` read as a dash at ink + gap
+(`research/vwf-prototype.md` § "What the screenshots show")."""
+
+
 def game_font(sheet: Sheet, layout: Layout) -> dict[str, Glyph]:
-    """The game's own Latin glyphs, shifted to column 0, advance = ink width + gap."""
+    """The game's own Latin glyphs, shifted to column 0, advance = ink width + gap.
+
+    A glyph of `NARROW_INK` or less advances one more, for the shadow's sake.
+    """
     glyphs = {}
     for character, glyph_id in native_ids().items():
         rows = sheet.get(glyph_id)
@@ -221,9 +280,9 @@ def game_font(sheet: Sheet, layout: Layout) -> dict[str, Glyph]:
         if ink is None:
             continue
         left, right = ink
-        glyphs[character] = Glyph(
-            tuple((row << left) & 0xFFF for row in rows), right - left + 1 + layout.gap
-        )
+        width = right - left + 1
+        advance = width + layout.gap + (1 if width <= NARROW_INK else 0)
+        glyphs[character] = Glyph(tuple((row << left) & 0xFFF for row in rows), advance)
     return glyphs
 
 
@@ -282,9 +341,12 @@ class LineSpec:
 
 
 def load_samples() -> dict[str, tuple[str, str]]:
-    """Line id -> (speaker, English) from every file in `translation/samples/`."""
+    """Line id -> (speaker, English) from `translation/days/` and `translation/samples/`.
+
+    The sample scenes moved into the day files as the translation grew; a `source` in
+    `prototype-lines.tsv` may name a line from either."""
     samples = {}
-    for path in sorted(SAMPLES.glob("*.txt")):
+    for path in sorted([*DAYS.glob("*.txt"), *SAMPLES.glob("*.txt")]):
         for line in path.read_text(encoding="utf-8").splitlines():
             parts = line.split("\t")
             if len(parts) == 3 and re.fullmatch(r"E\d{4}\.\d+", parts[0]):
@@ -305,9 +367,36 @@ def load_lines(path: Path) -> list[LineSpec]:
                 speaker, text = samples[row["source"]]
                 text = f"{speaker}: {text}" if label else text
             else:
-                raise BuildRefused(f"{path}: {row['source']} is not in translation/samples/")
+                raise BuildRefused(
+                    f"{path}: {row['source']} is not in translation/days/ or translation/samples/"
+                )
             specs.append(LineSpec(row["site"], row["source"], label, row["wrap"] == "yes", text))
     return specs
+
+
+UNLABELLED = ("Narrator", "(unlabelled)")
+"""Speakers `--label` never prefixes: narration and the examine descriptions."""
+
+
+def load_days(directory: Path, label: bool) -> tuple[list[LineSpec], tuple[str, ...]]:
+    """Every line of `translation/days/*.txt` as a spec, and the reader's complaints.
+
+    A select's options (a prompt first, where the layout has one — `shared.txt`'s rule)
+    become one option per line; a message keeps its ` // ` pages and is wrapped. The
+    speaker goes in front of the text only with `label`, the inline "Boku: " form the
+    prototype has used so far (the label's design is still open).
+    """
+    source = SampleScenes.from_directory(directory)
+    specs = []
+    for entry in source:
+        if entry.is_select:
+            text = "\n".join((*entry.prompts, *entry.options))
+        else:
+            text = PAGE_BREAK.join(entry.pages)
+            if label and entry.speaker not in UNLABELLED:
+                text = f"{entry.speaker}: {text}"
+        specs.append(LineSpec(entry.line_id, entry.origin, label, not entry.is_select, text))
+    return specs, source.problems
 
 
 def wrap_page(page: str, font: dict[str, Glyph], width: int) -> str:
@@ -361,6 +450,81 @@ def encode_message(
     return struct.pack(f"<{len(words)}H", *words), pages
 
 
+def encode_select(
+    spec: LineSpec, raw: bytes, font: dict[str, Glyph], cells: dict[str, int], layout: Layout
+) -> tuple[bytes, list[str]]:
+    """A SELECT site's replacement bytes: one option per line, each ended by `0x8001`.
+
+    The line count is the reader's (`g_select_lines[layout]`), which the stock bytes show
+    as their count of `0x8001`; a prompt line, where the layout has one, is a line too.
+    """
+    options = spec.text.split("\n")
+    stock_lines = words_of(raw).count(NEWLINE_WORD)
+    if len(options) != stock_lines:
+        raise BuildRefused(
+            f"{spec.site_id}: the layout draws {stock_lines} lines and the English has "
+            f"{len(options)}; select_draw reads the count from g_select_lines, not the text"
+        )
+    missing = sorted({c for c in spec.text if c != "\n" and c not in cells})
+    if missing:
+        raise BuildRefused(f"{spec.site_id}: the font has no glyph for {''.join(missing)!r}")
+    wide = [o for o in options if sum(font[c].advance for c in o) > layout.select_width]
+    if wide:
+        raise BuildRefused(
+            f"{spec.site_id}: {wide[0]!r} is wider than the {layout.select_width} px a row "
+            f"has; the engine clips at the screen edge and the box is measured from the text"
+        )
+    words: list[int] = []
+    for option in options:
+        words += [cells[c] for c in option] + [NEWLINE_WORD]
+    if 2 * len(words) > len(raw):
+        raise BuildRefused(
+            f"{spec.site_id}: {spec.text!r} needs {2 * len(words)} bytes and the site holds "
+            f"{len(raw)}; this prototype writes in place and nothing is cut to fit"
+        )
+    words += [0] * (len(raw) // 2 - len(words))
+    return struct.pack(f"<{len(words)}H", *words), options
+
+
+def check_placement(entry: PlacedSite, raw: bytes) -> None:
+    """Raise unless `raw` (the bytes at the site in `disc/files`) hash to the walk's key.
+
+    `boku.text.check_placement` did this until `boku.build.verify_edits` took over whole
+    byte ranges; the prototype keeps the per-site form because it writes sites in place.
+    """
+    if len(raw) != entry.site.size or line_key_of(raw) != entry.line_key:
+        raise TextError(
+            f"{entry.line_id}: {entry.file_name}+0x{entry.file_offset:x} does not hold what "
+            f"the walk read there ({len(raw)} bytes, key {line_key_of(raw)} vs "
+            f"{entry.line_key}); nothing was written"
+        )
+
+
+def encode_array_item(
+    spec: LineSpec, raw: bytes, font: dict[str, Glyph], cells: dict[str, int], layout: Layout
+) -> tuple[bytes, list[str]]:
+    """One item of a text array: its glyphs, then the terminator the stock item ends with
+    (`0x8001` in an L array, `0x8000` in an E array; `research/text-outside-events.md`).
+
+    The next item starts right after the terminator and the readers count terminators to
+    find item n, so the item keeps its word count: spare words are English spaces before
+    the terminator, not zeros after it (id 0 is the 14-px Japanese space, and drawn).
+    """
+    if "\n" in spec.text or PAGE_BREAK in spec.text:
+        raise BuildRefused(f"{spec.site_id}: an array item is one line")
+    missing = sorted({c for c in spec.text if c not in cells})
+    if missing:
+        raise BuildRefused(f"{spec.site_id}: the font has no glyph for {''.join(missing)!r}")
+    spare = len(raw) // 2 - 1 - len(spec.text)
+    if spare < 0:
+        raise BuildRefused(
+            f"{spec.site_id}: {spec.text!r} needs {2 * (len(spec.text) + 1)} bytes and the "
+            f"site holds {len(raw)}; this prototype writes in place and nothing is cut to fit"
+        )
+    words = [cells[c] for c in spec.text] + [cells[" "]] * spare + [words_of(raw)[-1]]
+    return struct.pack(f"<{len(words)}H", *words), [spec.text]
+
+
 def glyph_ids_in(raw: bytes) -> set[int]:
     """Glyph ids a site draws: every word below 0x8000 that is not a `0x8002` operand."""
     words = words_of(raw)
@@ -376,62 +540,133 @@ def glyph_ids_in(raw: bytes) -> set[int]:
     return ids
 
 
+def _a0_immediate(words: list[int], site: int) -> tuple[int, int] | None:
+    """The `(base, count)` of ids a `jal glyph_draw` at `words[site]` passes in `a0`.
+
+    Reads the delay slot and up to eight instructions back for the last write to `a0`:
+    `addiu/ori a0,zero,imm` is the one id `imm`; `addiu a0,rs,imm` with a live `rs` is the
+    digit pattern `0x34 + d` (`research/text-outside-events.md` § "Text made at run time"),
+    ten ids from `imm`. Any other write (a load, a move) is an array walk, which the site
+    index already covers, and returns None. Mirrors `work/rec04/direct_ids.py`, which
+    `research/font.md` § "The draw code" was read from.
+    """
+    for j in [site + 1, *range(site - 1, max(site - 9, -1), -1)]:
+        word = words[j]
+        op, rs, rt = word >> 26, (word >> 21) & 31, (word >> 16) & 31
+        if op in (9, 13) and rt == 4:  # addiu / ori, rt = a0
+            imm = word & 0xFFFF
+            return (imm, 1) if rs == 0 else (imm, 10)
+        if op == 0 and (word >> 11) & 31 == 4 and j != site + 1:  # R-type writing a0
+            return None
+        if op in (0x20, 0x21, 0x23, 0x24, 0x25) and rt == 4:  # a load into a0
+            return None
+    return None
+
+
+def code_glyph_ids(archive: Archive) -> set[int]:
+    """Glyph ids the code passes to `glyph_draw` without reading them from text.
+
+    Derived from the binaries, not retyped: every `jal glyph_draw` / `glyph_draw_layer` in
+    the executable and the four drawing overlays is resolved by `_a0_immediate`. Plus the
+    remap `sysmsg_draw` applies. This is the set the free-cell list of
+    `research/font-candidates.md` § 1 promises to exclude and the text-site gate cannot see.
+    """
+    images = [(archive.exe[EXE_HEADER:], EXE_LOAD_BIAS + EXE_HEADER)]
+    for name in DRAWING_OVERLAYS:
+        images.append((archive.blob(archive.member(name)), OVERLAY_BASE))
+    calls = {0x0C000000 | ((target >> 2) & 0x3FFFFFF) for target in (GLYPH_DRAW, GLYPH_DRAW_LAYER)}
+    ids: set[int] = set(SYSMSG_REMAP) | set(SYSMSG_REMAP.values())
+    for data, _ in images:
+        count = len(data) // 4
+        words = list(struct.unpack_from(f"<{count}I", data))
+        for site, word in enumerate(words):
+            if word in calls and site + 1 < count:
+                found = _a0_immediate(words, site)
+                if found:
+                    ids.update(range(found[0], found[0] + found[1]))
+    return ids
+
+
 # --- assembling -----------------------------------------------------------------------
 
 
 def run_armips(
-    armips: Path, asm: Path, exe: Path, table: Path, ids: int, layout: Layout, original: bool
+    armips: Path,
+    asm: Path,
+    files: dict[str, Path],
+    table: Path,
+    ids: int,
+    layout: Layout,
+    original: bool,
 ):
-    symbols = exe.with_suffix(".sym")
-    command = [str(armips), str(asm), "-sym", str(symbols)]
-    for name, value in (("EXE_PATH", exe), ("TABLE_PATH", table)):
+    """One armips pass; `files` maps each `-strequ` name (`EXE_PATH`, `TITLE_PATH` ...) to
+    the copy armips patches in place. Returns the symbols it defined."""
+    symbols = table.with_suffix(".sym")
+    command = [str(armips), asm.name, "-sym", str(symbols)]
+    for name, value in [*files.items(), ("TABLE_PATH", table)]:
         command += ["-strequ", name, str(value)]
-    for name, value in (
-        ("TABLE_IDS", ids),
-        ("FIXED_ADVANCE", layout.fixed_advance),
-        ("PEN_X", layout.pen_x),
-        ("PEN_Y", layout.pen_y),
-        ("LINE_PITCH", layout.line_pitch),
-        ("BAND_Y", layout.band_y),
-        ("BAND_H", layout.band_h),
-        ("ORIGINAL", int(original)),
-    ):
+    equates = [(name.upper(), getattr(layout, name)) for name in layout.ARMIPS_EQUATES]
+    for name, value in [("TABLE_IDS", ids), *equates, ("ORIGINAL", int(original))]:
         command += ["-equ", name, str(value)]
-    done = subprocess.run(command, capture_output=True, text=True, timeout=120, check=False)
+    # armips resolves `.include` against the working directory, so run it from asm/.
+    done = subprocess.run(
+        command, cwd=asm.parent, capture_output=True, text=True, timeout=120, check=False
+    )
     if done.returncode != 0:
         raise BuildRefused(f"armips failed on {asm}:\n{done.stdout}{done.stderr}")
     pairs = (line.split() for line in symbols.read_text(encoding="latin-1").splitlines())
     return {pair[1]: int(pair[0], 16) for pair in pairs if len(pair) == 2 and pair[1][0].isalpha()}
 
 
-def assemble(armips: Path, asm: Path, stock: bytes, table: bytes, layout: Layout, work: Path):
-    """Returns (patched executable, symbols). Refuses unless the ORIGINAL pass is an identity."""
+@dataclass(frozen=True)
+class Image:
+    """A file armips patches: its name, the retail bytes, and where it loads in RAM."""
+
+    name: str
+    stock: bytes
+    load_bias: int
+    """RAM address minus file offset."""
+
+    @property
+    def equate(self) -> str:
+        return f"{self.name.split('.')[0]}_PATH" if self.name != EXE_NAME else "EXE_PATH"
+
+
+def assemble(
+    armips: Path, asm: Path, images: list[Image], table: bytes, layout: Layout, work: Path
+) -> tuple[dict[str, bytes], dict[str, int]]:
+    """Returns ({image name: patched bytes}, symbols). Refuses unless the ORIGINAL pass
+    reproduces every image byte for byte."""
     table_path = work / "vwf-advance.bin"
     table_path.write_bytes(table)
-    check = work / "SCPS_100.88.original-pass"
-    check.write_bytes(stock)
-    run_armips(armips, asm, check, table_path, len(table), layout, original=True)
-    echoed = check.read_bytes()
-    if echoed != stock:
-        where = next(i for i, (a, b) in enumerate(zip(echoed, stock, strict=True)) if a != b)
-        raise BuildRefused(
-            f"{asm} with ORIGINAL=1 does not reproduce {EXE_NAME}: first difference at RAM "
-            f"0x{(where & ~3) + EXE_LOAD_BIAS:08X}. A `stock:` block in the source is wrong "
-            f"about what the retail executable holds, or this is not that executable."
-        )
-    check.unlink()
-    check.with_suffix(".sym").unlink(missing_ok=True)
-    patched = work / EXE_NAME
-    patched.write_bytes(stock)
+    checks = {image.equate: work / f"{image.name}.original-pass" for image in images}
+    for image in images:
+        checks[image.equate].write_bytes(image.stock)
+    run_armips(armips, asm, checks, table_path, len(table), layout, original=True)
+    for image in images:
+        echoed = checks[image.equate].read_bytes()
+        if echoed != image.stock:
+            where = next(
+                i for i, (a, b) in enumerate(zip(echoed, image.stock, strict=True)) if a != b
+            )
+            raise BuildRefused(
+                f"{asm} with ORIGINAL=1 does not reproduce {image.name}: first difference at "
+                f"RAM 0x{(where & ~3) + image.load_bias:08X}. A `stock:` block in the source "
+                f"is wrong about what the retail file holds, or this is not that file."
+            )
+        checks[image.equate].unlink()
+    patched = {image.equate: work / image.name for image in images}
+    for image in images:
+        patched[image.equate].write_bytes(image.stock)
     symbols = run_armips(armips, asm, patched, table_path, len(table), layout, original=False)
-    return patched.read_bytes(), symbols
+    return {image.name: patched[image.equate].read_bytes() for image in images}, symbols
 
 
-def changed_words(stock: bytes, patched: bytes, table: range) -> list[dict[str, str]]:
-    """Every changed executable word outside the advance table, which the manifest hashes."""
+def changed_words(stock: bytes, patched: bytes, gap: range) -> list[dict[str, str]]:
+    """Every changed executable word outside the gap (file offsets), which the manifest hashes."""
     out = []
     for offset in range(0, len(stock), 4):
-        if offset + EXE_LOAD_BIAS in table:
+        if offset in gap:
             continue
         if stock[offset : offset + 4] != patched[offset : offset + 4]:
             out.append(
@@ -499,15 +734,25 @@ def font_child_range(archive: Archive) -> tuple[int, int]:
     return member.offset + offset, size
 
 
+LAYOUT_ARGUMENTS = (
+    "pen_x",
+    "pen_y",
+    "line_pitch",
+    "band_y",
+    "band_h",
+    "sel_x",
+    "sel_y",
+    "sel_pitch",
+    "sel_pad",
+    "sel_cursor_dx",
+    "sel_cursor_dy",
+    "gap",
+)
+"""`Layout` fields the command line sets (`--pen-x` ...)."""
+
+
 def build(args: argparse.Namespace) -> dict[str, object]:
-    layout = Layout(
-        pen_x=args.pen_x,
-        pen_y=args.pen_y,
-        line_pitch=args.line_pitch,
-        band_y=args.band_y,
-        band_h=args.band_h,
-        gap=args.gap,
-    )
+    layout = Layout(**{name: getattr(args, name) for name in LAYOUT_ARGUMENTS})
     source, out = Path(args.image), Path(args.out).resolve()
     if (REPO / "disc").resolve() in [out, *out.parents]:
         raise BuildRefused("--out is under disc/, which no tool writes to")
@@ -540,6 +785,13 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             f"cells {clash} were about to be redrawn, and text on this disc draws them; "
             f"the free-id list in {FONT_CANDIDATES.name} is wrong for this image"
         )
+    clash = sorted(code_glyph_ids(archive) & set(cells.values()))
+    if clash:
+        raise BuildRefused(
+            f"cells {clash} were about to be redrawn, and code on this disc draws them by "
+            f"id (an immediate, a digit, or sysmsg's remap); the free-id list in "
+            f"{FONT_CANDIDATES.name} is wrong for this image"
+        )
     table = bytearray([layout.fixed_advance]) * (max(cells.values()) + 1)
     for character, glyph_id in cells.items():
         sheet.put(glyph_id, font[character].rows)
@@ -549,18 +801,57 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     work = out / "files"
     work.mkdir(parents=True, exist_ok=True)
     (work / "font-sheet.tim").write_bytes(new_tim)
-    patched_exe, symbols = assemble(
-        Path(args.armips), Path(args.asm), stock_exe, bytes(table), layout, work
+    images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
+        Image(name, archive.blob(archive.member(name)), OVERLAY_BASE) for name in DRAWING_OVERLAYS
+    ]
+    patched, symbols = assemble(
+        Path(args.armips), Path(args.asm), images, bytes(table), layout, work
     )
+    patched_exe = patched[EXE_NAME]
+    patched_overlays = {
+        name: patched[name]
+        for name in DRAWING_OVERLAYS
+        if patched[name] != archive.blob(archive.member(name))
+    }
 
+    specs = load_lines(Path(args.lines))
+    unfitted: list[dict[str, str]] = []
+    if args.days:
+        day_specs, problems = load_days(Path(args.days), args.label)
+        unfitted += [{"site": "", "reason": problem} for problem in problems]
+        covered = {spec.site_id for spec in day_specs}
+        specs = [spec for spec in specs if spec.site_id not in covered] + day_specs
     lines = []
-    for spec in load_lines(Path(args.lines)):
-        copies = index.copies_of(spec.site_id)
+    for spec in specs:
+        try:
+            copies = index.copies_of(spec.site_id)
+        except TextError as error:
+            if not args.days:
+                raise
+            unfitted.append({"site": spec.site_id, "reason": f"not a site of this import: {error}"})
+            continue
+        kinds = {placed.site.kind for placed in copies}
+        if len(kinds) != 1:
+            raise BuildRefused(f"{spec.site_id}: its copies are of different kinds {kinds}")
         for placed in copies:
-            if not placed.site.is_message:
-                raise BuildRefused(f"{spec.site_id}: {placed.site.kind} sites are not messages")
             check_placement(placed, site_bytes[placed])
-        encoded, pages = encode_message(spec, site_bytes[copies[0]], font, cells, layout)
+        if copies[0].site.is_message:
+            encode = encode_message
+        elif copies[0].site.kind.startswith("SEL"):
+            encode = encode_select
+        elif copies[0].site.kind in ("ARR-L", "ARR-E"):
+            encode = encode_array_item
+        else:
+            raise BuildRefused(f"{spec.site_id}: {copies[0].site.kind} sites are not written here")
+        try:
+            encoded, pages = encode(spec, site_bytes[copies[0]], font, cells, layout)
+        except BuildRefused as error:
+            # A fixture that does not fit is a build error; a translated line that does
+            # not fit is a finding, reported and left Japanese (nothing is cut).
+            if not args.days or spec.source == "fixture":
+                raise
+            unfitted.append({"site": spec.site_id, "reason": str(error)})
+            continue
         lines.append((spec, copies, encoded, pages))
 
     image = out / "image.img"
@@ -572,6 +863,17 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         exe_entry, archive_entry = entries[f"/{EXE_NAME}"], entries[f"/{ARCHIVE_NAME}"]
         replace_range(writer, exe_entry, EXE_NAME, 0, stock_exe, patched_exe, ledger)
         replace_range(writer, archive_entry, ARCHIVE_NAME, font_offset, stock_tim, new_tim, ledger)
+        for name, new_overlay in patched_overlays.items():
+            member = archive.member(name)
+            replace_range(
+                writer,
+                archive_entry,
+                name,
+                member.offset,
+                archive.blob(member),
+                new_overlay,
+                ledger,
+            )
         for _, copies, encoded, _ in lines:
             placed: PlacedSite
             for placed in copies:
@@ -596,25 +898,34 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         'FILE "image.img" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n', encoding="ascii"
     )
 
+    gap_range = range(symbols["vwf_advance"] - EXE_LOAD_BIAS, symbols["vwf_free"] - EXE_LOAD_BIAS)
     manifest = {
         "format": 1,
         "source_sha1": IMAGE_SHA1 if not args.skip_image_hash else None,
         "result_sha1": sha1_of(image),
-        "layout": layout.__dict__ | {"wrap_width": layout.wrap_width},
+        "layout": layout.__dict__
+        | {"wrap_width": layout.wrap_width, "select_width": layout.select_width},
         "font": args.font or "the game's own Latin cells, re-aligned, plus placeholder-glyphs.txt",
         "table": {
             "ram": f"0x{symbols['vwf_advance']:08X}",
             "ids": len(table),
-            "first_free_byte": f"0x{symbols['vwf_free']:08X}",
             "sha1": hashlib.sha1(table).hexdigest(),
+        },
+        "gap": {
+            "ram": f"0x{symbols['vwf_advance']:08X}",
+            "first_free_byte": f"0x{symbols['vwf_free']:08X}",
+            "hooks": {
+                name: f"0x{symbols[name]:08X}"
+                for name in sorted(symbols)
+                if name.startswith("vwf_") and name not in ("vwf_advance", "vwf_free")
+            },
+            "sha1": hashlib.sha1(patched_exe[gap_range.start : gap_range.stop]).hexdigest(),
         },
         "cells": {
             character: {"id": cells[character], "advance": font[character].advance}
             for character in sorted(cells)
         },
-        "exe_words": changed_words(
-            stock_exe, patched_exe, range(symbols["vwf_advance"] & ~3, symbols["vwf_free"])
-        ),
+        "exe_words": changed_words(stock_exe, patched_exe, gap_range),
         "lines": [
             {
                 "site": spec.site_id,
@@ -630,6 +941,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             for spec, copies, encoded, pages in lines
         ],
         "sectors": sectors,
+        "unfitted": unfitted,
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest
@@ -641,12 +953,23 @@ def main() -> int:
     parser.add_argument("--disc", default=str(REPO / "disc"), help="the import (read-only)")
     parser.add_argument("--out", default=str(REPO / "build/vwf"))
     parser.add_argument("--lines", default=str(DEFAULT_LINES))
+    parser.add_argument(
+        "--days",
+        metavar="DIR",
+        help="translation/days: write every reviewed line that fits its site in place, "
+        "and list the ones that do not (they stay Japanese)",
+    )
+    parser.add_argument(
+        "--label",
+        action="store_true",
+        help="with --days, prefix each message with its speaker as inline text ('Boku: ')",
+    )
     parser.add_argument("--font", help="a glyph file in placeholder-glyphs.txt's format")
     parser.add_argument("--asm", default=str(ASM))
     parser.add_argument("--armips", default=str(DEFAULT_ARMIPS))
     parser.add_argument("--skip-image-hash", action="store_true", help="for repeat builds")
     defaults = Layout()
-    for name in ("pen_x", "pen_y", "line_pitch", "band_y", "band_h", "gap"):
+    for name in LAYOUT_ARGUMENTS:
         parser.add_argument(
             f"--{name.replace('_', '-')}", type=int, default=getattr(defaults, name)
         )
@@ -655,16 +978,21 @@ def main() -> int:
     except BuildRefused as error:
         print(f"build_prototype: {error}", file=sys.stderr)
         return 1
-    table = manifest["table"]
+    table, gap = manifest["table"], manifest["gap"]
     print(f"wrote {Path(parser.parse_args().out) / 'image.cue'}")
     print(
-        f"  advance table: {table['ids']} bytes at {table['ram']}, gap free from "
-        f"{table['first_free_byte']}"
+        f"  advance table: {table['ids']} bytes at {table['ram']}, then "
+        f"{' '.join(gap['hooks'])}; gap free from {gap['first_free_byte']}"
     )
     print(
         f"  {len(manifest['exe_words'])} executable words, {len(manifest['cells'])} glyph "
         f"cells, {len(manifest['lines'])} lines, {len(manifest['sectors'])} sectors"
     )
+    unfitted = manifest["unfitted"]
+    if unfitted:
+        print(f"  {len(unfitted)} lines left Japanese (manifest.json -> unfitted):")
+        for entry in unfitted:
+            print(f"    {entry['site'] or '-'}: {entry['reason']}")
     return 0
 
 

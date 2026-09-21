@@ -1,33 +1,9 @@
 ; The dialogue surface of SCPS_100.88, horizontal and proportional (PLAN TXT-05, prototype).
+; Included by vwf.asm, which owns the file, the equates and the free space.
 ;
 ; Surface: msg_open -> dialog_open -> dialog_draw -> glyph_draw, and the ant-count message,
 ; which is the only other caller of dialog_open. Nothing else in the game goes through
-; dialog_draw (research/text-renderer.md § 3), so nothing else changes. Design, table layout
-; and what was seen on screen: research/vwf-prototype.md.
-;
-; Assembled by tools/vwf/build_prototype.py, which supplies every name below; nothing here
-; is a product decision (PLAN TXT-03 / TXT-06 are open) and nothing here knows the typeface.
-;
-;   -strequ EXE_PATH    a COPY of the extracted executable; armips patches it in place
-;   -strequ TABLE_PATH  TABLE_IDS bytes: the pen advance of glyph ids 0 .. TABLE_IDS-1
-;   -equ TABLE_IDS      how many ids the table covers; every other id advances FIXED_ADVANCE
-;   -equ FIXED_ADVANCE  14, the stock pitch, so untranslated Japanese keeps its spacing
-;   -equ PEN_X, PEN_Y   top-left of the first glyph cell
-;   -equ LINE_PITCH     rows between lines (stock 13)
-;   -equ BAND_Y, BAND_H the backing band's top row and height
-;   -equ ORIGINAL       0 builds the patch. 1 assembles, at every site, the instructions the
-;                       retail executable holds there; the build runs that pass first and
-;                       refuses unless the file comes back byte-identical. That is what
-;                       checks each "stock:" claim below against the contributor's own disc.
-;
-; RAM address = file offset + 0x8000F800; the executable is identity-loaded
-; (research/renderer-runtime.md § Q0).
-
-.psx
-.open EXE_PATH, 0x8000F800
-
-HEAP_START_STOCK equ 0x8008F3A4     ; first byte past the largest overlay (MUSI ends 0x8008F39A)
-HEAP_START_NEW   equ 0x8008F800     ; = the end of the file's extent in RAM
+; dialog_draw (research/text-renderer.md § 3), so nothing else changes.
 
 ; ---- msg_open: the three literal arguments of dialog_open(x, y, vertical, text) -----------
 ; a2 becomes bit 0x10 of g_text_flags. After this patch the flag still picks the newline
@@ -142,32 +118,3 @@ HEAP_START_NEW   equ 0x8008F800     ; = the end of the file's extent in RAM
     addu    s2, s2, v1
 .endif
 .endarea
-
-; ---- the heap's first byte ---------------------------------------------------------------
-; 0x80068AF0 is the bump pointer itself; the file carries its initial value, `main` zeroes
-; from that value up and every allocation advances it. Starting it 1,116 bytes higher leaves
-; [HEAP_START_STOCK, HEAP_START_NEW) inside the file, loaded by the BIOS, above every
-; overlay, and never cleared or allocated (measured: research/renderer-runtime.md § Q5).
-.org 0x80068AF0
-.area 4
-.if ORIGINAL
-    .dw     HEAP_START_STOCK
-.else
-    .dw     HEAP_START_NEW
-.endif
-.endarea
-
-; ---- the space that frees ------------------------------------------------------------------
-.org HEAP_START_STOCK
-.area HEAP_START_NEW - HEAP_START_STOCK
-.if ORIGINAL
-    .fill   HEAP_START_NEW - HEAP_START_STOCK, 0
-.else
-vwf_advance:
-    .incbin TABLE_PATH              ; u8 advance per glyph id, TABLE_IDS of them
-    .align  4
-vwf_free:                           ; first unclaimed byte of the gap, reported by the build
-.endif
-.endarea
-
-.close
