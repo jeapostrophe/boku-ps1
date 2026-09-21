@@ -33,7 +33,7 @@ E0202.8	Narrator	And so I was appointed morning-glory monitor.
 # NOTE E0202.1: the chorus is slot 12, Shirabe + Moe + Boku + Aunt — Boku is in it from day 2;
 #   the day-1 chorus (E0103.1, slot 13) was the three without him.
 # NOTE E0202.3: both answers lead to the same line (.4); only the aunt's animation differs.
-# NOTE E0202.5: the mock-official appointment frame (glossary § 3, 当番に決定！); E0302.5 uses
+# NOTE E0202.5: the mock-official appointment frame (glossary § 3, "touban ni kettei!"); E0302.5 uses
 #   the same frame for the corn field. "Morning-glory" is hyphenated wherever it modifies a noun
 #   (monitor, trellis); the flower itself is "morning glories" (E0212.1).
 # NOTE E0202.6: the family getting up from the table; no text on the disc.
@@ -54,7 +54,7 @@ E0220.9	Aunt	Come to think of it, Boku-kun... if you keep on being morning-glory
 # NOTE E0220.2: "housewife-power" is the aunt's own coinage (bible § 3 quotes this line); kept
 #   as a coinage.
 # NOTE E0220.6: the Japanese page 1 is only "Mind you — proooperly..."; the English fronts
-#   page 2's "only if you" (ならないと) onto page 1 so the sentence reads forward. The husband and
+#   page 2's "only if you" ("naranai to") onto page 1 so the sentence reads forward. The husband and
 #   the wife are on page 2 in both languages.
 # NOTE E0220.7: the sentence is the other branch of .6's "only if" — a sad life, never
 #   understanding; no "or" is in the Japanese and none is written. # UNSURE
@@ -77,7 +77,7 @@ E0210.7	Uncle	Oh — still here, are you. // At Uncle's house there's a back gat
 # NOTE E0210.2: "climbing kiln" — the uncle names it from its shape on day 25 (glossary § 2).
 # NOTE E0210.4: no self-reference in the Japanese; "I" throughout, "Uncle" only in .6 where
 #   he says it.
-# NOTE E0210.7, page 4: いらっしゃい is the uncle sending him off — "go and play" — with no
+# NOTE E0210.7, page 4: "irasshai" is the uncle sending him off — "go and play" — with no
 #   "should" in the Japanese beyond the imperative; the English needs a verb of permission or
 #   duty to make "a child" the subject. # UNSURE
 
@@ -87,7 +87,7 @@ E0254.0	Narrator	It was, presumably, where the local brats usually hung around..
 #     then back. The visit sets flag 8 (E0204.4 tests it) and costs the clock an hour.
 E0255.0	Boku	What is thiiis?
 E0255.1	Narrator	It was the remains of a watermelon that the watermelon thieves had eaten and scattered about...
-# NOTE E0254.0: the narrator's "presumably" is his のだろう — the adult guessing at what the
+# NOTE E0254.0: the narrator's "presumably" is his "no darou" — the adult guessing at what the
 #   place was, not the child knowing.
 
 # --- E0206: the fallen bridge (A16), from day 2, the first time Boku reaches it. Forced.
@@ -110,9 +110,9 @@ E0205.2	Boku	All right!
 #     have not been watered today (flag 6), .1 if they have.
 E0212.0	Uncle	Once it gets to be this time of day, Uncle's always already stopped work and come home. // But the workshop's left unlocked until just before dinner... // so you're not to go in there when Uncle isn't around, all right?
 E0212.1	Uncle	Looks like you watered the morning glories properly today. Good work. // From tomorrow on as well, please don't forget.
-# NOTE E0212.1: ご苦労様でした → "Good work." (glossary § 3: by context — the uncle acknowledging
+# NOTE E0212.1: "gokurousama deshita" → "Good work." (glossary § 3: by context — the uncle acknowledging
 #   a chore he assigned, in his mock-official voice; page 2 keeps the "please" of his
-#   お願いします).
+#   "onegai shimasu").
 
 # --- E0240: a corner of the garden (H09), before 18:00, Shirabe. .0-.4 the first time; .5-.6 on
 #     a repeat.
@@ -123,9 +123,9 @@ E0240.3	Boku	Huh? Why?
 E0240.4	Shirabe	I'm not telliiing.
 E0240.5	Shirabe	Shirabe likes to play by herself, so leave her alone, if you please!
 E0240.6	Boku	......
-# NOTE E0240.0: her あんた (style guide § 2) is the fronted "You —".
+# NOTE E0240.0: her "anta" (style guide § 2) is the fronted "You —".
 # NOTE E0240.1 / .6: unvoiced silent messages (style guide § 9).
-# NOTE E0240.2: 知らない is "not my concern", not "I don't know". # UNSURE
+# NOTE E0240.2: "shiranai" is "not my concern", not "I don't know". # UNSURE
 # NOTE E0240.4: the same words as E0140.5, stretched — she is teasing this time, not snapping.
 
 # --- E0204: the dining room (G02), after dinner, 19:00. Forced. .4 only if Boku has seen the
@@ -139,7 +139,7 @@ E0204.4	Narrator	At the time, that business at the secret base... // for some re
 #   not tell my uncle) on page 2; the English keeps that order, so each page shows what the
 #   voice is saying. This is the day's title event in the bible ("says nothing at dinner").
 #   # UNSURE
-# NOTE E0204.2: またまた — the thieves are a recurring nuisance; "again" carries it.
+# NOTE E0204.2: "matamata" — the thieves are a recurring nuisance; "again" carries it.
 
 # --- E0213: the living room (G01), 19:00 onward, talking to the uncle. .0-.6 the first time; .7
 #     on a repeat.
