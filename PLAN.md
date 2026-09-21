@@ -331,9 +331,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `g_cd_dir` LBA, so a member that outgrows its sectors is moved into the 765 filler
       sectors before `BOKU.BIN` by REBASING its container there; top-level members move by their
       two directory words. Proven: the first map relocated to LBA 281 with its old home zeroed
-      boots on Beetle PSX and draws the marker. **Left to do:** the allocator never re-uses
-      vacated sectors — the estimate needs 233 net sectors against the 765 available, but the
-      bump allocator asks for 10,860 and refuses; make it fill vacated runs. Earlier estimate,
+      boots on Beetle PSX and draws the marker. The allocator now fills the runs its own movers vacate
+      before touching the arena (largest first, best fit): under the full-translation
+      estimate, derived from the disc's own pages, **181 of 622 members outgrow, and everything
+      places using 456 of the 765 arena sectors** — the whole script fits. A member written into
+      another's vacated run inside `BOKU.BIN` boots and draws on Beetle PSX. Closed as *no*: a
+      CLI verb for "does it fit?" — the estimate lives in a test; reopen if a contributor
+      needs the answer without pytest. Still open in this row: the per-map EV budget and how
+      English divides between the lines of the 113 array sites drawn as groups. Earlier estimate,
       now measured at 174 of 622 members (28%) outgrowing, worst 7,688 bytes over: Estimate from the samples' expansion (2.6 chars per glyph, 5.85 px per
       char): **150 of 632 text-bearing members (24%) would outgrow their sectors**, ~95
       sectors in all, worst `M_G16101` at 6,028 bytes over; only 6 maps would also pass

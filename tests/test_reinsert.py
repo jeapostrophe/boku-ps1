@@ -16,9 +16,11 @@ against the tightest map and the largest `EV` member on the real disc.
 from __future__ import annotations
 
 import struct
+from dataclasses import replace
 
 import pytest
 
+from boku import relocate
 from boku.archive import (
     EV_DIR_INDEX,
     MAP_DIR_INDEX,
@@ -41,7 +43,14 @@ from boku.reinsert import (
     plan,
     sector_head_room,
 )
-from boku.relocate import PREFIX_FILLER, RelocationRefused, capacity, plan_layout
+from boku.relocate import (
+    PREFIX_FILLER,
+    RelocationRefused,
+    Run,
+    capacity,
+    check_placements,
+    plan_layout,
+)
 from boku.sites import walk as walk_all_sites
 from tests import synth_archive as synth
 
@@ -476,11 +485,7 @@ def test_the_rebase_keeps_every_unmoved_member_exactly_where_it_was():
     field afterwards and its bytes are at the same LBA. That is the whole reason rebasing
     is safe, and it is the part a reader has to take on trust unless it is asserted.
     """
-    block = a_block([text_bytes((0x100, END_WORD)) + PAD])
-    big = a_block([text_bytes((0x100, 0x101, END_WORD)) + PAD])
-    archive = synthetic_disc(
-        maps=[("A01000", map_pack([(171, block)])), ("A01001", map_pack([(172, big)]))]
-    )
+    archive = a_disc_of_two_maps()
     before = {m.short_name: m.lba for m in archive.members}
     sectors_before = _sec_sectors(archive)
     result = walk(archive)
@@ -551,9 +556,9 @@ def test_the_capacity_answer_separates_what_is_asked_for_from_what_is_net_new():
     archive = a_disc_with_one_line()
     member = archive.member("M_A01000.BIN")
     wanted = member.sectors * SECTOR + 1
-    answer = capacity(archive, {m.short_name: m.size for m in archive.members} | {
-        member.short_name: wanted
-    })
+    answer = capacity(
+        archive, {m.short_name: m.size for m in archive.members} | {member.short_name: wanted}
+    )
     assert answer.members == 1, "a member that still fits was counted"
     assert answer.needed == member.sectors + 1
     assert answer.vacated == member.sectors
@@ -569,6 +574,223 @@ def test_the_null_re_layout_moves_nothing_and_writes_nothing():
     assert layout.placements == ()
     assert layout.free_after == layout.free_before == PREFIX_FILLER.count
     assert directory_edits(archive, layout) == []
+
+
+# --- filling the runs a move vacates -----------------------------------------------------------
+
+
+def a_map_of(event_id: int, sectors: int, slack: int) -> bytes:
+    """A map pack that occupies exactly `sectors` sectors with `slack` bytes free at the end.
+
+    Child 5 is padded to the size wanted, so the pack's own arithmetic decides the length
+    and the fixture never has to know how big a block or a pack header is.
+    """
+    block = a_block([text_bytes((0x100, 0x101, END_WORD)) + PAD])
+    bare = map_pack([(event_id, block)])
+    filler = sectors * SECTOR - slack - len(bare) + len(parse_pack(bare).children[5])
+    assert filler > 0, "the map is smaller than an empty pack; ask for more sectors"
+    grown = map_pack([(event_id, block)], filler=filler)
+    assert len(grown) == sectors * SECTOR - slack
+    assert map_head_room(grown) > slack, "the work area would bind before the sectors do"
+    return grown
+
+
+SIX_MAPS = (8, 7, 8, 6, 8, 5)
+"""Sector counts for `a_disc_of_six_maps`: three maps that will be grown (7, 6, 5) each
+with a bigger neighbour whose hole can hold them once it has moved out itself."""
+
+GROWN_MAPS = (1, 3, 5)
+"""Which of the six are grown — the odd ones, so no two holes are adjacent."""
+
+TINY_ARENA = [Run(PREFIX_FILLER.start, 8)]
+"""Eight sectors: less than any two of the three placements together, so a layout that
+fits inside it can only have come from re-using what the moves vacate."""
+
+EIGHT_GLYPHS = (0x100,) * 8 + (END_WORD,)
+"""18 bytes where 8 were, which is 10 more than `a_map_of`'s 8 bytes of slack: one sector
+over, the narrowest growth that has to move at all."""
+
+
+def a_disc_of_six_maps() -> Archive:
+    """Six maps of `SIX_MAPS` sectors, one line each, laid out in that order."""
+    return synthetic_disc(
+        maps=[
+            (f"A0{index}000", a_map_of(200 + index, sectors, slack=8))
+            for index, sectors in enumerate(SIX_MAPS)
+        ]
+    )
+
+
+def grow_six_maps() -> dict[str, tuple[int, ...]]:
+    """`EIGHT_GLYPHS` for the line of each of `GROWN_MAPS`."""
+    return {f"E0{200 + index}.0": EIGHT_GLYPHS for index in GROWN_MAPS}
+
+
+def a_disc_of_two_maps() -> Archive:
+    """Two maps, the second one's line a word longer than the first's."""
+    block = a_block([text_bytes((0x100, END_WORD)) + PAD])
+    big = a_block([text_bytes((0x100, 0x101, END_WORD)) + PAD])
+    return synthetic_disc(
+        maps=[("A01000", map_pack([(171, block)])), ("A01001", map_pack([(172, big)]))]
+    )
+
+
+def test_a_re_layout_fills_the_runs_its_moves_vacate_and_fits_where_a_bump_would_not():
+    """Six maps, three of them grown one sector past their sectors, in a tiny arena.
+
+    The arena here is **smaller than the smallest two placements together**, so an
+    allocator that gave every moved member fresh arena sectors could not have produced
+    this layout at all — the test asserts that, from the placements it got, rather than
+    describing it. What makes it fit is that the first member out leaves a run the second
+    one is then given, and so on down.
+
+    Every line is then read back out of the built archive at the member's new home, which
+    is the half a layout alone cannot show: the `.SEC` records, the container's rebase and
+    the bytes all have to agree.
+    """
+    archive = a_disc_of_six_maps()
+    was = {member.short_name: (member.lba, member.sectors) for member in archive.members}
+    assert [was[f"M_A0{i}000.BIN"][1] for i in range(len(SIX_MAPS))] == list(SIX_MAPS)
+
+    replacements = grow_six_maps()
+    after, the_plan = relocated(archive, replacements, arena=TINY_ARENA)
+
+    placements = {placement.member: placement for placement in the_plan.relocations}
+    assert set(placements) == {f"M_A0{i}000.BIN" for i in GROWN_MAPS}
+    for name, placement in placements.items():
+        assert placement.sectors == was[name][1] + 1, f"{name} did not grow by one sector"
+    wanted = sum(placement.sectors for placement in placements.values())
+    assert wanted > sum(run.count for run in TINY_ARENA), (
+        f"{wanted} sectors of placement into a {TINY_ARENA[0].count}-sector arena is what "
+        f"a bump allocator would have had to find; this fixture does not test re-use"
+    )
+
+    re_used = {
+        name: other
+        for name, placement in placements.items()
+        for other, run in ((o, p.vacated) for o, p in placements.items() if o != name)
+        if run.contains(placement.home)
+    }
+    assert len(re_used) == len(GROWN_MAPS) - 1, f"only {re_used} landed in a vacated run"
+    assert the_plan.layout.free_after == 0, "the arena was not spent down to the sector"
+
+    for name, placement in placements.items():
+        assert after.member(name).lba == placement.lba
+        assert after.member(name).size == placement.size
+    now = words_for(after)
+    for line_id, words in replacements.items():
+        assert now[line_id] == words, line_id
+    # "Left alone" is derived from the plan's own edits, not from the list of members that
+    # grew: `M_FILES.SEC` is rewritten in place for the new sizes and sector fields, and
+    # that is exactly the collateral a growth-keyed comparison would not see.
+    rewritten = set(placements) | {
+        archive.owner(edit.offset).short_name
+        for edit in the_plan.edits
+        if edit.file == "BOKU.BIN" and archive.owner(edit.offset) is not None
+    }
+    untouched = [name for name in was if name not in rewritten]
+    assert len(untouched) > len(SIX_MAPS) - len(GROWN_MAPS), "this comparison covers nothing"
+    for name in untouched:
+        assert after.member(name).lba == was[name][0], f"{name} moved and nothing asked it to"
+        assert after.blob(after.member(name)) == archive.blob(archive.member(name))
+
+
+def test_the_part_of_a_vacated_run_another_member_was_given_is_not_zeroed_over_it():
+    """Re-use makes one member's old sectors another's new ones; only the rest is zeroed.
+
+    Zeroing the whole vacated run would erase what was just written into it, and the two
+    edits over one LBA are refused rather than ordered (`check_disjoint`). So the zeroing
+    is what is *left* of the run — asserted here against the placements, sector by sector.
+    """
+    archive = a_disc_of_six_maps()
+    the_plan = plan(archive, walk(archive), grow_six_maps(), arena=TINY_ARENA)
+
+    written = {lba for edit in the_plan.sectors for lba in range(edit.lba, edit.end)}
+    homes = {
+        lba
+        for placement in the_plan.relocations
+        for lba in range(placement.lba, placement.lba + placement.sectors)
+    }
+    vacated = {
+        lba
+        for placement in the_plan.relocations
+        for lba in range(placement.old_lba, placement.old_lba + placement.old_sectors)
+    }
+    assert homes & vacated, "no placement re-used a vacated sector; nothing is being tested"
+    zeroed = {
+        edit.lba + i for edit in the_plan.sectors if not any(edit.new) for i in range(edit.sectors)
+    }
+    assert zeroed == vacated - homes
+    assert written >= homes | vacated
+
+
+def test_a_layout_that_pairs_a_record_with_the_wrong_member_is_refused():
+    """The permutation guard, moved to where the information still exists.
+
+    Two records of one `.SEC` with their `sector` fields exchanged tile the container
+    exactly, so coverage cannot see it and — once a member may be written into the run
+    another record vacated — neither can sector order (`boku.archive._record_order`). What
+    can still see it is the layout itself: a placement carries the member it is for *and*
+    the record and LBA it came from, and those have to be the archive's own.
+    """
+    archive = a_disc_of_six_maps()
+    sizes = {
+        f"M_A0{index}000.BIN": archive.member(f"M_A0{index}000.BIN").sectors * SECTOR + 1
+        for index in GROWN_MAPS
+    }
+    layout = plan_layout(archive, sizes, arena=TINY_ARENA)
+
+    first, second = layout.placements[0], layout.placements[1]
+    permuted = replace(
+        layout,
+        placements=(
+            replace(first, member=second.member),
+            replace(second, member=first.member),
+            *layout.placements[2:],
+        ),
+    )
+    with pytest.raises(RelocationRefused, match="disagree about which member this is"):
+        check_placements(archive, permuted)
+
+
+def test_a_member_map_that_does_not_answer_for_every_sec_record_is_refused(monkeypatch):
+    """A `.SEC` is rewritten from the member map, so the two have to name the same members.
+
+    Both the `size` and the `sector` of a record are looked up by its **name**, which is
+    what makes a mis-pairing unrepresentable rather than merely detectable
+    (`boku.relocate.sector_fields`). What is left to check is that the two sets of names
+    agree at all — a record no member answers for would silently keep its old sector while
+    everything around it moved, and a re-laid-out container is out of sector order anyway,
+    so nothing downstream would see it. The disagreement is simulated by dropping one
+    member from what `sector_fields` yields.
+    """
+    archive = a_disc_of_two_maps()
+    result = walk(archive)
+    words = (0x100,) * smallest_that_moves(archive, result, "E0171.0") + (END_WORD,)
+    plan(archive, result, {"E0171.0": words})  # the same growth is fine as it stands
+
+    straight = relocate.sector_fields
+
+    def one_short(*args):
+        rows = list(straight(*args))
+        assert len(rows) > 1, "dropping the only record would yield nothing; nothing is tested"
+        return iter(rows[:-1])
+
+    monkeypatch.setattr("boku.reinsert.sector_fields", one_short)
+    with pytest.raises(ReinsertRefused, match="does not describe the archive"):
+        plan(archive, result, {"E0171.0": words})
+
+
+def test_a_placement_over_a_member_that_is_staying_put_is_refused():
+    """A hole is only a hole because its member left; anything else is a live member."""
+    archive = a_disc_with_one_line()
+    member = archive.member("M_A01000.BIN")
+    layout = plan_layout(archive, {member.short_name: member.sectors * SECTOR + 1})
+    (placement,) = layout.placements
+    staying = archive.member("F000.BIN")
+    over_it = replace(layout, placements=(replace(placement, lba=staying.lba),))
+    with pytest.raises(RelocationRefused, match="does not free"):
+        check_placements(archive, over_it)
 
 
 def test_the_head_room_formula_is_the_one_the_research_computed():

@@ -40,13 +40,26 @@ Mode 2 **Form 2** filler, so writing a member there means converting the sector 
 Only `PREFIX_FILLER` is allocated from (`DEFAULT_ARENA`). The tail run is out of reach of
 any `.SEC` record — 279,000 sectors past the containers, far past the `u16` — and a
 top-level member placed there would fall outside the contiguous span the archive is read
-back through, so it is counted as reserve by `capacity` and left alone. There is no room
-inside `BOKU.BIN` at all: it tiles exactly (`research/relocation.md`).
+back through, so it is counted as reserve by `capacity` and left alone. `BOKU.BIN` itself
+tiles exactly (`research/relocation.md`), so it holds no free sector **until a member
+moves out of it**.
 
-Sectors a relocation *vacates* are zeroed and not re-used within the same build: re-using
-a hole would make a member's address depend on the order two unrelated members were
-planned in. `research/relocation.md` § "Does it fit?" has what that policy costs a whole
-translation, and it is not cheap.
+The sectors a move vacates are the other pool
+---------------------------------------------
+A member that moves leaves its old sectors behind, and they are as good as the arena for
+whatever else has to move: `FreeSpace` hands them out first and spends the arena only on
+what they cannot hold. That is what makes a whole translation fit — under the estimate 181
+members outgrow their sectors and ask for 11,141, abandoning 10,889, so the arena's 765
+answer the *difference* and not the demand (`research/relocation.md` § "Does it fit?").
+
+What it costs is the `.SEC` records' order. A member written into the hole another record
+left is out of record order, and the retail invariant "record order is sector order" stops
+holding inside a re-laid-out container — `boku.archive._record_order` says what survives of
+it and why the alternative was refused. Nothing over the finished image can replace it
+there, so what does the work instead is `check_placements` on every layout this module
+plans and again before one becomes bytes, `sector_fields` keying a record's new sector by
+the member's **name** so that pairing it with the wrong member is unrepresentable, and the
+round-trip gate that reads a built image back and compares every line at every copy.
 """
 
 from __future__ import annotations
@@ -89,6 +102,10 @@ class Run:
     def end(self) -> int:
         """One past the last sector of the run."""
         return self.start + self.count
+
+    def contains(self, other: Run) -> bool:
+        """Is every sector of `other` inside this run?"""
+        return self.start <= other.start and other.end <= self.end
 
     def __post_init__(self) -> None:
         if self.count <= 0:
@@ -151,15 +168,73 @@ def unclaimed_runs(image: DiscImage) -> list[Run]:
     return runs
 
 
-class Arena:
-    """Free runs, handed out lowest-first. Deterministic: same request, same answer."""
+def coalesce(runs: Iterable[Run]) -> list[Run]:
+    """`runs` sorted by LBA, with touching or overlapping runs merged into one.
 
-    def __init__(self, runs: Iterable[Run]) -> None:
-        self.runs = sorted(runs, key=lambda run: run.start)
+    Two members that both move and sat next to each other leave one run, not two, and a
+    third member the size of the pair then fits where neither half would have.
+    """
+    out: list[Run] = []
+    for run in sorted(runs, key=lambda run: run.start):
+        if out and run.start <= out[-1].end:
+            merged = out[-1]
+            out[-1] = Run(merged.start, max(merged.end, run.end) - merged.start)
+        else:
+            out.append(run)
+    return out
+
+
+def subtract(run: Run, taken: Sequence[Run]) -> list[Run]:
+    """What is left of `run` once every run in `taken` is removed from it.
+
+    `taken` must already be `coalesce`d — sorted and non-overlapping — because the callers
+    subtract the same set from run after run and re-sorting it each time is the whole cost.
+    """
+    out: list[Run] = []
+    cursor = run.start
+    for other in taken:
+        if other.end <= cursor or other.start >= run.end:
+            continue
+        if other.start > cursor:
+            out.append(Run(cursor, other.start - cursor))
+        cursor = max(cursor, other.end)
+    if cursor < run.end:
+        out.append(Run(cursor, run.end - cursor))
+    return out
+
+
+class FreeSpace:
+    """Where a relocated member may be written: what this re-layout vacates, then the arena.
+
+    Two pools, and the order between them is the whole policy. The sectors the moving
+    members leave behind are inside `BOKU.BIN` and cost the disc nothing, so they are spent
+    first; the arena exists once, so it is spent last and only on what no hole can hold. A
+    build that moves one member therefore still puts it in the arena — its own hole is the
+    only other room and it is by definition too small — while a whole translation pays the
+    arena only the *net* growth (module docstring).
+
+    Inside a pool the fit is the **best** one, not the lowest, and `plan_layout` asks for
+    the largest member first; the two halves are one policy and neither is right alone. A
+    hole is whatever the members that left it happened to be — on the full-translation
+    estimate `coalesce` makes 103 of them, 1 to 1,189 sectors, a third being the one or two
+    an `EV` member leaves — so handing a 40-sector member a 106-sector hole strands 66
+    sectors the next 60-sector member then cannot use. Measured on that estimate,
+    lowest-first runs out of room and this places every member with the arena to spare
+    (`research/relocation.md` § "Does it fit?"). Ties go to the lowest LBA, so the same
+    request always gets the same answer.
+    """
+
+    def __init__(self, arena: Iterable[Run], vacated: Iterable[Run] = ()) -> None:
+        self.arena = coalesce(arena)
+        self.vacated = coalesce(vacated)
 
     @property
-    def free(self) -> int:
-        return sum(run.count for run in self.runs)
+    def arena_free(self) -> int:
+        return sum(run.count for run in self.arena)
+
+    @property
+    def vacated_free(self) -> int:
+        return sum(run.count for run in self.vacated)
 
     def take(self, sectors: int) -> int | None:
         """First LBA of a `sectors`-long allocation, or `None` if no run can hold it.
@@ -168,12 +243,16 @@ class Arena:
         `sector` is a `u16` counted from its container, and `boku.reinsert._sec_edit`
         refuses a member the field cannot reach, with the numbers, before any write.
         """
-        for i, run in enumerate(self.runs):
-            if run.count < sectors:
+        for pool in (self.vacated, self.arena):
+            best = min(
+                ((run.count, run.start, i) for i, run in enumerate(pool) if run.count >= sectors),
+                default=None,
+            )
+            if best is None:
                 continue
-            start = run.start
-            rest = run.count - sectors
-            self.runs[i : i + 1] = [Run(start + sectors, rest)] if rest else []
+            _count, start, index = best
+            rest = pool[index].count - sectors
+            pool[index : index + 1] = [Run(start + sectors, rest)] if rest else []
             return start
         return None
 
@@ -204,7 +283,7 @@ class Placement:
 
     @property
     def vacated(self) -> Run:
-        """The sectors the member leaves behind, which the build zeroes."""
+        """The sectors the member leaves behind: free space, and zeroed where unused."""
         return Run(self.old_lba, self.old_sectors)
 
 
@@ -220,7 +299,14 @@ class Layout:
     bases: Mapping[int, int] = field(default_factory=dict)
     """Container `g_cd_dir` index -> its new LBA. Absent means unchanged."""
     free_before: int = 0
+    """Arena sectors before the layout was planned; `free_after` is what is left of them.
+    The arena only — the sectors the layout's own moves vacate are the other pool, and they
+    cost the disc nothing (`FreeSpace`)."""
     free_after: int = 0
+    arena: tuple[Run, ...] = ()
+    """What was allocatable besides the layout's own holes, carried so that anything given
+    a `Layout` can check it (`check_placements`) without being told again which arena it
+    was planned against."""
 
     @property
     def unchanged(self) -> bool:
@@ -233,9 +319,7 @@ class Layout:
 
 def container_names(archive: Archive) -> dict[int, str]:
     """`g_cd_dir` index -> container name, for the four sub-archives with a `.SEC` index."""
-    return {
-        index: entry.name.rsplit("\\", 1)[-1] for index, entry in _containers(archive).items()
-    }
+    return {index: entry.name.rsplit("\\", 1)[-1] for index, entry in _containers(archive).items()}
 
 
 def containers_touched(archive: Archive, layout: Layout) -> dict[int, str]:
@@ -281,28 +365,37 @@ def plan_layout(
     and members whose new length still fits, are not touched — which is what makes the
     null re-layout produce no edits at all.
 
-    Members are considered in directory order and given the lowest run that fits, so the
-    same input always produces the same image. A `.SEC`-indexed member that lands below
-    its container's `g_cd_dir` LBA rebases the container (see the module docstring); the
-    new base is the lowest LBA any of its members ends up at, so the rebase is as small as
-    the placement requires.
+    Every member that has to move is known before the first one is placed, so the sectors
+    they all vacate are free space from the start and `FreeSpace` hands them out ahead of
+    the arena. The order they are considered in is **largest first** — a hole is a whole
+    member and the big ones are the only things a big member fits in, so placing them
+    while the big holes are still whole is what keeps the arena out of it. Ties go to
+    directory order, so the same input always produces the same image.
+
+    A `.SEC`-indexed member that lands below its container's `g_cd_dir` LBA rebases the
+    container (see the module docstring); the new base is the lowest LBA any of its
+    members ends up at, so the rebase is as small as the placement requires.
     """
-    pool = Arena(DEFAULT_ARENA if arena is None else arena)
-    free_before = pool.free
+    arena_runs = tuple(DEFAULT_ARENA if arena is None else arena)
+    moving = [
+        (member, size, form1_sectors(size))
+        for member in archive.members
+        if (size := sizes.get(member.short_name)) is not None and needs_room(member, size)
+    ]
+    space = FreeSpace(arena_runs, [Run(member.lba, member.sectors) for member, _s, _n in moving])
+    free_before = space.arena_free
+    vacated_total = space.vacated_free
     containers = _containers(archive)
     placements: list[Placement] = []
-    for member in archive.members:
-        size = sizes.get(member.short_name)
-        if size is None or not needs_room(member, size):
-            continue
-        sectors = form1_sectors(size)
-        start = pool.take(sectors)
+    for member, size, sectors in sorted(moving, key=lambda row: (-row[2], _record_key(row[0]))):
+        start = space.take(sectors)
         if start is None:
             raise RelocationRefused(
                 f"{member.short_name} is {size} bytes and needs {sectors} sectors; the "
-                f"{free_before}-sector arena before BOKU.BIN has {pool.free} left and no "
-                f"run that long. research/relocation.md § 'Where the room is' has the "
-                f"other candidates.",
+                f"{free_before}-sector arena before BOKU.BIN has {space.arena_free} left "
+                f"and {space.vacated_free} of the {vacated_total} sector(s) this re-layout "
+                f"vacates are still unclaimed, with no run that long. "
+                f"research/relocation.md § 'Where the room is' has the other candidates.",
                 member.short_name,
             )
         placements.append(
@@ -316,13 +409,88 @@ def plan_layout(
                 size=size,
             )
         )
-    bases = _rebased(archive, containers, placements)
-    return Layout(
+    placements.sort(key=_record_key)
+    layout = Layout(
         placements=tuple(placements),
-        bases=bases,
+        bases=_rebased(archive, containers, placements),
         free_before=free_before,
-        free_after=pool.free,
+        free_after=space.arena_free,
+        arena=arena_runs,
     )
+    check_placements(archive, layout)
+    return layout
+
+
+def _record_key(member: Member | Placement) -> tuple[int, int]:
+    """Directory order: the container's file number, then the record number inside it.
+
+    A top-level member sorts before any record of the same file number, which no archive
+    has — it is only there so the key is total."""
+    return (member.dir_index, -1 if member.sub_index is None else member.sub_index)
+
+
+def check_placements(archive: Archive, layout: Layout) -> None:
+    """Refuse a layout that is not a re-layout of **this** archive's members.
+
+    Three checks, all of them on the plan:
+
+    * every placement names a member the archive has, at the LBA and record number the
+      placement says it came from — which holds by construction for a layout `plan_layout`
+      made, and is the acceptance test for one that came from anywhere else;
+    * no two placements may be written over one sector;
+    * a placement may only be written into space this layout actually frees — the arena,
+      or the sectors its own moving members vacate. Anything else would be laid over a
+      member that is staying where it is. This is the check with teeth: it is what the
+      old ordering rule over the finished image used to make impossible, and it is
+      independently derived, from the archive's member map rather than from the layout.
+
+    It does **not** replace `boku.archive._record_order`; the module docstring says what
+    does. Called by `plan_layout` on what it just built and by `relocation_edits` before
+    any of it becomes bytes, which is the boundary that matters.
+    """
+    by_name = {member.short_name: member for member in archive.members}
+    for placement in layout.placements:
+        member = by_name.get(placement.member)
+        if member is None:
+            raise RelocationRefused(
+                f"the layout places {placement.member}, which {archive.source} has no member of",
+                placement.member,
+            )
+        was = (member.dir_index, member.sub_index, member.lba, member.sectors)
+        claims = (
+            placement.dir_index,
+            placement.sub_index,
+            placement.old_lba,
+            placement.old_sectors,
+        )
+        if was != claims:
+            raise RelocationRefused(
+                f"{placement.member}'s placement says record {placement.sub_index} of "
+                f"g_cd_dir[{placement.dir_index}] at LBA {placement.old_lba} x"
+                f"{placement.old_sectors}, and the archive has record {member.sub_index} of "
+                f"g_cd_dir[{member.dir_index}] at LBA {member.lba} x{member.sectors}: the "
+                f"layout and the directory disagree about which member this is",
+                placement.member,
+            )
+    ordered = sorted(layout.placements, key=lambda placement: placement.lba)
+    for left, right in pairwise(ordered):
+        if right.lba < left.home.end:
+            raise RelocationRefused(
+                f"{left.member} is written to LBA {left.lba}..{left.home.end - 1} and "
+                f"{right.member} to LBA {right.lba}..{right.home.end - 1}; one of them "
+                f"would be lost",
+                right.member,
+            )
+    free = coalesce(list(layout.arena) + [placement.vacated for placement in layout.placements])
+    for placement in layout.placements:
+        home = placement.home
+        if not any(run.contains(home) for run in free):
+            raise RelocationRefused(
+                f"{placement.member} is written to LBA {home.start}..{home.end - 1}, which "
+                f"this re-layout does not free: a member that is staying where it is would "
+                f"be written over",
+                placement.member,
+            )
 
 
 def _rebased(
@@ -342,12 +510,19 @@ def _rebased(
 
 def sector_fields(
     archive: Archive, layout: Layout, container_index: int
-) -> Iterator[tuple[int, int]]:
-    """`(record number, new sector field)` for one container, after the layout.
+) -> Iterator[tuple[str, int]]:
+    """`(member, new sector field)` for every record of one container, after the layout.
 
     Relative to the container's *new* base, which is what the selector adds at run time.
     Every record is yielded, not only the moved ones: a rebase moves the origin every
     record counts from.
+
+    Keyed by the member's name and not by its record number, because `boku.reinsert`
+    applies these to a *fresh parse* of the `.SEC` bytes: a position that had drifted from
+    the member map would hand one record another member's sectors, and a re-laid-out
+    container is legitimately out of sector order, so nothing downstream would see it.
+    Every other member lookup in this package is by name for the same reason
+    (`Archive.member`, which refuses an archive with two members alike).
     """
     base = layout.bases.get(container_index, _containers(archive)[container_index].lba)
     moved = layout.by_member
@@ -356,7 +531,7 @@ def sector_fields(
             continue
         placement = moved.get(member.short_name)
         lba = placement.lba if placement is not None else member.lba
-        yield member.sub_index, lba - base
+        yield member.short_name, lba - base
 
 
 # --- the capacity question -------------------------------------------------------------------
@@ -366,16 +541,21 @@ def sector_fields(
 class Capacity:
     """How many sectors a translation needs against how many the disc can give it.
 
-    Two figures, and the gap between them is the whole policy: `needed` is what
-    `plan_layout` will actually ask the arena for, and `net` is what the growth costs a
-    disc that could re-use what a relocation abandons. On a whole translation they differ
-    by more than an order of magnitude — see `research/relocation.md` § "Does it fit?".
+    `needed` is the whole new allocation of every member that has to move and `vacated` is
+    what those same members abandon, so `net` — the difference — is what the growth costs
+    the *disc*, which is the question `research/relocation.md` § "Does it fit?" asks. The
+    arena has to cover `net` and not `needed`, because the sectors a move vacates are
+    re-used by the other members that move (`FreeSpace`).
+
+    `fits` is therefore a lower bound and not the decision: the vacated sectors come as
+    one hole per member, so a member only fits one that is at least as big as it is.
+    `plan_layout` is the decision, and it refuses with the numbers.
     """
 
     needed: int
     """Sectors the members that outgrew their allocation now want."""
     vacated: int
-    """Sectors those members already own and abandon, which this unit does not re-use."""
+    """Sectors those members already own and abandon, which the re-layout re-uses."""
     members: int
     """How many members those are."""
     arena: int
@@ -390,14 +570,16 @@ class Capacity:
 
     @property
     def fits(self) -> bool:
-        return self.needed <= self.arena
+        """Does the disc have the room at all? `plan_layout` answers whether it can be used."""
+        return self.net <= self.arena
 
     def __str__(self) -> str:
         return (
             f"{self.members} member(s) outgrow their sectors and need {self.needed} new "
-            f"sector(s); the arena has {self.arena} ({self.arena - self.needed:+d}), with "
-            f"{self.reserve} more in reserve at the end of the disc. They abandon "
-            f"{self.vacated} sector(s), so the growth is {self.net} net"
+            f"sector(s); they abandon {self.vacated} sector(s), so the growth is "
+            f"{self.net} net against an arena of {self.arena} "
+            f"({self.arena - self.net:+d}), with {self.reserve} more in reserve at the "
+            f"end of the disc"
         )
 
 
@@ -406,10 +588,9 @@ def capacity(archive: Archive, sizes: Mapping[str, int]) -> Capacity:
 
     `sizes` is every member's rebuilt length. `needed` counts the *whole* new allocation
     of each member that has to move, because a relocated member does not keep its old
-    sectors — they are vacated and zeroed, and re-using them is what this unit
-    deliberately does not do (module docstring). `vacated` is what that policy throws
-    away, so the two together say how much of a shortfall is the disc's and how much is
-    the allocator's.
+    sectors; `vacated` is what it hands back to the next one that moves. The two together
+    say how much of the demand the re-layout answers out of itself and how much the disc
+    has to find.
     """
     needed = 0
     vacated = 0
@@ -437,11 +618,13 @@ def capacity(archive: Archive, sizes: Mapping[str, int]) -> Capacity:
 class SectorEdit:
     """Whole sectors of the image, addressed by LBA rather than through a file.
 
-    A relocation writes two runs and only one of them is inside a file: the member's new
-    home is in the arena, which belongs to no directory record and so has no extent a
-    `ByteEdit` could name, while the sectors it vacates are inside `BOKU.BIN`. Addressing
-    both by LBA is what lets one edit kind describe both. `old` and `new` are Form 1 user
-    data — a whole number of 2,048-byte sectors.
+    A relocation writes on both sides of `BOKU.BIN`'s extent. The sectors a member vacates
+    are always inside it; the member's new home is inside it too when it was given a run
+    another member vacated, and in the arena — which belongs to no directory record, and so
+    has no extent a `ByteEdit` could name — when it was not. Addressing every one of them by
+    LBA is what lets one edit kind describe all of it, and a home inside the file is why
+    `boku.reinsert._check_no_double_write` exists. `old` and `new` are Form 1 user data — a
+    whole number of 2,048-byte sectors.
     """
 
     lba: int
@@ -496,35 +679,46 @@ def _span(archive: Archive, run: Run) -> bytes:
 def relocation_edits(
     archive: Archive, layout: Layout, blobs: Mapping[str, bytes]
 ) -> list[SectorEdit]:
-    """Every sector a layout writes: each moved member's new home, and its old one zeroed.
+    """Every sector a layout writes: each moved member's new home, and what it leaves.
 
-    `blobs` holds the rebuilt bytes of the moved members. The vacated sectors are zeroed
+    `blobs` holds the rebuilt bytes of the moved members. A vacated sector is zeroed
     rather than left holding the Japanese, for the reason a shrinking member's tail is
     (`boku.reinsert._grown_member`): the archive's slack is zero everywhere and a ghost
     copy of a line nobody points at is worse than a hole.
+
+    Only the part of a vacated run **no other member was given** is zeroed. Re-using the
+    holes means one member's old sectors are usually another's new ones, and zeroing the
+    whole run would either erase what was just written there or make the image depend on
+    which edit ran last; `check_disjoint` refuses that shape rather than ordering it.
     """
+    check_placements(archive, layout)
     edits: list[SectorEdit] = []
+    homes = coalesce(placement.home for placement in layout.placements)
     for placement in layout.placements:
-        blob = padded(blobs[placement.member])
         edits.append(
             SectorEdit(
                 lba=placement.lba,
                 old=_span(archive, placement.home),
-                new=blob,
+                new=padded(blobs[placement.member]),
                 reason=(
                     f"{placement.member} relocated to LBA {placement.lba} "
                     f"({placement.sectors} sectors, {placement.size} bytes)"
                 ),
             )
         )
-        edits.append(
-            SectorEdit(
-                lba=placement.old_lba,
-                old=_span(archive, placement.vacated),
-                new=bytes(placement.old_sectors * SECTOR),
-                reason=f"{placement.member}: {placement.old_sectors} vacated sectors zeroed",
+    for placement in layout.placements:
+        for run in subtract(placement.vacated, homes):
+            edits.append(
+                SectorEdit(
+                    lba=run.start,
+                    old=_span(archive, run),
+                    new=bytes(run.count * SECTOR),
+                    reason=(
+                        f"{placement.member}: {run.count} of its {placement.old_sectors} "
+                        f"vacated sectors zeroed, from LBA {run.start}"
+                    ),
+                )
             )
-        )
     return [edit for edit in edits if edit.changes]
 
 
@@ -543,8 +737,8 @@ __all__ = [
     "PREFIX_FILLER",
     "SECTOR_FIELD_MAX",
     "TAIL_FILLER",
-    "Arena",
     "Capacity",
+    "FreeSpace",
     "Layout",
     "Placement",
     "RelocationRefused",
@@ -552,6 +746,7 @@ __all__ = [
     "SectorEdit",
     "capacity",
     "check_disjoint",
+    "check_placements",
     "container_names",
     "containers_touched",
     "needs_room",

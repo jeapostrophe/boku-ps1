@@ -248,11 +248,16 @@ def test_two_records_with_their_sectors_swapped_are_a_problem():
 
 
 def test_a_record_that_moved_into_the_arena_is_a_relocation_not_a_reordering():
-    """The one exception, and the line it is drawn on: below `BOKU.BIN` is the arena.
+    """The exception, and the line it is drawn on: a container that no longer fills itself.
 
     `PIPE-03` relocates record 1 into the filler and rebases the container to match, which
     leaves the records out of order on purpose — record 1 below record 0 — and a zero hole
     where it used to be. Nothing here may be reported, or every built image is refused.
+
+    What exempts it is that its members no longer add up to its `g_cd_dir` extent, which is
+    the only thing the finished image can still decide (`boku.archive._record_order`); the
+    test asserts that is the reason rather than trusting the silence, because a check that
+    went quiet for some *other* reason would look exactly like this.
     """
     arena = 2
     base = BOKU_BIN_LBA - arena
@@ -285,6 +290,13 @@ def test_a_record_that_moved_into_the_arena_is_a_relocation_not_a_reordering():
     )
     assert any(lba < BOKU_BIN_LBA for lba, _count in gaps), "the arena was not read at all"
     assert not any("reordered" in p for p in problems), problems
+    container = next(e for e in read_exe_dir(builder.build()) if e.name.endswith("EV.BIN"))
+    extent = range(container.lba, container.lba + container.sectors)
+    assert any(
+        m.lba not in extent or m.lba + m.sectors - 1 not in extent
+        for m in members
+        if m.sub_index is not None
+    ), "every record still sits inside the container's extent; the check was not exempted"
 
     # The same two records with the out-of-order one left *inside* `BOKU.BIN` is the
     # permutation, and it is reported. The boundary is the whole rule.

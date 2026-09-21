@@ -13,11 +13,12 @@ line:
 5. the member's `size` in `M_FILES.SEC` (`u32`) / `EV.SEC` (`u16`)
    (`boku.archive.SubArchiveIndex.serialise`);
 6. a member that outgrows its sectors is **relocated** (`boku.relocate`): it is written
-   to free sectors in the filler before `BOKU.BIN`, the sectors it leaves are zeroed, and
-   whatever addresses it is rewritten — the `.SEC` record's `sector` (relative to the
-   container's `g_cd_dir` LBA, so a container that now holds a member below its base is
-   rebased) for a sub-archive member, `g_cd_dir.lba[i]` / `size[i]` for a top-level one.
-   `research/relocation.md` is the evidence for which field is which.
+   either to sectors another moving member vacates or, failing that, to the filler before
+   `BOKU.BIN`; whatever is left over is zeroed; and whatever addresses it is rewritten —
+   the `.SEC` record's `sector` (relative to the container's `g_cd_dir` LBA, so a
+   container that now holds a member below its base is rebased) for a sub-archive member,
+   `g_cd_dir.lba[i]` / `size[i]` for a top-level one. `research/relocation.md` is the
+   evidence for which field is which.
 
 **Nothing is written in the abstract.** The output is a list of `ByteEdit`s over the two
 files a patch touches — `SCPS_100.88` and `BOKU.BIN` — each carrying the bytes it expects
@@ -46,8 +47,9 @@ The three measured limits, and where they come from
 * **A member that outgrows its own sectors has to move.** `research/boku-bin.md` measured
   the slack (min 16 bytes, median 1,246) and that it is zero-filled everywhere, which is
   why a shrinking member has its tail zeroed here rather than left holding its own old
-  bytes — and why a relocated member's new sectors are zero-padded too. The room is
-  finite (`boku.relocate.PREFIX_FILLER`); running out is a refusal, with the numbers.
+  bytes — and why a relocated member's new sectors are zero-padded too. The room is the
+  sectors the other moving members vacate plus a finite arena
+  (`boku.relocate.PREFIX_FILLER`); running out is a refusal, with the numbers.
 
 Neither the `0x4000` nor the `0x6400` limit has been watched in an emulator yet — the
 research asks for that before anything relies on them (`PLAN PIPE-03`).
@@ -439,16 +441,31 @@ def _sec_edit(
     where the selector will point `g_cd_dir`'s slot. `sector` is **relative to the
     container's `g_cd_dir` LBA** (`research/relocation.md`), so a rebased container moves
     every record's field even though only one member moved.
+
+    Both are keyed by the record's **name**, never by its position. A position that had
+    drifted from the archive's member map would give one record another member's sectors,
+    and a re-laid-out container is legitimately out of sector order, so nothing downstream
+    would see it (`boku.relocate.sector_fields`). The two sets of names are required to
+    match exactly, which also catches a member the map has and the `.SEC` does not, and a
+    record no member answers for.
     """
     sec_name, parse = SUB_ARCHIVES[container]
     member = archive.member(sec_name)
     index = parse(archive.blob(member))
     fields = dict(sector_fields(archive, layout, container_index))
+    keys = {record.key for record in index.records}
+    if fields and set(fields) != keys:
+        raise ReinsertRefused(
+            f"{sec_name} holds {len(keys)} record(s) and the member map has "
+            f"{len(fields)} for g_cd_dir[{container_index}]; they differ over "
+            f"{sorted(set(fields) ^ keys)[:4]}, so this layout does not describe the "
+            f"archive it is about to be written into"
+        )
     records = []
     changed = False
-    for i, record in enumerate(index.records):
+    for record in index.records:
         size = sizes.get(record.key, record.size)
-        sector = fields.get(i, record.sector)
+        sector = fields.get(record.key, record.sector)
         if size != record.size and index.kind == "EV" and size > EV_SEC_SIZE_MAX:
             raise ReinsertRefused(
                 f"{record.key}: {size} bytes, and {sec_name}'s size field is a u16 "

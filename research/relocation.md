@@ -95,10 +95,10 @@ reads Form 1 user data and nothing else. `DiscWriter.write_data_sector` is the c
 it refuses any sector whose user bytes are not all zero, since that is the only thing
 separating filler nobody owns from a channel of XA audio.
 
-**There is no room inside `BOKU.BIN` itself.** Its members tile it exactly at both levels
-(`research/boku-bin.md` § "The member map"), so an order-preserving sector-aligned layout
-has zero slack to redistribute. The only space a growing member can be given is space that
-was never in the archive.
+**`BOKU.BIN` holds no free sector until a member moves.** Its members tile it exactly at
+both levels (`research/boku-bin.md` § "The member map"), so there is no slack to
+redistribute. But a member that moves *leaves its own sectors behind*, and on a whole
+translation that is where nearly all the room comes from: see § "Does it fit?".
 
 ## "Does anything seek there?" — answered, on Beetle PSX
 
@@ -123,38 +123,85 @@ Two caveats this does **not** settle: it is one emulator, not hardware (a real d
 read-ahead across the Form 2 → Form 1 boundary is untested), and it is one map. The
 standing gate in `tests/test_real_reinsert.py` covers the byte-level half on every build.
 
+### And the other room: a run another member vacated
+
+The arena is not where most relocated members end up (§ "Does it fit?"), so the same
+question had to be asked of a member read out of sectors that belonged to a *different*
+member on the retail disc. Measured 2026-09-20, `work/pipe03c/build_marker.py`:
+
+Three maps and one `EV` member were grown past their sectors. `M_H06001` (101 sectors, the
+largest) took the arena at LBA 281; **`M_H02001` — the arrival map again — was given
+`M_H06001`'s vacated run and written at LBA 34204**, inside `BOKU.BIN`; `M_G16101` took
+`M_H02001`'s old sectors at 32437; and the two `EV` members landed in what was left of
+them. The arena paid 174 sectors of the 765 for six relocations. Cold-booted headless on
+Beetle PSX with the same `boot-to-dialogue.press` schedule, the arrival scene loads and the
+first dialogue box draws the marker *"RELOCATED INTO / A VACATED RUN"* at frame 5850 —
+`work/pipe03c/beetle/first-dialogue.png`.
+
+What that boot shows and the arena boot could not: the game read a map from sectors whose
+retail contents were a different map, having found it through a `.SEC` record that is no
+longer in sector order with its neighbours (§ "Does it fit?" says why it cannot be).
+
 ## Does it fit?
 
-Estimated 2026-09-20 from the samples' measured expansion — **2.63 English characters per
-Japanese glyph** (`research/font-candidates.md` § 3, least squares through 80 sample pages)
-at **5.85 px per character** in the 272-px dialogue band (`research/vwf-prototype.md`,
-`boku.layout.DIALOGUE_BAND`), charging 7 characters of inline speaker label to every page
-and keeping each message's page count, which the voice timing fixes:
+**Yes — 456 sectors of the 765, with 309 to spare.** Measured 2026-09-20 by
+`tests/test_real_reinsert.py`'s `test_the_full_translation_estimate_lays_out_inside_the_arena`,
+which synthesises the growth and then runs the real allocator over it.
+
+There is no English script yet, so the growth is estimated from the samples' measured
+expansion — **2.63 English characters per Japanese glyph** (`research/font-candidates.md`
+§ 3, least squares through 80 sample pages) at **5.85 px per character** in the 272-px
+dialogue band (`research/vwf-prototype.md`, `boku.layout.DIALOGUE_BAND`, so 46 characters
+to a line), charging 7 characters of inline speaker label to every page and keeping each
+message's page count, which the voice timing fixes. The model is **code, in that test**,
+applied to the pages and the site lengths on the disc; nothing in the table below is a
+figure anyone typed.
 
 | | |
 |---|---|
 | message-bearing members | 622 |
-| members that outgrow their sectors | **174 (28 %)** |
-| bytes of growth in all | 545,024 |
-| worst member | `M_G16101`, **7,688 bytes** over its allocation (71 → 75 sectors) |
-| sectors those members would **ask the arena for** | **10,860** |
-| sectors they abandon | 10,627 |
-| **net** new sectors the disc must find | **233** |
+| members that outgrow their sectors | **181 (29 %)** |
+| bytes of growth in all | 593,608 |
+| worst member | `M_G16101`, **8,406 bytes** over its allocation (71 → 76 sectors) |
+| sectors those members ask for | 11,141 |
+| sectors they abandon | 10,889 |
+| **net** new sectors the disc must find | **252** |
 | arena | 765 |
+| **arena the layout actually spends** | **456**, leaving 309 |
+| placements written into a run another member vacated | 171 of 181 |
 
-So the disc has the room — 233 net against 765, with 532 to spare — **and the allocator as
-built cannot use it.** `boku.relocate` gives a moved member a whole new allocation and
-never re-uses the sectors a relocation vacates, so it asks for 10,860 and refuses at 765.
-That policy is right for one member and wrong for 174, and closing the gap means a real
-re-layout of `BOKU.BIN` rather than a bump allocator: `Capacity` reports `needed` and `net`
-separately so the shortfall can be told apart from the disc's. Nothing in this unit is
-wasted by that change — the addressing, the rebase and the sector writer are the same
-either way.
+The gap between 11,141 and 456 is the whole of this unit. A member that moves leaves its
+own sectors behind, and `boku.relocate.FreeSpace` hands those out **before** the arena:
+171 of the 181 placements go into another member's hole, and the arena pays only for the
+ten that no hole was big enough for. A hole is whatever the members that left it happened
+to be — the 181 vacated members coalesce into 103 holes of 1 to 1,189 sectors, a third of
+them the one or two sectors an `EV` member leaves — so the fit inside a pool is best-fit
+and the members are placed largest first. Lowest-first runs out of room on this same estimate, which is what picks the policy.
+
+**What it costs is the `.SEC` records' order**, and the alternative was measured rather
+than assumed. A member written into a hole is out of record order, because the records
+between it and the hole did not move; keeping the retail invariant "record order is sector
+order" would confine every growing member to the space its own record-order neighbours
+leave it, and a grower whose neighbours are staying put is left with none — the demand goes
+straight back to 11,141 sectors and the arena refuses. The order rule therefore now applies
+only where it can still decide — a container that still tiles its own `g_cd_dir` extent,
+which is the retail shape and the shape a permutation of two equal-sized records leaves, so
+that permutation is still caught on an import. `boku.archive._record_order` states the rule.
+
+Inside a container that *has* been re-laid out, no rule over the finished image can tell a
+permutation from a legitimate placement, and none pretends to. Three things carry the
+weight instead: `boku.relocate.check_placements` refuses a layout that would write a member
+anywhere this re-layout did not free; a record's new `size` *and* its new `sector` are both
+looked up by the member's own name, never by its position, so pairing a record with the
+wrong member is not something `boku.reinsert._sec_edit` can express (it refuses outright
+when the member map and a fresh parse of the `.SEC` do not name the same members); and the
+standing round-trip gate reads a built image back and finds every line at every copy, which
+a permuted pair fails on the first line either member holds.
 
 (`PLAN PIPE-03`'s earlier estimate said 150 members, ~95 sectors and 6,028 bytes for
-`M_G16101`. The difference is this model charging the label on every page and wrapping at
-46 characters a line; the shape of the answer is the same and the row's numbers are the
-older ones.)
+`M_G16101`; an intermediate hand-computed pass said 174 members, 10,860 sectors and 233
+net. The numbers above are the first ones a test computes, so they are the ones that move
+when the import or the model does.)
 
 ## What still cannot move
 

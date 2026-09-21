@@ -14,16 +14,28 @@ game.
 
 from __future__ import annotations
 
+import math
+from collections.abc import Mapping
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
 from boku import REPO_ROOT
 from boku.archive import EV_DIR_INDEX, MAP_DIR_INDEX, SECTOR, Archive
-from boku.build import ARENA_FILE, BuildRefused, build, verify_written_sectors
-from boku.disc import DiscImage
-from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, GlyphTable, words_of
-from boku.layout import StockEncoder, lay_out_array
+from boku.build import ARENA_FILE, BuildRefused, BuildResult, build, verify_written_sectors
+from boku.disc import DiscImage, form1_sectors
+from boku.glyphs import (
+    END_WORD,
+    NEWLINE_WORD,
+    PAD_WORD,
+    PAGE_WORD,
+    GlyphTable,
+    iter_tokens,
+    words_of,
+)
+from boku.layout import DIALOGUE_BAND, StockEncoder, lay_out_array
+from boku.packets import AVERAGE_PX_PER_CHARACTER
 from boku.reinsert import (
     EVENT_BLOCK_LIMIT,
     ByteEdit,
@@ -32,7 +44,20 @@ from boku.reinsert import (
     plan,
     sector_head_room,
 )
-from boku.relocate import PREFIX_FILLER, TAIL_FILLER, Run, unclaimed_runs
+from boku.relocate import (
+    PREFIX_FILLER,
+    SECTOR_FIELD_MAX,
+    TAIL_FILLER,
+    FreeSpace,
+    Run,
+    capacity,
+    containers_touched,
+    needs_room,
+    plan_layout,
+    sector_fields,
+    unclaimed_runs,
+)
+from boku.sites import Walk
 from boku.sites import walk as walk_sites
 from boku.translation import PreEncoded, SampleScenes
 
@@ -202,30 +227,79 @@ def test_every_sector_the_growth_wrote_carries_its_own_edc_and_ecc(grown):
 
 # --- members grown out of their sectors, built, and read back ----------------------------------
 
-RELOCATED_MAPS = (TIGHTEST_MAP, "M_G16101.BIN")
-"""The map with the least work-area head room, and the one `research/relocation.md`
-§ "Does it fit?" puts furthest over its sectors under the full-translation estimate. That
-these two are the ones the growth below actually pushes out is asserted, not assumed."""
+ARRIVAL_MAP = "M_H02001.BIN"
+"""The map the game's first dialogue is drawn over, and the one `research/relocation.md`
+§ "Does anything seek there?" booted on Beetle PSX. It is here because it is 80 sectors
+against `M_H06001`'s 101, so it is the member that ends up in the **run another member
+vacates** rather than in the arena — which is what the emulator gate goes and looks at."""
+
+RELOCATED_MAPS = (TIGHTEST_MAP, "M_G16101.BIN", ARRIVAL_MAP)
+"""The map with the least work-area head room, the one `research/relocation.md` § "Does it
+fit?" puts furthest over its sectors under the full-translation estimate, and the arrival
+map. That these three are the ones the growth below actually pushes out is asserted, not
+assumed."""
 
 RELOCATION_GLYPHS = 16
-"""Glyphs added to every line of the two maps: enough to push both past their sectors and
-not enough to reach `map_commit`'s `0x6400` work area. Which is checked — the test below
-reads both bounds off the disc, so a future import that narrows the window fails rather
-than quietly testing something else."""
+"""Glyphs added to every line of the three maps: enough to push all of them past their
+sectors and not enough to reach `map_commit`'s `0x6400` work area. Which is checked — the
+test below reads both bounds off the disc, so a future import that narrows the window
+fails rather than quietly testing something else."""
 
 
-@pytest.fixture(scope="module")
-def relocating(real_image: Path, disc_dir: Path, archive: Archive, walk_reader, original_words,
-                tmp_path_factory):
-    """Grow every line of the two maps until they no longer fit, and build the image."""
+def relocating_words(
+    archive: Archive, walk: Walk, original_words: Mapping[str, tuple[int, ...]]
+) -> tuple[dict[str, tuple[int, ...]], str]:
+    """Words that push the three maps **and one `EV.BIN` member** out of their sectors.
+
+    The `EV` member is what makes this a re-layout of *both* text-bearing containers
+    rather than of `M_FILES.BIN` alone: each one's `.SEC` records and, where a member
+    lands below its base, its `g_cd_dir` LBA have to be rewritten, and a build that
+    touched only the container it happened to grow would leave the other pointing at
+    where its members used to be. It is chosen by the same rule the growth uses — the one
+    with the least room — rather than named, so an import with a different tightest member
+    still exercises the path.
+
+    Shared with `work/pipe03c/`'s emulator run, which boots exactly this build.
+    """
+    holds_text = {site.member for site in walk.sites}
+    event_member = min(
+        (
+            member
+            for member in archive.members
+            if member.dir_index == EV_DIR_INDEX and member.short_name in holds_text
+        ),
+        key=sector_head_room,
+    )
     words = dict(original_words)
-    for name in RELOCATED_MAPS:
-        for line_id in sorted({s.line_id for s in walk_reader.sites if s.member == name}):
+    for name in (*RELOCATED_MAPS, event_member.short_name):
+        for line_id in sorted({s.line_id for s in walk.sites if s.member == name}):
             words[line_id] = (
                 *original_words[line_id][:-1],
                 *([0x100] * RELOCATION_GLYPHS),
                 END_WORD,
             )
+    return words, event_member.short_name
+
+
+class Relocated(NamedTuple):
+    """What the `relocating` build produced, so its tests read by name."""
+
+    result: BuildResult
+    words: dict[str, tuple[int, ...]]
+    event_member: str
+
+
+@pytest.fixture(scope="module")
+def relocating(
+    real_image: Path,
+    disc_dir: Path,
+    archive: Archive,
+    walk_reader,
+    original_words,
+    tmp_path_factory,
+) -> Relocated:
+    """Grow every line of the three maps and one `EV` member, and build the image."""
+    words, event_member = relocating_words(archive, walk_reader, original_words)
     result = build(
         source=real_image,
         out_dir=tmp_path_factory.mktemp("relocating"),
@@ -233,7 +307,7 @@ def relocating(real_image: Path, disc_dir: Path, archive: Archive, walk_reader, 
         translation=PreEncoded(words),
         name="relocate",
     )
-    return result, words
+    return Relocated(result, words, event_member)
 
 
 def test_the_growth_that_forces_a_relocation_is_inside_the_work_area_window(
@@ -246,34 +320,60 @@ def test_the_growth_that_forces_a_relocation_is_inside_the_work_area_window(
     else. Both bounds are read off the disc, so a future import that narrows the window
     fails here instead of turning the gate vacuous.
     """
-    result, _words = relocating
+    result = relocating.result
     for name in RELOCATED_MAPS:
         member = archive.member(name)
         grown_by = result.plan.growth[name]
         assert sector_head_room(member) < grown_by < map_head_room(archive.blob(member)), name
 
 
-def test_two_real_maps_grown_past_their_sectors_move_and_re_extract_correctly(
+def test_real_members_grown_past_their_sectors_move_and_re_extract_correctly(
     archive: Archive, relocating, original_words, real_image: Path
 ):
     """`PIPE-03`'s hard half on the real disc, end to end.
 
-    Build with two maps grown out of their sectors, then read the built image back as if
-    it were an import: every line correct at every copy, every member that did *not* grow
-    byte-identical, the `.SEC` records and `g_cd_dir` agreeing with where the bytes went,
-    and the image still exactly as long as it was.
+    Build with three maps and an `EV` member grown out of their sectors — a re-layout of
+    **both** text-bearing containers, with some members in the arena and some in the runs
+    the others vacate — then read the built image back as if it were an import: every line
+    correct at every copy, every member that did *not* grow byte-identical, the `.SEC`
+    records and `g_cd_dir` agreeing with where the bytes went, and the image still exactly
+    as long as it was.
     """
-    result, words = relocating
+    result, words, event_member = relocating
     assert result.refused_lines == []
     moved = {p.member for p in result.plan.relocations}
-    assert set(RELOCATED_MAPS) <= moved, f"neither target moved; {sorted(moved)}"
+    assert set(RELOCATED_MAPS) | {event_member} <= moved, f"a target did not move; {sorted(moved)}"
     assert moved == {
-        name for name, delta in result.plan.growth.items()
+        name
+        for name, delta in result.plan.growth.items()
         if archive.member(name).size + delta > archive.member(name).sectors * SECTOR
     }, "a member moved that did not have to, or one that had to did not"
-    for placement in result.plan.relocations:
-        assert PREFIX_FILLER.start <= placement.lba
-        assert placement.lba + placement.sectors <= PREFIX_FILLER.end
+    assert set(containers_touched(archive, result.plan.layout)) == {EV_DIR_INDEX, MAP_DIR_INDEX}, (
+        "only one container was disturbed; the other one's records would keep a base that "
+        "moved under them"
+    )
+    # Every placement lands in space this re-layout actually frees: the arena, or a run
+    # one of the *other* moving members vacates. Both happen here, and the test says so
+    # rather than allowing it — a build where nothing re-used a hole would prove only what
+    # the old bump allocator already did.
+    homes = {p.member: p.home for p in result.plan.relocations}
+    vacated = {p.member: p.vacated for p in result.plan.relocations}
+    in_arena, in_a_hole = set(), set()
+    for name, home in homes.items():
+        if PREFIX_FILLER.start <= home.start and home.end <= PREFIX_FILLER.end:
+            in_arena.add(name)
+            continue
+        left = [
+            other
+            for other, run in vacated.items()
+            if other != name and run.start <= home.start and home.end <= run.end
+        ]
+        assert left, f"{name} was written to LBA {home.start} and nothing freed it"
+        in_a_hole.add(name)
+    assert in_arena and in_a_hole, f"arena {sorted(in_arena)}, re-used {sorted(in_a_hole)}"
+    # Which of them lands in a hole is the allocator's business and may change; that
+    # `work/pipe03c/`'s emulator evidence is about a member in one is asserted there, by
+    # the harness that builds the image it boots.
 
     built, built_walk = read_back(result.written.image)
     assert built_walk.problems == [], built_walk.problems[:3]
@@ -318,31 +418,182 @@ def test_two_real_maps_grown_past_their_sectors_move_and_re_extract_correctly(
 
 
 def test_the_manifest_says_which_file_each_relocated_sector_belongs_to(relocating):
-    """A relocation writes two runs, and only one of them is outside a file.
+    """A relocation writes sectors on both sides of `BOKU.BIN`'s extent, and says which.
 
-    The member's new home is in the arena, which belongs to no file; the sectors it leaves
-    are inside `BOKU.BIN` and the manifest has to say so, because `boku trial` checks an
-    image diff against the manifest row by row. Both sets come from the placements.
+    A member's new home is in the arena, which belongs to no file, **or** in a run another
+    moving member vacated, which is inside `BOKU.BIN`; the sectors it leaves are inside
+    `BOKU.BIN` either way. The manifest names the file a sector really belongs to, because
+    `boku trial` checks an image diff against it row by row — so the expectation here is
+    derived from the archive's own extent rather than from which run a placement got.
     """
-    result, _words = relocating
+    result = relocating.result
     where = {record.lba: record.file for record in result.written.sectors}
     named = {ARENA_FILE: 0, "BOKU.BIN": 0}
     for placement in result.plan.relocations:
-        for lba, expected in [
-            *((lba, ARENA_FILE) for lba in range(placement.lba, placement.lba + placement.sectors)),
-            *(
-                (lba, "BOKU.BIN")
-                for lba in range(placement.old_lba, placement.old_lba + placement.old_sectors)
-            ),
+        for lba in [
+            *range(placement.lba, placement.lba + placement.sectors),
+            *range(placement.old_lba, placement.old_lba + placement.old_sectors),
         ]:
             # A sector the build wrote back to the bytes it already held is not in the
             # manifest at all (`Ledger.records`) — a vacated sector that was zero padding
             # already is the usual case.
             if lba in where:
+                expected = ARENA_FILE if lba < PREFIX_FILLER.end else "BOKU.BIN"
                 assert where[lba] == expected, lba
                 named[expected] += 1
     assert min(named.values()) > 0, f"one of the two runs is missing from the manifest: {named}"
     assert set(where.values()) == {ARENA_FILE, "BOKU.BIN", "SCPS_100.88"}
+
+
+# --- the whole translation, estimated and laid out ---------------------------------------------
+
+CHARACTERS_PER_JAPANESE_GLYPH = 2.63
+"""`research/font-candidates.md` § 3: least squares through 80 sample pages paired with
+their Japanese, intercept ~0. The model `research/relocation.md` § "Does it fit?" is built
+on, and the only number here that is an estimate rather than a measurement of the disc."""
+
+SPEAKER_LABEL_CHARACTERS = 7
+"""Charged to **every** page, not only a message's first, which is the conservative
+reading of the inline `Aunt: ` label (`research/relocation.md` § "Does it fit?")."""
+
+
+def english_pages(raw: bytes) -> list[int]:
+    """Drawn cells per page of one Japanese message, as the page-break words divide it.
+
+    `iter_tokens` is what knows that `0x8002` swallows the word after it — the step every
+    reader of this format used to re-implement, and count differently. The line breaks
+    inside a page are the Japanese's own column breaks and are dropped: English is
+    re-wrapped, so what carries over is the page count, which the voice timing fixes, and
+    the cells each page draws.
+    """
+    pages = [0]
+    for token in iter_tokens(raw):
+        if token.word == PAGE_WORD:
+            pages.append(0)
+        elif token.word == END_WORD:
+            break
+        elif token.is_glyph:
+            pages[-1] += 1
+    return pages
+
+
+def english_bytes(raw: bytes, characters_per_line: int) -> int:
+    """What those pages cost as English words, under the estimate's model.
+
+    One `u16` per drawn cell, a `{NL}` between the lines a page wraps to, the two words of
+    a `{PAGE:p}` between pages, and the `{END}` — `boku.layout.lay_out_message`'s emission
+    minus the one cell of `indent_continuations`, which is off by default and which
+    `research/vwf-prototype.md` § "Wrap and indent" decided English does without.
+    """
+    total = 1
+    for number, glyphs in enumerate(english_pages(raw)):
+        if number:
+            total += 2
+        characters = round(CHARACTERS_PER_JAPANESE_GLYPH * glyphs) + SPEAKER_LABEL_CHARACTERS
+        total += characters + max(1, math.ceil(characters / characters_per_line)) - 1
+    return 2 * total
+
+
+def estimated_sizes(archive: Archive, walk: Walk) -> tuple[dict[str, int], int]:
+    """Every member's byte length once every message it holds is English, and how many.
+
+    The growth is synthesised from the disc's own pages and the sites' own byte lengths —
+    there is no English script yet, and a table of expected sizes typed into this file
+    would be measuring the typing (`~/.claude/CLAUDE.md` ENG-1). A member's estimated size
+    is its own length plus what each of its message sites gains.
+    """
+    characters_per_line = int(DIALOGUE_BAND.width // AVERAGE_PX_PER_CHARACTER)
+    growth: dict[str, int] = {}
+    members = set()
+    for site in walk.sites:
+        if not site.is_message:
+            continue
+        members.add(site.member)
+        gained = english_bytes(walk.raw(archive, site), characters_per_line) - site.size
+        growth[site.member] = growth.get(site.member, 0) + gained
+    sizes = {m.short_name: m.size + growth.get(m.short_name, 0) for m in archive.members}
+    return sizes, len(members)
+
+
+@pytest.fixture(scope="module")
+def estimate(archive: Archive, walk_reader) -> tuple[dict[str, int], int]:
+    """`estimated_sizes` over the whole disc, once — it decodes every message on it."""
+    return estimated_sizes(archive, walk_reader)
+
+
+MESSAGE_BEARING_MEMBERS = 622
+ESTIMATE_OVER_THEIR_SECTORS = 181
+ESTIMATE_SECTORS_NEEDED = 11141
+ESTIMATE_SECTORS_VACATED = 10889
+ESTIMATE_ARENA_SPENT = 456
+"""The answer `research/relocation.md` § "Does it fit?" quotes, measured by the test below.
+
+They are pinned so a future import, a changed wrap width or a changed model says so here
+rather than quietly re-answering the question the note reports. Every one of them is
+computed by `estimated_sizes` and `plan_layout` — none is a figure this file decides."""
+
+
+def test_the_full_translation_estimate_lays_out_inside_the_arena(archive: Archive, estimate):
+    """`PIPE-03`'s question: does a whole English script fit the disc?
+
+    Under the estimate 181 of 622 message-bearing members outgrow their sectors and want
+    11,141 sectors, which is fourteen times the arena — the bump allocator refused here,
+    and the sum is asserted against the arena so that refusal is not merely asserted to be
+    gone. What fits is the *net*: those members abandon 10,889 sectors between them, and
+    the re-layout hands each one to the next member that moves.
+    """
+    sizes, message_bearing = estimate
+    assert message_bearing == MESSAGE_BEARING_MEMBERS
+
+    answer = capacity(archive, sizes)
+    assert (answer.members, answer.needed, answer.vacated) == (
+        ESTIMATE_OVER_THEIR_SECTORS,
+        ESTIMATE_SECTORS_NEEDED,
+        ESTIMATE_SECTORS_VACATED,
+    )
+    assert answer.needed > PREFIX_FILLER.count, (
+        "the whole allocation now fits the arena on its own; there is nothing here for "
+        "re-use to buy and this test no longer asks the question it is named for"
+    )
+    assert answer.fits, str(answer)
+
+    layout = plan_layout(archive, sizes)
+    assert len(layout.placements) == ESTIMATE_OVER_THEIR_SECTORS
+    assert sum(p.sectors for p in layout.placements) == answer.needed
+    assert layout.free_before - layout.free_after == ESTIMATE_ARENA_SPENT
+    assert layout.free_after > 0, "the arena was spent to the last sector; there is no margin"
+
+    # The `u16` the three selectors read a record's sector with is the other wall this
+    # could run into, and a layout that rebased a container 54,000 sectors below its
+    # members would only be refused later, in `_sec_edit`. Checked here, where the numbers
+    # are, against the field's own limit.
+    for index in containers_touched(archive, layout):
+        for name, field in sector_fields(archive, layout, index):
+            assert 0 <= field <= SECTOR_FIELD_MAX, (index, name, field)
+
+
+def test_the_estimate_needs_the_vacated_runs_and_not_just_the_arena(archive: Archive, estimate):
+    """The same demand against the same allocator with the vacated pool taken away.
+
+    `ENG-1`: the test above says the estimate places, and this is the narrowest thing that
+    makes it fail — one pool removed, the arena and the requests untouched. It runs out,
+    which is the refusal the bump allocator made and the reason this unit exists.
+    """
+    sizes, _ = estimate
+    wanted = sorted(
+        (
+            form1_sectors(sizes[member.short_name])
+            for member in archive.members
+            if needs_room(member, sizes[member.short_name])
+        ),
+        reverse=True,
+    )
+    arena_only = FreeSpace([PREFIX_FILLER])
+    refused = [sectors for sectors in wanted if arena_only.take(sectors) is None]
+    assert refused, "the arena alone held the whole estimate; re-use buys nothing here"
+    assert len(refused) > len(wanted) // 2, (
+        f"only {len(refused)} of {len(wanted)} placements needed a vacated run"
+    )
 
 
 # --- the measured limits, on the members they actually bind on ---------------------------------

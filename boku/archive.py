@@ -518,8 +518,10 @@ def build_members(
     Coverage alone is weaker than the exact tiling this used to require, and in one way
     that matters: coverage is invariant under a *permutation*. Two equal-sized records of
     one `.SEC` with their `sector` fields swapped still cover every sector exactly once,
-    and a rebuild would then write one map's English into the other's bytes. `_record_order`
-    is what restores that, in the only form a relocated member leaves room for.
+    and a rebuild would then write one map's English into the other's bytes.
+    `_record_order` restores that for every container a re-layout has left tiling, which
+    is the shape a permutation has; a container the re-layout did re-lay out is guarded at
+    plan time instead, by `boku.relocate.check_placements`.
     """
     problems: list[str] = []
     entries = read_exe_dir(exe)
@@ -552,9 +554,11 @@ def build_members(
         else:
             out.append(member(e.index, None, e.name, e.lba, e.size))
 
+    by_index = {e.index: e for e in inside}
     for index in {m.dir_index for m in out if m.sub_index is not None}:
         problems += _record_order(
-            [m for m in out if m.dir_index == index and m.sub_index is not None]
+            by_index[index],
+            [m for m in out if m.dir_index == index and m.sub_index is not None],
         )
 
     covered = bytearray(total)
@@ -591,7 +595,7 @@ def build_members(
     return out, problems, gaps
 
 
-def _record_order(members: list[Member]) -> list[str]:
+def _record_order(container: DirEntry, members: list[Member]) -> list[str]:
     """Problems with one `.SEC`'s records: a member that went backwards without leaving.
 
     The retail invariant is that record order *is* sector order, and coverage alone cannot
@@ -599,17 +603,41 @@ def _record_order(members: list[Member]) -> list[str]:
     the container exactly, and a rebuild would then write one map's English into the
     other's bytes.
 
-    A relocation breaks the invariant in exactly one way, and it is a way that names
-    itself: the moved member goes into the arena, which is **below `BOKU.BIN`**. So the
-    records still inside the archive must be in order — with zero holes allowed, because
-    that is what a member leaves when it goes — and the ones below it are unconstrained,
-    which is the whole point of being there.
+    A re-layout breaks that invariant legitimately: a member written into the run another
+    record of the same container vacated is behind its neighbours for a good reason, and
+    nothing in the finished image tells that apart from a permutation — once records may be
+    written into each other's holes, sector order carries no information about record order
+    at all. Keeping the ordering rule instead was measured and refused: with it, every
+    member that grows is confined to the space its record-order neighbours leave it, and a
+    whole translation asks the arena for 11,141 sectors rather than 456
+    (`research/relocation.md` § "Does it fit?").
+
+    So the rule is applied where it can still decide: **a container whose members still
+    fill its own `g_cd_dir` extent, exactly, must have them in record order.** That is the
+    retail shape, and it is every build that moved nothing in this container —
+    `g_cd_dir.size[container]` is deliberately never rewritten
+    (`boku.reinsert.directory_edits`), so the extent stays the retail one and a re-layout,
+    which only ever happens because a member grew, can no longer fill it. The permutation
+    this check exists for *does* leave the extent exactly filled, which is why it is still
+    caught here. A container that no longer fills it has been re-laid out, and what guards
+    that is named in `boku.relocate`'s module docstring.
+
+    "Fills it exactly" is three sums rather than a sort: the members' sectors add up to the
+    extent's, and they start and end on it. Overlapping members could satisfy that, but
+    they are a problem `build_members` reports in its own right, and the only cost is
+    running this check on an archive that is already being refused.
     """
+    if not members:
+        return []
+    if (
+        sum(m.sectors for m in members) != container.sectors
+        or min(m.lba for m in members) != container.lba
+        or max(m.lba + m.sectors for m in members) != container.lba + container.sectors
+    ):
+        return []
     problems: list[str] = []
     position = 0
     for member in sorted(members, key=lambda m: m.sub_index or 0):
-        if member.lba < BOKU_BIN_LBA:
-            continue
         if member.lba < position:
             problems.append(
                 f"{member.short_name} is record {member.sub_index} and starts at LBA "
