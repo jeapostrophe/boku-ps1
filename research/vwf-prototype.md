@@ -174,8 +174,76 @@ page too, so a kept cell hands that page an English width. Measured on this dump
 gate went in: 26 such cells under (c1) (the digits, `A B C L M P T X Z z`, `. : ? ! / +`)
 and one under (c2) (`/`).
 
-The pencil is stock at x ≥ 267, rows 220–229, which crosses lines 2 *and* 3 of this band
-(cells 216–227, 227–238), so `DIALOGUE_BAND` guards both at 238 px.
+Under *this* band the pencil was left stock at x ≥ 267, rows 220–229, crossing lines 2
+*and* 3 (cells 216–227, 227–238), so `DIALOGUE_BAND` guarded both at 238 px. **That is no
+longer the geometry**: § Round 2 moves the band up and the pencil with it, into the band's
+last 11 rows (`asm/dialogue.asm` `PENCIL_Y`), where it crosses **line 3 only** — which is
+the guard in force (`boku.layout.DIALOGUE_BAND`, `guarded_from` 3).
+
+### Round 2 (2026-09-20): the display's visible rows, the marks' bearings, the hand
+
+**The band was partly off screen.** The video setup (`0x800124EC`, mode 1's init from the
+table at `0x80023810`) calls `SetDefDispEnv(disp0, 0, 0x110, 320, 240)` and
+`SetDefDispEnv(disp1, 0, 0, 320, 240)` — a double buffer at VRAM y 272 / 0 — and
+`PutDispEnv` programs the vertical display range as `Y1 = screen.y + 0x10`,
+`Y2 = Y1 + (screen.h or 0xF0)` (`0x80053E74…98`), i.e. scanlines 16–255 for framebuffer
+rows 0–239 — the full frame. Beetle's `retro_run` output (what RetroArch shows at its
+default) is all 240 rows, which is why nothing was seen; **DuckStation's default crop shows
+about 232 rows** — observed, not derived: in Jay's screenshot row 0 is intact and the third
+line (cells 227–238 then) is cut at about row 232 by the eye. The original keeps its text
+above row 200 (13-px rows from y = 22, longest page to 188) and only the next-page marker
+reaches 230. **The band is now Y = 191, H = 37, pen (24, 193), pitch 11**: cells at 193,
+204, 215, last ink row 225, shadow 226 — inside DuckStation's crop, and no lower than the
+game's own marker reached. H and the pitch are unchanged. The marker moves with it: it is
+two 20 × 8 sprites at the same x (266 ± 3 wobble, sine table `0x8006B080`) — the green
+pencil (stock y 220, `0x8002C088`) and its grey shadow (223, `0x8002C0E8`), stock rows
+220–230 — both at `asm/dialogue.asm`'s `PENCIL_Y` = the band's last 11 rows (217–227), so
+they cross line 3 only, at x 263–269 and beyond, and `DIALOGUE_BAND` guards only that line. The select rows move above the band —
+`SEL_Y` 126, `SEL_PITCH` 11, so a five-row layout's box ends at 188 — because the band
+and a select are on screen together (Jay's screenshot). Lint under (c2) with this
+geometry: **4 pages need a 4th line** (`E0771.0`, `E0772.1`, `E0773.2`, `E4028.11`), 0 rows
+over width — the same four as before; the build lays out 757 of 761 lines.
+
+**The marks.** `「`/`『` carry a 2-px left bearing inside their cells (advance 7 / 8) and
+`」`/`』` carry none, so a line ends at them (advance 4 / 6). Every one of them is its
+rightmost inked column **+ 2**, which is what `load_glyph_file` now insists on in place of
+ink at column 0: the renderer draws each glyph twice, one column apart, so the ink's shadow
+lands on `ink + 1` and the next glyph may not start before `ink + 2`. Both `game_font`
+models hit that bound exactly. `』` shipped at 5 until the rule was measured and drew its
+shadow under the next glyph. `Uncle 「Text」` (`work/txt05b/shots/r2/02`).
+
+**The hand points right.** The select cursor is ONMEM.BIN sprite 1 — 16 × 24 at (0, 32) on
+the 48 × 88 4bpp UI sheet (child 3), drawn by `0x80042B64` from the record in child 0
+(`{u, v, w in VRAM units, h}`; the loader fixes up the page and CLUT). `build_prototype.py`
+`cursor_edits` turns the cell a quarter turn counter-clockwise in place, pads the rows it
+left transparent, and sets the record to 24 × 16; `SEL_CURSOR_DX` is −26. **What makes the
+turn safe is the record table, not the pixels**: index 0 of this sheet's CLUT is opaque
+white and index 1 transparent, so the padding beside the hand reads as `0` and no pixel
+test tells it from art — the check is that no other record reaches either the cell being
+vacated or the one being claimed (records 0/2/3/4 are at v 56, 0, 72, 80, and only the hand
+touches rows 32–55). No new art: the pixels are the original's, turned, and stay in the
+gitignored `edits.json`. `--cursor down` keeps the stock sprite, and `sel_cursor_dx`
+follows the hand's width (−18) unless `--sel-cursor-dx` says otherwise.
+
+**The title screens are Japanese renderer text, not plates.** Card check ("checking the
+memory card / do not remove"), "no file" and the four config labels are `TITLE.OVL`'s array
+sites (`title@…` ids in `disc/script/lines.jsonl`), drawn by the hooked walkers 17 and 19 at
+the stock pitch because `translation/days` carries no rows for them; the prototype's
+fixtures ("Checking card", "No file here", "Message / Tone / Pad / Rumble") are in
+`tools/vwf/prototype-lines.tsv`. Plates: the 設定 title, the 音声＋字幕 panel, もどる
+(`GFX-03`).
+
+**`H06001` loaded.** EVVER's `H06` records are `{name, u32 day mask (bit 0 = day 1), set,
+suffix}`: `01` on day 15 morning, `02` days 16–30, else `00` — a `--day 15 --hour 10` poke
+and two `H06` requests load it. On this build its child 6 is at **`0x6858`**, past `0x6400`,
+and it draws (`shots/r2/06`); a test image with its day 5–7 lines padded puts child 6 at
+**`0x7814`** (956 bytes under `0x7C00`) and also draws (`shots/r2/07`; the load takes ~1,000
+frames to fade in). The raised bound holds; the retail one would have trapped both.
+
+**Reaching the evening.** The clock advances only on the game's own transitions and an
+hour poke past 17:00 is snapped back to 17:00 on day 1 until the dinner call runs; `A19`
+requested at 17:00 runs `E0190` and dinner with ○, leaving 19:04 in `G02200`, from which a
+`G01` request loads `G01200`.
 
 ### The speaker label (`TXT-05`'s "label design", decided 2026-09-20)
 
@@ -237,11 +305,8 @@ state: `g_map_load` `0x801B5A50`, `g_bg_clut_save` = B + `0x7C00`, level C `0x80
 
 **Proven**: with the raise in, the arrival sequence, three map changes (`G14` → `G06` →
 `G01`), the SELECT and the day-2 `H06000` scene (`E0220`, `work/txt05b/shots/08`) all run
-on Beetle; `M_H06001` now lays out (relocated, 101 → 102 sectors). **Not proven**: loading a
-pack whose child 6 really lies past `0x6400` — that is only `M_H06001` on this disc, and
-`H06` loads `H06000` on days 2–12 and `H06002` from 16 (poked clock, § "Reaching …"), so the
-variant is condition-selected and was not reached; and the stack in menus, sumo and
-fishing. Under the full-translation estimate six maps pass `0x6400` by up to 5,926 bytes
+on Beetle, and `M_H06001` itself — child 6 past `0x6400` — loads and draws (§ "Round 2").
+**Not proven**: the stack in menus, sumo and fishing. Under the full-translation estimate six maps pass `0x6400` by up to 5,926 bytes
 (`M_H06001`), inside this raise.
 
 ### No cell the Japanese script draws is touched

@@ -10,9 +10,11 @@ SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools an
 > 2,977 lines / ~75,000 glyphs, 180 textures carry Japanese, and the game checks nothing it
 > loads. **Days 1–7 of the script play in English on Beetle PSX**
 > (`./make.sh build-days`): proportional text in a translucent three-line band under the
-> scene, speaker labels in the original's `Uncle「…」` form, page arrows, choice menus; 745 of
-> 751 lines laid out and reinserted, members relocated where they grew, the map work area
-> raised so the biggest scene fits. The rest of the script waits on that being played and
+> scene (inside the rows every emulator shows), speaker labels in the original's `Uncle「…」`
+> form, page arrows, choice menus with the game's own hand pointing at the row; 757 of 761
+> lines laid out and reinserted, members relocated where they grew, the map work area raised
+> so the biggest scene fits. Each build names its cue by revision
+> (`build/days/days-<stamp>-<hash>.cue`) so a play report can say what it tested. The rest of the script waits on that being played and
 > judged. Ruled 2026-09-20: the game's own font with a width table, the smallest band, the
 > tab-separated day files as the format, and the programmatic redraw for the diary pages;
 > every texture that carries Japanese has a chosen path ([research/textures-plan.md](research/textures-plan.md)).

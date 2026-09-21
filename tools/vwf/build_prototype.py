@@ -18,10 +18,12 @@ What it does, in order, refusing before the 660 MB copy if anything is off:
 4. Writes `edits.json` -- the renderer patch as a machine-readable edit set: every
    `(file, offset, old bytes, new bytes)` run it would write into `SCPS_100.88` and
    `BOKU.BIN` (the executable's words and free-space table, the rebuilt overlays, the
-   rebuilt font sheet), plus the character map and the width table. **That file is the
-   whole interface to `boku build`**, which applies it as verified `ByteEdit`s beside a
-   translation that may *grow* (`PIPE-03`/`PIPE-04`) -- the thing this script, writing in
-   place, cannot do. `--edits-only` stops here and never copies the image.
+   rebuilt font sheet, and -- under `--cursor right` -- the UI sheet the select's hand is
+   turned on and the sprite record that gives its new size), plus the character map and
+   the width table. **That file is the whole interface to `boku build`**, which applies it
+   as verified `ByteEdit`s beside a translation that may *grow* (`PIPE-03`/`PIPE-04`) --
+   the thing this script, writing in place, cannot do. `--edits-only` stops here and never
+   copies the image.
 5. Copies the image, checks that every range it is about to replace holds the bytes
    `disc/files` says it does, writes through `boku.disc.DiscWriter` (fresh EDC/ECC), and
    emits `manifest.json`: every sector, every executable word, the character map.
@@ -54,7 +56,7 @@ import struct
 import subprocess
 import sys
 import unicodedata
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -70,6 +72,7 @@ from boku.ppf import differing_spans  # noqa: E402
 from boku.reinsert import MAP_WORK_AREA_END  # noqa: E402
 from boku.sites import line_key_of, page_waits  # noqa: E402
 from boku.text import PlacedSite, SiteIndex, TextError  # noqa: E402
+from boku.tim import parse_exact  # noqa: E402
 from boku.translation import SampleScenes  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -112,14 +115,25 @@ class BuildRefused(Exception):
     """The build will not proceed; `image.img` under `--out` is as it was."""
 
 
+CURSOR_WIDTH = {"right": 24, "down": 16}
+"""How wide the select's hand is under each `--cursor` mode: the stock `ONMEM.BIN` sprite
+is 16 x 24 and `cursor_edits` turns it to 24 x 16."""
+CURSOR_GAP = 2
+"""Pixels between the hand's right edge and the option's first glyph. Both offsets Jay ran
+are the hand's own width plus this (-26 turned, -18 stock; `research/vwf-prototype.md`
+§ Round 2), so the offset follows the sprite rather than being set beside it."""
+CURSOR_DX = {mode: -(width + CURSOR_GAP) for mode, width in CURSOR_WIDTH.items()}
+"""`sel_cursor_dx` per `--cursor` mode, for a command line that gives none."""
+
+
 @dataclass(frozen=True)
 class Layout:
     """Everything `PLAN TXT-03` leaves to Jay, as build inputs with the trial's defaults."""
 
     pen_x: int = 24
-    pen_y: int = 205
+    pen_y: int = 193
     line_pitch: int = 11
-    band_y: int = 203
+    band_y: int = 191
     band_h: int = 37
     band_brightness: int = 168
     band_blend: int = 2
@@ -137,11 +151,19 @@ class Layout:
     edge plus the gap. Jay ranked c1 above c2 on looks and gave lint the casting vote
     (2026-09-20); under the ruled three-line band c1 needs a fourth line on far more pages
     than c2 does, so c2 is what the build installs (`PLAN TXT-07` for both counts)."""
+    cursor: str = "right"
+    """`right`: the select's hand sprite is rotated at build time to point at its row
+    (`cursor_edits`; 24 x 16); `down`: the stock 16 x 24 hand, which pointed at a column,
+    is left alone. The hand's width is what `sel_cursor_dx` is measured from, so the two
+    move together -- `CURSOR_DX`."""
     sel_x: int = 48
-    sel_y: int = 174
-    sel_pitch: int = 13
+    sel_y: int = 126
+    sel_pitch: int = 11
     sel_pad: int = 6
-    sel_cursor_dx: int = -18
+    sel_cursor_dx: int | None = None
+    """How far left of the option row the hand is drawn. `None` (the default) takes
+    `CURSOR_DX[cursor]`, so `--cursor down` alone does not leave the narrower stock hand
+    at the turned one's offset; an explicit `--sel-cursor-dx` still wins."""
     sel_cursor_dy: int = -2
     fixed_advance: int = 14
     gap: int = 1
@@ -167,10 +189,14 @@ class Layout:
     """Fields `asm/vwf.asm` takes as `-equ NAME`, upper-cased."""
 
     def __post_init__(self) -> None:
-        if self.sel_cursor_dx > 0:
-            raise BuildRefused("--sel-cursor-dx must be <= 0: the box's corner is measured from it")
         if self.advance_model not in ("c1", "c2"):
             raise BuildRefused(f"--advance-model is c1 or c2, not {self.advance_model!r}")
+        if self.cursor not in CURSOR_DX:
+            raise BuildRefused(f"--cursor is right or down, not {self.cursor!r}")
+        if self.sel_cursor_dx is None:
+            object.__setattr__(self, "sel_cursor_dx", CURSOR_DX[self.cursor])
+        if self.sel_cursor_dx > 0:
+            raise BuildRefused("--sel-cursor-dx must be <= 0: the box's corner is measured from it")
         if self.map_area_extra < 0 or self.map_area_extra % 4:
             raise BuildRefused("--map-area-extra is a non-negative multiple of 4 (a word count)")
 
@@ -211,6 +237,11 @@ class Glyph:
         return CELL - mask.bit_length(), CELL - 1 - ((mask & -mask).bit_length() - 1)
 
 
+SHADOW_GAP = 2
+"""Least advance past a glyph's rightmost inked column: one for the drop shadow the
+renderer draws at x + 1, one so the next glyph does not sit on it."""
+
+
 def load_glyph_file(path: Path) -> dict[str, Glyph]:
     """Parse the `glyph U+XXXX advance N` + 12 rows format `placeholder-glyphs.txt` documents."""
     glyphs: dict[str, Glyph] = {}
@@ -233,10 +264,16 @@ def load_glyph_file(path: Path) -> dict[str, Glyph]:
             int(match.group(2)),
         )
         ink = glyph.ink
-        if ink and ink[0] != 0:
+        if ink and glyph.advance < ink[1] + SHADOW_GAP:
+            # The renderer has no bearing of its own: a glyph's left bearing is paper
+            # inside its cell, and every glyph is drawn twice, the second copy one column
+            # right of the first (the drop shadow). So the ink's shadow lands on column
+            # `ink + 1` and the next glyph may not start before `ink + 2`. Both game_font
+            # models hit that bound exactly (ink's right edge + 1 + `gap`).
             raise BuildRefused(
-                f"{path}: {match.group(0)} has ink starting at column {ink[0]}; the renderer "
-                f"has no bearing, so ink starts at column 0"
+                f"{path}: {match.group(0)} has ink to column {ink[1]} but advances only "
+                f"{glyph.advance}; the advance must cover the ink and its shadow "
+                f"({ink[1] + SHADOW_GAP} at least)"
             )
         glyphs[character] = glyph
         position += 1 + CELL
@@ -535,7 +572,15 @@ def wrap_page(page: str, font: dict[str, Glyph], width: int) -> str:
 def encode_message(
     spec: LineSpec, raw: bytes, font: dict[str, Glyph], cells: dict[str, int], layout: Layout
 ) -> tuple[bytes, list[str]]:
-    """The site's replacement bytes and the pages as laid out. Refuses; never cuts."""
+    """The site's replacement bytes and the pages as laid out. Refuses; never cuts.
+
+    The only limits enforced here are the page count, the font's coverage and the site's
+    byte length. **The band's shape is not one of them**: the wrap uses `layout.wrap_width`
+    for every line, so neither the three-line box nor the 238 px the next-page pencil
+    leaves line 3 is charged. `boku.layout` and `boku lint` are where a page too tall or a
+    guarded line too wide is reported (`DIALOGUE_BAND`); a page this function accepts may
+    still be one the band cannot draw.
+    """
     pages = spec.text.split(PAGE_BREAK)
     waits = page_waits(raw)
     if len(pages) != len(waits) + 1:
@@ -805,20 +850,202 @@ def byte_runs(old: bytes, new: bytes) -> list[tuple[int, int]]:
     return [(start, end) for start, end in runs]
 
 
-def file_edits(
-    file_name: str, base: int, stock: bytes, patched: bytes, reason: str
-) -> list[dict[str, object]]:
-    """The edit-set entries for one patched blob living at `base` inside `file_name`."""
+# --- what the patch replaces ----------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RawRange:
+    """One whole blob the renderer patch replaces, before it is cut into edit entries.
+
+    `edits.json` and the prototype's own `image.img` are two renderings of one patch, and
+    they used to be assembled by two separate pieces of code: the select cursor reached
+    the first and not the second, so the image drew the stock downward hand while the
+    manifest beside it said 24 x 16. Both now derive from one list of these, which is what
+    makes "promised" and "written" the same word.
+    """
+
+    file_name: str
+    """`SCPS_100.88` or `BOKU.BIN` -- the disc file the offsets are in."""
+    base: int
+    """Offset of `stock` inside that file."""
+    stock: bytes
+    new: bytes
+    reason: str
+    label: str = ""
+    """What to call this range in a refusal and in the sector ledger, when the file name
+    is not specific enough: an overlay is named, not the archive it lives in."""
+
+    @property
+    def written_as(self) -> str:
+        return self.label or self.file_name
+
+
+def file_edits(patch: RawRange) -> list[dict[str, object]]:
+    """The edit-set entries for one replaced blob: its differing runs, and nothing else."""
     return [
         {
-            "file": file_name,
-            "offset": base + start,
-            "old": stock[start:end].hex(),
-            "new": patched[start:end].hex(),
-            "reason": f"{reason} +0x{start:x}",
+            "file": patch.file_name,
+            "offset": patch.base + start,
+            "old": patch.stock[start:end].hex(),
+            "new": patch.new[start:end].hex(),
+            "reason": f"{patch.reason} +0x{start:x}",
         }
-        for start, end in byte_runs(stock, patched)
+        for start, end in byte_runs(patch.stock, patch.new)
     ]
+
+
+def edit_entries(ranges: Sequence[RawRange]) -> list[dict[str, object]]:
+    """`edits.json`'s `edits`: every differing run of every range, in file order."""
+    entries = [entry for patch in ranges for entry in file_edits(patch)]
+    entries.sort(key=lambda edit: (edit["file"], edit["offset"]))
+    return entries
+
+
+# --- the select cursor ---------------------------------------------------------------------
+
+UI_SHEET_CHILD = 3
+"""`ONMEM.BIN`'s child 3: the 48 x 88 4bpp sheet of the resident UI sprites (the hand, the
+pencil, the book icon), uploaded at boot to the page the sprite table's records name."""
+SPRITE_TABLE_CHILD = 0
+"""`ONMEM.BIN`'s child 0: `u32 count`, then 12-byte records `{u8 u, u8, u8 v, u8, u16 w in
+16-bit VRAM units, u16 h, u32}`; the loader fixes up u, the page and the CLUT in RAM
+(`*0x80025900`), so the file holds the sheet-relative values."""
+HAND_SPRITE = 1
+"""Record 1 is the select cursor: 16 x 24 at (0, 32) on the sheet, drawn at the row's origin
+plus `SEL_CURSOR_DX/DY` by `select_cursor_update` (asm/select.asm). Its finger points
+down, at the column the stock layout ran; the rows the patch draws want it pointing right."""
+SPRITE_RECORD_BYTES = 12
+TRANSPARENT = 1
+"""The palette index the sheet pads its sprites with (0x0000, transparent black). Index 0
+of the same CLUT is opaque **white**, so a pixel cannot be read as blank because it is 0 --
+which is why nothing here decides ownership from the pixels (`sprite_rects`)."""
+
+
+def sprite_rects(blob: bytes, table_offset: int, table_size: int) -> list[tuple[int, ...]]:
+    """Every sprite of `ONMEM.BIN` child 0 as `(x, y, width, height)` on the UI sheet."""
+    (count,) = struct.unpack_from("<I", blob, table_offset)
+    if 4 + count * SPRITE_RECORD_BYTES > table_size:
+        raise BuildRefused(
+            f"{FONT_MEMBER} child {SPRITE_TABLE_CHILD} claims {count} sprite records and "
+            f"holds {table_size} bytes"
+        )
+    rects = []
+    for index in range(count):
+        record = table_offset + 4 + SPRITE_RECORD_BYTES * index
+        u, v, w_units, h = struct.unpack_from("<BxBxHH", blob, record)
+        rects.append((u, v, w_units * 4, h))
+    return rects
+
+
+def overlaps(one: tuple[int, ...], other: tuple[int, ...]) -> bool:
+    """Do two `(x, y, width, height)` rectangles share a pixel?"""
+    x1, y1, w1, h1 = one
+    x2, y2, w2, h2 = other
+    return x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1
+
+
+def trespassers(
+    rects: Sequence[tuple[int, ...]], owner: int, *claimed: tuple[int, ...]
+) -> list[int]:
+    """Sprites other than `owner` that any of `claimed` would draw over."""
+    return [
+        index
+        for index, rect in enumerate(rects)
+        if index != owner and any(overlaps(rect, area) for area in claimed)
+    ]
+
+
+def rotate_ccw(indices: bytes, width: int, height: int) -> bytes:
+    """A `width` x `height` block of pixels turned a quarter turn counter-clockwise, as seen
+    on screen (y down): what pointed down points right. The result is `height` x `width`."""
+    out = bytearray(width * height)
+    for y_new in range(width):
+        for x_new in range(height):
+            out[y_new * height + x_new] = indices[x_new * width + (width - 1 - y_new)]
+    return bytes(out)
+
+
+def cursor_edits(archive: Archive) -> tuple[list[RawRange], dict[str, object]]:
+    """`turn_the_hand` over this import's `ONMEM.BIN`."""
+    member = archive.member(FONT_MEMBER)
+    return turn_the_hand(archive.blob(member), member.offset)
+
+
+def turn_the_hand(blob: bytes, base: int) -> tuple[list[RawRange], dict[str, object]]:
+    """The blobs that turn the select's hand to point right, and what they describe.
+
+    The sprite is rotated in place on the sheet: the 16 x 24 cell becomes 24 x 16 at the
+    same `(u, v)`, and the rows the old cell no longer covers are padded transparent. The
+    record's `w` and `h` follow. Nothing is drawn: the pixels are the original's, turned,
+    and they stay untracked (`edits.json` carries the differing runs, which are the game's
+    bytes and gitignored with the rest of `build/`).
+
+    **What makes that safe is the sprite table, not the pixels.** Index 0 of this sheet's
+    CLUT is opaque white, so "these columns look blank" is not a question the pixels can
+    answer -- the padding beside the hand is index 0 throughout. The check is ownership
+    instead: no other record may reach either the cell being vacated or the one being
+    claimed, so the turn cannot cover a sprite or blank one.
+    """
+    pack = parse_pack(blob)
+    if pack is None or len(pack.entries) <= UI_SHEET_CHILD:
+        raise BuildRefused(f"{FONT_MEMBER} is not the 5-child pack research/font.md describes")
+    table_offset, table_size = pack.entries[SPRITE_TABLE_CHILD]
+    rects = sprite_rects(blob, table_offset, table_size)
+    if len(rects) <= HAND_SPRITE:
+        raise BuildRefused(f"{FONT_MEMBER} child {SPRITE_TABLE_CHILD} has no sprite {HAND_SPRITE}")
+    u, v, old_w, old_h = rects[HAND_SPRITE]
+    if (u, v, old_w, old_h) != (0, 32, 16, 24):
+        raise BuildRefused(
+            f"{FONT_MEMBER} sprite {HAND_SPRITE} is ({u}, {v}) {old_w} x {old_h}, not the "
+            f"16 x 24 hand at (0, 32) this transform was written for"
+        )
+    turned_rect = (u, v, old_h, old_w)
+    trespassed = trespassers(rects, HAND_SPRITE, rects[HAND_SPRITE], turned_rect)
+    if trespassed:
+        raise BuildRefused(
+            f"{FONT_MEMBER} sprite(s) {trespassed} share the rows the hand is turned in "
+            f"({u}, {v}) {old_w} x {old_h} -> {old_h} x {old_w}; turning it would draw over "
+            f"them or blank them"
+        )
+    sheet_offset, sheet_size = pack.entries[UI_SHEET_CHILD]
+    stock_sheet = blob[sheet_offset : sheet_offset + sheet_size]
+    tim = parse_exact(stock_sheet)
+    if tim.bpp != 4:
+        raise BuildRefused(
+            f"{FONT_MEMBER} child {UI_SHEET_CHILD} is {tim.bpp}bpp, not the 4bpp sheet"
+        )
+    width = tim.width
+    pixels = bytearray(tim.indices())
+    old_cell = bytes(pixels[(v + y) * width + u + x] for y in range(old_h) for x in range(old_w))
+    for y in range(old_h):
+        for x in range(old_w):
+            pixels[(v + y) * width + u + x] = TRANSPARENT
+    turned = rotate_ccw(old_cell, old_w, old_h)
+    for y in range(old_w):
+        for x in range(old_h):
+            pixels[(v + y) * width + u + x] = turned[y * old_h + x]
+    new_sheet = tim.with_indices(bytes(pixels)).serialise()
+    stock_table = blob[table_offset : table_offset + table_size]
+    patched_table = bytearray(stock_table)
+    record = 4 + SPRITE_RECORD_BYTES * HAND_SPRITE
+    struct.pack_into("<HH", patched_table, record + 4, old_h // 4, old_w)
+    ranges = [
+        RawRange(
+            ARCHIVE_NAME,
+            base + sheet_offset,
+            stock_sheet,
+            new_sheet,
+            "VWF select cursor: the hand turned to point right",
+        ),
+        RawRange(
+            ARCHIVE_NAME,
+            base + table_offset,
+            stock_table,
+            bytes(patched_table),
+            "VWF select cursor: sprite record w, h",
+        ),
+    ]
+    return ranges, {"sprite": HAND_SPRITE, "was": f"{old_w}x{old_h}", "now": f"{old_h}x{old_w}"}
 
 
 def changed_words(stock: bytes, patched: bytes, gap: range) -> list[dict[str, str]]:
@@ -883,6 +1110,24 @@ def replace_range(writer, entry, name, offset, expected, new, ledger) -> None:
     )
 
 
+def write_ranges(writer, entries: Mapping[str, object], ranges: Sequence[RawRange], ledger) -> None:
+    """Every range of the renderer patch written into the image.
+
+    The one writer of what `edit_entries` promises, over the same list, so the two cannot
+    describe different patches (`RawRange`).
+    """
+    for patch in ranges:
+        replace_range(
+            writer,
+            entries[patch.file_name],
+            patch.written_as,
+            patch.base,
+            patch.stock,
+            patch.new,
+            ledger,
+        )
+
+
 def font_child_range(archive: Archive) -> tuple[int, int]:
     """(offset, size) inside BOKU.BIN of the font TIM: ONMEM.BIN pack child 2."""
     member = archive.member(FONT_MEMBER)
@@ -917,6 +1162,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     layout = Layout(
         **{name: getattr(args, name) for name in LAYOUT_ARGUMENTS},
         advance_model=args.advance_model,
+        cursor=args.cursor,
     )
     source, out = Path(args.image), Path(args.out).resolve()
     if (REPO / "disc").resolve() in [out, *out.parents]:
@@ -1008,17 +1254,25 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             for character in sorted(cells)
         },
     }
-    edits = file_edits(EXE_NAME, 0, stock_exe, patched_exe, "VWF executable patch")
-    edits += file_edits(ARCHIVE_NAME, font_offset, stock_tim, new_tim, "VWF font sheet")
-    for name in sorted(patched_overlays):
-        edits += file_edits(
+    ranges = [
+        RawRange(EXE_NAME, 0, stock_exe, patched_exe, "VWF executable patch"),
+        RawRange(ARCHIVE_NAME, font_offset, stock_tim, new_tim, "VWF font sheet"),
+    ]
+    if layout.cursor == "right":
+        cursor, provenance["cursor"] = cursor_edits(archive)
+        ranges += cursor
+    ranges += [
+        RawRange(
             ARCHIVE_NAME,
             archive.member(name).offset,
             stock_overlays[name],
             patched_overlays[name],
             f"VWF {name} patch",
+            label=name,
         )
-    edits.sort(key=lambda edit: (edit["file"], edit["offset"]))
+        for name in sorted(patched_overlays)
+    ]
+    edits = edit_entries(ranges)
     (out / EDITS_NAME).write_text(
         json.dumps(provenance | {"edits": edits}, indent=2) + "\n", encoding="utf-8"
     )
@@ -1077,19 +1331,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     with DiscWriter(partial) as writer:
         entries = {entry.path: entry for entry in writer.walk()}
         exe_entry, archive_entry = entries[f"/{EXE_NAME}"], entries[f"/{ARCHIVE_NAME}"]
-        replace_range(writer, exe_entry, EXE_NAME, 0, stock_exe, patched_exe, ledger)
-        replace_range(writer, archive_entry, ARCHIVE_NAME, font_offset, stock_tim, new_tim, ledger)
-        for name, new_overlay in patched_overlays.items():
-            member = archive.member(name)
-            replace_range(
-                writer,
-                archive_entry,
-                name,
-                member.offset,
-                archive.blob(member),
-                new_overlay,
-                ledger,
-            )
+        write_ranges(writer, {EXE_NAME: exe_entry, ARCHIVE_NAME: archive_entry}, ranges, ledger)
         for _, copies, encoded, _ in lines:
             placed: PlacedSite
             for placed in copies:
@@ -1169,9 +1411,21 @@ def main() -> int:
     )
     defaults = Layout()
     for name in LAYOUT_ARGUMENTS:
+        # The field's default, not the instance's: `sel_cursor_dx` is resolved from
+        # `--cursor` in `__post_init__`, and an argparse default read off a built `Layout`
+        # would hand every mode the default mode's offset.
         parser.add_argument(
-            f"--{name.replace('_', '-')}", type=int, default=getattr(defaults, name)
+            f"--{name.replace('_', '-')}",
+            type=int,
+            default=Layout.__dataclass_fields__[name].default,
         )
+    parser.add_argument(
+        "--cursor",
+        choices=("right", "down"),
+        default=defaults.cursor,
+        help="right: turn the select's hand to point at its row (the default); down: the "
+        "stock sprite. --sel-cursor-dx follows the choice unless it is given.",
+    )
     parser.add_argument(
         "--advance-model",
         choices=("c1", "c2"),

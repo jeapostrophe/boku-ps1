@@ -254,12 +254,23 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `map_commit` bound, the swap length) with the stack low-water measured at 4,016 bytes
       on both emulators and the assembler refusing a raise under 1.5× that — `M_H06001`'s 43
       lines now lay out; Jay's band and advance rulings are the build's defaults. Under that
-      band the advance model was decided by lint (`TXT-07`): **c2**. **Left to do:** load
-      `H06001` itself (condition-selected, never reached — the raised bound is exercised
-      only by maps under the old limit; `tools/vwf/state_poke.py` can request the map); the
-      two `HHON.OVL` walkers, the 20 fixed-pitch surfaces and their arrays, the 23
-      computed-id `glyph_draw` sites (not covered by the free-cell gate), and watching the
-      heap gap and stack under the four overlays / a save / menus, sumo and fishing.
+      band the advance model was decided by lint (`TXT-07`): **c2**. **Round 2 (2026-09-20,
+      after Jay played it on DuckStation):** the band sat partly below the rows DuckStation
+      shows — the game programs all 240 rows but the emulator's default crop stops near row
+      232 — so it moved to Y=191 with the next-page marker (two sprites, two sites) moving
+      with it; `「『` got a left bearing and `」』` were tightened; the choice cursor is the
+      game's own hand turned a quarter turn at build time (nothing tracked) so it points at
+      the row; `H06001` (day 15 morning) loaded with child 6 past the old bound; the aunt's
+      evening lines drawn from a relocated EV member on Beetle. The card-check and settings
+      screens Jay saw in Japanese are `TITLE.OVL` renderer text with no translation rows —
+      the array/overlay half of `TRN-04` (308 lines on six surfaces, `boku coverage` lists
+      them as `not-event`), not a renderer miss. **Left to do:** the two `HHON.OVL`
+      walkers, the 20 fixed-pitch surfaces and their arrays, the 23 computed-id `glyph_draw`
+      sites (not covered by the free-cell gate); Boku's close-up head sprite draws over the
+      band in the evening room (actors are ordered in front of the panel); `select.asm`'s
+      `g_select_rect` is a literal 80×40 that does not follow `SEL_PITCH`/`SEL_PAD` (a
+      five-row layout's rows run 126–181 against a box to 160); and watching the heap gap
+      and stack under the four overlays / a save / menus, sumo and fishing.
       Original row: Per `TXT-03`: armips source in the repo, horizontal
       advance, per-glyph width table, wrapping inside the existing box, free space located in
       the executable (it is exactly `0x80000` bytes — check the tail and dead debug code). Every
@@ -298,12 +309,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
       next-page pencil, and overflow is clipped silently at x = 319 — the engine never wraps,
       so the inserter breaks lines and `PIPE-06` measures them in pixels. **Under Jay's band
-      (H=37, Y=203, pitch 11, three lines, lines 2–3 ending before 238 px for the pencil),
-      days 1–7 + shared, 764 rows: advance model c1 (sheet untouched) needs a 4th line on 68
-      pages, a 5th on 8 and overflows 3 SELECT rows; c2 (cells re-aligned) leaves 4 pages by
-      lint and 6 by the stricter build (`E0771.0`, `E0772.0`, `E0772.1`, `E0773.1`,
-      `E0773.2`, `E4028.11`). Jay ranked c1 > c2 with "lint decides fit" (2026-09-20), so the
-      build is c2; c1 stays behind `--advance-model c1`.** Still to measure:
+      (H=37, pitch 11, three lines; now at Y=191 so every row is inside what DuckStation's
+      default crop shows — the game programs all 240 rows, the crop stops near 232, and the
+      stock next-page marker reached 230; line 3 ends before 238 px for the marker), days 1–7
+      + shared, 764 rows: advance model c1 (sheet untouched) needs a 4th line on 68 pages, a
+      5th on 8 and overflows 3 SELECT rows; c2 (cells re-aligned) leaves 4 pages
+      (`E0771.0`, `E0772.1`, `E0773.2`, `E4028.11`) — 757 of 761 lines laid out. Jay ranked
+      c1 > c2 with "lint decides fit" (2026-09-20), so the build is c2; c1 stays behind
+      `--advance-model c1`.** Still to measure:
       every other surface. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —

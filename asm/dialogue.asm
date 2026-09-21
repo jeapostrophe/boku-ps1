@@ -67,6 +67,32 @@
 .endif
 .endarea
 
+; ---- dialog_cursor_draw: where the next-page pencil sits ------------------------------------
+; The marker is TWO 20 x 8 sprites from ONMEM child-0 records 3 and 4 at the same x
+; (266 + a +-3 wobble from the sine table 0x8006B080): the green pencil at y = 220 and its
+; grey shadow at 223, stock rows 220-230 (research/text-renderer.md § 4a). Inside the
+; 72-row band that was fine; a 37-row band ending above the TV's bottom margin needs it
+; higher, so both move together to the band's last 11 rows, over the third line's tail,
+; which the wrap guards for it (boku.layout.DIALOGUE_BAND).
+PENCIL_Y equ (BAND_Y + BAND_H - 11)
+.org 0x8002C088
+.area 4
+.if ORIGINAL
+    addiu   v0, zero, 0xDC          ; stock: the pencil at y = 220
+.else
+    addiu   v0, zero, PENCIL_Y
+.endif
+.endarea
+
+.org 0x8002C0E8
+.area 4
+.if ORIGINAL
+    addiu   v0, zero, 0xDF          ; stock: its shadow at y = 223
+.else
+    addiu   v0, zero, PENCIL_Y + 3
+.endif
+.endarea
+
 ; ---- dialog_panel_draw: the right-hand strip becomes a band ("band2") ---------------------
 ; s0 -> the TILE: x at +8, y at +0xA, w at +0xC, h at +0xE; v1 = g_dlgbox_x. The stock code
 ; stores y = 0 and x = v1 + 5. Swapping the two store offsets frees the second immediate, so

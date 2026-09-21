@@ -10,6 +10,8 @@ measurements on the running prototype.
 from __future__ import annotations
 
 import json
+import re
+from pathlib import Path
 
 import pytest
 
@@ -30,6 +32,22 @@ from boku.layout import (
     wrap,
 )
 from tests.test_vwf_prototype import vwf_layout, vwf_prototype
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def pencil_rows() -> int:
+    """How many of the band's last rows the next-page pencil sits in.
+
+    Read out of `asm/dialogue.asm`'s `PENCIL_Y equ (BAND_Y + BAND_H - N)`, which is the one
+    home of that number: the marker moves with the band, so a band moved in the assembly
+    and a guard left behind here would be a wrap that guards the wrong line.
+    """
+    source = (REPO_ROOT / "asm" / "dialogue.asm").read_text(encoding="utf-8")
+    found = re.search(r"PENCIL_Y\s+equ\s+\(BAND_Y \+ BAND_H - (\d+)\)", source)
+    assert found, "asm/dialogue.asm no longer places the pencil relative to the band"
+    return int(found.group(1))
+
 
 CELLS = {
     " ": (10, 4),
@@ -86,8 +104,8 @@ def test_a_word_wider_than_the_box_is_reported_and_never_cut():
 
 
 def test_the_guarded_lines_get_the_narrower_width_the_pencil_leaves():
-    """The next-page pencil is stock at rows 220-229, which the ruled band's lines 2 and 3
-    cross, so every line from `guarded_from` on is shorter and line 1 is not."""
+    """The next-page pencil sits in the band's last 11 rows, which only line 3 crosses, so
+    every line from `guarded_from` on is shorter and the lines before it are not."""
     encoder = StockEncoder(GlyphTable.load())
     assert DIALOGUE_BAND.width_of_line(1) == DIALOGUE_BAND.width
     assert DIALOGUE_BAND.guarded_width < DIALOGUE_BAND.width
@@ -106,6 +124,11 @@ def test_the_band_holds_the_lines_its_geometry_has_room_for():
     are what `asm/vwf.asm` is assembled with (Jay's ruling, `research/vwf-prototype.md`
     § "The ruled band") -- so moving the band or the pitch there and not here is a red
     test rather than a `DIALOGUE_BAND` that quietly describes a band nothing draws.
+
+    `guarded_from` is the same sum: the pencil occupies the band's last `pencil_rows()`
+    rows, and the guard belongs on the first line whose cell and its drop shadow reach up
+    into them. Under Round 2's geometry that is line 3 alone; it was 2 *and* 3 while the
+    pencil was stock at row 220, which is why it is derived rather than written down.
     """
     layout = vwf_layout()
     cell = 12  # a glyph cell is 12 rows (`research/font.md`), as `build_prototype.CELL` says
@@ -113,6 +136,16 @@ def test_the_band_holds_the_lines_its_geometry_has_room_for():
     fits = (layout.band_y + layout.band_h - layout.pen_y - cell) // layout.line_pitch + 1
     assert DIALOGUE_BAND.lines == fits
     assert DIALOGUE_BAND.width == layout.wrap_width
+
+    pencil_top = layout.band_y + layout.band_h - pencil_rows()
+    reaches = [
+        number
+        for number in range(1, DIALOGUE_BAND.lines + 1)
+        # The cell's last row is `+ cell - 1` and its shadow is drawn one row below that.
+        if layout.pen_y + (number - 1) * layout.line_pitch + cell >= pencil_top
+    ]
+    assert reaches, "no line reaches the pencil; the band and the marker have come apart"
+    assert DIALOGUE_BAND.guarded_from == reaches[0]
 
 
 # --- the speaker label and the marks, as text on the lines they sit on ----------------------

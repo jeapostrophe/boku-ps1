@@ -215,16 +215,17 @@ class BoxSpec:
 DIALOGUE_BAND = BoxSpec(
     width=272,
     lines=3,
-    guarded_from=2,
+    guarded_from=3,
     guarded_width=238,
     name="the dialogue band",
 )
-"""The band `TXT-05` draws in, as Jay ruled it (2026-09-20, the smallest of the mock-ups):
-37 rows from y = 203, pen (24, 205), line pitch 11 — three lines, 272 usable px with the
-left margin mirrored. The next-page pencil is stock at x >= 267, rows 220-229, which in
-this band crosses lines 2 and 3 (cells 216-227 and 227-238), so both must end before
-x ~ 262 = 24 + 238. Measured for the earlier 72-row band in `research/vwf-prototype.md`
-§ "Measurements for `TXT-07`"; re-measured for this one there, § "The ruled band"."""
+"""The band `TXT-05` draws in, as Jay ruled it (2026-09-20, the smallest of the mock-ups)
+and as moved up for the display (2026-09-21): 37 rows from y = 191, pen (24, 193), line
+pitch 11 — three lines whose cells end at row 226, inside the ~232 rows DuckStation's
+default crop shows and a TV's title-safe margin; 272 usable px with the left margin
+mirrored. The next-page pencil is moved to the band's last 11 rows at x >= 267, which
+crosses line 3 only, so that line must end before x ~ 262 = 24 + 238.
+`research/vwf-prototype.md` § "The ruled band"."""
 
 
 SPEAKER_LABELS = frozenset(

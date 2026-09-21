@@ -17,18 +17,24 @@ The two tests over the real sheet skip without `disc/`; the rest need nothing.
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
+import json
 import sys
 from functools import cache
 from pathlib import Path
 
 import pytest
 
-from boku.archive import EXE_NAME, Archive
+from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack
 from boku.ppf import _SPAN_BLOCK, differing_spans
 from boku.text import SiteIndex
+from boku.tim import parse_exact
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+NEEDS_IMPORT = pytest.mark.skipif(
+    not (REPO_ROOT / "disc" / "files").exists(), reason="needs the import"
+)
 
 
 @cache
@@ -173,3 +179,241 @@ def test_two_blobs_of_different_lengths_are_refused():
     tool = vwf_prototype()
     with pytest.raises(tool.BuildRefused, match="byte_runs"):
         tool.byte_runs(b"\0", b"\0\0")
+
+
+# --- the select cursor and the glyph file ----------------------------------------------------
+
+
+def test_a_quarter_turn_counter_clockwise_sends_what_pointed_down_to_the_right():
+    """A 2 x 3 block whose bottom row is the "finger": after the turn it is the right column."""
+    vwf = vwf_prototype()
+    a, b, c, d, e, f = b"abcdef"
+    turned = vwf.rotate_ccw(bytes([a, b, c, d, e, f]), 2, 3)
+    assert turned == bytes([b, d, f, a, c, e])
+    # Twice more and once again is the identity, which pins the size bookkeeping.
+    back = turned
+    for width, height in ((3, 2), (2, 3), (3, 2)):
+        back = vwf.rotate_ccw(back, width, height)
+    assert back == bytes([a, b, c, d, e, f])
+
+
+def test_a_glyph_may_carry_a_left_bearing_but_its_advance_must_cover_ink_and_shadow(tmp_path):
+    """The boundary, on a glyph inked to column 3: the renderer draws every glyph twice,
+    one column apart, so the shadow lands on column 4 and the next glyph may not start
+    before column 5. Advance 4 is the narrowest advance that puts a glyph on a shadow."""
+    vwf = vwf_prototype()
+    rows = ["............"] + ["..##........"] * 9 + ["............"] * 2
+    path = tmp_path / "glyphs.txt"
+
+    def load(advance: int):
+        path.write_text(
+            f"glyph U+300C advance {advance}\n" + "\n".join(rows) + "\n", encoding="utf-8"
+        )
+        return vwf.load_glyph_file(path)["「"]
+
+    glyph = load(5)
+    assert glyph.ink == (2, 3) and glyph.advance == 5
+    with pytest.raises(vwf.BuildRefused, match="advance must cover the ink"):
+        load(4)
+
+
+def test_the_placeholder_sheet_leaves_room_for_every_closing_mark_s_shadow():
+    """`』` shipped at advance 5 over ink to column 4, so its shadow was drawn under the
+    first column of whatever followed it -- the one glyph in the file that broke the rule
+    `「` 7, `『` 8 and `」` 4 all keep. Loaded rather than eyeballed."""
+    vwf = vwf_prototype()
+    font = vwf.load_glyph_file(vwf.PLACEHOLDERS)
+    assert font, "the placeholder sheet is empty; this would pass over nothing"
+    for character, glyph in sorted(font.items()):
+        if glyph.ink:
+            assert glyph.advance >= glyph.ink[1] + 2, f"{character!r} sits on its own shadow"
+
+
+@NEEDS_IMPORT
+def test_the_hand_is_turned_in_place_and_its_record_follows():
+    """On the real sheet, in pixels: the only pixels that change are the cell the hand
+    vacates and the cell it claims, the new cell is the old one turned, and the rows it no
+    longer covers are left transparent. The record follows the pixels.
+
+    Every number is read out of the pack and the TIM -- the child's offset, the hand's
+    `(x, y, w, h)`, the sheet's stride -- so a sheet rebuilt at another size, or a record
+    moved, moves this test with it instead of past it.
+    """
+    vwf = vwf_prototype()
+    archive = Archive(REPO_ROOT / "disc")
+    member = archive.member(vwf.FONT_MEMBER)
+    blob = archive.blob(member)
+    pack = parse_pack(blob)
+    table_offset, table_size = pack.entries[vwf.SPRITE_TABLE_CHILD]
+    sheet_offset, sheet_size = pack.entries[vwf.UI_SHEET_CHILD]
+    x, y, w, h = vwf.sprite_rects(blob, table_offset, table_size)[vwf.HAND_SPRITE]
+
+    ranges, described = vwf.cursor_edits(archive)
+    assert described == {"sprite": vwf.HAND_SPRITE, "was": f"{w}x{h}", "now": f"{h}x{w}"}
+
+    record = next(patch for patch in ranges if "record" in patch.reason)
+    assert record.file_name == ARCHIVE_NAME and record.base == member.offset + table_offset
+    assert vwf.sprite_rects(record.new, 0, len(record.new))[vwf.HAND_SPRITE] == (x, y, h, w)
+
+    sheet = next(patch for patch in ranges if "turned" in patch.reason)
+    assert sheet.base == member.offset + sheet_offset
+    assert sheet.stock == blob[sheet_offset : sheet_offset + sheet_size]
+    before, after = parse_exact(sheet.stock), parse_exact(sheet.new)
+    width = before.width
+    old_pixels, new_pixels = before.indices(), after.indices()
+
+    def at(pixels: bytes, rows: int, columns: int) -> bytes:
+        return bytes(
+            pixels[(y + row) * width + x + column]
+            for row in range(rows)
+            for column in range(columns)
+        )
+
+    changed = {i for i, (a, b) in enumerate(zip(old_pixels, new_pixels, strict=True)) if a != b}
+    assert changed, "the sheet did not change; nothing was turned"
+    hand_cells = {
+        (y + row) * width + x + column
+        for rows, columns in ((h, w), (w, h))
+        for row in range(rows)
+        for column in range(columns)
+    }
+    assert changed <= hand_cells, "the turn reached outside the cell it vacates and claims"
+    assert at(new_pixels, w, h) == vwf.rotate_ccw(at(old_pixels, h, w), w, h)
+    left = at(new_pixels, h, w)[w * w :]
+    assert set(left) == {vwf.TRANSPARENT}, "the rows the hand left are not padded transparent"
+
+
+@NEEDS_IMPORT
+def test_a_sprite_in_the_rows_the_hand_is_turned_in_stops_the_turn(monkeypatch):
+    """Ownership, not blankness, is what makes the turn safe.
+
+    Index 0 of this sheet's CLUT is opaque white and index 1 transparent, so the padding
+    beside the hand reads as `0` and no pixel test can tell it from art. The sprite table
+    is what says those rows belong to nobody -- so a table that says otherwise, on either
+    the cell being claimed or the cell being vacated, is a refusal.
+    """
+    vwf = vwf_prototype()
+    archive = Archive(REPO_ROOT / "disc")
+    member = archive.member(vwf.FONT_MEMBER)
+    blob = archive.blob(member)
+    pack = parse_pack(blob)
+    table_offset, table_size = pack.entries[vwf.SPRITE_TABLE_CHILD]
+    rects = vwf.sprite_rects(blob, table_offset, table_size)
+    x, y, w, h = rects[vwf.HAND_SPRITE]
+    assert vwf.trespassers(rects, vwf.HAND_SPRITE, (x, y, w, h), (x, y, h, w)) == [], (
+        "this disc's own table already trespasses; the refusal would fire on every build"
+    )
+
+    other = next(index for index in range(len(rects)) if index != vwf.HAND_SPRITE)
+    for corner in ((x + h - 1, y), (x, y + w)):
+        # (right column of the turned cell, first row the old cell vacates): each is a
+        # pixel exactly one of the two rectangles covers, which is the narrowest table
+        # that must stop the turn.
+        moved = list(rects)
+        moved[other] = (*corner, 1, 1)
+        monkeypatch.setattr(vwf, "sprite_rects", lambda *_, rects=moved: rects)
+        with pytest.raises(vwf.BuildRefused, match=rf"sprite\(s\) \[{other}\]"):
+            vwf.turn_the_hand(blob, member.offset)
+
+
+def test_the_cursor_offset_follows_the_hand_the_build_installs():
+    """`--cursor down` alone kept the turned hand's offset, and the invariant that they go
+    together lived only in `--help`: the stock sprite is 16 px wide and the turned one 24,
+    so the narrower hand was drawn eight pixels further from its row than it belongs."""
+    right, down = vwf_layout(), vwf_layout(cursor="down")
+    assert right.cursor == "right" and down.cursor == "down"
+    assert -right.sel_cursor_dx >= 24, "the turned hand is 24 px wide and sits left of the row"
+    assert -down.sel_cursor_dx >= 16, "the stock hand is 16 px wide and sits left of the row"
+    assert down.sel_cursor_dx > right.sel_cursor_dx, "the narrower hand sits nearer its row"
+    assert vwf_layout(cursor="down", sel_cursor_dx=-30).sel_cursor_dx == -30, "--sel-cursor-dx wins"
+
+
+# --- what the patch promises and what the image is given ----------------------------------------
+
+
+class _WalkEntry:
+    """A `DiscWriter.walk()` entry, reduced to what the write path reads off one."""
+
+    def __init__(self, path: str) -> None:
+        self.path, self.lba, self.size = path, 0, 0
+
+
+class _NoDisc:
+    """`DiscWriter` and `DiscImage` with the 660 MB image taken out of them."""
+
+    def __init__(self, path):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return False
+
+    def walk(self):
+        return [_WalkEntry(f"/{EXE_NAME}"), _WalkEntry(f"/{ARCHIVE_NAME}")]
+
+    def flush(self):
+        pass
+
+
+def prototype_arguments(tool, out: Path, **extra) -> argparse.Namespace:
+    """What `main` hands `build` for a default run, taken from the parser's own sources."""
+    defaults = tool.Layout()
+    arguments = {
+        "image": str(REPO_ROOT / "disc" / "image.img"),
+        "disc": str(REPO_ROOT / "disc"),
+        "out": str(out),
+        "lines": str(tool.DEFAULT_LINES),
+        "days": None,
+        "label": False,
+        "font": None,
+        "asm": str(tool.ASM),
+        "armips": str(tool.DEFAULT_ARMIPS),
+        "skip_image_hash": True,
+        "edits_only": False,
+        "advance_model": defaults.advance_model,
+        "cursor": defaults.cursor,
+    }
+    for name in tool.LAYOUT_ARGUMENTS:
+        arguments[name] = tool.Layout.__dataclass_fields__[name].default
+    return argparse.Namespace(**(arguments | extra))
+
+
+@NEEDS_IMPORT
+@pytest.mark.skipif(
+    not vwf_prototype().DEFAULT_ARMIPS.exists(), reason="needs armips to assemble the patch"
+)
+def test_every_edit_the_patch_promises_is_a_range_the_image_build_writes(tmp_path, monkeypatch):
+    """`edits.json` and the prototype's own `image.img` are two renderings of one patch.
+
+    They were assembled by two pieces of code, and the select cursor reached only the
+    first: the image drew the stock downward hand while the `manifest.json` beside it said
+    `cursor: 24x16`, and nothing read the image back to notice. So the build runs here for
+    real -- armips, the font, the lines -- with only the copy and the sector writer taken
+    out, and every entry of the `edits.json` it writes has to lie inside a range its image
+    writer was handed.
+    """
+    tool = vwf_prototype()
+    written: list[tuple[str, int, int]] = []
+
+    def record(writer, entry, name, offset, expected, new, ledger):
+        assert len(expected) == len(new), f"{name}+0x{offset:x} changes the file's length"
+        written.append((entry.path.lstrip("/"), offset, len(expected)))
+
+    monkeypatch.setattr(tool, "DiscWriter", _NoDisc)
+    monkeypatch.setattr(tool, "DiscImage", _NoDisc)
+    monkeypatch.setattr(tool, "replace_range", record)
+    monkeypatch.setattr(tool.shutil, "copyfile", lambda source, target: Path(target).touch())
+    tool.build(prototype_arguments(tool, tmp_path))
+
+    document = json.loads((tmp_path / tool.EDITS_NAME).read_text(encoding="utf-8"))
+    assert any("cursor" in str(edit["reason"]) for edit in document["edits"]), (
+        "the default build promised no cursor edit; this gate would pass over nothing"
+    )
+    for edit in document["edits"]:
+        start, length = edit["offset"], len(edit["old"]) // 2
+        assert any(
+            name == edit["file"] and base <= start and start + length <= base + size
+            for name, base, size in written
+        ), f"promised in {tool.EDITS_NAME} and never written: {edit['reason']}"
