@@ -48,6 +48,12 @@ usage: ./make.sh <verb> [arguments]
                                 encodable characters, pixel fit, array byte sizes, and
                                 the additive-word heuristic
                                 (./make.sh lint-translation --help for the switches)
+  coverage [arguments]          per in-game day, every line the player can meet and what
+                                the build did with it -- translated, refused (English
+                                exists, the image did not get it), missing (never given to
+                                a translator) or not-event (a menu, book or title-screen
+                                line no day file covers)
+                                (./make.sh coverage --help for the switches)
   test [pytest arguments]       run the test suite
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
@@ -147,6 +153,15 @@ cmd_build_days() {
     echo "== 2/2: building translation/days through it -> build/days/ =="
     uv run boku build --vwf "$font/edits.json" --translation translation/days \
         --name days --out build/days --skip-unfitted "$@"
+    # A second .cue named by the revision, so the emulator's window title says what is
+    # being played while builds and edits overlap (Jay, 2026-09-20). Same image.img.
+    local id
+    id="$(date -u +%Y%m%dT%H%MZ)-$(git describe --always --dirty --abbrev=8)"
+    rm -f build/days/days-*.cue
+    cp build/days/image.cue "build/days/days-$id.cue"
+    echo "$id" > build/days/BUILD-ID.txt
+    echo
+    echo "== build id $id: load build/days/days-$id.cue =="
 }
 
 verb="${1:-}"
@@ -187,6 +202,9 @@ case "$verb" in
         ;;
     lint-translation)
         exec uv run boku lint "$@"
+        ;;
+    coverage)
+        exec uv run boku coverage "$@"
         ;;
     test)
         exec uv run pytest "$@"

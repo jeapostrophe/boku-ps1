@@ -11,6 +11,7 @@ from pathlib import Path
 
 from boku.archive import DEFAULT_DISC_DIR
 from boku.build import DEFAULT_BUILD_NAME, DEFAULT_IMAGE, IMAGE_NAME, main_build
+from boku.coverage import add_arguments as add_coverage_arguments
 from boku.extract import SCRIPT_DIR_NAME, main_extract
 from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
 from boku.lint import add_arguments as add_lint_arguments
@@ -273,8 +274,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-label",
         action="store_true",
         help=(
-            "wrap page 1's first line to the full box instead of reserving the speaker "
-            "label's pixels in front of it (the lint's --no-label, for the same reason)"
+            "insert the English undressed: no speaker label, and neither the opening nor "
+            "the closing mark the Japanese drew around it (the lint's --no-label measures "
+            "the same bare text)"
         ),
     )
     builder.set_defaults(
@@ -468,6 +470,21 @@ def build_parser() -> argparse.ArgumentParser:
                 "pilot's additive-word heuristic warns. Nothing is rewritten and nothing is "
                 "shortened to fit: a finding reports what is over and by how much. Exits "
                 "non-zero when there is an error, zero on warnings alone."
+            ),
+        )
+    )
+
+    add_coverage_arguments(
+        subcommands.add_parser(
+            "coverage",
+            help="per day, which lines the player meets are English and why the rest are not",
+            description=(
+                "For every line an in-game day can reach: translated (English exists and "
+                "the build wrote it), refused (English exists and the image did not get "
+                "it -- the manifest says why), missing (nobody was asked for it), or "
+                "not-event (a menu, book or title-screen line no day file covers). The "
+                "day files answer 'is what we wrote correct?'; this answers 'that line "
+                "was still in Japanese -- why?'"
             ),
         )
     )

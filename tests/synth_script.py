@@ -76,12 +76,14 @@ class SynthStore:
         slot: int = 1,
         label: bool = True,
         prefix: str = "",
+        marks: tuple[str, str] = ("", ""),
     ) -> dict:
         """One `XAMSG`/`MSG` line. `columns` gives the cell count of each column of each
         page, and the cells themselves come from the glyph table.
 
         `label` writes the inline `<speaker>「` the Japanese opens a labelled message
-        with, which is what `boku.lint.original_draws_label` reads; `prefix` puts a
+        with; `marks` writes a pair of its own (an opener before the first column, a closer
+        after the last), which is what `boku.layout.original_marks` reads; `prefix` puts a
         caller's own word (a source intensifier, say) at the head of the first column.
         """
         pages = [
@@ -91,6 +93,9 @@ class SynthStore:
         pages[0][0] = f"{prefix}{pages[0][0]}"
         if label:
             pages[0][0] = f"{filler(self.table, 2, skip=3)}「{pages[0][0]}"
+        opening, closing = marks
+        pages[0][0] = f"{opening}{pages[0][0]}"
+        pages[-1][-1] = f"{pages[-1][-1]}{closing}"
         waits = [90 + number for number in range(len(pages) - 1)]
         text = _message_text(pages, waits)
         size = len(self.table.encode(text))

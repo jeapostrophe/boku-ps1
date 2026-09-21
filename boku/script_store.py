@@ -14,6 +14,7 @@ file (CLAUDE.md § "This repo is public").
 from __future__ import annotations
 
 import json
+import operator
 import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
@@ -210,9 +211,91 @@ SLOT_HOUR = {"0": 0, "1": 16, "2": 19}
 """A map name's 4th character is its time slot (`research/event-scripts.md`). Used only to
 order scenes whose condition names no hour."""
 
+_DAY_TEST = re.compile(r"^day(==|!=|>=|<=|>|<)(-?\d+)$")
+_BREAK = "()&|"
+_TOKENS = re.compile(r"[()&|]|[^()&|]+")
+_COMPARE = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    ">=": operator.ge,
+    "<=": operator.le,
+    ">": operator.gt,
+    "<": operator.lt,
+}
+
+
+class _Unreadable(Exception):
+    """A condition this module cannot parse. Always resolved in the scene's favour."""
+
+
+def _tokens(condition: str) -> list[str]:
+    """One token per bracket and operator, one per everything between them."""
+    return [token.strip() for token in _TOKENS.findall(condition) if token.strip()]
+
+
+def day_allows(condition: str | None, day: int) -> bool:
+    """Could an event with this entry condition fire on `day`?
+
+    Every `day` comparison is evaluated and **every other atom is taken as true**, so the
+    answer is False only when no state of the flags, the clock or the map could let the
+    event fire on that day. A condition this cannot parse is True, for the same reason:
+    the cost of a false "reachable" is one extra row in a report, and the cost of a false
+    "unreachable" is a line the player meets in Japanese that nothing ever mentions.
+    """
+    if not condition:
+        return True
+
+    def atom(token: str) -> bool:
+        match = _DAY_TEST.match(token.replace(" ", ""))
+        if match is None:
+            return True
+        return _COMPARE[match.group(1)](day, int(match.group(2)))
+
+    def factor(tokens: list[str], at: int) -> tuple[bool, int]:
+        if at >= len(tokens):
+            raise _Unreadable
+        token = tokens[at]
+        if token == "(":
+            value, at = alternatives(tokens, at + 1)
+            if at >= len(tokens) or tokens[at] != ")":
+                raise _Unreadable
+            return value, at + 1
+        if token in _BREAK:
+            raise _Unreadable
+        return atom(token), at + 1
+
+    def conjunction(tokens: list[str], at: int) -> tuple[bool, int]:
+        value, at = factor(tokens, at)
+        while at < len(tokens) and tokens[at] == "&":
+            right, at = factor(tokens, at + 1)
+            value = value and right
+        return value, at
+
+    def alternatives(tokens: list[str], at: int) -> tuple[bool, int]:
+        value, at = conjunction(tokens, at)
+        while at < len(tokens) and tokens[at] == "|":
+            right, at = conjunction(tokens, at + 1)
+            value = value or right
+        return value, at
+
+    tokens = _tokens(condition)
+    try:
+        value, at = alternatives(tokens, 0)
+    except _Unreadable:
+        return True
+    return value if at == len(tokens) else True
+
 
 def scene_day(scene: dict) -> tuple[int | None, bool]:
-    """`(day, derived)` -- the extractor's day, else one read off a `day==N` condition."""
+    """`(day, derived)` — the extractor's day, else one read off a `day==N` condition.
+
+    A **derived** day is the day of one `day==N` comparison somewhere in the condition,
+    which is not the same as the only day the scene fires on: the comparison routinely
+    sits in one branch of an `|` whose other branch is open (`E0710`'s
+    `((day>6 & day!=30 & hour<16) | (day==30 & hour<11))` derives day 30 and plays every
+    day after the 6th). Ask `scene_plays_on` which days reach a scene; a derived day is a
+    label for the packet, never a filter.
+    """
     day = scene["when"]["day"]
     if day is not None:
         return day, False
@@ -220,6 +303,20 @@ def scene_day(scene: dict) -> tuple[int | None, bool]:
     if len(set(found)) == 1:
         return int(found[0]), True
     return None, False
+
+
+def scene_plays_on(scene: dict, day: int) -> bool:
+    """Can `day` reach this scene? The one predicate every per-day view asks.
+
+    A day the *extractor* dated is exclusive — it came off the event id, which fixes the
+    day the engine fires the scene on. Anything else asks the entry condition, because a
+    derived day (`scene_day`) and a missing day are both compatible with the scene firing
+    on other days, and dropping a scene the player meets is the failure that matters.
+    """
+    dated, derived = scene_day(scene)
+    if dated is not None and not derived:
+        return dated == day
+    return day_allows(scene["when"].get("condition"), day)
 
 
 def scene_hour(scene: dict) -> int | None:
@@ -245,13 +342,16 @@ def ordered_scenes(store: Store) -> list[dict]:
 
 
 def scenes_of_day(store: Store, day: int) -> list[dict]:
-    """The scenes a given in-game day plays, in order.
+    """The scenes a given in-game day can reach, in order (`scene_plays_on`).
 
-    A scene belongs to a day when the extractor dated it or its condition names exactly
-    one `day==N`; `translation/days/README.md` adds the day-independent events by hand,
-    which is a judgement this cannot make.
+    A scene the extractor dated belongs to that day alone. Every other scene is here when
+    its entry condition's `day` tests can be true on this day, so a scene with no day and
+    a scene whose `day==N` sits in one branch of an `|` both appear on every day that can
+    reach them — which is how the game plays them, and why a packet for day 7 carries
+    `E0710`. Whether the flags and the map also line up is a judgement this cannot make;
+    `translation/days/README.md` makes it by hand.
     """
-    return [scene for scene in ordered_scenes(store) if scene_day(scene)[0] == day]
+    return [scene for scene in ordered_scenes(store) if scene_plays_on(scene, day)]
 
 
 def scenes_named(store: Store, events: Sequence[str]) -> list[dict]:
