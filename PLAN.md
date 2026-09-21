@@ -426,23 +426,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       in-game day, read the result in the game, fix the workflow before scaling. Apply what
       `RSH-01` found about LLM game-translation failure modes. Harmed: the token budget and the
       player, if the full run repeats a flaw a pilot would have shown.
-- [ ] **[TRN-06]** **The scene reader.** A small local tool (Jay, 2026-09-20: easier to make and
-      better to use than Weblate) that renders a scene in play order from `TRN-02`'s graph:
-      Japanese from the local import beside the English, candidate translations and reviewer
-      notes side by side, branches navigable. Read-only over the translation files — edits go
-      through the files and the agents, so there is no second representation to keep in sync.
-      Built when `TRN-03`'s pilot has output to read. Harmed: Jay, who otherwise can only judge
-      the translation by playing to each line.
-- [ ] **[TRN-07]** **Subtitle the speech that has no text on the disc.** Ruled 2026-09-20 (Q11,
-      option b): the opening monologue (the FMV before `E0001`) and the five epilogues (from
-      `E3182`, `M27`/`M28.IKI`) are voice only. Translate them into tracked files
-      (`translation/voice-only.md` lists the sequences, with the secondary ones — radio
-      calisthenics, TV, the sutra, the dreams — for a later call), then deliver them: Jay,
-      "we'll figure out later whether we put subtitles in the FMV or do it within the engine.
-      Within engine is better." Engine subtitles mean a timed text overlay during FMV
-      playback — new renderer work on top of `TXT-05`; FMV subtitles mean re-encoding frames.
-      `[MINE: product]` on which, once `TXT-05` shows what the engine path costs. Harmed: the
-      player, who otherwise meets the game's first and last minutes untranslated.
+- [x] **[TRN-06]** **The scene reader.** DONE 2026-09-20: `tools/reader/build.py` (+ `checks.py`)
+      renders a static site under gitignored `work/reader/` from `disc/script/` and the
+      translation files — 702 pages: every scene in play order with the Japanese as the game
+      lays it out (vertical columns, page waits) beside the English, SELECT options linked to
+      their branches, edge conditions, hand-overs, the dinner-quiz tables, a day calendar and
+      per-character pages — plus `--check` (unknown ids, ids translated twice, SELECT shape,
+      voiced page counts). Read-only over the translation files; reviewed and the findings
+      applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`).
 - [ ] **[TRN-04]** **The full translation run.** Everything `REC-03` and `REC-06` found, through
       the piloted workflow, committed scene by scene. Harmed: the player.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
