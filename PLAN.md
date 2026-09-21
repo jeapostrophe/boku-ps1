@@ -481,8 +481,10 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       should not be handed the constraints; the lint holds them. Keep: the neighbouring scenes'
       English (it comes from the day files — `PacketBuilder._neighbours` → `settled`), the
       voice clip reference per line, and — Jay: "plausible" — a way to *listen* to it (XA
-      extraction of the clip so intonation can inform the line; also answers what a
-      `(voice only)` node such as `E0202.6` is). Bug: `parse_rulings` emits a style-guide
+      extraction of the clip — measured 2026-09-21, `research/tooling-setup.md` § XA: ffmpeg
+      demuxes a raw sector slice out of the box — then a Japanese speech-to-text pass, since the
+      translating model cannot hear; a transcript with timing is what it gets; also answers
+      what a `(voice only)` node such as `E0202.6` is). Bug: `parse_rulings` emits a style-guide
       heading that contains SETTLED even when no bullet under it is marked, so § 17 appears
       as an empty section. Agent shape: (b) one directed translator per day that receives the
       bible/glossary/guide once and the events one by one, with the parent doing the saving —

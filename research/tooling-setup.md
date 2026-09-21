@@ -450,3 +450,15 @@ audio/video-enable interfaces, `SET_CORE_OPTIONS_DISPLAY`, and an old-numbered
 `SET_HW_SHARED_CONTEXT` this core still sends as plain 44 rather than 44|EXPERIMENTAL.
 `run_core.py` prints those two lists separately, so a call the core newly depends on shows up
 as unimplemented instead of hiding among the deliberate noes.
+
+## XA voice clips decode with ffmpeg (measured 2026-09-21)
+
+`__STR/BOKU_XA.XAM` is XA-interleaved and the importer does not extract it, but a raw sector
+slice of the image decodes directly: 2,400 sectors from LBA 54417 (`dd bs=2352 skip=54417
+count=2400`) probed with `ffprobe -f psxstr` give `adpcm_xa` streams at 37,800 Hz mono, one per
+interleaved channel. So a voiced line's clip is its voice key (start sector, end sector,
+channel — `research/text-format.md`) sliced with `dd` and decoded with `ffmpeg -f psxstr -i
+slice.bin -map 0:a:<channel> clip.wav`. The `.IKI` movies are STR and take the same demuxer.
+No speech-to-text is installed; `whisper` (Japanese) is the obvious transcriber for `FMV-02`
+and for `TRN-08`'s "listen to the clip" — the model that translates cannot hear, so what it
+would receive is a transcript with timing, not sound. sox does not know XA.
