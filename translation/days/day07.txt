@@ -1,0 +1,291 @@
+# Day 7 — August 7. Kites offered at breakfast; Moe's pressed flowers in the forest (PLAN TRN-04).
+# Every event whose id is E07xx (day = id / 100), in the order the game plays them. Format:
+# translation/days/README.md. Policies: style-guide.md (all rulings settled 2026-09-20),
+# glossary.md, bible.md § 4 (day 7). Reviewed against the Japanese 2026-09-20 (findings applied).
+# No day-independent event is handed over to: E0701 reloads
+# the dining room (MAP G02), E0733 and E0780 hand over to each other across B03/B02, E0710 hands
+# over to its own kite close-ups (I36-I43) and back to the workshop. The kite book itself is
+# E0022 (shared.txt); the kite-flying menu at the hill (E4026) is day-independent and not here.
+#
+# Morning: E0701 (breakfast, forced if the hill was reached on day 6). Free time: E0720 (the
+# washing line, before 14:00), E0740 (Shirabe and the ants), E0710 (the workshop — the wheel
+# chat, and from here on the whole kite thread), the forest — E0733, E0780, the five flower
+# spots E0781-E0785 and E0787 (no text), E0786 — and the secret base: E0750 and the boys' sumo
+# tips E0751/E0761/E0771 (the first of three rotating sets; the later sets E0752/E0753,
+# E0762/E0763, E0772/E0773 share this file's ids and are translated here). Afternoon: E0712 (the
+# living room from 16:00). Evening: E0705 (dinner), E0704 (the photograph, by its condition a
+# dinner from day 8), E0741 (the television room).
+
+# --- E0701: breakfast (G02), 7:00, from day 7, once the hill has been reached (flag 33) and
+#     before the kites are offered (flag 34). Forced. Sets the kite thread going.
+E0701.0	Boku	I climbed up to the top of the hill yesterday. // The view was really good.
+E0701.1	Moe	A good view... Then it'd be that hill over there, I guess?
+E0701.2	Uncle	Yeah, that's right.
+E0701.3	Uncle	When these kids were much, much smaller... // we climbed up that hill and all of us flew kites. // ...Oh, that's right — on the living-room bookshelf there's a kite book we bought back then... // Shall Uncle make you a kite?
+E0701.4	Boku	Yay! Thank you, Uncle!
+E0701.5	Uncle	Then you are to look at the book and choose the kite you want made! // And then in the daytime, sometime while Uncle's in the workshop, come and tell me which one you chose.
+E0701.6	Boku	Yeah, I'll do that.
+E0701.7	Uncle	Well then — itadakimaasu!
+E0701.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
+# NOTE E0701.3, page 1: "these kids" is as vague as the Japanese — the daughters at the table,
+#   and the son who is not. Do not sharpen it.
+# NOTE E0701.5, page 1: the uncle's mock-official "...koto!" (style guide § 5), rendered as in
+#   E0114.7 ("You are to...").
+# NOTE E0701.7-.8: the breakfast chorus, E0006.0-.1 word for word (the same voice clips) — the
+#   stretched "itadakimaasu" of the glossary (§ 3), not dinner's "itadakimasu!" (E0009.0). No
+#   label on the disc for .8; the operand is the group Shirabe + Moe + Boku + Aunt (slot 12).
+
+# --- E0720: the garden off the veranda (H06), day 7 before 14:00, talking to the aunt. .4-.5 on
+#     a repeat. Sets the flag E0740 tests.
+E0720.0	Boku	Auntie, you hang the washing outside almost every day, and yet... // how come your skin's so fair?
+E0720.1	Aunt	Hmmm, why would that be, I wonder? // Maybe because I eat lots of fruit with vitamin C in it. // And sometimes, so my skin will get fairer, I wash my face with the droppings a bush warbler's left.
+E0720.2	Boku	The droppings a bush warbler's left? // Something like that really exists in this world... // Poop?
+E0720.3	Aunt	That's right.
+E0720.4	Boku	The droppings a bush warbler's left... Something like that really exists?
+E0720.5	Aunt	That's right — every woman knows about it.
+# NOTE E0720.1-.2: "fun" (droppings, the polite word) against Boku's "unchi" (poop): the aunt says
+#   the cosmetic's word and the boy translates it into his own. "Bush warbler" is the glossary's
+#   (§ 4a; the traditional English name of the face wash is "nightingale droppings", not used —
+#   the bird is a bush warbler and Shirabe's confusion in E0740 hangs on the word "droppings").
+
+# --- E0740: a corner of the garden (H09), day 7 before 18:00, Shirabe at the ants. .0 if Boku has
+#     not yet heard about the droppings (flag 35 clear); .1-.2 if he has; .3 on a repeat.
+E0740.0	Shirabe	The queen ant — what sort of crown does she wear, I wonder?
+E0740.1	Boku	Do you know about bush-warbler poop?
+E0740.2	Shirabe	I know. // It's a person who's always going around stuck to somebody else, isn't it? // Shirabe knows everything, after all.
+E0740.3	Shirabe	The queen ant — what sort of dress does she wear, I wonder?
+# NOTE E0740.2: Shirabe "knows": she is thinking of the idiom "goldfish droppings" — a hanger-on
+#   who trails behind someone like the string a goldfish trails (bible § 6, kind 3). She does not
+#   say "goldfish", so neither does the English; her confident wrong definition is the joke, and it
+#   reads as one. Translated literally, no gloss.
+
+# --- E0710: the workshop (H26), talking to the uncle, from day 7 before 16:00 (day 30 before
+#     11:00). Before the kites are offered (flag 34 clear): one of three small talks about the
+#     potter's wheel — .6-.7, .0-.3, .4-.5. Once offered, the branch is the state of the kite
+#     thread: .16-.23 the order (one line per kite, flag 81 counts the kites so far), .25 still
+#     being made, .26 done → the close-up of the kite (I36-I43) and its "Got the..." message
+#     (.31-.38) → back here for .28-.30 (.27 instead of .28 when it is the eighth); .12-.15 while
+#     the kite has not yet been flown high enough (by days waiting, and .15 for the last kite);
+#     .8 after it has (the next kite is unlocked), .10 after the last; .9 when the book has not
+#     been consulted; .11 / .24 from day 28, when there is no time left to build one.
+E0710.0	Boku	Hey, Uncle.
+E0710.1	Uncle	Mm...... What is it?
+E0710.2	Boku	Doesn't the potter's wheel get dizzy?
+E0710.3	Uncle	Ahahaha... Hmm, Uncle's never spun round himself, so... who can say?
+E0710.4	Boku	What about using the wheel's spin to catch a big dragonfly?
+E0710.5	Uncle	It can't be dooone!
+E0710.6	Uncle	The person who first thought of spinning a wheel to make a rice bowl... // was a wonderful person with a truly flexible mind, wasn't he?
+E0710.7	Boku	Huh? So you didn't invent it, Uncle.
+E0710.8	Uncle	Congratulations, Boku-kun! // The kite that went up high, high — I could see it from this garden, too. // Now then — as a reward I'll make you the next kite, so go and choose one.
+E0710.9	Uncle	When you want a kite made, go and choose the one you want from the kite guide in the living room.
+E0710.10	Uncle	So you got even the last, difficult kite up properly — high, high up. // Boku-kun, at kite-flying you seem to be several cuts above Uncle now. // Somehow, Uncle's come to feel he can rely on you, Boku-kun.
+E0710.11	Uncle	It seems you'd like a kite made, but I'm sorry... // Even if I started now, it wouldn't be finished while you're still here, Boku-kun.
+E0710.12	Uncle	Uncle's kite — do your best and fly it up high for me, all right?
+E0710.13	Uncle	Uncle's kite ought to go a little higher, you know... // If you get it up high enough to be seen from here, I'll make you the next one.
+E0710.14	Uncle	Is kite-flying hard? Anyway, get it up higher — much, much higher, for me. // Then it's bound to be visible from this workshop window too.
+E0710.15	Uncle	The kite I gave you the other day is the last one, so do your best and fly it high for me, all right?
+E0710.16	Uncle	Oh? Let's see, let's see... So it's the Square Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.17	Uncle	Oh? Let's see, let's see... So it's the Nina Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.18	Uncle	Oh? Let's see, let's see... So it's the Cicada Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.19	Uncle	Oh? Let's see, let's see... So it's the Bird Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.20	Uncle	Oh? Let's see, let's see... So it's the Carp-streamer Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.21	Uncle	Oh? Let's see, let's see... So it's the Airplane Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.22	Uncle	Oh? Let's see, let's see... So it's the Kite Train you want, is it? // Right, right... Then please give me about two days.
+E0710.23	Uncle	Oh? Let's see, let's see... So it's the Portrait Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.24	Uncle	It seems you'd like a kite made, but I'm sorry... // Even if I started now, it wouldn't be finished while you're still here, Boku-kun.
+E0710.25	Uncle	The kite is not yet fiiinished! // Please wait just a little longer, all right?
+E0710.26	Uncle	Boku-kun, the kite's finished.
+E0710.27	Uncle	Boku-kun, this is the last kite. It's finally finished!
+E0710.28	Boku	Thank you, Uncle.
+E0710.29	Uncle	Well then — for now, the goal is... // to get that kite up high, high into the sky, high enough to be seen from the garden of this house.
+E0710.30	Boku	Yeah! Leave it to me, Uncle! // I'll do my best.
+E0710.31	(unlabelled)	Got the Square Kite.
+E0710.32	(unlabelled)	Got the Nina Kite.
+E0710.33	(unlabelled)	Got the Cicada Kite.
+E0710.34	(unlabelled)	Got the Bird Kite.
+E0710.35	(unlabelled)	Got the Carp-streamer Kite.
+E0710.36	(unlabelled)	Got the Airplane Kite.
+E0710.37	(unlabelled)	Got the Kite Train.
+E0710.38	(unlabelled)	Got the Portrait Kite.
+# NOTE E0710.2-.3: Boku's question is literally "as for the wheel, doesn't it get dizzy?", and the
+#   uncle answers it as asked — he has never spun round himself, so he could not say. The
+#   English keeps the wheel as the subject so that his answer lands.
+# NOTE E0710.5, .25: the uncle's stretched, mock-official "-maseeen" (style guide §§ 5, 7).
+# NOTE E0710.9: "kite guide" for the book's own word here (zukan, rendered "Field Guide" for the
+#   insect book, glossary § 4d); E0701.3 says "kite book" because the uncle does. The title is
+#   E0022.0's (shared.txt).
+# NOTE E0710.16-.23: eight copies of one line; only the kite's name differs. Names are glossary
+#   § 4d; the first is the fuller name for the Square Kite and is rendered as the same kite.
+#   "Please give me" — he asks with the polite "kudasai", a request made to a customer.
+# NOTE E0710.11 = E0710.24; E0710.31-.38: the glossary's "Got the ..." frame (§ 3), unlabelled.
+
+# --- E0733: the forest path with the yellow flowers (B03), day 7 before 16:00, until the flowers
+#     are done (flags 37/38 clear). Forced; hands over to B02, where E0780 continues.
+E0733.0	Boku	Huh? Onee-chan... What are you doing here?
+E0733.1	Moe	Oh, this? Well... // I thought I'd do something to thank the person who's teaching me the clarinet... // so I was picking flowers to make pressed flowers.
+E0733.2	Boku	Hmmm. Onee-chan, you're like a grown-up woman.
+E0733.3	Moe	Huh? Hm-hm-hm... Thank you, Boku-kun. // But you know, this pressed-flower making is a little special.
+E0733.4	Boku	Huh! Why?
+E0733.5	Moe	Hahaha — that's what you call a se-cret. // ...Anyway, it's been fine weather for aaages now, hasn't it?
+# NOTE E0733.0: Boku calls her "Onee-chan" here, not "Moe-neechan"; kept as heard (style guide
+#   § 2, glossary § 1).
+# NOTE E0733.5, page 1: "hi, mi, tsu" said syllable by syllable → the English word said slowly
+#   (style guide § 7).
+
+# --- E0780: Moe, on B02 (.0-.1), then the hand-over back to B03 for .2-.3. Chained from E0733.
+E0780.0	Moe	Me, I... on a blue-sky day like this... // I like the coolness of the wind that blows, now and then, out of the shade of the trees... // There's the forest's lush scent coming through the wind... // If I could — forever, in the green of this deep forest — // go on living quietly, without thinking about aaanything... // And then, before I knew it... somewhere along the way, I'd turned into a granny. // ...Something like that would be nice, huh.
+E0780.1	Moe	Hey, Boku-kun — help me look for flowers to press, would you? // When it comes to anything... I'm terrible at choosing.
+E0780.2	Moe	These yellow globeflowers... // If you find a pretty one of these, bring it to me, all right?
+E0780.3	Boku	Yeah, got it, Onee-chan.
+# NOTE E0780.0: seven pages, one thought (bible § 3 quotes pages 5-6). Page 6 is her imagined
+#   future told in the past tense — "and before I knew it, I had become a granny" — and "granny"
+#   is the word Boku hands back to her in E0786.5, so the two lines share it. Page 5 is a wish
+#   ("if only I could go on living..."), not the consequence of page 4's "if". The stretched
+#   "na~n ni mo" is the stretched "aaanything" (style guide § 7); the wave dash is not sung.
+# NOTE E0780.2: "globeflower" is the glossary's kinbaisō (§ 4e, the Yellow Flower item; § 7).
+
+# --- E0781-E0785: the five flower spots on B03, examined (each once; the flower is carried one at
+#     a time). E0787: the map's own auto event. No text on the disc for any of them.
+
+# --- E0786: Moe on B03, talked to while the flowers are being gathered (flag 37). .0 with no
+#     flower in hand; .1 handing one over while fewer than five are in; .2-.6 with the fifth.
+E0786.0	Moe	It's the yellow globeflower.
+E0786.1	Moe	Okaaay, thanks.
+E0786.2	Moe	Right, Boku-kun... I think that should be enough of them now. // Thank you for helping. // And we got to talk about all sorts of things, so... today was really fun.
+E0786.3	Boku	Yeah, I had fun too. // ...Onee-chan?
+E0786.4	Moe	Hm? What is it?
+E0786.5	Boku	Become a cute granny... all right?
+E0786.6	Moe	...Gyahahahaha! // I'll make an effort. See you.
+# NOTE E0786.5: his answer to E0780.0, page 6 — the same word, "granny". The pause is the
+#   Japanese line's own ("a cute granny... become one, all right?"). E0786.6 answers it with a
+#   flat promise of effort, not "my best" — that dryness is the joke.
+# NOTE E0786.6: "gyahaha" as heard (style guide § 7).
+
+# --- E0750: the secret base (A18), from day 2 before 18:00, once, when Boku first arrives with a
+#     bug to fight (flag 215). Fat and Guts, the invitation to bug sumo.
+E0750.0	Fat	Oh — here comes a nice sucker for bug sumo.
+E0750.1	Guts	Anyway, sit yourself down at that table there! // You'll pick up the rules naturally once you play.
+# NOTE E0750.0: "kamo" (a duck; an easy mark) → "sucker" — the boys' register (style guide § 5).
+
+# --- E0751: the base (A18), before 18:00, up to day 14: Guts's sumo tips. One line a visit
+#     (lflag steps .0, .1, .2, then .2 stays). E0752 (days 16-22) and E0753 (from day 23) are the
+#     same lines with one new one at the front each time: E0752.1-.3 = E0753.2-.4 = E0751.0-.2,
+#     E0752.0 = E0753.1. Identical source, identical English (bible § 8 item 4).
+E0751.0	Guts	Bug sumo is... // first off, if it falls out of the ring, or runs out of stamina and gets flipped over, it loses. // And the one that lost, you're banned from using it for the rest of today — that's the deal. Got it? // Well, but a bug that's lost — everybody puts it straight up for a bug trade anyway. // So when a bug you want turns up, the thing to do is win, whatever it takes, and make them put it up for trade.
+E0751.1	Guts	There's chalk sitting next to the ring, right? // Use that to write down how strong a bug you want us to put up. // Boku-chan, you're still a total beginner, so we'll put up whatever bug you ask for. // By the way, for each kind of bug, we call the biggest, strongest one the King.
+E0751.2	Guts	But you can only request a King for one match a day. // 'Cause no matter how big and strong a bug is... // if someone just keeps challenging it — throw enough and one'll hit — sooner or later it's bound to lose, right?
+E0752.0	Guts	Before a match, on the ring, try tapping your bug on the back. // That gets the bug mad, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires, though.
+E0752.1	Guts	Bug sumo is... // first off, if it falls out of the ring, or runs out of stamina and gets flipped over, it loses. // And the one that lost, you're banned from using it for the rest of today — that's the deal. Got it? // Well, but a bug that's lost — everybody puts it straight up for a bug trade anyway. // So when a bug you want turns up, the thing to do is win, whatever it takes, and make them put it up for trade.
+E0752.2	Guts	There's chalk sitting next to the ring, right? // Use that to write down how strong a bug you want us to put up. // Boku-chan, you're still a total beginner, so we'll put up whatever bug you ask for. // By the way, for each kind of bug, we call the biggest, strongest one the King.
+E0752.3	Guts	But you can only request a King for one match a day. // 'Cause no matter how big and strong a bug is... // if someone just keeps challenging it — throw enough and one'll hit — sooner or later it's bound to lose, right?
+E0753.0	Guts	If the strong-class ones start losing to yours across the board, Boku-chan... // then we'll get serious too and go and find even stronger ones for you!
+E0753.1	Guts	Before a match, on the ring, try tapping your bug on the back. // That gets the bug mad, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires, though.
+E0753.2	Guts	Bug sumo is... // first off, if it falls out of the ring, or runs out of stamina and gets flipped over, it loses. // And the one that lost, you're banned from using it for the rest of today — that's the deal. Got it? // Well, but a bug that's lost — everybody puts it straight up for a bug trade anyway. // So when a bug you want turns up, the thing to do is win, whatever it takes, and make them put it up for trade.
+E0753.3	Guts	There's chalk sitting next to the ring, right? // Use that to write down how strong a bug you want us to put up. // Boku-chan, you're still a total beginner, so we'll put up whatever bug you ask for. // By the way, for each kind of bug, we call the biggest, strongest one the King.
+E0753.4	Guts	But you can only request a King for one match a day. // 'Cause no matter how big and strong a bug is... // if someone just keeps challenging it — throw enough and one'll hit — sooner or later it's bound to lose, right?
+# NOTE E0751.0-.2: the terms are glossary § 4b — the ring, stamina, bug trade, King. Guts says
+#   "Boku-chan" (glossary § 1).
+# NOTE E0751.2, page 3: "kazu ucha ataru" — fire enough shots and one will hit — is a set phrase,
+#   kept as the same image in his mouth.
+# NOTE E0751-E0753: on the disc the three sets share one recording each (clips 0021_15-.17 and
+#   so on), so the pages are the same as well as the words.
+
+# --- E0761 / E0762 / E0763: Fat's tips, the same three rotations: E0762.1-.3 = E0763.2-.4 =
+#     E0761.0-.2, E0762.0 = E0763.1.
+E0761.0	Fat	Gahaha! Bugs are amazing, you know! // Soon as a match is over, it's like their stamina's straight back to full.
+E0761.1	Fat	One look at yours truly will tell you — with bugs, too, naturally the big ones are stronger.
+E0761.2	Fat	But when it comes down to it, I guess the strongest of all is the rhino beetle.
+E0762.0	Fat	Bug sumo's the same as people sumo — the more they win, the stronger they get.
+E0762.1	Fat	Gahaha! Bugs are amazing, you know! // Soon as a match is over, it's like their stamina's straight back to full.
+E0762.2	Fat	One look at yours truly will tell you — with bugs, too, naturally the big ones are stronger.
+E0762.3	Fat	But when it comes down to it, I guess the strongest of all is the rhino beetle.
+E0763.0	Fat	Depending on the kind, there are some that'll pull off a big one-shot reversal move at the edge of the ring!
+E0763.1	Fat	Bug sumo's the same as people sumo — the more they win, the stronger they get.
+E0763.2	Fat	Gahaha! Bugs are amazing, you know! // Soon as a match is over, it's like their stamina's straight back to full.
+E0763.3	Fat	One look at yours truly will tell you — with bugs, too, naturally the big ones are stronger.
+E0763.4	Fat	But when it comes down to it, I guess the strongest of all is the rhino beetle.
+# NOTE E0761.1: "yours truly" is Fat's ore-sama (glossary § 1). E0761.2: he gives the beetle a
+#   "-chan"; as with Boku's "-san" for the whale (shared.txt, E8055.0), English children do not,
+#   and it is dropped. "Rhino beetle" in the boys' mouths (glossary § 4a).
+
+# --- E0771 / E0772 / E0773: Megane's tips, the same three rotations: E0772.1-.3 = E0773.2-.4 =
+#     E0771.0-.2, E0772.0 = E0773.1.
+E0771.0	Megane	Bugs have all sorts of characteristics, kind by kind, you know — being sturdy and not losing stamina easily, and so on. // In human terms, it's something like the difference between me and Fat.
+E0771.1	Megane	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other — it's interesting.
+E0771.2	Megane	With bugs, even within the same kind, the males and the females fight differently. // Hehe — and that, you know, is somehow like the difference between human boys and girls, which is interesting.
+E0772.0	Megane	Did you try tapping your bug on the back before the match? // Tap it over and over and the way it gets angry changes, and it seems an angry one finds it easier to pull off its moves.
+E0772.1	Megane	Bugs have all sorts of characteristics, kind by kind, you know — being sturdy and not losing stamina easily, and so on. // In human terms, it's something like the difference between me and Fat.
+E0772.2	Megane	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other — it's interesting.
+E0772.3	Megane	With bugs, even within the same kind, the males and the females fight differently. // Hehe — and that, you know, is somehow like the difference between human boys and girls, which is interesting.
+E0773.0	Megane	Do you know the Giant Stag Beetle? // You hardly ever get hold of one, but it has strength to match.
+E0773.1	Megane	Did you try tapping your bug on the back before the match? // Tap it over and over and the way it gets angry changes, and it seems an angry one finds it easier to pull off its moves.
+E0773.2	Megane	Bugs have all sorts of characteristics, kind by kind, you know — being sturdy and not losing stamina easily, and so on. // In human terms, it's something like the difference between me and Fat.
+E0773.3	Megane	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other — it's interesting.
+E0773.4	Megane	With bugs, even within the same kind, the males and the females fight differently. // Hehe — and that, you know, is somehow like the difference between human boys and girls, which is interesting.
+# NOTE E0771-E0773: Megane in complete sentences, "you know" (style guide § 5). E0773.0: the
+#   Giant Stag Beetle is glossary § 4a (#24; the entry cites this line).
+
+# --- E0712: the living room (G01), day 7 from 16:00, talking to the uncle. .5 on a repeat.
+E0712.0	Uncle	Boku-kun, are you starting to get used to this house by now?
+E0712.1	[SEL]	Yes | No
+E0712.2	Uncle	I see... // This house was originally a house from over Kanazawa way, built around the middle of the Meiji era, they say. // It was the person who lived here before Uncle who bought it and had it relocated here.
+E0712.3	Boku	Relocated?
+E0712.4	Uncle	It means moving house — building and all. // Somehow it's just like a hermit crab, isn't it?
+E0712.5	Uncle	Hmmm, quite a nice breeze coming in today...
+# NOTE E0712.1: both answers lead to the same line (.2).
+# NOTE E0712.2-.4: "ichiku" — a grown-up word Boku does not know, written in katakana when he
+#   repeats it (bible § 6, style guide § 8 kind 1): the hard word is translated ("relocated") and
+#   he asks about the English word; the uncle's definition is the Japanese one. The ear hears the
+#   word said cleanly, so it is not mangled (as with "ceramicist", E0177.2).
+
+# --- E0705: dinner (G02), day 7, 19:00, once. .0-.1 are the chorus.
+E0705.0	Uncle	Gochisosama deshita.
+E0705.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0705.2	Uncle	I heard this today at the B-Co-op in Sagi-no-sato... // Apparently there's a kid from around here who goes into the old well to play.
+E0705.3	Aunt	Oh my, that's dangerous.
+E0705.4	Uncle	There's no child anyone's reported missing, so I don't suppose there's been an accident, but...
+E0705.5	Aunt	Boku-kun, don't go copying the neighborhood kids... // and playing anything too dangerous, all right?
+# NOTE E0705.0-.1: E0010.0-.1 word for word (shared.txt; the same voice clips). The B-Co-op and
+#   the old well are the glossary's (§§ 1, 2); the well is B06, day 8's E0809.
+# NOTE E0705.5: the "don't" is on page 2 in the Japanese ("...you mustn't"); English needs it
+#   first. Page 1 is still the copying, page 2 the dangerous games.
+
+# --- E0704: after dinner (G02), 19:00, the first dinner with day > 7 after Shirabe's tour (flag
+#     21 == 1): the photograph from E0445. By the decoded condition this is day 8 at the earliest;
+#     xneo's table puts it on the 7th — the condition wins (bible § 9 rule), and the scene data
+#     corroborates it: E0705 is the other 19:00 auto event in G02 (day 7, lflag clear), so the two
+#     are disjoint only with E0704's "day > 7". .0-.1 are the chorus.
+E0704.0	Uncle	Gochisosama deshita.
+E0704.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0704.2	Aunt	Here, Boku-kun — here you are.
+E0704.3	Boku	Oh, the photo's ready! Thank you, Auntie.
+# NOTE E0704.2: "hai, Boku-kun, kore" — the "here" of handing something over, and "this" (the
+#   photograph, which the next line names); "here you are" is the English act of handing, with
+#   no verb or "for you" added.
+
+# --- E0741: the television room (G06), day 7 from 19:00, Shirabe in front of the set. .2 on a
+#     repeat.
+E0741.0	Shirabe	That's an awfully big fish.
+E0741.1	Boku	...Oh, it's only the TV.
+E0741.2	Shirabe	Someday I'd like to live in a house where one could keep one of these in the bathtub.
+# NOTE E0741.1: "nanda, terebi ka" — the let-down "oh, it's (only)..." carries the "only".
+
+# NOTES — the day
+# * Register. The uncle: teacherly and mock-official for the kite rules and the order ("You are
+#   to...", "It can't be dooone!", "please give me about two days"), "Uncle" of himself with Boku
+#   throughout E0710, plain "I" where the Japanese has no self-reference (E0710.8 page 3,
+#   E0712.2 page 3 has "Uncle" because the Japanese does). The aunt: quick, "I" in her own
+#   beauty secret (E0720.1 — the Japanese has no "Auntie" there), "all right?" endings. Moe:
+#   thinking aloud (E0780.0), "Hm-hm-hm" and "Gyahahahaha". Shirabe: prim, third-person
+#   "Shirabe", "I wonder?" for kashira. Guts curt, Fat "yours truly", Megane in full sentences.
+#   Boku: short, literal, "Yeah"; "Onee-chan" to Moe.
+# * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
+#   original's. The longest page is 120 characters (E0772.0 page 2; then E0771.0 page 1 at 119,
+#   126 with the label; E0751.2 page 3 at 111) — three lines of the band with the label on
+#   line 1, never a fourth;
+#   no OVERFLOW on day 7.
+# * Duplicates. E0710.11 = E0710.24; E0701.7-.8 = E0006.0-.1; E0704.0-.1 = E0705.0-.1 =
+#   E0010.0-.1; the sumo-tip sets as listed at E0751, E0761, E0771 (identical source text,
+#   identical English — bible § 8 item 4).
+# * Unsure. None flagged as UNSURE; the readings argued in notes are E0710.2-.3 (whose dizziness)
+#   and E0740.2 (Shirabe's idiom).
