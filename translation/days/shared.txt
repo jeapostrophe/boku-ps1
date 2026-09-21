@@ -1,0 +1,429 @@
+# Shared — the day-independent events (PLAN TRN-03 pilot, extended after review).
+# Every event with no day in its id (E00xx, E4xxx, E5xxx, E8xxx) that (a) sits in a map variant the
+# game loads on August 1 (EVVER.BIN, research/event-scripts.md § "Map names"), (b) has an entry
+# condition day 1 can satisfy, and (c) is placed where the day-1 flow can walk, from 15:30, when
+# E0185 sets the clock, to bedtime — plus the day-independent events the later day files found
+# missing (E0006/E0007, E8054, E4038/E4039, E8063, E4026), which belong here so that each event is
+# translated once (translation/days/README.md). E1605 carries a day-16 id but its condition (day > 0)
+# and placement (H10, every variant, every slot) make it day-independent, so it is here too.
+#
+# Whether the day-1 flow can leave the grounds is UNTESTED. The house and grounds are the G and H
+# bases (bible § 7); the first version of this file excluded the outdoors (A–E) on three grounds
+# the reviewer showed to be weak: no A–E base has an evening map (true, but day 1's free time is
+# an afternoon, 15:30–18:00, and the A bases all have a slot-1 map); E0185 forbids the mountains
+# (a spoken rule — the only zone block on an H base is E0002, hour >= 19); and the walkthroughs put
+# the first thing outside the gate on August 2 (jooey's 8/2 list also carries the workshop shelf,
+# which this file has for day 1, so his placement is "from now on", not first availability).
+# What the data does say: E8027 ("It's locked.") sits on H02 in every variant, so the front gate is
+# never an exit, and the ways out are H04's back gate (E8028 locks it only at night) and H16, the
+# path (E0002, night); no event is gated day == 1 except the voice-only uncle/Shirabe chats inside
+# the grounds (E5004/06/08/10, E5041); E0254 (A17) and E0206 (A16) carry day > 1 / day >= 2 guards
+# that only make sense if the outdoors can be walked on day 1. Against that, EVVER loads two
+# day-1-only afternoon variants, H04101 and H08103, whose placement tables are identical to
+# H04100 / H08100 — a geometry or prop difference the data cannot read, and the crux. Only play
+# decides it: stand at H04's gate and on H16 at 16:00 on day 1. Until then the nearest A-base
+# one-liners are translated below and their headers say "any day the outdoors is walkable".
+#
+# Format: translation/days/README.md; policies: style-guide.md, glossary.md, bible.md. day01.txt
+# already holds E0001, the other day-independent event of the day.
+#
+# Order: the afternoon indoors (E0022, E0221, E4029, the kitchen, dining room, washroom, hall,
+# altar room, Boku's room, the landing, the veranda, the television room), the grounds (the gate,
+# Ken-bo, the trellis, the garden animals, the sheds, the clay room, the workshop, behind it, the
+# kiln, the water), the nearest outdoors (the pond, the tool store, the Jizo, the beehive, the
+# secret-base approach, the beetle trees, the hill), meals (E0006, E0007, E0009, E0010), the evening (E4028,
+# E0020, the locked doors, E0002, E0023).
+#
+# Two conventions this file needs that day01.txt did not. A [SEL] whose first row is the question
+# (style guide § 13, E0020.0) lists the question as the first option: "Take a bath? | Yes | No".
+# The 「…」 messages with no speaker on the disc — the examine descriptions and "It's locked." —
+# carry (unlabelled) in the speaker column; the renderer draws them without a name (style guide
+# § 9, "plain"). The voice-only clips of the television (E4052) are translated in voice-only.md.
+
+# --- E0022: the bookshelf in the living room (G01), any hour. The choice opens the insect book
+#     or the kite book (PROG 3).
+E0022.0	[SEL]	What will you read? | Field Guide to Rare Insects | The Fun Encyclopedia of Kites
+# NOTE E0022.0: the two titles are the glossary's (§ 4d); no italics exist in the font.
+
+# --- E0221: the kitchen (G03), 14:00-17:00, the aunt: guess-the-dinner. On day 1 it shares her
+#     with E0121 (both talk triggers on the same map; E0121 plays once). .0 and .1 are hers; the
+#     native quiz (PROG 15) shows row day+1 of .2-.31, so day 1 is .2, and the answer is curry
+#     rice (g_dinner_answer[0]). The result reaches E4028.
+E0221.0	Aunt	Boku-kun! What do you think we're having for dinner tonight?
+E0221.1	Aunt	Well then — look forward to tonight's dinner, all right?
+E0221.2	[SEL]	Curry rice | Chicken katsu | Salmon meuniere
+E0221.3	[SEL]	Hayashi rice | Hamburg steak | Diced steak
+E0221.4	[SEL]	Stir-fried meat and vegetables | Chicken karaage | Tonkatsu
+E0221.5	[SEL]	Hiyashi chuka | Pork and cabbage in oyster sauce | Spring rolls and happosai
+E0221.6	[SEL]	Salt-grilled sanma | Sashimi and tempura | Fried sardines
+E0221.7	[SEL]	Fried shrimp | Nikujaga | Cabbage rolls
+E0221.8	[SEL]	Omurice | Fried salmon | Chicken saute
+E0221.9	[SEL]	Katsudon | Horse mackerel nanban-zuke | Curry rice
+E0221.10	[SEL]	Menchi-katsu | Fried rice and sweet-and-sour pork | Hamburg steak
+E0221.11	[SEL]	Spaghetti | Miso-marinated grilled pork | Omurice
+E0221.12	[SEL]	Sea bass meuniere | Sanma kabayaki | Fried sardines
+E0221.13	[SEL]	Cabbage rolls | Tonkatsu | Korokke
+E0221.14	[SEL]	Sashimi and tempura | Spring rolls and happosai | Stuffed fried lotus root
+E0221.15	[SEL]	Gyoza | Oyakodon | Hamburg steak
+E0221.16	[SEL]	Fried rice and sweet-and-sour pork | Curry rice | Korokke
+E0221.17	[SEL]	Spaghetti | Hiyamugi | Salmon-and-roe oyakodon
+E0221.18	[SEL]	Katsu curry | Inari-zushi | Omurice
+E0221.19	[SEL]	Cabbage rolls | Chicken stewed in tomato | Stuffed green peppers
+E0221.20	[SEL]	Ginger pork | Fried rice and sweet-and-sour pork | Sea bass meuniere
+E0221.21	[SEL]	Tonkatsu | Spring rolls and happosai | Chicken karaage
+E0221.22	[SEL]	Fried shrimp | Horse mackerel tataki | Hamburg steak
+E0221.23	[SEL]	Jingisukan | Sushi | Diced steak
+E0221.24	[SEL]	Sashimi and tempura | Grilled hokke | Stuffed fried lotus root
+E0221.25	[SEL]	Chicken saute | Katsudon | Spring rolls and happosai
+E0221.26	[SEL]	Dry curry | Chicken stewed in tomato | Omurice
+E0221.27	[SEL]	Spaghetti | Curry rice | Gratin
+E0221.28	[SEL]	Horse mackerel nanban-zuke | Fried rice and happosai | Nikujaga
+E0221.29	[SEL]	Cabbage rolls | Stuffed green peppers | Hayashi rice
+E0221.30	[SEL]	Curry rice | Ginger pork | Korokke
+E0221.31	[SEL]	Chicken karaage | Sea bass meuniere | Jingisukan
+# NOTE E0221.2-.31: every dish is glossary § 5's rendering, capitalised as a menu row (as the
+#   shaved-ice menu is in samples/family-E0404-E0406.txt). "Meuniere" and "saute" drop their
+#   accents in game text for the same reason the long vowels drop their macrons (style guide § 3):
+#   the font has plain letters only. The rows carry trailing pad words on the disc (bible § 8
+#   item 6) — not text, not translated.
+
+# --- E4029: the fridge in the kitchen (G03 → close-up I21), any hour. .0 opens the door (voice
+#     only), .1 is the choice, .2-.4 the drinking (voice only). Once per visit.
+E4029.0	(voice only)
+E4029.1	[SEL]	What will you drink? | Nora-brand milk | Barley tea
+E4029.2	(voice only)
+E4029.3	(voice only)
+E4029.4	(voice only)
+# NOTE E4029.1: the two drinks the aunt described in E0122.0; "Nora-brand" is the glossary's
+#   (§ 1, the cow). The menu carries a stray arrow glyph after the last option on the disc — pad.
+
+# --- The kitchen, examined (G03). E8051 shows while flag 31 == 0 or flag 32 > 0: E0670 (the sugar
+#     water, day06.txt) sits on the same zone, so once the bait talk E0604 has set flag 31 the shelf
+#     gives way to E0670 — except while Boku is carrying sugar water (flag 32), when E8051 shows
+#     again.
+E8003.0	(unlabelled)	There's a basket with potatoes and little onions in it.
+E8004.0	(unlabelled)	A cupboard with rippled glass... Everyone's rice bowls and soup bowls, lined up neatly.
+E8051.0	(unlabelled)	From the right: flour, sugar, salt.
+
+# --- The dining room, examined (G02).
+E8000.0	(unlabelled)	Cool to the touch — a heater in the middle of summer.
+E8001.0	(unlabelled)	A calendar, notices from school, the school-lunch menu and things like that are pinned up.
+E8002.0	(unlabelled)	A washing machine... and soap powder that smells like flowers.
+E8050.0	(unlabelled)	There's a white gas stove, polished until it shines.
+# NOTE E8000.0: "sutobu" is a room heater, and E8050.0's "konro" in the same room is the cooktop;
+#   American English calls the cooktop a stove, so the heater is "a heater" and the midsummer joke
+#   stays visible.
+
+# --- The washroom, examined (G04).
+E8005.0	(unlabelled)	A shiny mirror... Check carefully for cavities!
+
+# --- The foot of the stairs (G07) and the hall (G08), examined.
+E8006.0	(unlabelled)	A pretty potted plant is on display.
+E8007.0	(unlabelled)	Dry branches arranged in a big urn.
+E8009.0	(unlabelled)	A white baseball cap. Whose could it be?
+# NOTE E8009.0: the dead son's cap (bible § 3). The Japanese only wonders; so does the English.
+
+# --- The room with the family altar (G11), examined.
+E8010.0	(unlabelled)	A strange smell of face powder comes from Auntie's dressing table.
+E8011.0	(unlabelled)	On the family altar, a little rice and some sweets have been offered up.
+# NOTE E8010.0: the descriptions are seen through Boku's eyes, so the adults are "Auntie" and
+#   "Uncle" in them (E8017.0), as in his own speech (style guide § 2).
+
+# --- Boku's room, examined (G13 the door side; G14 the desk, window, futon). E4027 opens the
+#     insect kit or the diary, once the kit has been received (flag 3).
+E8012.0	(unlabelled)	Third-grade textbooks, set out together with some manga.
+E8013.0	(unlabelled)	Found a crumpled-up test paper. It says "Sorano Shirabe" on it.
+E4046.0	(voice only)
+E4027.0	[SEL]	Which will you look at? | Insect-collecting kit | Picture diary
+# NOTE E8013.0: the name is in hiragana, as a second-grader writes it, family name first as it
+#   stands on the paper; the order is kept because the line is reading a Japanese document.
+#   "Found ..." is the glossary's frame for a find (§ 3).
+
+# --- E0835: the upstairs landing (G12 → close-up I18). The sisters' door: before day 8, walking
+#     up to it cuts to the door (voice only) and the message. E0830 unbans him on day 8.
+E0835.0	(voice only)
+E0835.1	(unlabelled)	It's locked.
+
+# --- E4014: the veranda (G17), examined; not at 7:00 or 18:00. Voice only.
+E4014.0	(voice only)
+
+# --- E4052: the television (G06), examined; eight programmes, all voice-only (voice-only.md).
+#     E8052: the other thing in the television room.
+E4052.0	(voice only)
+E4052.1	(voice only)
+E4052.2	(voice only)
+E4052.3	(voice only)
+E4052.4	(voice only)
+E4052.5	(voice only)
+E4052.6	(voice only)
+E4052.7	(voice only)
+E8052.0	(unlabelled)	Its big mouth wide open — oink.
+# NOTE E8052.0: the object is not named. The leading guess is the ceramic pig that holds a
+#   mosquito coil (a 1975 farmhouse television room in August; a big open mouth; and "buu" is the
+#   pig's noise in Japanese), so the sound is rendered as the English pig noise (style guide § 7).
+#   The electric fan of E0112.2 and a piggy bank are the weaker guesses. Check in play; if it is
+#   not the pig, the sound goes back to a literal "buuu".
+
+# --- The grounds: the front of the house (H02), examined — the gate, any hour.
+E8027.0	(voice only)
+E8027.1	(unlabelled)	It's locked.
+
+# --- E4041: Ken-bo at his kennel (H06), talked to; two barks (voice only) until the giant-fish
+#     chain begins (flag 45). E8053: the morning-glory trellis (H05), before Boku is made monitor.
+E4041.0	(voice only)
+E4041.1	(voice only)
+E8053.0	(unlabelled)	The sky-blue hose fixed to the tap is glittering.
+
+# --- The garden animals (H09, H10): talk targets 13-15 and E1605's actor 12, all voice only.
+#     E1605 carries a day-16 id, but its condition is day > 0 and it sits in every H10 variant and
+#     slot — day-independent by condition and placement; .1 and .2 are its day-16 branches.
+E5047.0	(voice only)
+E5048.0	(voice only)
+E5049.0	(voice only)
+E5050.0	(voice only)
+E1605.0	(voice only)
+E1605.1	(voice only)
+E1605.2	(voice only)
+
+# --- The sheds, examined: the woodshed (H17), the shed with the pickle barrels (H18), the shed
+#     with the gas cylinders (H25).
+E8015.0	(unlabelled)	Beside the shed, bundles of split firewood are stacked up.
+E8016.0	(unlabelled)	A sour smell of pickles comes from inside the barrel.
+E8019.0	(unlabelled)	There's a gas cylinder with "Fujiyama Fuel" written on it.
+
+# --- The clay room (H19) and the workshop (H26), examined; afternoon only (no evening map).
+E8017.0	(unlabelled)	A big, big bucket. Does Uncle use it for his work, I wonder?
+E8018.0	(unlabelled)	This seems to be where the clay gets kneaded.
+E8020.0	(unlabelled)	A big bucket with "Secret Glaze..." written on it.
+
+# --- E0003: the shelf in the workshop (H26), examined before 18:00. With the uncle away (flag 4
+#     clear) the first touch topples it, silently (flag 7); the second gets .0. With him there —
+#     from day 2, when he is at work — .1 if it is still standing, .2 if it has fallen.
+E0003.0	Boku	......
+E0003.1	Uncle	Ah — that's dangerous, so don't touch it. // That shelf is badly made; it seems to be a little wobbly. // I've repaired it again and again, and yet... whyyy does it fall over, I wonder?
+E0003.2	Uncle	That thing... it seems to have come down somehow during the night... // It should have been a bit sturdier than that, though.
+# NOTE E0003.1, page 3: the uncle's stretched "na~nde" is a stretched "whyyy" (style guide § 7).
+#   He says "I" here — no "Uncle" in the Japanese either; he is talking about his own carpentry.
+
+# --- E8054: behind the workshop (H13), the pots drying, examined (two zones, one line). Only in
+#     the morning maps (H13000, and H13002 — variant 02's morning map, which EVVER loads on day 8
+#     before noon; its day-25 use is the afternoon slot, H13102 / H13202, which do not carry it.
+#     The time slot turns at 15:00 here, and no afternoon or evening variant carries it), so
+#     never on day 1, which starts at 15:30; from day 2's morning on, except the kiln mornings of
+#     days 25-30, whose variants H13001 / H13003 leave it out.
+E8054.0	(unlabelled)	Earth-colored plates and rice bowls are sunbathing, looking comfortable.
+# NOTE E8054.0: "kimochi-yosasou ni" — looking as if it feels good — is "looking comfortable",
+#   with no intensifier (the first draft's "very" was one); the pots are the subject in the
+#   Japanese too.
+
+# --- The climbing kiln (H15), examined: .0 cold, .1 (and E8066, the lit-kiln map) firing.
+E8055.0	(unlabelled)	It looks somehow like a whale that has come up onto land.
+E8055.1	(unlabelled)	The climbing kiln has turned bright red — it's angry.
+E8066.0	(unlabelled)	The climbing kiln has turned bright red — it's angry.
+# NOTE E8055.0-.1: Boku gives the whale and the kiln a "-san" apiece; English children do not,
+#   and nothing is lost. E8066.0 = E8055.1, identical source, identical English (bible § 8 item 4).
+
+# --- E4054: the water near the house (H24), examined before Boku has the rod (flag 10): the first
+#     touch is MOVIE 22, a drink; the second, .0.
+E4054.0	Boku	Cold...
+
+# --- E0004: the pond below the expressway (A01), the same water examined the same way — before
+#     the rod, MOVIE 22 then .0 — with the same voice clip (0004_00). Identical to E4054 on
+#     purpose. Both A01 maps are the default variant (no EVVER row), so it is there any day the
+#     outdoors is walkable (header) until the rod comes (day 3 at the earliest, E0307).
+E0004.0	Boku	Cold...
+
+# --- E8057 / E8058: the tool store and the little graves (A07), examined; in all four A07
+#     variants (01 is days 26-27 after the sun shower), any day the outdoors is walkable (header).
+E8057.0	(unlabelled)	Hoes, spades and fertilizer are set out. Which house's storehouse could this be, I wonder?
+E8058.0	(unlabelled)	Lots of little graves. Somehow they look like chess pieces.
+# NOTE E8057.0: "monooki" is a storehouse or tool store, not the Soranos' shed ("naya", glossary
+#   § 2 — E8015.0); "which house's" keeps the child's question of whose it is.
+# NOTE E8058.0: the graves are the small stones of a family plot; "chess pieces" is the Japanese.
+
+# --- E8056: the fortune-telling Jizo (A11), the offerings examined, days 1-3 only (day < 4).
+#     On day 4 Shirabe's tour (E0443, day04.txt) fires on arrival, and the same spot is E4017 once
+#     the tour is done or from day 5 (flag 19 > 0 or day > 4). Any of those three days the outdoors
+#     is walkable (header).
+E8056.0	(unlabelled)	On the offerings, jet-black little ants — lots of them!
+# NOTE E8056.0: "arinko-tachi" → "little ants" (glossary § 4); "ippai!" → "lots of them!", the
+#   same word as E8058.0's "Lots of" — not doubled.
+
+# --- E4038 / E4039: the beehive (A13), while it is still up (flag 11 clear — the maps A13000 /
+#     A13100; EVVER swaps in A13x01 / x02 once it is down). Two walk-up zones, each a silent,
+#     unvoiced beat of Boku looking up at it: E4038 on any visit; E4039 only after he has poked it
+#     today with the rod (flag 154, set by E0205, day02.txt — so day 3 at the earliest, and the
+#     hive needs four days of pokes). E4038 is there any day the outdoors is walkable (header).
+E4038.0	Boku	......
+E4039.0	Boku	......
+# NOTE E4038.0 / E4039.0: a silent message, "......" (style guide § 9), as E0003.0; the source
+#   carries a trailing space that E0003.0 does not, so they are not byte-identical to it.
+
+# --- E8021-E8025: the approach to the secret base (A17), five things examined among the junk.
+#     Both A17 maps are the default variant (no EVVER row); E0254 on the same base is gated day > 1
+#     (day02.txt), these are not — any day the outdoors is walkable (header).
+E8021.0	(unlabelled)	There are two moldy school-lunch bread rolls inside.
+E8022.0	(unlabelled)	Found a Spider Man Rider card! But it's soaked through and falling to pieces.
+E8023.0	(unlabelled)	There's a sandal inside — just the one.
+E8024.0	(unlabelled)	Found a crumpled-up test paper.
+E8025.0	(unlabelled)	There's a hammer with no head inside.
+# NOTE E8021.0 / .23 / .25: "haitte iru" — is in it — the container is whatever Boku is looking
+#   into; "inside" carries it without naming a box the Japanese does not name. "School-lunch
+#   bread" is glossary § 5's (the school-lunch conversations).
+# NOTE E8022.0: Spider Man is the first Kamen Rider monster and Rider cards are the glossary's
+#   (§ 6). "hakken!" — discovery! — and E8024.0's "hakken" are the child's excited word for a
+#   find; "Found ..." is the glossary's frame (§ 3), the same English as E8013.0's "mitsuketa".
+# NOTE E8023.0: "katahou dake" — only one of the pair — is "just the one".
+
+# --- E8063: the beetle trees (B07, B12, C11 — the Great Oak), examined, while flag 31 is clear —
+#     before the bait talk E0604 (day06.txt) sets it; after that the trees say E0608 / E0609. The
+#     B bases lie beyond the beehive (E0205 hands over to B05 when it falls, flag 11 — day 6 in
+#     the usual run) and C11 beyond the log bridge, so first reachable the day the hive comes down,
+#     and only until that evening's bait talk; longer if the boys have not all been met (E0604
+#     needs flag 30).
+E8063.0	(unlabelled)	A big, big cracked, gata-pon tree.
+# NOTE E8063.0: "the cracked, gata-pon tree" is the glossary's (§ 3), the same words as E0608.0 /
+#   E0609.0; "a big, big" as E8017.0's "ookina ookina".
+
+# --- E4026: the hill (B10), the launch spot examined while Boku has a kite: the condition is
+#     flag 234 > 0, which no event script sets — the code sets it; the kites come from E0710
+#     (day07.txt, "Got the ... Kite"), day 7 at the earliest. Both B10 maps are the default variant
+#     (no EVVER row), and the hill lies beyond the beehive (E0205 → B05 when it falls), first
+#     climbed in E0607 (day06.txt). The question row is the menu's own first row; ✕ cancels, as
+#     E0020. All three answers end the event; the flying itself is code, not script (its fixed
+#     strings are tako@*, glossary § 4d).
+E4026.0	[SEL]	Fly the kite? | Yes | No
+
+# --- E0006 / E0007: the breakfast chorus (G02), 7:00 and 8:00 — the frame every breakfast event
+#     hangs on (bible § 2). E0006 sits in all five breakfast variants (G02001-005, EVVER's hour < 8
+#     rota by day) and in EV0006.BIN; E0007 (hour == 8) in the default G02000 only. Never on day 1,
+#     which has no morning; a day-specific breakfast opener (E0301 on day 3, E0202 after breakfast
+#     on day 2) stands before the generic one in its map's placement table, as at dinner (E0009),
+#     so these fire on the mornings with no day event of their own — day 6 (day06.txt) is the first
+#     the day files met them.
+E0006.0	Uncle	Well then — itadakimaasu!
+E0006.1	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
+E0007.0	Uncle	Gochisosama deshita.
+E0007.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+# NOTE E0006.0-.1: the breakfast phrase is the stretched one ("itadakimaasu", glossary § 3); dinner's
+#   (E0009.0) is not. E0007.0-.1 are word for word E0010.0-.1. No label on .1; the speaker operand
+#   is the group Shirabe + Moe + Boku + Aunt (slot 12).
+
+# --- E0009 / E0010: the mealtime chorus at dinner (G02), 18:00 and 19:00 — the frame every meal
+#     event hangs on (bible § 2). They do not fire on day 1: M_G02111.BIN's placement table lists
+#     its auto records in the order E0103, E1503, E2303, E2003, E0009, and M_G02200.BIN lists E0104
+#     ... E2504 and then E0010 last of thirty; the map-entry scan starts the first record whose
+#     condition holds, and every dinner map puts the day-specific opener before the generic one
+#     (G02106: E2303, E2003, E0009) — the only order that lets days 8, 15 and 29 fall through to
+#     E0009 while day 1 gets its "...kimasu" joke (E0103 / E0104, day01.txt). First reached on day 2
+#     (G02106 has no day-2 opener). The words are the same fixed phrases (glossary § 3).
+E0009.0	Uncle	Well then — itadakimasu!
+E0009.1	Shirabe, Moe, Boku, Aunt	Itadakimasu!
+E0010.0	Uncle	Gochisosama deshita.
+E0010.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+# NOTE E0009.1 / E0010.1: no label on the disc; the speaker operand is the group Shirabe + Moe +
+#   Boku + Aunt (slot 12 — day 1's chorus, slot 13, leaves Boku out because he is behind).
+#   E0009.0 is word for word E0103.0.
+
+# --- E4028: the living room (G01), 19:00 onward, talking to the aunt: tonight's menu first, then
+#     the quiz result. E4028.json's play order is PROG 16 — the menu, .7-.17, picked natively by day
+#     (g_dinner_menu[day-1] + 7; day 1 is .15) — and then a branch on the result in flag 1: .0-.1
+#     (1, right), .2-.3 (2, exactly right), .4 / .5 / .6 (3, 4, 5 — wrong); flag 1 == 0 ends the
+#     scene after the menu. Not on day 27 (that evening is E4064 at H13).
+E4028.0	Aunt	Boku-kun, correct! You did it!
+E4028.1	(voice only)
+E4028.2	Aunt	Exactly right! Congratulations!
+E4028.3	(voice only)
+E4028.4	Aunt	Too bad — you got it wrong.
+E4028.5	Aunt	Ta-daaa — wrong! // And by the way, the fridge has the makings of breakfast in it too, so be a little careful, all right?
+E4028.6	Aunt	You got it wrong. // Summer vacation is nearly over, Boku-kun, so let's try hard and get one right, all right?
+E4028.7	Aunt	Tonight's dinner was... // Hamburg steak and simmered vegetables, and then river shrimp karaage, Auntie-style.
+E4028.8	Aunt	Tonight's dinner was... // Tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
+E4028.9	Aunt	Tonight's dinner was... // Spring rolls, happosai, soup and a tofu salad — I tried putting together a Chinese meal.
+E4028.10	Aunt	Tonight's dinner was... // Sashimi, simmered hijiki and tempura — I tried a purely Japanese spread.
+E4028.11	Aunt	Tonight's dinner was... // Sea bass meuniere, bang bang chicken, simmered tofu pouches and chilled tofu — eeevery one of them Auntie's favorites.
+E4028.12	Aunt	Tonight's dinner was... // Omurice, cheese en papillote, thick fried tofu braised with greens, and so on — I tried combining things.
+E4028.13	Aunt	Tonight's dinner was... // Fried rice, Chinese soup, sweet-and-sour pork, shumai, and so on and so on — put together to Shirabe's taste.
+E4028.14	Aunt	Tonight's dinner was... // Cabbage rolls and grilled eggplant, with an open omelette thrown in — put together to Moe's taste.
+E4028.15	Aunt	Tonight's dinner was... // Curry rice, marinated horse mackerel, salad and edamame, and so on and so on — I worked hard on it.
+E4028.16	Aunt	Tonight's dinner was... // Spaghetti, chilled eggplant, grilled fried tofu, soup and salad — Italian-style, by main force.
+E4028.17	Aunt	Tonight's dinner was... // I went and had the top-grade nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
+# NOTE E4028.0 / .2 / .4-.6: the glossary's "Correct!" / "Exactly right!" / "Wrong" (§ 3), in her
+#   sentences. .5, "ja~n" → "Ta-daaa" (style guide § 7); the fridge is E4029.
+# NOTE E4028.7-.17, page 1: the Japanese page is the topic alone ("As for tonight's dinner...")
+#   and the dishes are page 2 — the English keeps that split, so the list is on screen while she
+#   lists it (style guide § 13). "Tonight's dinner was..." carries the sentence across the break.
+# NOTE E4028.11: "zen~bu" → "eeevery one". Bang bang chicken (bang bang ji) is the dish's English
+#   name; "simmered tofu pouches" describes kinchaku-ni (fried-tofu purses).
+# NOTE E4028.12: "ni" between the dishes is her list-joiner, as in .15 and .16 — omurice and the
+#   cheese en papillote are two dishes, not one.
+# NOTE E4028.16: "goin ni" — by main force — is her own joke about her Italian dinner; rendered
+#   with those words and nothing added.
+# NOTE E4028.17: the shop is Osho ("king") Sushi and the set is the Hisha ("rook") Set — a shogi
+#   joke (bible § 6, style guide § 8 kind 3). The glossary fixes "the Rook Set from Osho Sushi"
+#   (§ 1); the king is in the shop's name, where the player hears it.
+
+# --- E0020: the washroom door (G04) after dinner, from 19:00 (from 20:00 on day 21). The question
+#     row is the menu's own first row; ✕ cancels. Yes → the bath (voice only), then out to G05.
+E0020.0	[SEL]	Take a bath? | Yes | No
+E0020.1	(voice only)
+
+# --- Locked at night: the front entrance (G09), the garden corner (H04), the workshop door (H11)
+#     — evening maps only. A rattle (voice only), then the message. Same text as E0835.1 / E8027.1.
+E8026.0	(voice only)
+E8026.1	(unlabelled)	It's locked.
+E8028.0	(voice only)
+E8028.1	(unlabelled)	It's locked.
+E8029.0	(voice only)
+E8029.1	(unlabelled)	It's locked.
+
+# --- E0002: the path beyond the house (H16), from 19:00, any night but the 5th: the uncle blocks
+#     the way to the Yukino River. .2 repeats .1 until Boku says yes; once he has heard the rule
+#     (flag 254) later nights skip the question.
+E0002.0	Uncle	Heyyy, Boku-kun. Boku-kun, honestly...
+E0002.1	Uncle	At this hour, no entry beyond this point. // When it gets dark and you can't see your feet, you'll go splash into the Yukino River. // That's the rule at Uncle's house. // ...Is that understood?
+E0002.2	[SEL]	Yes | No | Tell me one more time?
+E0002.3	Uncle	Gooood! What a sensible boy — well done!
+# NOTE E0002.0: "Boku-kun tara..." is the exasperated vocative "-tara"; "honestly..." is that
+#   exasperation and nothing more — no clause the Japanese lacks.
+# NOTE E0002.1: the mock-official desu/masu of a rule (style guide § 5, which quotes page 1) and,
+#   page 3, the house-rule frame — word for word E0185.0's last page with "Uncle's" for
+#   "Auntie's" (glossary § 3: E0002.1, E0185.0, E0303.3, E3180.0). Page 2: "dobon" is a real
+#   splash-sound and becomes "splash" (§ 7). E0002.2: "No" and "Tell me one more time?" both
+#   replay .1 — only "Yes" ends it.
+# NOTE E0002.3: "yooshi!" is approval — "Gooood!" (style guide § 7 stretches the vowel). A
+#   stretched "Riiight" was the rejected rendering: in English it reads as doubt.
+
+# --- E0023: Boku's room (G14) at night. The uncle at the door, when the diary is ready to be
+#     written: the day's last words. The trigger operand names actor 10; the cast is the uncle.
+E0023.0	Uncle	Boku-kun, write your picture diary, and then let's say good night.
+E0023.1	Boku	Yeah. Good night, Uncle.
+# NOTE E0023.0: "oyasuminasai shimashou" — he proposes the good-night as a thing to do together;
+#   "let's say good night" keeps that. "Picture diary" is the glossary's (§ 3).
+
+# NOTES — the file
+# * Register. The uncle in E0002 and E0003 is the day-1 uncle: mock-official for the rule
+#   (E0002.1), plain "I" about his own shelf (E0003.1-.2), "Uncle's house" in the fixed frame.
+#   The aunt in E0221 and E4028 is quick and teasing, "Auntie" of herself (E4028.7, .11), "all
+#   right?" for her sentence endings, as in day01.txt. The examine descriptions are in a child's
+#   present tense, unlabelled, and say "Uncle" and "Auntie" — Boku's viewpoint, not the
+#   narrator's (the narrator would say "my uncle", style guide § 6, and never examines a bucket).
+# * Set phrases. Itadakimasu / Itadakimaasu and Gochisosama deshita as the disc has them (E0006,
+#   E0007, E0009, E0010; day03.txt E0301, E0302); the house-rule frame (E0002.1); "Found ..."
+#   (E8013.0, E8022.0, E8024.0); "It's locked."; "the cracked, gata-pon tree" (E8063.0); the
+#   glossary's dish names throughout E0221 and E4028.
+# * Pages. Every voiced line keeps the disc's page count and order; nothing runs past the
+#   dialogue band (4 lines of ~46) — no OVERFLOW. The longest menu row (E0221.5 and .10,
+#   "Fried rice and sweet-and-sour pork") is 34 letters, within a row; the fixed vertical menu
+#   is the engineering note of style guide § 13, not a reason to shorten.
+# * Duplicates. E8055.1 = E8066.0; E0835.1 = E8026.1 = E8027.1 = E8028.1 = E8029.1; E0009.0 =
+#   E0103.0; E0004.0 = E4054.0; E0007.0-.1 = E0010.0-.1 (= E0604.0-.1, day06.txt); E4038.0 =
+#   E4039.0 (identical source text, identical English — bible § 8 item 4).
+# * Left out, and why. E0001 is in day01.txt. E4001, E8014, E0830, E0833 (the sisters' room) —
+#   E0835 keeps the door locked until day 8. E0670, E4022-E4024, E4042, E1006, E1005 (sugar water,
+#   fishing spots, the dog once the fish chain starts, morning glories) — their flags are set on
+#   later days, and E0670 is in day06.txt. E4015 (the toilet), E4065, E5002, E5040-E5042 — no
+#   text. E0205 and E0206 (the beehive, the fallen bridge) are day-independent by condition but
+#   carry day-2 ids and live in day02.txt. The farther outdoors — E4019, E4020 (B15, D03), E8059-
+#   E8061 (C14), E8064-E8065 (D07) — is beyond a day-1 afternoon whatever the gate does, and waits
+#   for the day files that reach it.
