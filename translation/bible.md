@@ -404,7 +404,7 @@ today" · 251 sequencer for multi-map cutscenes (days 11, 29, 31) · 254 has hea
 8. **Labels composed by code in Japanese order**: "caught · *n* month *n* day", "*n* wins *n*
    losses", the save title (`research/text-outside-events.md`). English wants "Caught Aug 12".
 9. **Fixed-cell arrays**: fortune results 4 × 3, sumo strength 3 × 3, the kite crash banner
-   4, yes/no 2 + 3. "Great luck" does not fit three cells.
+   4, yes/no 2 + 3. "Great Luck" does not fit three cells.
 10. **108 voice-only clips and every FMV have no text.** Some are wordless (the howl, laughs);
     some are speech: the narrator's opening and the five epilogues, radio calisthenics, the
     television (`E0305`, `E4052`, the August 15 broadcast `E1505`), the monk's sutra (`E1203`),
@@ -415,18 +415,8 @@ today" · 251 sequencer for multi-map cutscenes (days 11, 29, 31) · 254 has hea
     `research/data/glyph-table.tsv` does identify (e.g. 1029, 1198, 1199, 1239) — the dumps a
     translator is given should be made with the full table.
 
-## 9. Where the secondary sources are wrong about this disc
+## 9. Secondary sources
 
-| claim | source | the script |
-|---|---|---|
-| the village is 鷺の里 | web: ja-wikipedia | 鷺の郷, every time (`E0001.0`, `E0502.2` …) |
-| the pond is 竜神池 | xneo | 龍神池 (`E1701.3`) |
-| no river is named | web agent's survey | ユキノ川 / ゆきの川 (`E0002.1`, `E0442.2`–`.8`) |
-| the son died on August 11 | web: ja-wikipedia | the anniversary is "tomorrow" on day 11 → the 12th, when the monk comes |
-| 64 insects | web: ja-wikipedia; 60, walkthrough | 57 name lines, 61 ids, 60 book entries + an empty slot (`exe@8003D2E0`, `hhon@5328`) |
-| the bath with Moe is August 20 | review | day 21 (`E2104`); Saori's bath is day 20 |
-| the brother is born / news comes on the 28th | xneo (compressed row) | the call is day 29 (`E2904`) |
-| dinner at 5 p.m. | walkthrough, review | 18:00 (`E0190`: `TIME 18:00`) |
-| Moe imagines a future without kotatsu "or melon" | review | mandarins at the kotatsu and the New Year's Eve song contest (`E2632.5`) |
-| Saori is an aspiring photographer | walkthrough | natural sciences student; the aunt is the photographer |
-| bottle-cap collecting | task brief | not in this game — it is a *Boku no Natsuyasumi 2* feature [web]; no such text on this disc |
+Where the walkthroughs, wikis and reviews contradict this disc is recorded in
+[`research/secondary-sources.md`](../research/secondary-sources.md) — for anyone checking a
+claim against them, not for translating. The script is the authority.

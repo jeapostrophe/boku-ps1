@@ -283,38 +283,10 @@ the insect book and sumo — and it is the whole of what stands between this pro
 screenshot. With the clock oracle above, the remaining problem is navigation to `G14100`, which
 is a bounded search rather than a mystery.
 
-## What a full `GFX-03` run of 94 pages would need
+## What a full run of 94 pages needs
 
-1. **An entry-text source, which does not exist yet.** `translation/days/dayNN.txt` is the
-   day's *event* script — a different surface, and `day01.txt` carries no diary line — so the
-   prototype reads its entry from `--text` and otherwise sets a marked placeholder. The diary
-   needs its own keyed home in `translation/`, and the key is the **page id** (`NIKKI_048`),
-   not the day: a day's page is chosen at run time from `g_diary_pages[day]`, event-specific
-   below `0x48` and generic above (text-outside-events.md), so the same page can serve
-   different days and a day-keyed file would put the wrong entry on it.
-2. **Per-page wrapping with a refusal, not a truncation.** Five lines of ~32 (game glyphs) or
-   ~39 (Galmuri9) is the budget. The script already refuses to cut: it reports the lines that
-   did not fit and leaves them undrawn. For 94 pages that has to become a lint the build runs,
-   in the shape `boku build` already uses for dialogue overflow — nothing is shortened to fit
-   (README), the entry is rewritten or the face is changed.
-3. **The date strip.** The prototype leaves x ≥ 222 alone, so every page still reads `8月　日`
-   vertically down its right edge with the numeral composited into the gap. That is a product
-   decision, not a technical one: leaving it is free and keeps `nikki_date_upload` working
-   untouched; translating it means redrawing `月` and `日` as `AUG` and a suffix *and* moving
-   the 31 numeral tiles in `NIKKI_W.BIN` (14×10 each) to wherever the English date lands,
-   because the renderer's upload coordinates are fixed in `ZUKAN.OVL`. English also reads the
-   date left-to-right across the top, not down the right edge, so a faithful job is a code
-   change as well as a texture one.
-4. **The punctuation cells**, if the game's own face is chosen: comma, period, hyphen, straight
-   apostrophe and quote, and horizontal `( )`. That is the same dozen cells
-   [font-candidates.md](font-candidates.md) § 1 already lists for dialogue, so it is shared
-   work, not diary work.
-5. **The pages whose panel differs.** One: `NIKKI_047`, and only in shading — it redraws
-   correctly. `measure` is the gate; re-run it against any contributor's import before a bulk
-   run, because it is what would catch a page this measurement has not seen. Note its two blind
-   spots above before relying on it.
-6. **`NIKKI_000`**, the unused dummy, has empty columns and needs no entry — but it does have a
-   date column and a panel, so a bulk run must skip it deliberately rather than set an empty
-   string into it.
-7. Nothing about duplication: each diary page is stored exactly once (measured), so there is no
-   propagation to verify and the 94 pages are 94 independent edits.
+That list is work, so it lives in `PLAN.md` `GFX-04` (PLN-11), not here. The two facts of it
+that are measurements stay in this file: the page is chosen at run time from `g_diary_pages[day]`
+(so entries are keyed by page id), and `NIKKI_047` is the one page whose panel differs. The date
+strip stays as it is — Jay, 2026-09-21: keep the Japanese month/day symbols with the composited
+numeral.

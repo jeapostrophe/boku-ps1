@@ -349,3 +349,12 @@ his (§ 6); how they reach the screen is decided later, with engine-drawn subtit
 over re-encoded FMV frames. Jay: *"let's go with (b); we'll figure out later whether we put
 subtitles in the FMV or do it within the engine. Within engine is better."* The list of
 sequences and their ids is [voice-only.md](voice-only.md).
+
+## 18. Em dashes — SETTLED (Jay, 2026-09-21)
+
+* SETTLED: an em dash is a habit of machine-written English, not of this script. Use one only
+  where the Japanese itself breaks or trails the line with a dash-like mark (a `――`, a cut-off
+  utterance the original marks), never for an aside, a pivot or emphasis the Japanese carries
+  with a particle or a comma. When in doubt, a comma, a full stop or an ellipsis the source has.
+  The lint warns on every em dash (`TRN-08`); a warning is a prompt to check the source, not a
+  ban.

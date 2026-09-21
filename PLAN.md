@@ -15,8 +15,8 @@ by dependency, and the project's pace is set by Fable throughput, which Jay has 
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
-pipeline · `TRN-01`–`TRN-07` translation · `GFX-01`–`GFX-03` textures · `FMV-01` movies ·
-`REL-01`–`REL-03` release.
+pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-03`
+movies · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
 trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
@@ -176,32 +176,13 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 
 ## Text renderer — the central risk (README § "The central risk")
 
-- [ ] **[TXT-01]** **Trace one dialogue line from its id to pixels.** The static half is DONE
-      (2026-09-20, `research/text-renderer.md`, `research/symbols/text-renderer.symbols.tsv`):
-      direction is an **argument** — `dialog_open(x, y, vertical, text)` (`0x8002BD30`) is the
-      only writer of `g_text_flags & 0x10`, and its two callers (`msg_open`, the ant-count
-      message) pass literals: x = 297, y = 22, vertical = 1. Of 26 text surfaces, 20 are
-      already horizontal at fixed pitch, 4 vertical (dialogue, SELECT, two `HHON.OVL`
-      walkers), 2 draw one glyph per row. The dialogue "box" is a 60-px strip down the right
-      edge, so horizontal text needs the panel re-placed as a band (`g_dlgbox_x` + two
-      instructions in `dialog_panel_draw`). There is no page logic in code — "3 × 16" is an
-      authoring convention — and voice sync is only the `0x8002` frame operand counting down.
-      A table-lookup advance fits in place in 9 instruction slots at `0x8002BF5C` with no
-      trampoline; left bearings or a variable-width SELECT need real hooks. **The emulator half
-      is mostly DONE too** (`research/renderer-runtime.md`, scripts under `tools/redux/`): RAM
-      equals the file once the EXE is loaded (frame ~720; entered at ~835 — the BIOS shell
-      crosses the same addresses earlier), so file addresses are run-time addresses; the
-      opening line is `E0171.0`; `dialog_open` is always called with (297, 22, 1); the strip is
-      x = 265–319, opaque grey, and scenes are composed for the left 260 px; in-RAM the
-      horizontal patch works, and a band with independent y/h (`band2`, Y=168, H=72) keeps
-      the scene visible, opaque or translucent; at 14-px pitch English is legible but far too
-      wide, at 8 px letters collide; the heap-raise gap saw 0 writes in 12,000 frames; the
-      debug printer is never called; voiced pages turn on 30 Hz timers and ○ switches to manual
-      paging; the font's VRAM page is unchanged across five sampled moments (row 240 is in
-      use). **Left to do:** the primitive-buffer peak outside cutscenes (53,288 of 78,000 bytes
-      seen), paging of unvoiced `MSG` lines, the two `MUSI` call sites — all need parts of the
-      game a scripted cold boot does not reach (a prepared memory card or save state would
-      open them). Harmed: `TXT-05`, where a buffer overrun or a missed surface would land.
+- [x] **[TXT-01]** **Trace one dialogue line from its id to pixels.** CLOSED as *no*, 2026-09-21
+      (Jay: "I can't tell how valuable this is now that we've actually rendered scenes and I've
+      played the game with actual translated text"). What the trace was for — proving the id →
+      bytes → renderer chain — is proven by `TXT-05`'s renderer drawing days 1–7 from their ids;
+      the static findings live in `research/text-renderer.md` and `renderer-runtime.md`.
+      Reopen trigger: a line on screen that differs from what its id's bytes say (extract and
+      pixels disagreeing) — that is the one thing a trace would still find.
 - [x] **[TXT-02]** **What the existing font offers.** DONE 2026-09-20 (`research/font.md`,
       `research/font-candidates.md`): full A–Z/a–z/0–9 and common punctuation in 12×12
       full-width cells, ink widths 1–9 px, left bearings 1–5 px; missing `' " - ~ $ [ ]` and a
@@ -296,16 +277,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       cell is harvested and no licence is owed; every cell in the file is our own art, and
       the loader refuses any advance that does not cover ink plus shadow. Checked in the
       game beside the sheet's letters. Original row: redraw or harvest (Jay, 2026-09-20).
-- [ ] **[TXT-09]** **Hold voiced pages long enough to read.** Jay, 2026-09-20, after playing
-      day 1: the Japanese subtitles were paced for someone also *listening*; an English reader
-      is slower and the page is gone. Voiced pages auto-advance when the voice ends and ○
-      switches to manual (`research/text-format.md`, `research/renderer-runtime.md`). Find
-      what can hold a voiced page past the voice's end — the page-break timer word, the voice
-      key's end sector, or a renderer-side hold before auto-advance — and its cost per page; a
-      MIPS hold that waits N ticks or for ○ after the voice ends is the fallback. Fable (RE).
-      Jay calls it a stretch and suspects refused and cut-off lines made it look worse than it
-      is — so measure after those are fixed, on a page that fits. Harmed: the player, who
-      loses the end of every long line.
+- [ ] **[TXT-09]** **Hold voiced pages long enough to read.** DEFERRED (Jay, 2026-09-21): not
+      before more of the script is translated, the rendering is settled, and a real playthrough
+      — not one smoke test — still shows pages lost. Then: voiced pages auto-advance when the
+      voice ends and ○ switches to manual (`research/text-format.md`,
+      `research/renderer-runtime.md`); find what can hold a page past the voice's end (the
+      page-break timer word, the voice key's end sector, a renderer-side hold) and its cost per
+      page; a MIPS hold that waits N ticks or for ○ is the fallback. Fable (RE). Harmed: the
+      player, who loses the end of every long line.
 - [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
       (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
       line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
@@ -351,23 +330,21 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       `shared.txt`; tab-separated line id, speaker, English; `//` page break; `[SEL]` rows with
       `|`-separated fields, the question first; `(voice only)` rows; `#` notes. `boku/translation.py`
       is its loader. Hand-writable, as the README's aspiration asks.
-- [ ] **[PIPE-03]** **Reinsertion.** The in-extent half is DONE (2026-09-20, `boku/reinsert.py`,
-      `boku/layout.py`, `boku/translation.py`): every physical copy of a changed line is
-      rebuilt bottom-up (message + pad → block → child-1 table → pack → `.SEC`), the original
-      build-tool pad bytes are carried back so the null round trip is exact, and the measured
-      limits refuse with numbers at the boundary (`0x4000` block, `0x6400` work area, sector
-      slack, array growth, SELECT line count). A pixel-width wrapper lays English into pages
-      keeping voiced lines' page count and timers. One real line grown by a few words at all
-      19 copies re-extracts correctly and boots on Beetle PSX. **The hard half is built too** (`boku/relocate.py`,
-      `research/relocation.md`): a `.SEC` member's sector is `lhu`-relative to its container's
-      `g_cd_dir` LBA, so a member that outgrows its sectors is moved into the 765 filler
-      sectors before `BOKU.BIN` by REBASING its container there; top-level members move by their
-      two directory words. Proven: the first map relocated to LBA 281 with its old home zeroed
-      boots on Beetle PSX and draws the marker. The allocator now fills the runs its own movers vacate
-      before touching the arena (largest first, best fit): under the full-translation
-      estimate, derived from the disc's own pages, **181 of 622 members outgrow, and everything
-      places using 456 of the 765 arena sectors** — the whole script fits. A member written into
-      another's vacated run inside `BOKU.BIN` boots and draws on Beetle PSX. Closed as *no*: a
+- [x] **[PIPE-03]** **Reinsertion.** DONE for what a row can be (2026-09-21). Every physical copy of
+      a changed line is rebuilt bottom-up with the original pad bytes carried back (null round
+      trip exact); the measured limits refuse with numbers at the boundary (`0x4000` EV block,
+      the map work area — now `0x7C00`, `TXT-05` — sector slack, array growth, SELECT line
+      count); a member that outgrows its sectors is relocated by rebasing its container into
+      the 765-sector arena, re-using runs its own movers vacate (`boku/reinsert.py`,
+      `boku/relocate.py`, `research/relocation.md`); proven on Beetle with days 1–7 in the
+      image (59 members moved). **What the old text meant by "the whole script fits":** a
+      *projection*, not a measurement — the disc's own page sizes inflated by the English-to-
+      Japanese ratio of the translated sample, under which 181 of 622 members would outgrow
+      their sectors and all of them still place using 456 of the 765 arena sectors. Nothing
+      was known about a translation that does not exist yet. **Standing decision (Jay,
+      2026-09-21):** if reinsertion ever fails for space, it is solved with engineering (the
+      arena, the work area, the allocator), never by shortening the script. Reopen trigger:
+      `boku build` refusing a member for space. Closed as *no*: a
       CLI verb for "does it fit?" — the estimate lives in a test; reopen if a contributor
       needs the answer without pytest. Still open in this row: the per-map EV budget and how
       English divides between the lines of the 113 array sites drawn as groups. Earlier estimate,
@@ -473,15 +450,53 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       per-character pages — plus `--check` (unknown ids, ids translated twice, SELECT shape,
       voiced page counts). Read-only over the translation files; reviewed and the findings
       applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`).
-- [ ] **[TRN-04]** **The full translation run.** In progress, day by day (2026-09-20): days 1–7
-      and the 67 day-independent events reachable from them (`translation/days/day01.txt` …
-      `day07.txt`, `shared.txt`) are translated, independently reviewed against the Japanese,
-      and the findings applied — every voiced page count equals the disc's, no page overflows
-      the band, ids unique across files. Jay, 2026-09-20: pause new days here and test the
-      in-game engineering on what exists before continuing; translation is token-expensive and
-      is done gradually. Remaining: days 8–31 and their day-independent events, plus the
-      arrays/menus (`boku lint`'s inventory). Original row: Everything `REC-03` and `REC-06` found, through
-      the piloted workflow, committed scene by scene. Harmed: the player.
+- [ ] **[TRN-04]** **The full translation run** — a status table, not a churning row (Jay,
+      2026-09-21: Fable translation is expensive; he spawns "do the next N days" himself when
+      the engineering is ready; this row only records where each unit stands). States, in
+      order: **undrafted → drafted → reviewed** (an independent agent against the Japanese)
+      **→ checked** (Jay has read it, comments applied) **→ finalized** (Jay has seen it in the
+      game, formatted and displayed correctly). Workflow per unit: `boku packet` (`TRN-08`) →
+      translator → reviewer → applier → `boku lint` → Jay.
+
+      | unit | state | note |
+      |---|---|---|
+      | `day01.txt` | checked | Jay's 2026-09-21 comments applied (rural, the Sorano house, bug-collecting) |
+      | `day02.txt`–`day07.txt` | reviewed | Jay's 2026-09-21 comments on days 3 and 5 applied (cafeteria, harusame, Great Luck) |
+      | `shared.txt` (76 events) | reviewed | includes the coverage nine |
+      | days 8–31 + their day-independent events | undrafted | 24 day files; run in batches Jay sizes |
+      | arrays / menus / overlays (308 lines) | undrafted | `TRN-09` |
+      | diary entries (94), encyclopedia spreads, textures | undrafted | `GFX-04`, `GFX-06`; new text with no line ids |
+      | movie narration | undrafted | `FMV-02`; no text on the disc — transcribed from the audio |
+
+      Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
+      committed scene by scene. Harmed: the player.
+- [ ] **[TRN-08]** **The packet, redone to Jay's spec** (2026-09-21, after reading
+      `work/packets/day01/E0121.md`). What a translator gets is: a system part — the day-file
+      format, the style guide's rulings, the glossary, the bible's day summary (no line
+      citations) — and then the scene as `[E0121.0]` + the Japanese lines with only the
+      **page breaks** marked, in the day-file shape. Drop from the packet: PLAN citations, the
+      "four of six flags" statistics, the chorus-format aside, "in the order the game plays it"
+      framing for a linear scene, pixel widths, `boku lint`, byte counts, copy counts, frame
+      timers, column splits — a translator asked not to let constraints bend the translation
+      should not be handed the constraints; the lint holds them. Keep: the neighbouring scenes'
+      English (it comes from the day files — `PacketBuilder._neighbours` → `settled`), the
+      voice clip reference per line, and — Jay: "plausible" — a way to *listen* to it (XA
+      extraction of the clip so intonation can inform the line; also answers what a
+      `(voice only)` node such as `E0202.6` is). Bug: `parse_rulings` emits a style-guide
+      heading that contains SETTLED even when no bullet under it is marked, so § 17 appears
+      as an empty section. Agent shape: (b) one directed translator per day that receives the
+      bible/glossary/guide once and the events one by one, with the parent doing the saving —
+      instead of N full Claude Code instances each inheriting `CLAUDE.md`; a lint warning on
+      em dashes (style guide § 18). Harmed: the translator (tedium, constraint-driven
+      distortion) and Jay, who reads the packets.
+- [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the first thing every player sees:
+      the memory-card and save/load messages (32), the title and config labels, the controls
+      help, item names and descriptions, the 57 insect names, photo captions, kite names
+      (`exe@…`, 201), the insect book (`hhon@…`, 62), bug sumo (`musi@…`, 37), title (5), kite
+      workshop (2), the "write the diary and sleep?" prompt (`zukan@…`). `boku coverage` lists
+      them as `not-event`; `boku lint` already checks array byte sizes. Needs an array packet
+      (`TRN-08`) and, on screen, `TXT-05`'s fixed-pitch surfaces. Jay saw these in Japanese
+      after START on 2026-09-20. Harmed: the player, before the first line of dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
       through the workflow, not hand-patched around it. Harmed: the player.
@@ -497,58 +512,88 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       error) and never changes depth, size or VRAM origins; an edit propagates to every
       occurrence (287 for the most-copied minimap) as verified byte edits the image builder
       applies. PNG I/O is stdlib and checked against libpng.
-- [ ] **[GFX-02]** **Evaluate the redraw path on a sample.** The PROGRAMMATIC diary path is
-      prototyped (2026-09-20, `tools/diary/redraw.py`, `research/diary-redraw.md`): all 94 pages
-      share one panel geometry (93 identical; `NIKKI_047` has extra shading and still redraws),
-      the panel is blanked to paper and re-ruled horizontally with palette colours only, and
-      the day-1 entry typesets in the game's own 12×12 glyphs or in Galmuri9 — the agent
-      recommends the game's glyphs (they belong on a crayon page; punctuation gaps are the
-      cost). The rebuilt page imports as 2,268 byte edits, builds, and the image boots; the
-      diary screen itself was not reached headlessly. RULED 2026-09-20 (Jay): the diary pages take the
-      programmatic path with the game's own glyphs — "much more plausibly reliable than the
-      untested ChatGPT option". For the other categories he wants a full audit before choosing
-      — written, `research/textures-plan.md`, including the Wolf Girl's letter (Saori's
-      farewell note on the log at her empty camp, `M_I14000`, the one plot-bearing string
-      with no line id: redraw). Original row: Three textures of different kinds
-      from `REC-08` — the census suggests `NIKKI_001`, `T_TITLE` `0x14`, `M_I18000` — (scoped with DuckStation's texture dump as a second inventory): have an image model (Jay's proposal: ChatGPT) redraw them in English in
-      the original style, quantise back to the original CLUT, and look at them in the game.
-      If that fails, the fallback is Claude-drawn subtitles composited onto the texture. A third
-      path to weigh for the 94 diary pages, which are over half the work: their text sits in
-      ruled columns on flat paper under the drawing, so a program can blank that panel, redraw
-      rules for horizontal lines and typeset the English — no image model, exact palette, and
-      the entry text lives in the translation files like any other line.
-      `[MINE: product]` on which path, per texture category. Harmed: the player, by whichever
-      path is chosen without looking.
-- [ ] **[GFX-03]** **Translate the textures** per `GFX-02`, category by category, recording for
-      each texture id what was done. Redrawn images are tracked (README principle 2);
-      a subtitled texture is tracked only as its subtitle text and placement, composited onto
-      the contributor's import at build time; originals are never tracked. The audit
-      (`research/textures-plan.md`, 2026-09-20) gives every one of the 197 images a path: 138
-      programmatic, 28 redraw, 1 subtitle, 30 stay. **Order:** the title menu first
-      (`T_TITLE`, four lines, programmatic — Jay, 2026-09-20: it "needs to be translated
-      early"), then the diary, then the rest; and before the 18 insect spreads, one breakpoint
-      at `hhon_text_draw_v` with the book open decides whether their body text is the
-      renderer's `hhon@5328` lines (already ids) or baked pixels (new text) — the audit's one
-      unsettled question. Harmed: the player.
+- [x] **[GFX-02]** **Evaluate the redraw path on a sample.** RULED and closed 2026-09-21. The diary
+      pages take the programmatic path with the game's own glyphs (Jay, 2026-09-20: "much more
+      plausibly reliable than the untested ChatGPT option"; prototype `tools/diary/redraw.py`,
+      `research/diary-redraw.md`); every other text-bearing image has its path in
+      `research/textures-plan.md` (138 programmatic, 28 redraw, 1 subtitle, 30 stay). The
+      pattern from here (Jay, 2026-09-21): a category that meaningfully exists is handled
+      together as its own row — `GFX-04`…`GFX-09` — never as churn on one row.
+- [x] **[GFX-03]** **Translate the textures.** SUPERSEDED 2026-09-21 by the per-category rows
+      `GFX-04`–`GFX-09` (Jay: no churn on one task). The audit that would have been its first
+      step is `research/textures-plan.md`; the rules that stay: redrawn images are tracked, a
+      subtitled texture is tracked only as text + placement, originals never.
+- [ ] **[GFX-04]** **The rest of the diaries** — 93 pages after the prototyped one, programmatic
+      with the game's glyphs. Moved here from `research/diary-redraw.md` (it was a plan hiding
+      in a research note): (1) the entries need their own keyed home in `translation/`, keyed
+      by **page id** (`NIKKI_048`), not day — `g_diary_pages[day]` picks a page at run time and
+      the same page can serve different days; (2) per-page wrapping with a refusal, as a lint
+      the build runs — five lines of ~32 game glyphs, nothing shortened to fit; (3) **the date
+      strip stays as it is** — RULED (Jay, 2026-09-21): keep the Japanese month/day symbols
+      with the composited numeral, "fun and simple to understand", which also leaves
+      `nikki_date_upload` untouched; (4) `NIKKI_047`'s shading differs and still redraws —
+      re-run `measure` on any contributor's import before a bulk run; (5) `NIKKI_000` is the
+      unused dummy and must be skipped deliberately; (6) each page is stored once, so 94
+      independent edits and no propagation. The 94 entries are new English (`TRN-04`'s
+      table). Harmed: the player, who writes a diary every night.
+- [ ] **[GFX-05]** **Is the insect book's body text already a line?** One breakpoint at
+      `hhon_entry_draw` (`0x8007C278`, alias `hhon_text_draw_v`) with the book open: do its
+      glyphs land on a `MZKAN` spread or on a screen of their own? Evidence for "their own"
+      so far: the body text is visibly baked into all 18 spreads, 18 pages cannot be one per
+      insect against 57 names, the glossary already treats `hhon@5328.*` as one entry per
+      insect, and the scroll walker's origins are off-page (`research/textures-plan.md`).
+      Fable, one run. Decides `GFX-06`'s size. Harmed: whoever typesets 18 paragraphs twice,
+      or loses them.
+- [ ] **[GFX-06]** **The encyclopedia spreads** — 18 insect (`MZKAN0/1`, one layout, type on flat
+      white beside the photo) and 8 kite (`TZKAN`, flat cream): programmatic; blank the page
+      area, keep the photo/kite panel, re-rule under the header, reflow the vertical body to
+      horizontal (the diary's answer applies). Body paragraphs only if `GFX-05` says they are
+      pixels. Text: species name (glossary § 4a), family, size, food, body; kite name,
+      difficulty, how to build. Harmed: the player who opens the book.
+- [ ] **[GFX-07]** **UI plates and the title menu** — 17 programmatic images: `T_TITLE` **first**
+      (four menu lines on transparent, outlined with a drop shadow — Jay, 2026-09-20: "needs
+      to be translated early"), `T_CONFIG` value plates, the oval action buttons across seven
+      atlases (`SUB`, `M_S01100`, `M_S02000`, `MZ00`, `MZ02`, `SAMP`; multi-CLUT — the
+      per-region CLUT lives in the drawing code), the record screens (`FS/PK/TK_WAL`),
+      `T_MEMORY`'s heading, `TZICON`, the radio-exercise card (`PK_ITM 0x6c`). Split between
+      renderer and texture per screen is tabled in `research/textures-plan.md` § UI. Harmed:
+      the player, at the first screen.
+- [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
+      to the original CLUT and committed as new pixels: three book covers consistently across
+      their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
+      (`M_I14000`, the one plot-bearing string with no line id; subtitle is the fallback), the
+      hunting-association board, the keep-out sign, the model-kit box; the result badges
+      (`MITIM`), the bug-swap notebook cover, the brush-lettered plaque. Harmed: the player
+      who examines the thing and reads nothing.
+- [ ] **[GFX-09]** **The beach notice, as a subtitle** — the one image (`M_C15100`) painted into a
+      background at an angle where a redraw means repainting the scene; an English caption
+      composited beside it at build time, tracked as text + placement only. Harmed: the
+      player at the beach. (The 30 images that stay Japanese by the charter need no row —
+      `research/textures-plan.md` lists them.)
 
 ## Movies
 
-- [ ] **[FMV-01]** **Subtitle the movies.** Jay, 2026-09-20, after playing: the opening
-      cutscene "definitely needs subtitles" — this reverses README row 3, which had the
-      `.IKI` movies out of scope. `translation/voice-only.md` already lists what they say: the
-      opening monologue and the five epilogues, the narrator, ruled Q11 (b) (translate;
-      engine subtitles preferred). Two ways: (a) a renderer hook that draws our text over STR
-      playback, timed by frame — needs the movie player's per-frame path in the EXE and the
-      `MOVIE` number → file table; (b) re-encode the frames with the text burned in — the
-      STR codec, ~300 MB of video, quality loss. Measure (a)'s feasibility first (Fable, RE);
-      `[MINE: product]` between them after that. Harmed: the player, who misses the
-      narration that frames the whole game.
+- [ ] **[FMV-01]** **The movie-subtitle mechanism.** Jay, 2026-09-20, after playing: the opening
+      cutscene "definitely needs subtitles" — this reversed README row 3. Find whether the STR
+      player exposes a per-frame path our renderer can draw over (the `MOVIE` opcode's
+      number → `.IKI` table; the player's frame callback in the EXE), and if not, what
+      burning the text into the frames costs (the STR codec, ~300 MB of video, quality loss).
+      Fable (RE). `[MINE: product]` between the two after the measurement. Split from one
+      row into three (Jay, 2026-09-21). Harmed: the player, who misses the narration that
+      frames the whole game.
+- [ ] **[FMV-02]** **Translate the narration.** The opening monologue and the five endings
+      (`translation/voice-only.md`; Q11 (b)). No text exists on the disc for any of it — the
+      Japanese has to be transcribed from the XA/movie audio first, then translated and
+      reviewed like a day file, keyed by movie and time. Harmed: the player.
+- [ ] **[FMV-03]** **Finalize the movies one by one** — timing each line to the picture through
+      `FMV-01`'s mechanism, checking every movie in the game, Jay's finalized state. Harmed:
+      the player.
 
 ## Release
 
-- [ ] **[REL-01]** **Confirm on the targets.** Beetle PSX (Mode One's core), DuckStation, and a
-      hardware-accuracy check — real hardware if Jay has a way to run it `[MINE: product]`,
-      otherwise XEBRA. State plainly in the release what was *not* tested.
+- [ ] **[REL-01]** **Confirm on the targets.** Beetle PSX (Mode One's core) and DuckStation are
+      the play targets; Jay has **no way to test on real hardware** (2026-09-21), so the
+      accuracy check is XEBRA and the release says plainly that hardware was not tested.
       Harmed: players on whatever was not tested.
 - [ ] **[REL-02]** **Mode One integration**, in `~/Dev/retro-trainer`: the PPF as a
       `provisioning.ron` step against the Redump base SHA-1, a `PATCHES.md` provenance entry,

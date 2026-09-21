@@ -11,7 +11,7 @@
 
 # --- E0171: the front of the house (H02). Father, Boku, and the Soranos lined up. Forced.
 E0171.0	Father	My son will be in your care for the summer vacation.
-E0171.1	Father	This is his first time in village hills like these, with so much nature still left, so... // he seems a little taken aback, but... everyone, please look after him.
+E0171.1	Father	This is his first time somewhere this rural, with so much nature still left, so... // he seems a little taken aback, but... everyone, please look after him.
 E0171.2	Father	All right. Introduce yourself.
 E0171.3	Boku	Hello. I'm Boku.
 # NOTE E0171.1: satoyama → "village hills" on this, its first use (glossary § 7, Q10.8).
@@ -26,7 +26,7 @@ E0174.1	Uncle	Nice to meet you, Boku-kun. That was a long trip — you did well.
 #   taught to say, and "I'll be in your care" is kept as the same words for that reason.
 
 # --- E0175: close-up of the uncle (I31).
-E0175.0	Uncle	The name of this house is Sorano, and Uncle's name is Yusaku. // From today, think of this place as your own home, and please play as much as you like.
+E0175.0	Uncle	This is the Sorano house, and I'm your Uncle Yusaku. // From today, think of this place as your own home, and please play as much as you like.
 # --- E0176: back to the line-up (H02).
 E0176.0	Uncle	Now then — Onee-chan, you first.
 # NOTE E0176.0: the parents call Moe "Onee-chan"; used as a name it stays (style guide § 2).
@@ -78,7 +78,7 @@ E0112.5	Uncle	The ceiling's nice and high, isn't it?
 
 # --- E0114: the foot of the stairs (G07), the first time Boku comes through. Forced.
 E0114.0	Uncle	Boku-kun... // What are you going to do for your research project this summer vacation?
-E0114.1	Uncle	This house has an insect-collecting kit, you know.
+E0114.1	Uncle	This house has an bug-collecting kit, you know.
 E0114.2	Boku	Huh! Really?!
 E0114.3	Uncle	Yeah. I'll give it to you as a present, Boku-kun.
 E0114.4	Boku	Yay! All right!
@@ -153,7 +153,7 @@ E0104.5	Uncle	That's right. Go take a look.
 #     close-up of the box, .2 back in the room.
 E0107.0	Boku	Huh...?
 E0107.1	Narrator	There, against a gloomy, sorrowful sunset sky... // were two biplanes, painted on the box of a plastic model kit.
-E0107.2	Narrator	And inside the box, just as my uncle had promised, was an insect-collecting kit.
+E0107.2	Narrator	And inside the box, just as my uncle had promised, was an bug-collecting kit.
 # NOTE E0107.1: the Japanese puts "the box" last, on page 2, after the sky on page 1. The
 #   English keeps the sky on page 1 and the biplanes and the box on page 2, so what is on screen
 #   is what is being said; the existential "there were" carries the Japanese "it was a box..."
@@ -164,7 +164,7 @@ E0107.2	Narrator	And inside the box, just as my uncle had promised, was an insec
 # --- E0113: the living room (G01), 19:00 onward. .0 if the desk has not been visited yet;
 #     .1-.5 the first evening talk; .6-.7 on a repeat.
 E0113.0	Uncle	Hurry up to your room upstairs... // and go take a look at the present on the desk.
-E0113.1	Uncle	So, did you like the insect-collecting kit? // I think that's everything that was in the set... // but the box seems to have gone missing, so... // Come to think of it, that plastic model... it's one Kaoru built, a while back.
+E0113.1	Uncle	So, did you like the bug-collecting kit? // I think that's everything that was in the set... // but the box seems to have gone missing, so... // Come to think of it, that plastic model... it's one Kaoru built, a while back.
 E0113.2	Boku	Auntie, you build plastic models? Even though you're a girl?
 E0113.3	Aunt	Oh my, is that strange? // Auntie likes making things — anything at all, you know.
 E0113.4	Boku	Hey, what happened to the finished one?

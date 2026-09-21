@@ -168,15 +168,15 @@ E0332.7	Moe	Playing the flute in the night breeze feels goood...
 
 # --- E0341: the television room (G06), 19:00 onward, Shirabe in front of the set. .5-.7 on a
 #     second visit.
-E0341.0	Shirabe	I only just ate, and already I'm hungry again... // Aww, I want the glass-noodle salad from school lunch...
+E0341.0	Shirabe	I only just ate, and already I'm hungry again... // Aww, I want the harusame salad from school lunch...
 E0341.1	Boku	What's that?
 E0341.2	Shirabe	...Huh? You don't know it.
 E0341.3	Boku	Huh?
-E0341.4	Shirabe	A school-lunch center without glass-noodle salad? Your place is a hundred years behind the times.
+E0341.4	Shirabe	A cafeteria without harusame salad? Your place is a hundred years behind the times.
 E0341.5	Shirabe	You know, you...
 E0341.6	Boku	Whaat?
 E0341.7	Shirabe	...Nothing.
-# NOTE E0341.0, .4: harusame salad → "glass-noodle salad"; kyushoku sentaa → "school-lunch
+# NOTE E0341.0, .4: harusame salad stays "harusame salad" (Jay, 2026-09-21: it should stay Japanese); kyushoku sentaa → "cafeteria" (Jay: "school-lunch center" too literal; was "school-lunch
 #   center" (glossary § 5, the school-lunch conversations).
 
 # NOTES — the day

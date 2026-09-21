@@ -120,7 +120,7 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | ラジオ体操カード / ハンコ | | radio-calisthenics card / stamp | | item 0 | `exe@80046214.0`, `E3031.6` |
 | 絵日記 | enikki | picture diary | | | `E0023.0`, `zukan@32E8` |
 | 自由研究 | jiyū kenkyū | summer research project | independent project | the school's summer homework | `E0114.0` |
-| 昆虫採集セット | | insect-collecting kit | bug kit | | `E0107.2` |
+| 昆虫採集セット | | bug-collecting kit | bug kit | "insect-collecting" read as stiff (Jay, 2026-09-21) | | `E0107.2` |
 | 夏休み | natsuyasumi | summer vacation | summer break | Q10 | everywhere |
 | 晩ごはん当てっこ / 晩ごはんクイズ | | the guess-the-dinner game / the dinner quiz | | | `E0520.0`, `E1502.3` |
 | 正解 / 大正解 / はずれ | | Correct! / Exactly right! / Wrong | | | `E4028.0`–`.6` |
@@ -270,7 +270,7 @@ Corn · Photo. Status screen: 捕虫網 net · 虫かご bug cage · 持ち物 b
 tackle · 昆虫標本 specimens · 逃がしますか？ Let it go? · 飼う / やめる Keep / Never mind ·
 この虫をあきらめる / とりあえずポケットに Give this one up / Pocket it for now · 登録しますか？
 Register it? · 絵日記を書いて寝ますか？ Write in your diary and go to sleep? · fortune results
-大吉 / 中吉 / 小吉 / 大凶 Great luck / Good luck / A little luck / Terrible luck (`exe@80036750`,
+大吉 / 中吉 / 小吉 / 大凶 Great Luck / Good Luck / A Little Luck / Terrible Luck (capitalised as names of the fortunes — Jay, 2026-09-21) (`exe@80036750`,
 4 × 3 fixed cells, vertical). Memory-card, config and help strings (`exe@8003D5F0`,
 `exe@8003D9BC`, `exe@80029B20`) follow Sony's standard English wording of the period
 ("Checking MEMORY CARD...", "Do not remove the MEMORY CARD").
@@ -302,7 +302,7 @@ Japanese sense — ハンバーグ is a **Hamburg steak**, never a hamburger.
 | かき氷; メロン / イチゴ / レモン / みぞれ / 虹色スペシャル | shaved ice; Melon / Strawberry / Lemon / Mizore (alt. Plain; Q10.7, ruled) / Rainbow Special | `E0404.3`–`.7` |
 | 麦茶 / 自家製 / 味瓜 / トウモロコシ / スイカ | barley tea / homemade / *ajiuri* (a small sweet melon — the line explains it) / corn / watermelon | `E0122.0`, `E0213.3` |
 | おせんべい / サビ抜き / カッパ巻き / ハマチ / マグロ | rice crackers / without wasabi / kappa-maki / hamachi / tuna | `E1503.1`, `E2203.4`–`.13` |
-| 春雨サラダ / ソフト麺 / 揚げパン / コッペ（ちゃん） / 鯨の竜田揚げ / 先割れスプーン / テトラパック / 減量パン | glass-noodle salad / soft noodles / fried bread / koppe roll / deep-fried whale / spork / Tetra Pak / "diet bread" | the school-lunch conversations, `E0341`, `E0940`–`E1341` |
+| 春雨サラダ / ソフト麺 / 揚げパン / コッペ（ちゃん） / 鯨の竜田揚げ / 先割れスプーン / テトラパック / 減量パン | harusame salad (stays Japanese — Jay, 2026-09-21; "school-lunch center" → cafeteria) / soft noodles / fried bread / koppe roll / deep-fried whale / spork / Tetra Pak / "diet bread" | the school-lunch conversations, `E0341`, `E0940`–`E1341` |
 | 駄菓子屋 / メンコ（パッチ） / かんしゃく玉 / 爆竹 | penny-candy shop (*dagashiya*) / menko cards ("we call them *patchi* here") / snap caps / firecrackers | `E1740.0`, `E1940.1`, `E2452.0`, `E1907.0` |
 
 The after-dinner menu announcements (`E4028.7`–`.17`) are full menus in the aunt's voice; they

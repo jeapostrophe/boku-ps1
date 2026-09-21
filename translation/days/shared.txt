@@ -137,7 +137,7 @@ E8011.0	(unlabelled)	On the family altar, a little rice and some sweets have bee
 E8012.0	(unlabelled)	Third-grade textbooks, set out together with some manga.
 E8013.0	(unlabelled)	Found a crumpled-up test paper. It says "Sorano Shirabe" on it.
 E4046.0	(voice only)
-E4027.0	[SEL]	Which will you look at? | Insect-collecting kit | Picture diary
+E4027.0	[SEL]	Which will you look at? | Bug-collecting kit | Picture diary
 # NOTE E8013.0: the name is in hiragana, as a second-grader writes it, family name first as it
 #   stands on the paper; the order is kept because the line is reading a Japanese document.
 #   "Found ..." is the glossary's frame for a find (§ 3).

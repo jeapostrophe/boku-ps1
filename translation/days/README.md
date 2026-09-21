@@ -20,6 +20,11 @@ characters, `research/vwf-prototype.md` § TXT-07) is translated in full anyway 
 There is no Japanese in these files. With an imported disc,
 `python3 work/rec05/scenes.py --dump 171 184` prints the source beside them.
 
+A unit's state is one of **undrafted → drafted → reviewed → checked → finalized**: drafted by a
+translator; reviewed by an independent agent against the Japanese; checked once Jay has read it
+and his comments are applied; finalized once he has seen it in the game, formatted and displayed
+correctly. `PLAN.md` `TRN-04` holds the table.
+
 | file | events | status |
 |---|---|---|
 | [day01.txt](day01.txt) | `E0103`–`E0190` (27 events, 85 lines), `E0001` | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20) |

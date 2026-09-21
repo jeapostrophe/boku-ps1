@@ -77,10 +77,10 @@ E0510.5	Uncle	Yeah. And in the old days you could see them all over the place, y
 # --- E0540: a corner of the garden (H09), before 18:00, Shirabe at the ants. .0 if her tour of
 #     day 4 has not happened (flag 21 clear), and on every repeat; .1-.3 the first time after it.
 E0540.0	Shirabe	Today too, the worker ants are working away, busy, busy, as hard as they can. // How beautiful...
-E0540.1	Shirabe	Did you try the fortune-telling Jizo today? // If you keep at it and do it over and over until Great luck comes up... // then even for someone as unlucky as you, life from here on might get a little better.
+E0540.1	Shirabe	Did you try the fortune-telling Jizo today? // If you keep at it and do it over and over until Great Luck comes up... // then even for someone as unlucky as you, life from here on might get a little better.
 E0540.2	Boku	But if I do that... I'd have to hit Jizo-sama over and over, wouldn't I...
 E0540.3	Shirabe	It beats you getting hit by me, doesn't it?
-# NOTE E0540.1: "the fortune-telling Jizo" and "Great luck" are the glossary's (§ 2, § 4e — the
+# NOTE E0540.1: "the fortune-telling Jizo" and "Great Luck" are the glossary's (§ 2, § 4e — the
 #   best of the four fortunes); you get a fortune by hitting the statue on the head, which is
 #   what Boku objects to in .2. "Jizo-sama" as heard (glossary § 2).
 
