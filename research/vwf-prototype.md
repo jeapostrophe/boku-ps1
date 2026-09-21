@@ -245,6 +245,54 @@ hour poke past 17:00 is snapped back to 17:00 on day 1 until the dinner call run
 requested at 17:00 runs `E0190` and dinner with ○, leaving 19:04 in `G02200`, from which a
 `G01` request loads `G01200`.
 
+### Round 3 (2026-09-21): the punctuation, the band's depth, the select box
+
+**Punctuation (`TXT-08`).** The sheet has horizontal `．` `，` `：` `；` (glyph-table.tsv;
+the vertical `、` `。` are cells 1–2), drawn as 2 × 2 dots on rows 7–8 — a row *above* the
+Latin baseline (letters end on row 9, descenders reach 10) — which is the floating full
+stop Jay saw. Its `？`/`！` end in a 1 × 2 dot (column 5, rows 8–9). Measured against the
+harvest candidates: Ark Pixel 12 and Galmuri set `.` and `:` as 1 × 1 dots and `'` as a
+1 × 3 tick, lighter than the sheet, so a redraw to the sheet's weight matches better than
+any harvest, and every cell in `tools/vwf/placeholder-glyphs.txt` is drawn for this
+project (its header says so; where a mark has one way to be drawn — a 2 × 2 dot, a
+mirrored paren — the drawing may coincide with the sheet's; no harvested cell, hence no
+licence to record). Changed: `.` `,` `:` `;` redrawn on the baseline (rows 8–9, 2 × 2 like
+the sheet's `．`/`：`, comma and semicolon with a one-pixel tail) in free cells so the
+sheet's own cells stay for Japanese; `'` and `"` become the comma's shape raised to rows
+1–4 (advance 4 / 7). The 1-px `- — ( ) ~` already match the sheet's strokes. Loader rule
+unchanged: advance ≥ ink + 2.
+
+**The band's depth — a premise refuted, nothing patched.** Round 2 reported Boku's
+close-up head drawn over the band in the evening living room (`shots/r2/12`). Measured on
+the pixels, that was a misreading of a zoom cut across the band's top edge: the hair above
+row 191 is dark (80, 48, 40) and inside the band it is washed (224, 192, 184) — the head was
+behind the band all along, and a round-3 build that moved the band into the text's slot
+gave pixel-identical frames (`shots/r3/04`). The order, recorded so nobody re-derives it:
+the OT is cleared reversed (`ClearOTagR` called at `0x80011CB4`) and drawn from its far end
+to slot 0 (`DrawOTag` called at `0x80012748`), so a lower slot is in front; within a slot
+`AddPrim` puts a later primitive at the head, drawn first. The strip's tile, fade and
+`DR_TPAGE` go to `g_ot[2]` (`dialog_panel_draw`, `addiu a0,a0,8` at `0x8002EA40`,
+`0x8002EAC0`, `0x8002EB00`), every glyph to `g_ot[g_text_layer]` = slot 1 (`0x80028E3C`),
+and `event_update` calls `dialog_draw` (`0x8002D3B4`) before `dialog_panel_draw`
+(`0x8002D3BC`). Walked on PCSX-Redux at the first line (`tools/vwf/ot-walk.lua`): slot 2
+holds the panel's tpage (abr 1), fade and tile (0, 191, 330 × 37, colour 168); slot 1 the
+font tpage and the glyph sprites; slot 0 a 2 × 1 VRAM copy and a nop; slot 3 empty. The
+stock layout stays: moving the band to slot 1 would put it in front of any slot-1
+primitive added after `event_update` (the other `glyph_draw` callers draw there), an
+exposure the stock order does not have. Two traps from the attempt, recorded: a site
+`.org`'d inside another block's `.area` is silently overwritten by whichever block armips
+assembles last while `ORIGINAL=1` stays green (`tests/test_asm_layout.py` now refuses
+overlapping sites); and a flattened translucent band is easy to misread as absent in a
+thumbnail — rows 191–227 read 184–248 against 32–80 outside.
+
+**The select box.** `g_select_rect`'s w and h are only what `vwf_select_box` returns when
+`select_draw` measured nothing — every select measures, so the drawn box is `xmax + pad`
+wide and `ymax + cell + pad` tall from the corner. The literals are now derived anyway:
+`SEL_BOX_H = 4·SEL_PITCH + 12 + 2·SEL_PAD` (the five-row layout) and `SEL_BOX_W` = the widest
+option plus both pads and the cursor. The only ≥ 4-option selects in days 1–7 are `E0404.6`/`.7`
+(day 4 dinner, an auto event the poked entry does not fire), so the largest reachable is the
+three-line `E0022` (prompt + 2, the living-room bookshelf), reached by walking into its zone.
+
 ### The speaker label (`TXT-05`'s "label design", decided 2026-09-20)
 
 **Form: the original's**, `Uncle「…」` — the label, then the corner brackets in horizontal

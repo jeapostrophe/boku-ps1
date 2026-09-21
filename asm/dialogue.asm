@@ -93,6 +93,17 @@ PENCIL_Y equ (BAND_Y + BAND_H - 11)
 .endif
 .endarea
 
+; ---- where the band and the text sit in the ordering table (measured, not patched) --------
+; The OT is cleared reversed (the ClearOTagR call at 0x80011CB4) and drawn from its far end
+; to slot 0 (the DrawOTag call at 0x80012748), so a lower slot is in front; within a slot
+; AddPrim puts a later primitive at the head, drawn first. The strip's tile, fade and
+; DR_TPAGE go to g_ot[2] (dialog_panel_draw's three `addiu a0,a0,8`, one of them inside the
+; band2 area below) and every glyph to g_ot[g_text_layer] = g_ot[1] (0x80028E3C), and
+; event_update calls dialog_draw before dialog_panel_draw. Left as stock: a close-up head
+; in the evening living room, once suspected of drawing over the band, measures as behind
+; it (research/vwf-prototype.md § "Round 3"), and moving the band into slot 1 would put it
+; in front of any slot-1 primitive added after event_update.
+
 ; ---- dialog_panel_draw: the right-hand strip becomes a band ("band2") ---------------------
 ; s0 -> the TILE: x at +8, y at +0xA, w at +0xC, h at +0xE; v1 = g_dlgbox_x. The stock code
 ; stores y = 0 and x = v1 + 5. Swapping the two store offsets frees the second immediate, so

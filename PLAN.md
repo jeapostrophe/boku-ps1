@@ -266,11 +266,12 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       the array/overlay half of `TRN-04` (308 lines on six surfaces, `boku coverage` lists
       them as `not-event`), not a renderer miss. **Left to do:** the two `HHON.OVL`
       walkers, the 20 fixed-pitch surfaces and their arrays, the 23 computed-id `glyph_draw`
-      sites (not covered by the free-cell gate); Boku's close-up head sprite draws over the
-      band in the evening room (actors are ordered in front of the panel); `select.asm`'s
-      `g_select_rect` is a literal 80×40 that does not follow `SEL_PITCH`/`SEL_PAD` (a
-      five-row layout's rows run 126–181 against a box to 160); and watching the heap gap
-      and stack under the four overlays / a save / menus, sumo and fishing.
+      sites (not covered by the free-cell gate); and watching the heap gap and stack under
+      the four overlays / a save / menus, sumo and fishing. (Round 3, 2026-09-21: the
+      "head drawn over the band" was a misread of a zoom — measured, the head is behind
+      the band and the ordering table is stock; the select box now derives from the row
+      geometry; a text-only test refuses overlapping `.org`/`.area` blocks, the trap that
+      silently reverted one patch during the round.)
       Original row: Per `TXT-03`: armips source in the repo, horizontal
       advance, per-glyph width table, wrapping inside the existing box, free space located in
       the executable (it is exactly `0x80000` bytes — check the tail and dead debug code). Every
@@ -286,14 +287,15 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
 - [x] **[TXT-06]** **The font.** RULED 2026-09-20 (Jay): "The game sheet is good enough and I
       like using the original if possible." No replacement typeface; the ~12 missing
       punctuation cells are placeholder art today — `TXT-08`. No new dependency.
-- [ ] **[TXT-08]** **Real glyphs for the punctuation the sheet lacks.** The ~12 cells the build
-      adds — `' " - — ( ) …` and friends — are placeholder art drawn by a script. Jay,
-      2026-09-20: redraw them to match the sheet's weight, or harvest them from a similar
-      openly licensed pixel font (Galmuri9, Ark Pixel 12 or Pixel Operator from
-      `research/font-candidates.md`, licences in `reference/fonts/SOURCES.md`), scaled to the
-      12×12 cell and checked in the game beside the sheet's own letters. Harvested cells are a
-      derived work of that font — record the source and licence in the build. Harmed: the
-      player, who reads an apostrophe in every third line.
+- [x] **[TXT-08]** **Real glyphs for the punctuation the sheet lacks.** DONE 2026-09-21
+      (`tools/vwf/placeholder-glyphs.txt`, `research/vwf-prototype.md` § Round 3): the
+      sheet's own `. , : ;` sit on rows 7–8, a row above the Latin baseline, which is the
+      floating dot Jay saw; they are redrawn at the sheet's weight on the baseline into free
+      cells, `' "` as raised comma shapes, `- — ( ) ~` were already right. The harvest
+      candidates (Ark Pixel 12, Galmuri) set lighter dots than the sheet's `?`/`!`, so no
+      cell is harvested and no licence is owed; every cell in the file is our own art, and
+      the loader refuses any advance that does not cover ink plus shadow. Checked in the
+      game beside the sheet's letters. Original row: redraw or harvest (Jay, 2026-09-20).
 - [ ] **[TXT-09]** **Hold voiced pages long enough to read.** Jay, 2026-09-20, after playing
       day 1: the Japanese subtitles were paced for someone also *listening*; an English reader
       is slower and the page is gone. Voiced pages auto-advance when the voice ends and ○

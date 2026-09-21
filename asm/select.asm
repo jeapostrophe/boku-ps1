@@ -137,10 +137,15 @@
 
 ; ---- g_select_rect: {x, y, w, h} by type - 1 -----------------------------------------------
 ; Types 1-6 get the same corner: SEL_PAD left of the cursor (SEL_CURSOR_DX is at most 0,
-; which the build checks) and SEL_PAD above the first row. w and h are what vwf_select_box
-; returns when nothing was measured, which no select reaches. Entry 6 (type 7, the
-; controls-help screen, which draws the box without select_draw) lies past this area and is
-; untouched.
+; which the build checks) and SEL_PAD above the first row. Every select draws its box
+; after select_draw measured it, so w and h come from vwf_select_box (xmax + pad, and the
+; last row's y + cell + pad); the w and h here are only what it returns when nothing was
+; measured. They are still derived from the row geometry rather than typed: the tallest
+; layout has five rows, so the fallback box is that tall, and the width is the widest
+; option this build allows. Entry 6 (type 7, the controls-help screen, which draws the
+; box without select_draw) lies past this area and is untouched.
+SEL_BOX_W equ (320 - PEN_X - SEL_X + 2 * SEL_PAD - SEL_CURSOR_DX)   ; select_width + both pads + the cursor
+SEL_BOX_H equ (4 * SEL_PITCH + CELL + 2 * SEL_PAD)
 .org 0x80028E44
 .area 6*8
 .if ORIGINAL
@@ -151,11 +156,11 @@
     .dh     216, 120, 80,  96
     .dh     208, 56,  96,  168
 .else
-    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, 80, 40
-    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, 80, 40
-    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, 80, 40
-    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, 80, 40
-    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, 80, 40
-    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, 80, 40
+    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, SEL_BOX_W, SEL_BOX_H
+    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, SEL_BOX_W, SEL_BOX_H
+    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, SEL_BOX_W, SEL_BOX_H
+    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, SEL_BOX_W, SEL_BOX_H
+    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, SEL_BOX_W, SEL_BOX_H
+    .dh     SEL_X + SEL_CURSOR_DX - SEL_PAD, SEL_Y - SEL_PAD, SEL_BOX_W, SEL_BOX_H
 .endif
 .endarea
