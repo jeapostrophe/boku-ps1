@@ -8,8 +8,10 @@ SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools an
 > scene (`./make.sh trial`). The archive, text format, event scripts, font, renderer, memory
 > map and textures are decoded and written up under [research/](research/): the script is
 > 2,977 lines / ~75,000 glyphs, 180 textures carry Japanese, and the game checks nothing it
-> loads. Not built yet: the variable-width renderer patch, the reinserter, and the
-> translation itself, which waits on rulings in [translation/QUESTIONS.md](translation/QUESTIONS.md).
+> loads. The reinserter, image builder and patch emit exist and the null round
+> trip reproduces the original image byte for byte; a variable-width dialogue renderer runs
+> on both emulators as a prototype. Days 1–7 of the script are translated and reviewed
+> (`translation/days/`); the rest waits on in-game testing of what exists.
 
 ## Why the PS1 version
 

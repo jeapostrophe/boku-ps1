@@ -434,7 +434,14 @@ trial) → `PIPE` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and com
       per-character pages — plus `--check` (unknown ids, ids translated twice, SELECT shape,
       voiced page counts). Read-only over the translation files; reviewed and the findings
       applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`).
-- [ ] **[TRN-04]** **The full translation run.** Everything `REC-03` and `REC-06` found, through
+- [ ] **[TRN-04]** **The full translation run.** In progress, day by day (2026-09-20): days 1–7
+      and the 67 day-independent events reachable from them (`translation/days/day01.txt` …
+      `day07.txt`, `shared.txt`) are translated, independently reviewed against the Japanese,
+      and the findings applied — every voiced page count equals the disc's, no page overflows
+      the band, ids unique across files. Jay, 2026-09-20: pause new days here and test the
+      in-game engineering on what exists before continuing; translation is token-expensive and
+      is done gradually. Remaining: days 8–31 and their day-independent events, plus the
+      arrays/menus (`boku lint`'s inventory). Original row: Everything `REC-03` and `REC-06` found, through
       the piloted workflow, committed scene by scene. Harmed: the player.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
