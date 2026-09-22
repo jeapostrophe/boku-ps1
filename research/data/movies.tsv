@@ -5,30 +5,30 @@
 # which `./make.sh movies` writes. It and notes are the only hand-written columns, and a
 # regeneration carries them across unchanged; every other column is overwritten.
 id	file	frames	seconds	stop_frame	skippable	shares_file_with	issued_by	what_it_shows	notes
-0	M27	4244	3.9	58	yes	15,23	none found		
-1	M010	144	9.3	139	yes	-	none found		
-2	M031	52	3.1	47	yes	-	E4015		
-3	M032	52	3.1	47	yes	-	E4015		
-4	M033	52	3.1	47	yes	-	E4016		
-5	M034	52	3.1	47	yes	-	E4016		
-6	M050	157	10.1	152	yes	-	E4030		
-7	M080	158	10.2	153	yes	-	none found		
-8	M100	72	4.5	67	yes	-	E0809		
-9	M110	112	7.1	107	yes	-	E0906		
-10	M120	157	10.1	152	yes	-	E1008		
-11	M130	105	6.7	100	yes	-	E2606,E2607		
-12	M140	127	8.1	122	yes	-	E2108		
-13	M180	97	6.1	92	yes	-	E1706,E2305		
-14	M190	682	45.1	677	yes	-	E2605		
-15	M27	4244	3.9	58	yes	0,23	none found		
-16	M21	532	35.1	527	yes	-	none found		
-17	M22	517	34.1	512	yes	-	none found		
-18	M250	232	15.1	227	yes	-	E0607,E2306		
-19	M260	352	23.1	347	yes	-	none found		`movie_queue_play` waits 180 vsyncs before this one (research/movies.md section 2.1)
-20	M40	112	7.1	107	yes	-	E0009,E0103,E0303,E1503,E1803,E1903,E2003,E2203,E2303,E2803,E3005		
-21	M60	367	24.1	362	yes	-	E0805		
-22	M70	82	5.1	77	yes	-	E0004,E4019,E4020,E4054		
-23	M27	4244	282.6	4239	yes	0,15	none found		the opening: after the memory-card check the boot queue holds this id alone (measured)
-24	M28	4199	279.6	4194	no	-	E3182		the ending; `movie_queue_play` switches the game to mode 0x10 after it. How the five epilogues of translation/voice-only.md differ is PLAN FMV-02, not this table
-25	M160	162	10.5	157	yes	-	E1406		
-26	M230	97	6.1	92	yes	-	E0182		
+0	M27	4244	3.9	58	yes	15,23	none found	VOICE; opening cutscene, with a song	
+1	M010	144	9.3	139	yes	-	none found	no voice; exterior of the house	
+2	M031	52	3.1	47	yes	-	E4015	no voice; going upstairs	
+3	M032	52	3.1	47	yes	-	E4015	no voice; going upstairs (night)	
+4	M033	52	3.1	47	yes	-	E4016	no voice; going downstairs	
+5	M034	52	3.1	47	yes	-	E4016	no voice; going downstairs (night)	
+6	M050	157	10.1	152	yes	-	E4030	no voice; sunrise	
+7	M080	158	10.2	153	yes	-	none found	no voice; underwater	
+8	M100	72	4.5	67	yes	-	E0809	no voice; the well	
+9	M110	112	7.1	107	yes	-	E0906	no voice; big fish	
+10	M120	157	10.1	152	yes	-	E1008	VOICE; looking at a satellite	
+11	M130	105	6.7	100	yes	-	E2606,E2607	no voice; underwater	
+12	M140	127	8.1	122	yes	-	E2108	no voice; underwater	
+13	M180	97	6.1	92	yes	-	E1706,E2305	no voice; old Japanese/English dictionary	
+14	M190	682	45.1	677	yes	-	E2605	no voice; rain	
+15	M27	4244	3.9	58	yes	0,23	none found	VOICE; opening cutscene, with a song	
+16	M21	532	35.1	527	yes	-	none found	no voice; morning exercise	
+17	M22	517	34.1	512	yes	-	none found	no voice; morning exercise	
+18	M250	232	15.1	227	yes	-	E0607,E2306	no voice; hills	
+19	M260	352	23.1	347	yes	-	none found	VOICE; dream of a sunflower field	`movie_queue_play` waits 180 vsyncs before this one (research/movies.md section 2.1)
+20	M40	112	7.1	107	yes	-	E0009,E0103,E0303,E1503,E1803,E1903,E2003,E2203,E2303,E2803,E3005	no voice; sunset	
+21	M60	367	24.1	362	yes	-	E0805	VOICE; fireworks	
+22	M70	82	5.1	77	yes	-	E0004,E4019,E4020,E4054	no voice; water	
+23	M27	4244	282.6	4239	yes	0,15	none found	VOICE; opening cutscene, with a song	the opening: after the memory-card check the boot queue holds this id alone (measured)
+24	M28	4199	279.6	4194	no	-	E3182	VOICE; ending, with the credits and a song	the ending; `movie_queue_play` switches the game to mode 0x10 after it. How the five epilogues of translation/voice-only.md differ is PLAN FMV-02, not this table
+25	M160	162	10.5	157	yes	-	E1406	no voice; clouds	
+26	M230	97	6.1	92	yes	-	E0182	no voice; car driving	

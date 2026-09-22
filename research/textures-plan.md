@@ -2,7 +2,9 @@
 
 `REC-08` counted the Japanese in the pixels ([textures.md](textures.md),
 [data/texture-census.tsv](data/texture-census.tsv)): **180 distinct images `yes` + 17 `maybe`
-= 197**. This file assigns each of those 197 a **path**, and says where the English comes from.
+= 197**. (Ruling 2026-09-22, Jay: the model-kit box `M_I19000` stays Japanese — the narrator
+says what it is — so the counts below are now **138 P, 27 R, 1 S, 31 N**; the tables keep the
+audit's original split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
 written record of what was looked at, so a census row can never silently lose its decision. The

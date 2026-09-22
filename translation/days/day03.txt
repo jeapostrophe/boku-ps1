@@ -37,11 +37,11 @@ E0302.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0302.2	Aunt	Hey, Boku-kun — do you like corn?
 E0302.3	Boku	Yeah, I love it. It's delicious!
 E0302.4	Aunt	Well then —
-E0302.5	Uncle	Boku-kun — you are hereby appointed field-help monitor!
+E0302.5	Uncle	Boku-kun — you are hereby appointed field-help captain!
 E0302.6	(voice only)
 E0302.7	Uncle	It's only helping out for today — one day — but... // On the way to the forest, there's our corn field. // You are to come there in the morning and help with the harvest! I'm counting on you.
 # NOTE E0302.5: the mock-official appointment frame (glossary § 3, "You are hereby appointed ...
-#   monitor!"), the same words as the morning-glory monitor of day 2.
+#   captain!"), the same words as the morning-glory captain of day 2.
 # NOTE E0302.7, page 3: the uncle's mock-official "...koto!" ending, as at E0114.7.
 
 # --- E0307: the shed off the kitchen (H18), any day once the uncle has said where the rod is

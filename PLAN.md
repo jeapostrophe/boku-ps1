@@ -11,9 +11,9 @@ item. Items that wait on a decision that is Jay's say so literally: `[MINE: prod
 `[MINE: contract]`, `[MINE: dependency]`. Completed rows are marked `[x]` with what was actually
 true, committed, and deleted at the next triage. A row is a lead, not a spec: re-derive its
 claims against the disc and `HEAD` before working it. No time estimates — sections are ordered
-by dependency, and the project's pace is set by Fable throughput, which Jay has accepted.
+by dependency, and the project's pace is set by top-tier model throughput (Opus 5.5 since 2026-09-22, `CLAUDE.md` § Model tiers), which Jay has accepted.
 
-**Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
+**Classes and ids spent so far:** `ENV-01`–`ENV-06` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
 pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-04`
 movies · `VO-01`–`VO-04` voice-over · `REL-01`–`REL-03` release.
@@ -84,6 +84,14 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       0RGB1555 (expected values from libretro.h's bit layout, padded pitch included), the
       schedule parsers, and the PNG writer against an independent reader; the two unexercised
       pixel paths turned out correct.
+- [ ] **[ENV-06]** **The memory-card save format and a corpus of saves** (Jay, 2026-09-22): decode
+      DuckStation's `.mcd` save for this game (day, hour, flags, the ★/event counts that pick
+      an ending) and build a corpus — every day's morning, each ending's precondition, the
+      branch points — generated or edited rather than played, so a scene can be reached in
+      seconds for testing and screenshots. Jay's first save is in DuckStation's normal memory
+      card directory. A save holds only progress state, but check it carries no game text
+      before tracking any. Top tier (RE), bounded — "a little time/tokens". Harmed: Jay and
+      every agent that has to replay the game to reach a scene.
 
 ## Recon — where every piece of Japanese lives
 
@@ -277,14 +285,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       cell is harvested and no licence is owed; every cell in the file is our own art, and
       the loader refuses any advance that does not cover ink plus shadow. Checked in the
       game beside the sheet's letters. Original row: redraw or harvest (Jay, 2026-09-20).
-- [ ] **[TXT-09]** **Hold voiced pages long enough to read.** DEFERRED (Jay, 2026-09-21): not
-      before more of the script is translated, the rendering is settled, and a real playthrough
-      — not one smoke test — still shows pages lost. Then: voiced pages auto-advance when the
-      voice ends and ○ switches to manual (`research/text-format.md`,
-      `research/renderer-runtime.md`); find what can hold a page past the voice's end (the
-      page-break timer word, the voice key's end sector, a renderer-side hold) and its cost per
-      page; a MIPS hold that waits N ticks or for ○ is the fallback. Fable (RE). Harmed: the
-      player, who loses the end of every long line.
+- [x] **[TXT-09]** **Hold voiced pages long enough to read.** CLOSED as *no* (Jay, 2026-09-22,
+      after playing): the game already holds a page — pressing confirm stops auto-advance and
+      the line stays up with the voice audible; only the long lines were ever hard, and they
+      now fit. Reopen trigger: a playtester who cannot finish reading with confirm held.
 - [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
       (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
       line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
@@ -411,8 +415,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       recommendation; "Showa 17" as written; labels parsed in the files, presentation in the
       original's style as an early, revisitable default (the one open default, Q7).
       `translation/QUESTIONS.md` is the record of the rulings; three sample scenes under
-      `translation/samples/`. `translation/glossary.md` is written but still uncommitted
-      pending Jay's ruling on committing its Japanese word lists (`[MINE: contract]`).
+      `translation/samples/`. `translation/glossary.md` is committed (Jay, 2026-09-20: "commit it").
 - [x] **[TRN-02]** **Scene assembly for the translator.** DONE 2026-09-20: `./make.sh packet
       --day N` (`boku/packets.py`, `boku/script_store.py`) writes one local Markdown packet per
       scene under `work/packets/` — where/when, cast by slot, the flow graph as played (SELECT
@@ -579,7 +582,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       to the original CLUT and committed as new pixels: three book covers consistently across
       their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
       (`M_I14000`, the one plot-bearing string with no line id; subtitle is the fallback), the
-      hunting-association board, the keep-out sign, the model-kit box; the result badges
+      hunting-association board, the keep-out sign (the model-kit box `M_I19000` stays —
+      Jay, 2026-09-22: the narrator says what it is); the result badges
       (`MITIM`), the bug-swap notebook cover, the brush-lettered plaque. Harmed: the player
       who examines the thing and reads nothing.
 - [ ] **[GFX-09]** **The beach notice, as a subtitle** — the one image (`M_C15100`) painted into a
@@ -624,13 +628,21 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       movie sites until (2); the 620-byte island is full — the per-movie select goes in the
       712-byte island at `0x800221CC` or in the loaded block. (2) The cue file format
       (keyed by movie and frame — what `FMV-02` writes), the block's carrier in `boku build`
-      (`[MINE: contract]` sector edit at reserved LBAs vs a member — the relocation
-      allocator must not hand out the block's sectors) and the per-movie select;
-      `[MINE: product]` the outline/shadow style and the line rows (200/214 today, inside
-      DuckStation's crop). (3) The ending. Harmed: the player, who misses the narration
+      (reserved LBAs vs a member is the implementer's call — Jay, 2026-09-22: "I want it to
+      work"; either way the relocation allocator must not hand out the block's sectors) and
+      the per-movie select. RULED 2026-09-22 (Jay, watching `build/vwf`): the outline/shadow
+      style and the rows (200/214) are good — "the pixels work", not cropped on DuckStation;
+      still to check that every cue fits and sits at the right point in the audio (the
+      prototype's one cue is mistimed by construction). Note `build/vwf/image.cue` is the
+      renderer prototype — sample lines and fixtures (`tools/vwf/prototype-lines.tsv`, the
+      "quick brown fox" overflow probe) over real scenes — not a playable build; play
+      `build/days/days-*.cue`. (3) The ending. Harmed: the player, who misses the narration
       that frames the whole game.
 - [ ] **[FMV-02]** **Translate the movies' narration.** The opening monologue and whatever
-      the other movies say (`translation/voice-only.md`; Q11 (b)); the five epilogues are
+      the other movies say (`translation/voice-only.md`; Q11 (b)) — by Jay's watch
+      (2026-09-22, `movies.tsv`) only five movies have voice: `M27` (opening, with a song),
+      `M28` (ending with the credits and a song), `M60` (fireworks), `M120` (the satellite),
+      `M260` (the sunflower-field dream); the other 20 are wordless; the five epilogues are
       not movies — `VO-03`. No text exists on the disc for any of it — the Japanese has to
       be transcribed from the XA audio first (ffmpeg `-f psxstr` extracts it from the
       `.IKI`, `research/tooling-setup.md`), then translated and reviewed like a day file,
@@ -663,7 +675,8 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       a hand column for what is said. The listening pass: ASR (Whisper, Japanese — not
       installed; `research/tooling-setup.md` § XA) over every clip's decoded audio, then a
       reader marks each row *wordless* or gives its gist; the 108 nodes vs 446 entries are
-      reconciled in the row. Includes the epilogue narration once `VO-03` finds its keys.
+      reconciled in the row. Includes the epilogue narration once `VO-03` finds its keys. First sighting in play (Jay,
+      2026-09-22): going to sleep at the end of day 1, a voice-over over black with no subtitle.
       Harmed: the player, who hears the well's narrator and reads nothing; the translator,
       who cannot see what is missing.
 - [ ] **[VO-02]** **Subtitles for a voice-only clip in an event.** Fable (RE): the `XA`

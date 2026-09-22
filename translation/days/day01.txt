@@ -78,7 +78,7 @@ E0112.5	Uncle	The ceiling's nice and high, isn't it?
 
 # --- E0114: the foot of the stairs (G07), the first time Boku comes through. Forced.
 E0114.0	Uncle	Boku-kun... // What are you going to do for your research project this summer vacation?
-E0114.1	Uncle	This house has an bug-collecting kit, you know.
+E0114.1	Uncle	This house has a bug-collecting kit, you know.
 E0114.2	Boku	Huh! Really?!
 E0114.3	Uncle	Yeah. I'll give it to you as a present, Boku-kun.
 E0114.4	Boku	Yay! All right!
@@ -153,7 +153,7 @@ E0104.5	Uncle	That's right. Go take a look.
 #     close-up of the box, .2 back in the room.
 E0107.0	Boku	Huh...?
 E0107.1	Narrator	There, against a gloomy, sorrowful sunset sky... // were two biplanes, painted on the box of a plastic model kit.
-E0107.2	Narrator	And inside the box, just as my uncle had promised, was an bug-collecting kit.
+E0107.2	Narrator	And inside the box, just as my uncle had promised, was a bug-collecting kit.
 # NOTE E0107.1: the Japanese puts "the box" last, on page 2, after the sky on page 1. The
 #   English keeps the sky on page 1 and the biplanes and the box on page 2, so what is on screen
 #   is what is being said; the existential "there were" carries the Japanese "it was a box..."

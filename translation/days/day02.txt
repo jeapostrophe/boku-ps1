@@ -1,4 +1,4 @@
-# Day 2 — August 2. Boku is made morning-glory monitor; the workshop; the secret base and the
+# Day 2 — August 2. Boku is made morning-glory captain; the workshop; the secret base and the
 # wrecked watermelon, and he says nothing at dinner (PLAN TRN-04).
 # Every event whose id is E02xx (day = id / 100), in the order the game plays them — except
 # E0221, the guess-the-dinner game, which is day-independent by condition, reachable on day 1,
@@ -26,16 +26,16 @@ E0202.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0202.2	Aunt	Hey, Boku-kun, do you like flowers?
 E0202.3	[SEL]	Yes | No
 E0202.4	Aunt	Hmm, I see. Well then...
-E0202.5	Uncle	Boku-kun — you are hereby appointed morning-glory watering monitor!
+E0202.5	Uncle	Boku-kun — you are hereby appointed morning-glory watering captain!
 E0202.6	(voice only)
-E0202.7	Aunt	Go out into the garden from here and head left, and right beside the house... // there's a morning-glory trellis, so water it there every day, all right? // Just a little longer, and lots of pretty flowers will bloom, you know.
-E0202.8	Narrator	And so I was appointed morning-glory monitor.
+E0202.7	Aunt	Go out into the garden from here and head left, and right beside the house... // there's a morning-glory trellis, so water it every day, all right? // Just a little longer, and lots of pretty flowers will bloom, you know.
+E0202.8	Narrator	And so I was appointed morning-glory captain.
 # NOTE E0202.1: the chorus is slot 12, Shirabe + Moe + Boku + Aunt — Boku is in it from day 2;
 #   the day-1 chorus (E0103.1, slot 13) was the three without him.
 # NOTE E0202.3: both answers lead to the same line (.4); only the aunt's animation differs.
 # NOTE E0202.5: the mock-official appointment frame (glossary § 3, "touban ni kettei!"); E0302.5 uses
 #   the same frame for the corn field. "Morning-glory" is hyphenated wherever it modifies a noun
-#   (monitor, trellis); the flower itself is "morning glories" (E0212.1).
+#   (captain, trellis); the flower itself is "morning glories" (E0212.1).
 # NOTE E0202.6: the family getting up from the table; no text on the disc.
 
 # --- E0220: the garden off the veranda (H06), the washing line, before 14:00, talking to the
@@ -50,7 +50,7 @@ E0220.5	Boku	You think so?
 E0220.6	Aunt	Mind you, only if you proooperly... // become a husband who can help his wife out.
 E0220.7	Aunt	Hm-hm... It might be a sad life, never understanding as long as you live.
 E0220.8	Aunt	Come to think of it, right here... // there seems to be somebody who still hasn't carried out this morning's promise...
-E0220.9	Aunt	Come to think of it, Boku-kun... if you keep on being morning-glory monitor and don't forget... // before summer vacation ends and you go home, Auntie will give you a present!
+E0220.9	Aunt	Come to think of it, Boku-kun... if you keep on being morning-glory captain and don't forget... // before summer vacation ends and you go home, Auntie will give you a present!
 # NOTE E0220.2: "housewife-power" is the aunt's own coinage (bible § 3 quotes this line); kept
 #   as a coinage.
 # NOTE E0220.6: the Japanese page 1 is only "Mind you — proooperly..."; the English fronts

@@ -128,10 +128,11 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_M_FILES\.BIN_M_I19000\.BIN__",
         1,
-        "R",
+        "N",
         "model-aeroplane kit box: scale + product name (spec line already Latin)",
-        "new (1 line)",
-        "close-up screen; flat frontal box face, printed type, parody brand mark stays",
+        "-",
+        "close-up screen; flat frontal box face, printed type. Stays Japanese: the narrator "
+        "says what it is (Jay, 2026-09-22)",
     ),
     (
         r"^_DATA_M_FILES\.BIN_M_I15000\.BIN__",

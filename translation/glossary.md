@@ -114,8 +114,8 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | ご苦労さま（でした） | gokurōsama | by context: **"That was a long trip — you did well."** for 長旅、ご苦労さま; otherwise "Good work" / "Thank you for your hard work" | Well done, after such a long trip | style guide § 4; it acknowledges effort spent, not an achievement | `E0174.1` |
 | ねえ（ボクくん） | nē | Hey(, Boku-kun) | Say | the attention-getting opener, 10 lines begin with it; one word every time | `E0202.2`, `E0302.2`, `E0541.1`, `E1904.2` |
 | これは おじさんち／おばちゃんち の決まりなんだから | | That's the rule at Uncle's house. / ...at Auntie's house. | | **fixed frame**, 4 uses, the last on the final day | `E0002.1`, `E0185.0`, `E0303.3`, `E3180.0` |
-| 当番に決定！ | | You are hereby appointed ... monitor! | | mock-official: morning-glory monitor, field helper | `E0202.5`, `E0302.5` |
-| 朝顔（当番） | asagao | morning glory (monitor) | | | `E0202.5`, captions `exe@80046614.10`–`.18` |
+| 当番に決定！ | | You are hereby appointed ... captain! | | mock-official: morning-glory captain (Jay, 2026-09-22: "monitor" is the literal school title; "captain" is normal English and funny for so small a job), field helper | `E0202.5`, `E0302.5` |
+| 朝顔（当番） | asagao | morning glory (captain) | | | `E0202.5`, captions `exe@80046614.10`–`.18` |
 | ラジオ体操 | rajio taisō | radio calisthenics | radio exercises | every morning, an FMV | `E0605.3`, `E2720.1` |
 | ラジオ体操カード / ハンコ | | radio-calisthenics card / stamp | | item 0 | `exe@80046214.0`, `E3031.6` |
 | 絵日記 | enikki | picture diary | | | `E0023.0`, `zukan@32E8` |

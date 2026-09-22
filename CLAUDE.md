@@ -36,15 +36,12 @@ command line.
 
 ## Model tiers — this project overrides `AGT-2`
 
-Jay, 2026-09-19: the hard parts of this project get Fable even though it is slower; a better
-result is worth the throughput.
-
-* **Fable** (`model: "fable"` on sub-agents): MIPS reverse engineering, PS1 GPU / renderer
-  analysis, data-format decoding, writing assembly patches, **all translation and translation
-  review**, and review of assembly patches.
-* **Opus**: the Python pipeline once a format is understood — extractors, reinserters, image
-  build, patch emit, tests — and `/code-review` / `/simplify` workers on Python (`GATE-4`).
-* **Sonnet**: mechanical batches, as in the global file.
+Jay, 2026-09-22: **Opus 5.5** outperforms Fable 5.1 on almost everything, so it is the top
+tier for all of it — MIPS reverse engineering, PS1 GPU / renderer analysis, format decoding,
+assembly patches and their review, **all translation and translation review**, the Python
+pipeline, and `/code-review` / `/simplify` workers. **Sonnet**: mechanical batches, as in the
+global file. Where an older `PLAN.md` row or note says "Fable", read the top tier (Opus 5.5);
+revisit if a newer Fable ships.
 
 ## What kind of translation
 
