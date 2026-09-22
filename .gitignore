@@ -27,3 +27,10 @@ __pycache__/
 # pytest and ruff caches
 .pytest_cache/
 .ruff_cache/
+
+# jPSXdec writes debug<NN>.log, index.log and save.log into whatever directory it is
+# launched from. `boku movies` runs it in a temporary directory, but research/movies.md
+# section 4 documents running it by hand, and those logs carry local paths.
+debug*.log
+index.log
+save.log

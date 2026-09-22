@@ -15,6 +15,7 @@ from boku.coverage import add_arguments as add_coverage_arguments
 from boku.extract import SCRIPT_DIR_NAME, main_extract
 from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
 from boku.lint import add_arguments as add_lint_arguments
+from boku.movies import add_arguments as add_movies_arguments
 from boku.packets import add_arguments as add_packet_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
@@ -470,6 +471,21 @@ def build_parser() -> argparse.ArgumentParser:
                 "pilot's additive-word heuristic warns. Nothing is rewritten and nothing is "
                 "shortened to fit: a finding reports what is over and by how much. Exits "
                 "non-zero when there is an error, zero on warnings alone."
+            ),
+        )
+    )
+
+    add_movies_arguments(
+        subcommands.add_parser(
+            "movies",
+            help="decode every movie on your import into something VLC plays",
+            description=(
+                "Slice each __STR/*.IKI off the raw image and decode it with "
+                "jPSXdec into work/movies/<name>.avi, the XA narration muxed in, then "
+                "regenerate research/data/movies.tsv -- the list of what every MOVIE id "
+                "plays, which is filled in from watching them. An .IKI is real-time "
+                "interleaved, so `boku import` does not extract it and ffmpeg cannot "
+                "decode its video (research/movies.md section 4)."
             ),
         )
     )

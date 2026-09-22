@@ -164,14 +164,18 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, build-days, patch, apply-patch, test, lint, smoke
-boku/                the Python package: import, extract, trial, patch, apply-patch
+make.sh              every recurring command: import, extract, movies, build-days, patch, apply-patch, test, lint, smoke
+boku/                the Python package: import, extract, movies, trial, patch, apply-patch
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
 tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
 translation/         the English: story bible, style guide, open questions, samples (drafts so far)
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
+research/data/       the tables a note would otherwise have to list: the script walk, the
+                     texture census and plan, and movies.tsv — what every FMV id plays,
+                     which `./make.sh movies` regenerates and a test diffs. glyph-table.tsv
+                     is the one kept by hand, not generated (research/font.md)
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects

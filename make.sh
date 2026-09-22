@@ -13,14 +13,23 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh import --help for the source kinds)
   extract [arguments]           decode your import's script into disc/script/
                                 (./make.sh extract --help for the switches)
-  research-tsv                  regenerate research/data/*.tsv from your import; a
-                                test diffs them against the tracked copies, which is
-                                the gate on the walk
+  research-tsv                  regenerate the script walk's five research/data tables from
+                                your import; a test diffs them against the tracked copies,
+                                which is the gate on the walk. The other generated tables
+                                there have their own verbs -- texture-census, texture-plan,
+                                movies -- and glyph-table.tsv is kept by hand (research/font.md)
   textures export [arguments]   write one indexed PNG per distinct texture into
                                 work/textures/, plus an index of every occurrence
                                 (./make.sh textures export --help for the switches)
   textures import DIR           read edited PNGs and report the patches they imply
                                 at every place each image is stored
+  movies [arguments]            decode every movie on your import into work/movies/*.avi --
+                                one file VLC plays per __STR/*.IKI, the XA narration muxed
+                                in -- and regenerate research/data/movies.tsv, the list of
+                                what each MOVIE id plays. Needs jPSXdec and a JDK
+                                (research/movies.md section 4); --tsv regenerates just the
+                                table and needs neither
+                                (./make.sh movies --help for the switches)
   texture-census                regenerate research/data/texture-census.tsv -- what every
                                 distinct image is and whether it carries Japanese -- from
                                 work/rec08/distinct.tsv (REC-08's extractor writes that
@@ -188,6 +197,12 @@ case "$verb" in
         ;;
     textures)
         exec uv run boku textures "$@"
+        ;;
+    movies)
+        # The gate is tests/test_real_movies.py: it regenerates research/data/movies.tsv
+        # and diffs it against the tracked copy, so a note edit that was never run here
+        # is caught.
+        exec uv run boku movies "$@"
         ;;
     texture-census)
         exec uv run python tools/textures/classify.py "$@"

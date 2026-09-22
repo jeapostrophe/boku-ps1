@@ -14,38 +14,42 @@ text renderer and the VWF patch (`font.md`, `text-renderer.md`, `vwf-prototype.m
 
 ## 1. Which movie is which — `g_movie_table` `0x80029604`
 
+**The list itself lives in `research/data/movies.tsv`** — generated from this section and
+§ 2.1 by `./make.sh movies`, which also decodes every movie into `work/movies/*.avi` with
+the narration muxed in. Its columns are tabulated at the end of this section.
+
 The `MOVIE` opcode's number is an index into a 27-entry table, 0x18 bytes each: `char *name`
 (`\__STR\M*.IKI;1`), `u16 dir_index` (0 in every entry — the player takes the by-name path
 because `g_movie_by_name` `0x800295E8` is 1), `u32 channel` (1 in every entry), `u32 frames`
 (the stop frame: `movie_get_frame` raises `g_movie_ended` when the STR header's frame number
 reaches it), `u16 x, y` (the VRAM origin, 0,0), `u16 disp_w, disp_h` (320×240).
 
-| id | file | stop frame | ≈ s at 15 fps | issued by (`data/scene-edges.tsv`) |
-|---|---|---|---|---|
-| 0 | `M27` | 58 | 3.9 | nothing in the events; issuer unread |
-| 1 | `M010` | 139 | 9.3 | nothing in the events; issuer unread |
-| 2, 3 | `M031`, `M032` | 47 | 3.1 | `E4015` |
-| 4, 5 | `M033`, `M034` | 47 | 3.1 | `E4016` |
-| 6 | `M050` | 152 | 10.1 | `E4030` |
-| 7 | `M080` | 153 | 10.2 | nothing in the events; issuer unread |
-| 8 | `M100` | 67 | 4.5 | `E0809` |
-| 9 | `M110` | 107 | 7.1 | `E0906` |
-| 10 | `M120` | 152 | 10.1 | `E1008` |
-| 11 | `M130` | 100 | 6.7 | `E2606`, `E2607` |
-| 12 | `M140` | 122 | 8.1 | `E2108` |
-| 13 | `M180` | 92 | 6.1 | `E1706`, `E2305` |
-| 14 | `M190` | 677 | 45.1 | `E2605` |
-| 15 | `M27` | 58 | 3.9 | nothing in the events; issuer unread |
-| 16, 17 | `M21`, `M22` | 527, 512 | 35.1, 34.1 | nothing in the events; issuer unread |
-| 18 | `M250` | 227 | 15.1 | `E0607`, `E2306` |
-| 19 | `M260` | 347 | 23.1 | nothing in the events; `movie_queue_play` waits 180 vsyncs before it |
-| 20 | `M40` | 107 | 7.1 | `E0009`, `E0103`, `E0303`, `E1503`, `E1803`, `E1903`, `E2003`, `E2203`, `E2303`, `E3005` (map `G02`), `E2803` (`I30`) |
-| 21 | `M60` | 362 | 24.1 | `E0805` |
-| 22 | `M70` | 77 | 5.1 | `E0004`, `E4019`, `E4020`, `E4054` |
-| **23** | **`M27`** | **4239** | **282.6** | **the opening**: after the memory-card check the queue holds this one id (measured, `work/fmv01/probe1.log`: `play_one entry=23`) |
-| **24** | **`M28`** | **4194** | **279.6** | **the ending**: `E3182` (`event-scripts.md` § END); the only entry whose skip mask is 0 — it cannot be skipped; `movie_queue_play` switches to mode `0x10` after it |
-| 25 | `M160` | 157 | 10.5 | `E1406` |
-| 26 | `M230` | 92 | 6.1 | `E0182` |
+| id | file | stop frame | issued by (`data/scene-edges.tsv`) |
+|---|---|---|---|
+| 0 | `M27` | 58 | nothing in the events; issuer unread |
+| 1 | `M010` | 139 | nothing in the events; issuer unread |
+| 2, 3 | `M031`, `M032` | 47 | `E4015` |
+| 4, 5 | `M033`, `M034` | 47 | `E4016` |
+| 6 | `M050` | 152 | `E4030` |
+| 7 | `M080` | 153 | nothing in the events; issuer unread |
+| 8 | `M100` | 67 | `E0809` |
+| 9 | `M110` | 107 | `E0906` |
+| 10 | `M120` | 152 | `E1008` |
+| 11 | `M130` | 100 | `E2606`, `E2607` |
+| 12 | `M140` | 122 | `E2108` |
+| 13 | `M180` | 92 | `E1706`, `E2305` |
+| 14 | `M190` | 677 | `E2605` |
+| 15 | `M27` | 58 | nothing in the events; issuer unread |
+| 16, 17 | `M21`, `M22` | 527, 512 | nothing in the events; issuer unread |
+| 18 | `M250` | 227 | `E0607`, `E2306` |
+| 19 | `M260` | 347 | nothing in the events; `movie_queue_play` waits 180 vsyncs before it |
+| 20 | `M40` | 107 | `E0009`, `E0103`, `E0303`, `E1503`, `E1803`, `E1903`, `E2003`, `E2203`, `E2303`, `E3005` (map `G02`), `E2803` (`I30`) |
+| 21 | `M60` | 362 | `E0805` |
+| 22 | `M70` | 77 | `E0004`, `E4019`, `E4020`, `E4054` |
+| **23** | **`M27`** | **4239** | **the opening**: after the memory-card check the queue holds this one id (measured, `work/fmv01/probe1.log`: `play_one entry=23`) |
+| **24** | **`M28`** | **4194** | **the ending**: `E3182` (`event-scripts.md` § END); the only entry whose skip mask is 0 — it cannot be skipped; `movie_queue_play` switches to mode `0x10` after it |
+| 25 | `M160` | 157 | `E1406` |
+| 26 | `M230` | 92 | `E0182` |
 
 So `M27` is the opening and `M28` the ending, not "the endings" — `ps1-translation-practice.md`
 § 6.1's inference was half right. **There is one ending movie.** How the five epilogues of
@@ -55,6 +59,21 @@ So `M27` is the opening and `M28` the ending, not "the endings" — `ps1-transla
 
 Frame numbers in the STR headers are 1-based; jPSXdec's index reports 4244 frames for `M27`
 (header frames "1–4239.5/5": five duplicated headers) — the game stops at header frame 4239.
+
+`research/data/movies.tsv`'s columns, and where each is derived from — nothing in it is
+typed by hand except the last two, which a regeneration carries across:
+
+| column | derived from |
+|---|---|
+| `id`, `file`, `stop_frame` | the table above |
+| `skippable` | § 2.1's skip masks; mask 0 means it cannot be skipped |
+| `frames` | the extent on the disc, at 10 sectors a frame (§ 4) |
+| `seconds` | `stop_frame` / 15 (the only home of that number) |
+| `shares_file_with` | the other ids playing the same file |
+| `issued_by` | `data/scene-edges.tsv` — the same derivation as the table above's last column |
+| `what_it_shows`, `notes` | written by hand, from watching the movies |
+
+`tests/test_real_movies.py` refuses a table that has drifted from this section.
 
 ## 2. The player
 
@@ -195,12 +214,12 @@ Hook `movie_dctout_cb` before its `LoadImage` (`0x80034C14`): for the slice abou
 uploaded (`img[previous]`, 48-byte rows, pixel (x, y) at `y·48 + x·3`, slice pixel origin
 `slice.x / 1.5`), blit the cue's glyph pixels whose x falls in the slice's 16 columns —
 white where the glyph mask is set, dark where the outline mask is set. Needs 1-bit glyph
-masks in RAM (the sheet is in VRAM only after boot — `font.md` § How it reaches VRAM; 18
-bytes per 12×12 glyph, so ~4 KB for the VWF set, derived at build time from the same PNG the
-sheet is built from), per-slice clipping of glyphs that straddle a slice boundary, and a
+masks in RAM (the sheet is in VRAM only after boot — `font.md` § How it reaches VRAM; built
+from the same glyphs as the sheet, 14×14 so the outline has its margin, 6 KB for the VWF
+set — § 7), per-slice clipping of glyphs that straddle a slice boundary, and a
 frame-number hook as in E1. Runs in DMA-interrupt context — a few hundred pixel writes per
 slice — while the CPU is otherwise polling the ring. No display or decoder word changes;
-the picture is untouched outside the glyphs. Perhaps three times E1's assembly.
+the picture is untouched outside the glyphs. **Built and measured: § 7.**
 
 ### Common to both
 
@@ -216,8 +235,9 @@ the picture is untouched outside the glyphs. Perhaps three times E1's assembly.
 * **Frame budget.** Either hook adds work that is small next to the VLC decode and sits in a
   loop that measurably idles (§ 2.2); the loop waits on the ring rather than dropping frames,
   so an overrun degrades to a late frame, not a glitch.
-* **Testing.** Redux plays the movies headless (§ 2.2's numbers came from it); Beetle is the
-  confirmation target as always. The probe scripts in `work/fmv01/` are the template.
+* **Testing.** Redux plays the movies headless (§ 2.2's numbers came from it) but its
+  screenshots go black in this display mode (`tooling-setup.md` § PCSX-Redux), so a frame is
+  read from the slice buffers in RAM (§ 7); Beetle is the confirmation target as always.
 
 ## 4. Burn path — what re-encoding costs
 
@@ -274,12 +294,12 @@ Consequences that do not depend on quality:
 | | E1 15-bit + GPU text | E2 24-bit + software blit | burn with jPSXdec |
 |---|---|---|---|
 | picture | movies drop to 15-bit (banding in gradients) | untouched | ~4.5 dB lost on every subtitled frame (measured on one frame) |
-| code | 37 words + a few hundred bytes; reuses the VWF renderer | ~3× E1, runs in the DMA callback, needs glyph masks in RAM | none |
+| code | 37 words + a few hundred bytes; reuses the VWF renderer | 4 words + 620 bytes in one dead island (§ 7), runs in the DMA callback, needs glyph masks in RAM | none |
 | data | cue blob in the relocation arena (KB) | same + masks | 16 KB per touched frame in the patch (tens of MB) |
 | typography | the game's 12×12 sheet through the VWF path | same | any font, any size, any outline — fixed at encode time |
 | re-timing a line | edit the blob | edit the blob | re-encode the frames |
 | risk | the mode switch touches display/decoder words (all listed above) | interrupt-context timing; slice straddling | none new; jPSXdec is a beta |
-| unmeasured | how much 15-bit bands (§ 3) | everything — no prototype exists | bright/busy frames, `partial-replace` flicker, batch encode time (§ 4) |
+| unmeasured | how much 15-bit bands (§ 3) | the blit on hardware timing; a cue over a bright, busy frame by eye (§ 7 has Redux and Beetle, pixel-exact) | bright/busy frames, `partial-replace` flicker, batch encode time (§ 4) |
 
 Recommendation: the engine path. Between the two, E2 is the faithful one — it leaves the
 picture exactly as shipped and its cost is assembly, which this project has already paid for
@@ -294,3 +314,87 @@ on every frame with text, forever, and in patch size.
 `tooling-setup.md` § PCSX-Redux: a breakpoint callback must `return true` to keep firing,
 and the STR player streams fine headless (the earlier "the smoke run skipped it" was
 `boot-to-dialogue.lua` pressing START, not an emulator limit).
+
+## 7. E2 as built — one cue over the opening (`FMV-04` milestone 1, measured 2026-09-22)
+
+`asm/movie.asm` (included by `vwf.asm`, so every prototype build carries it), the block
+encoder and reference rasteriser `boku/movie_block.py`, the probe `tools/redux/movie-sub.lua`,
+the gate `tests/test_real_movie_subtitle.py` (two Redux boots; `BOKU_EMU_TESTS=1`). The cue is
+a placeholder — two lines of the game's own first narration line over STR frames 120–300 of
+`M27` — hard-coded in `build_prototype.py` (`MOVIE_CUE`); the cue-file format is the next
+unit's.
+
+**Sites** (retail word → patched; the `ORIGINAL` arm carries each stock word):
+
+| where | address | stock | now |
+|---|---|---|---|
+| `movie_play_entry`, before the frame loop | `0x8003462C`, `0x80034630` | `addiu a1,a1,-3` / `sw a1,0x66F4(v0)` | `jal movie_sub_load` with the `addiu` as its delay slot; the routine makes the store, then reads the block |
+| `movie_get_frame` | `0x80034D00` | `jal movie_frame_volume` | `jal movie_sub_frame`: keeps `a0` at `movie_sub_frame_no`, jumps on |
+| `movie_dctout_cb` | `0x80034C14` | `jal LoadImage` | `jal movie_sub_blit`: paints the cue into the slice, jumps on with `a0`, `a1`, `ra` intact |
+
+**Where the code is.** The island `0x80012E04…0x80013070` (`text-renderer.md` § 6 candidate
+2): `movie_sub_frame_no` +0, `movie_sub_loc` +4 (a `DslLOC`), `movie_sub_frame` `0x80012E0C`
+(16 B), `movie_sub_load` `0x80012E1C` (136 B), `movie_sub_blit` `0x80012EA4` (460 B) — **620 of
+620 bytes**; the next instruction goes to the 712-byte island at `0x800221CC` or into the
+loaded block. The island is not assembled under `ORIGINAL` (dead retail code has no stock
+claim to check, and restating it would put 620 bytes of the executable in the repo). Its
+deadness, inferred in `text-renderer.md`, is now measured on one path: an execution
+breakpoint over the range logged **0 hits** from boot through the title, the card check and
+the opening to STR frame 400 on the stock disc, where the same breakpoint over
+`cd_load_sync` logs 181,076 (`tooling-setup.md` § PCSX-Redux). Everything after the opening
+is still inference.
+
+**The block.** RAM `0x801C0000` (above the arena's end under `arena.asm`'s raise, 250 KB under
+the stack's low-water mark), read from LBA 1040–1042 — three filler sectors near the top of
+the relocation arena, written Form 1 by `build_prototype.py` (`write_movie_block`, which
+refuses sectors that are no longer filler). Layout: `boku/movie_block.py`'s docstring. 6,000
+bytes: 112 of header, cue rows and lines, then 92 records × 64 — the whole VWF glyph set,
+each an advance byte and two 14×14 masks (§ 3's "18 bytes per glyph" was the 12×12 estimate;
+the outline needs a pixel of margin, and 64 makes the index a shift). The loader is
+`cd_load_sync`'s sequence for a fixed sector — `DsIntToPos`, `DsRead(loc, 3, dst, 0x80)`,
+`DsReadSync` — bounded at eight attempts, after which it zeroes the magic; a block without
+the magic (an image built with the hooks and no block, or filler) plays every movie
+untouched. Cost at each movie's start: on Beetle the patched run's frame 5600 is the stock
+run's 5575–5578, **22–25 frames (~0.4 s) later**; on Redux 11–12 vsyncs.
+
+**The blit.** For the frame number the hook holds, every cue in range, every line, every
+glyph whose 14 columns meet the slice's 16: rows `y − 1 …`, columns clipped to the slice,
+white where the glyph bit is set, else the renderer's dark shadow (0x18, 0x18, 0x14) where
+the outline bit is. `s0`–`s4` on the stack; `t`, `v`, `a` and `at` caller-saved, as
+`LoadImage` treats them from the same site. **Which frame the number names**, measured on
+Redux (`work/fmv04/patched-vwf-fmv04/dumps/k199.txt`): decoded frame k is header frame k + 1,
+and while its slices upload the hook's number is k + 1 for the first 18 and k + 2 for the
+last two — the next header arrives mid-frame — so a cue's first and last frames change on a
+slice boundary, 1/15 s early; for frames 60 and 400 all twenty slices saw one number. The
+gate predicts per slice from the number the hook recorded, so it is exact; a viewer cannot
+see it.
+
+**Measured.** Redux, `tools/redux/movie-sub.lua` on the stock and the built image
+(`work/fmv04/stock/`, `work/fmv04/patched-vwf-fmv04/`, `redux.log` and `dumps/` in each):
+
+* Decoded frame 199 from the built image equals the stock decode plus **exactly** the 3,255
+  pixels `boku.movie_block.render` predicts, no more; frames 59 and 399 are byte-identical
+  to stock (`test_real_movie_subtitle.py`; red on purpose with the six pixel stores made
+  `nop`s: "3255 pixels differ … (62,200) want 181814", got the frame's own pixel).
+* Polls between frames (§ 2.2's measure), STR frames 100–340: outside the cue, stock 11,618
+  and built 11,575 on average; inside it, **stock 14,741 → built 6,351** (medians 17,761 →
+  2,549) — the two-line blit uses most of the frame's idle — and **4 vsyncs per STR frame on
+  every one of the 240 frames on both images**: no late frame.
+* Cycles in `movie_sub_blit`, entry to its `LoadImage` (`work/fmv04/cycles.lua`,
+  `PCSX.getCPUCycles`): outside the cue **~2,020 per frame** (20 × the magic-and-count exit,
+  101 each); inside it **309,000 per frame** (the worst slice 21,950) — **9.1 ms of the 66.7
+  ms frame** at 33.87 MHz for 79 glyphs on two lines, drawn per pixel with no row skipping
+  beyond an empty mask row. If that ever shows as a late frame, the first savings are a
+  per-glyph ink row range in the record and a per-row skip of clipped-empty masks.
+* Beetle (`tools/libretro/run_core.py`, START 3300, CIRCLE 3600, no skip):
+  `work/fmv04/beetle/frame-05600.png` shows both lines over the valley; it equals
+  `work/fmv04/beetle-stock-fine/frame-05575.png` outside the text, and all 3,255 text pixels
+  are exactly white or (0x18,0x18,0x14). The block and the island are in its RAM
+  (`work/fmv04/beetle2/mid.state`, `movie_sub_frame_no` = 382 at frame 6000).
+
+**What contact with the code changed in § 3.** The masks are 14×14 and 6 KB, not 18 bytes
+and 4 KB; the code fills one island exactly, so E1's "few hundred bytes × 3" was right and
+there is no room in it for the per-movie selection; a line header must be halfword-aligned
+(the first build stalled at frame 120 on an odd `lhu`); and the frame number is per slice,
+not per frame. The block's home (relocation arena, read at `movie_play_entry`) is as § 3
+said, at a fixed sector for now.
