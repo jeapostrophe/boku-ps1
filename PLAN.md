@@ -15,7 +15,7 @@ by dependency, and the project's pace is set by Fable throughput, which Jay has 
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
-pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-03`
+pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-04`
 movies · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
@@ -590,7 +590,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
 ## Movies
 
-- [ ] **[FMV-01]** **The movie-subtitle mechanism.** MEASURED 2026-09-21 (`research/movies.md`):
+- [x] **[FMV-01]** **The movie-subtitle mechanism.** RULED 2026-09-22 (Jay): **E2** — keep
+      24-bit, composite the glyphs in software; the implementation is `FMV-04`. MEASURED
+      2026-09-21 (`research/movies.md`):
       `g_movie_table` at `0x80029604` maps `MOVIE n` to its `.IKI` — the opening is id 23
       = `M27.IKI` (4,239 frames), the ending id 24 = `M28.IKI` (4,194 frames, unskippable),
       **the only ending movie**. The player (`movie_run`) is a blocking loop: `DecDCTin`
@@ -604,12 +606,20 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       picture untouched, ~3× the asm, interrupt context; **burn** with jPSXdec (installed;
       ffmpeg cannot decode IKI video) — frames already at the 8-sector ceiling, 45 dB on
       one measured frame, ~16 KB of patch per touched frame (80–135 MB). Cues for E1/E2 live
-      in the relocation arena, keyed by frame. Recommendation in the note: E2, E1 as the
-      fallback. **`[MINE: product]` E1 / E2 / burn** — the row closes on the ruling and the
-      chosen design becomes the implementation row. Original row: find the per-frame path
+      in the relocation arena, keyed by frame. Original row: find the per-frame path
       or the burn cost (Jay, 2026-09-20: the opening "definitely needs subtitles", reversing
-      README row 3; split into three rows 2026-09-21). Harmed: the player, who misses the
-      narration that frames the whole game.
+      README row 3; split into three rows 2026-09-21).
+- [ ] **[FMV-04]** **Subtitles in the movie player (E2).** `research/movies.md` § 3 E2: hook
+      `movie_dctout_cb` before its `LoadImage` and blit the current cue's glyph pixels into
+      the 24-bit slice buffer (white on the glyph mask, dark on the outline mask); 1-bit
+      masks derived at build time from the same PNG the sheet is built from; the frame
+      number captured at `movie_frame_volume`; cues per movie as `{start, end, text}` rows
+      in a blob in the relocation arena, loaded at `movie_play_entry` into the arena above
+      the movie's end address; every patched site carries its retail instruction under the
+      `ORIGINAL` gate; `.area`-bounded. Proven in this order: (1) one hard-coded cue over
+      the opening on Redux and Beetle; (2) the cue file format (keyed by movie and frame —
+      what `FMV-02` writes) and `boku build` emitting blob + masks + words; (3) the ending.
+      Harmed: the player, who misses the narration that frames the whole game.
 - [ ] **[FMV-02]** **Translate the narration.** The opening monologue and the five epilogues
       (`translation/voice-only.md`; Q11 (b)). No text exists on the disc for any of it — the
       Japanese has to be transcribed from the XA audio first (ffmpeg `-f psxstr` extracts it
