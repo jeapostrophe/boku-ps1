@@ -6,9 +6,9 @@
         ~720   BIOS has copied SCPS_100.88 into RAM        (q0-exe-load.lua)
          835   PC reaches the EXE entry 0x80049154
        ~2250   title screen is up ("PRESS START BUTTON")
-        2430   START  (5 frames)   → menu, cursor already on "start from the beginning"
-        2600   CIRCLE (5 frames)   → memory-card check screen, then the intro FMV (~3400)
-        3600   START  (5 frames)   → skips the FMV; map H02001 loads
+               START  (L.BOOT_PRESSES) → menu, cursor already on "start from the beginning"
+               CIRCLE (L.BOOT_PRESSES) → memory-card check screen, then the intro FMV (~3400)
+               START  (L.SKIP_MOVIE)   → skips the FMV; map H02001 loads
         3817   event_begin: E0171 (day 1, auto, H02001)
         3980   msg_open(0) → dialog_open(297, 22, 1, text): line E0171.0
 
@@ -21,12 +21,7 @@
 --]]
 local L = dofile(os.getenv('BOKU_REDUX_DIR') .. '/lib.lua')
 local LIMIT = L.numenv('BOKU_FRAMES', '4600')
-local B = L.BTN
-local script = {
-    [2430] = function() L.press(B.START) end, [2435] = function() L.release(B.START) end,
-    [2600] = function() L.press(B.CIRCLE) end, [2605] = function() L.release(B.CIRCLE) end,
-    [3600] = function() L.press(B.START) end, [3605] = function() L.release(B.START) end,
-}
+local script = L.script(L.BOOT_PRESSES, L.SKIP_MOVIE)
 
 local opened_at, bad
 L.bp(0x8002BD30, 'Exec', 4, 'dialog_open', function()

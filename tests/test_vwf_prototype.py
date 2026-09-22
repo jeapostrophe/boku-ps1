@@ -20,18 +20,23 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import sys
 from functools import cache
 from pathlib import Path
 
 import pytest
 
+from boku import REPO_ROOT
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack
+from boku.disc import DiscError, DiscWriter, form1_sectors
+from boku.edc import FORM1_DATA_SIZE
+from boku.movie_block import BLOCK_LBA, BLOCK_RAM, RECORD_SIZE
 from boku.ppf import _SPAN_BLOCK, differing_spans
+from boku.relocate import padded
 from boku.text import SiteIndex
 from boku.tim import parse_exact
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 NEEDS_IMPORT = pytest.mark.skipif(
     not (REPO_ROOT / "disc" / "files").exists(), reason="needs the import"
 )
@@ -328,6 +333,119 @@ def test_the_cursor_offset_follows_the_hand_the_build_installs():
     assert vwf_layout(cursor="down", sel_cursor_dx=-30).sel_cursor_dx == -30, "--sel-cursor-dx wins"
 
 
+# --- the movie block, its sectors and the hooks that read it -------------------------------------
+
+
+class _Sectors:
+    """A `DiscWriter` reduced to what `write_movie_block` uses: what the span at
+    `BLOCK_LBA` reads back (or the error reading it raises), and the sectors written."""
+
+    sector_count = 330_000
+    """A whole disc: the bounds half of `verify_sectors` is its own tests' business."""
+
+    write_data_sectors = DiscWriter.write_data_sectors
+    """The real splitter, so this fake takes only the one-sector write under it."""
+
+    def __init__(self, span: bytes = b"", raises: Exception | None = None) -> None:
+        self.span = span
+        self.raises = raises
+        self.written: list[tuple[int, bytes]] = []
+
+    def read_form1_span(self, lba: int, sectors: int) -> bytes:
+        assert lba == BLOCK_LBA, f"the span read starts at {lba}; the block is at {BLOCK_LBA}"
+        if self.raises is not None:
+            raise self.raises
+        return self.span.ljust(FORM1_DATA_SIZE * sectors, b"\0")
+
+    def write_data_sector(self, lba: int, data: bytes):
+        self.written.append((lba, data))
+        return None
+
+
+def test_a_sector_at_the_blocks_lba_that_is_no_longer_filler_stops_the_write():
+    """`write_data_sector` converts zero filler and refuses XA, but it overwrites a Form 1
+    sector without a word -- so a member the relocation allocator has already put at
+    `BLOCK_LBA`, or a block from an earlier build, is read back first. One non-zero byte in
+    the span is the narrowest image that must stop it, and nothing may be written before
+    the refusal."""
+    tool = vwf_prototype()
+    writer = _Sectors(b"\x01")
+    with pytest.raises(tool.BuildRefused, match=f"LBA {BLOCK_LBA}\\+0x0 holds 01"):
+        tool.write_movie_block(writer, bytes(64), tool.Ledger())
+    assert writer.written == [], "sectors were written before the span was refused"
+
+
+def test_filler_takes_the_block_one_padded_sector_at_a_time():
+    tool = vwf_prototype()
+    block = bytes(range(256)) * 12  # 3,072 bytes: two sectors, the second mostly padding
+    writer = _Sectors()
+    tool.write_movie_block(writer, block, tool.Ledger())
+    assert form1_sectors(len(block)) == 2, "the fixture no longer straddles a sector boundary"
+    assert [lba for lba, _ in writer.written] == [BLOCK_LBA, BLOCK_LBA + 1]
+    assert b"".join(data for _, data in writer.written) == padded(block)
+
+
+def test_a_span_that_cannot_be_read_as_filler_is_a_refusal_not_a_traceback():
+    """`read_form1_span` raises `DiscError` on a Form 2 sector carrying real-time data --
+    an image whose LBA 1040 is XA. That is a build input being wrong, which `main` reports;
+    it reached the terminal as a traceback, with nothing said about what was written."""
+    tool = vwf_prototype()
+    writer = _Sectors(raises=DiscError("sector 1040 is Form 2 and not zero-filled"))
+    with pytest.raises(tool.BuildRefused, match="Nothing further was written"):
+        tool.write_movie_block(writer, bytes(64), tool.Ledger())
+
+
+def test_a_font_that_cannot_draw_the_cue_is_a_refusal_not_a_traceback():
+    """`--font` is a build input and `MOVIE_CUE` is text: a glyph file missing one of its
+    characters raises `BlockError`, which `main` does not catch."""
+    tool = vwf_prototype()
+    text = set("".join(tool.MOVIE_CUE.lines))
+    blank = tool.Glyph((0,) * tool.CELL, 4)
+    assert tool.movie_block_for({c: blank for c in text}), "the cue's own characters encode"
+    dropped = sorted(text)[0]
+    with pytest.raises(tool.BuildRefused, match=f"no glyph for {dropped!r}"):
+        tool.movie_block_for({c: blank for c in text - {dropped}})
+
+
+def test_the_build_defines_every_equate_movie_asm_leaves_to_it():
+    """The `-equ` contract, read from the assembly's half of it: the `MOVIE_SUB_*` names
+    `movie.asm` uses and never defines itself are exactly the ones `movie_equates` supplies,
+    so one added there fails here rather than inside armips."""
+    tool = vwf_prototype()
+    source = (tool.ASM.parent / "movie.asm").read_text(encoding="utf-8")
+    code = "\n".join(line.split(";", 1)[0] for line in source.splitlines())
+    defined = set(re.findall(r"^\s*(\w+)\s+equ\s", code, re.M))
+    used = set(re.findall(r"\bMOVIE_SUB_\w+", code)) - defined
+    assert used, "movie.asm defines every name it uses; the parse lost the source"
+    assert set(tool.movie_equates(bytes(FORM1_DATA_SIZE))) == used
+    equates = tool.movie_equates(bytes(FORM1_DATA_SIZE + 1))
+    assert equates["MOVIE_SUB_BLOCK"] == BLOCK_RAM and equates["MOVIE_SUB_LBA"] == BLOCK_LBA
+    assert equates["MOVIE_SUB_SECTORS"] == 2, "a byte past the sector is another sector to read"
+    assert 1 << equates["MOVIE_SUB_RECORD_SHIFT"] == RECORD_SIZE
+
+
+def test_a_word_in_any_block_the_manifest_hashes_is_left_out_of_the_word_list():
+    """`changed_words` takes both the free-space gap and the movie island; a word in either
+    is the block's business (the manifest hashes it), a word outside both is a row."""
+    tool = vwf_prototype()
+    stock = bytes(16)
+    patched = bytearray(stock)
+    for offset in (0, 4, 8, 12):
+        patched[offset] = 1
+    gap = tool.Region(range(0, 4), {"sha1": "the gap's"})
+    island = tool.Region(range(8, 12), {"sha1": "the island's"})
+
+    found = tool.changed_words(stock, bytes(patched), gap, island)
+    assert [word["file"] for word in found] == ["0x4", "0xC"]
+    assert found[0] == {
+        "ram": f"0x{4 + tool.EXE_LOAD_BIAS:08X}",
+        "file": "0x4",
+        "old": "00 00 00 00",
+        "new": "01 00 00 00",
+    }
+    assert len(tool.changed_words(stock, bytes(patched))) == 4, "no gap, no word dropped"
+
+
 # --- what the patch promises and what the image is given ----------------------------------------
 
 
@@ -340,6 +458,11 @@ class _WalkEntry:
 
 class _NoDisc:
     """`DiscWriter` and `DiscImage` with the 660 MB image taken out of them."""
+
+    sector_count = 330_000
+    """A whole disc, so `verify_sectors`' bounds check has an image to bound against."""
+
+    write_data_sectors = DiscWriter.write_data_sectors
 
     def __init__(self, path):
         pass
@@ -355,6 +478,13 @@ class _NoDisc:
 
     def flush(self):
         pass
+
+    def read_form1_span(self, lba, sectors):
+        """The relocation arena as shipped: zero filler (`write_movie_block` reads it)."""
+        return bytes(FORM1_DATA_SIZE * sectors)
+
+    def write_data_sector(self, lba, data):
+        return None
 
 
 def prototype_arguments(tool, out: Path, **extra) -> argparse.Namespace:
@@ -380,10 +510,93 @@ def prototype_arguments(tool, out: Path, **extra) -> argparse.Namespace:
     return argparse.Namespace(**(arguments | extra))
 
 
-@NEEDS_IMPORT
-@pytest.mark.skipif(
+NEEDS_ARMIPS = pytest.mark.skipif(
     not vwf_prototype().DEFAULT_ARMIPS.exists(), reason="needs armips to assemble the patch"
 )
+
+
+def build_without_a_disc(tool, out: Path, monkeypatch, record=None, **extra) -> dict:
+    """The build for real -- armips, the font, the lines -- with only the 660 MB copy and
+    the sector writer taken out. `record` stands in for `replace_range`."""
+    monkeypatch.setattr(tool, "DiscWriter", _NoDisc)
+    monkeypatch.setattr(tool, "DiscImage", _NoDisc)
+    monkeypatch.setattr(tool, "replace_range", record or (lambda *arguments: None))
+    monkeypatch.setattr(tool.shutil, "copyfile", lambda source, target: Path(target).touch())
+    return tool.build(prototype_arguments(tool, out, **extra))
+
+
+MOVIE_PLAYER = range(0x80034000, 0x80035200)
+"""The movie player's code (`research/movies.md` § 2.1), coarse on purpose: the three hook
+sites are somewhere in it, and this test may not be a copy of where `movie_sites` looks."""
+
+
+@NEEDS_IMPORT
+@NEEDS_ARMIPS
+def test_the_exported_edit_set_carries_no_movie_hook_and_no_island_word(tmp_path, monkeypatch):
+    """`edits.json` cannot carry the cue block the hooks read, so it carries neither
+    (`build_prototype.MOVIE_BLOCK_NAME` is why). Both halves are asserted here -- the words
+    are in the image this script writes, and in no exported edit -- because dropping them
+    from both would also pass the first.
+    """
+    tool = vwf_prototype()
+    manifest = build_without_a_disc(tool, tmp_path, monkeypatch)
+    island = manifest["movie_subtitles"]["island"]
+    first = int(island["symbols"]["movie_sub_frame_no"], 16)
+    island_words = range(first, first + island["bytes"])
+
+    hooked = [word for word in manifest["exe_words"] if int(word["ram"], 16) in MOVIE_PLAYER]
+    assert len(hooked) >= 3, "the image itself carries no movie hook; this would pass over nothing"
+    assert island["sha1"], "the island's contents are recorded nowhere"
+
+    document = json.loads((tmp_path / tool.EDITS_NAME).read_text(encoding="utf-8"))
+    assert document["edits"], "the edit set is empty; this would pass over nothing"
+    assert "movie_subtitles" not in document, "the edit set describes a block it cannot carry"
+    for edit in document["edits"]:
+        if edit["file"] != EXE_NAME:
+            continue
+        first = edit["offset"] + tool.EXE_LOAD_BIAS
+        for ram in range(first, first + len(edit["old"]) // 2):
+            assert ram not in island_words and ram not in MOVIE_PLAYER, (
+                f"0x{ram:08X} is a movie word, promised by {edit['reason']}"
+            )
+
+
+@NEEDS_IMPORT
+@NEEDS_ARMIPS
+def test_two_executables_differing_only_inside_the_island_are_two_manifests(tmp_path, monkeypatch):
+    """The manifest lists every changed word outside the gap and the island, and carries
+    those two blocks as a SHA-1 each instead. The island had no hash: an executable whose
+    `movie_sub_blit` lost an instruction described itself exactly as one that had not.
+    """
+    tool = vwf_prototype()
+    captured: dict[str, tuple] = {}
+    assemble = tool.assemble
+
+    def capture(*arguments, **keywords):
+        captured["it"] = assemble(*arguments, **keywords)
+        return captured["it"]
+
+    monkeypatch.setattr(tool, "assemble", capture)
+    first = build_without_a_disc(tool, tmp_path / "a", monkeypatch)
+
+    images, symbols = captured["it"]
+    exe = bytearray(images[EXE_NAME])
+    site = symbols["movie_sub_blit"] - tool.EXE_LOAD_BIAS
+    assert exe[site : site + 4] != bytes(4), "the blit's first instruction is already a nop"
+    exe[site : site + 4] = bytes(4)
+    monkeypatch.setattr(
+        tool, "assemble", lambda *_, **__: ({**images, EXE_NAME: bytes(exe)}, symbols)
+    )
+    second = build_without_a_disc(tool, tmp_path / "b", monkeypatch)
+
+    assert first["exe_words"] == second["exe_words"], "the word list sees inside the island"
+    assert first["result_sha1"] == second["result_sha1"], "no image is written here"
+    assert [key for key in first if first[key] != second[key]] == ["movie_subtitles"]
+    assert first["movie_subtitles"]["island"]["sha1"] != second["movie_subtitles"]["island"]["sha1"]
+
+
+@NEEDS_IMPORT
+@NEEDS_ARMIPS
 def test_every_edit_the_patch_promises_is_a_range_the_image_build_writes(tmp_path, monkeypatch):
     """`edits.json` and the prototype's own `image.img` are two renderings of one patch.
 
@@ -401,11 +614,7 @@ def test_every_edit_the_patch_promises_is_a_range_the_image_build_writes(tmp_pat
         assert len(expected) == len(new), f"{name}+0x{offset:x} changes the file's length"
         written.append((entry.path.lstrip("/"), offset, len(expected)))
 
-    monkeypatch.setattr(tool, "DiscWriter", _NoDisc)
-    monkeypatch.setattr(tool, "DiscImage", _NoDisc)
-    monkeypatch.setattr(tool, "replace_range", record)
-    monkeypatch.setattr(tool.shutil, "copyfile", lambda source, target: Path(target).touch())
-    tool.build(prototype_arguments(tool, tmp_path))
+    build_without_a_disc(tool, tmp_path, monkeypatch, record)
 
     document = json.loads((tmp_path / tool.EDITS_NAME).read_text(encoding="utf-8"))
     assert any("cursor" in str(edit["reason"]) for edit in document["edits"]), (

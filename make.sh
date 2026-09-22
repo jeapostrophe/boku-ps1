@@ -71,6 +71,8 @@ usage: ./make.sh <verb> [arguments]
                                 line no day file covers)
                                 (./make.sh coverage --help for the switches)
   test [pytest arguments]       run the test suite
+  emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
+                                `test`): the movie-subtitle gate on PCSX-Redux
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
@@ -238,6 +240,9 @@ case "$verb" in
         ;;
     test)
         exec uv run pytest "$@"
+        ;;
+    emu-test)
+        BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py "$@"
         ;;
     lint)
         uv run ruff check .

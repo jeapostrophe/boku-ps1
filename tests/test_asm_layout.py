@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.test_vwf_prototype import REPO_ROOT, vwf_layout
+from tests.test_vwf_prototype import REPO_ROOT, vwf_layout, vwf_prototype
 
 ASM = REPO_ROOT / "asm"
 ENTRY = ASM / "vwf.asm"
@@ -31,6 +31,7 @@ def _build_equates() -> dict[str, int]:
     values = {name.upper(): getattr(layout, name) for name in layout.ARMIPS_EQUATES}
     values["TABLE_IDS"] = 812
     values["ORIGINAL"] = 0
+    values.update(vwf_prototype().movie_equates(bytes(4 * 2048)))
     return values
 
 

@@ -220,6 +220,16 @@ example. The flags that matter, all verified by running them:
   looping through them; returning `true`, they produced [movies.md](movies.md) § 2.2's
   per-frame counts. `boot-to-dialogue.lua`'s `return false` is fine only because it wants
   one hit.
+* **A breakpoint's `width` is a range.** `PCSX.addBreakpoint(start, 'Exec', length, …)` fires
+  on every instruction executed in `[start, start + length)` — measured 2026-09-22 over
+  `cd_load_sync` (164 bytes): 181,076 hits in a 1,500-vsync boot, five of them at consecutive
+  addresses from its entry (`tools/redux/movie-sub.lua` with `BOKU_ISLAND_RANGE`). That is how
+  a run can say a whole island of code was never executed.
+* **`PCSX.GPU.takeScreenShot()` goes black in the movies' 24-bit display mode.** On the stock
+  disc, a shot at vsync 3616 (STR frame 60) has 852 colours and every later one has one — all
+  black — at 3700, 4178 and 4979, while Beetle shows the picture throughout and the frame is
+  intact in main RAM ([movies.md](movies.md) § 7 reads it from the slice buffers instead).
+  Measured 2026-09-22; the cause in Redux was not chased.
 * **`-interpreter`** — the arm64 dynarec dies with `Illegal instruction: 4` (exit 132, no output
   at all) on `-run` with a retail BIOS. The debugger wants the dynarec off anyway. The windowed
   arm64 build has its own limit: playing the day-1 build (Jay, 2026-09-20) it aborted at the

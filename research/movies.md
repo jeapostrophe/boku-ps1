@@ -315,14 +315,19 @@ on every frame with text, forever, and in patch size.
 and the STR player streams fine headless (the earlier "the smoke run skipped it" was
 `boot-to-dialogue.lua` pressing START, not an emulator limit).
 
-## 7. E2 as built — one cue over the opening (`FMV-04` milestone 1, measured 2026-09-22)
+## 7. E2 as built — one cue, measured on the opening (`FMV-04` milestone 1, 2026-09-22)
 
 `asm/movie.asm` (included by `vwf.asm`, so every prototype build carries it), the block
 encoder and reference rasteriser `boku/movie_block.py`, the probe `tools/redux/movie-sub.lua`,
-the gate `tests/test_real_movie_subtitle.py` (two Redux boots; `BOKU_EMU_TESTS=1`). The cue is
-a placeholder — two lines of the game's own first narration line over STR frames 120–300 of
-`M27` — hard-coded in `build_prototype.py` (`MOVIE_CUE`); the cue-file format is the next
-unit's.
+the gate `tests/test_real_movie_subtitle.py` (two Redux boots; `./make.sh emu-test`). The cue
+is a placeholder — two lines of the game's own first narration line over STR frames 120–300 —
+hard-coded in `build_prototype.py` (`MOVIE_CUE`). **The block carries no movie key**: the
+loader reads it at every `movie_play_entry` and the blit tests only the frame range, so the
+prototype draws this cue over every movie whose frames reach 120 — thirteen ids in
+`data/movies.tsv`, the ending among them. The cue file keyed by movie, and its carrier in
+`boku build`, are milestone 2; until then `boku build --vwf` images carry none of these
+sites — the exported edit set is cut from a third armips pass, `MOVIE_SUBTITLES=0`, which
+leaves `movie.asm` out of the assembly altogether.
 
 **Sites** (retail word → patched; the `ORIGINAL` arm carries each stock word):
 

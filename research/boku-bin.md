@@ -71,7 +71,7 @@ write to it exists — and only otherwise uses `cd_dir_pos(index)`; the XA strea
 | RAM | our name | what it does |
 |---|---|---|
 | `0x800129E0` | `file_load(s16 index, void *dst)` | 40 call sites. If `g_pc_host` (`u8 0x80023830`) → `PCload` of `C:\CD_IMAGE` + name (`pc_host_path` `0x800130A4`); else `cd_load_sync`. `g_pc_host` is `1` in the file and cleared by init at `0x80011FE4`. |
-| `0x800127C8` | `cd_load_sync` | `n = (size+0x7FF)>>11`; loops `0x800506CC(cd_dir_pos(index), n, dst, 0x80)` (a `CdRead`-style call, mode `0x80` = double speed) and `0x80050A7C` (`CdReadSync`) until success. **The buffer is used as read: no decompression or fix-up step.** |
+| `0x800127C8` | `cd_load_sync` | `n = (size+0x7FF)>>11`; each attempt first calls `0x800521FC` (clears the three libcd callback slots at `0x8004CD18`, resets libcd state, `DsEndReadySystem`), then `0x800506CC(cd_dir_pos(index), n, dst, 0x80)` (a `CdRead`-style call, mode `0x80` = double speed) and `0x80050A7C` (`CdReadSync`) until success. **The buffer is used as read: no decompression or fix-up step.** |
 | `0x80012AB0` | `file_load_async` | 5 call sites; state machine `0x8001286C` / `0x800128AC` on the block at `0x80023834` (`s16 index, s16 state, …, void *dst`). |
 | `0x80012D64` | `cd_dir_size` | 21 call sites; callers use it to bump-allocate the next buffer. |
 | `0x80012DDC` / `0x80012E04` | `cd_dir_sectors` / `…_form2` | `(size+0x7FF)>>11`; `(size+0x91F)/2336` |

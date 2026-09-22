@@ -4,7 +4,7 @@
 # language	PSX:LE:32:default
 # image-base	80000000
 # psyq-version	4.6.0
-# symbols	2611
+# symbols	2613
 #address	kind	name	size	source	namespace
 1f801000	LABEL	EXP1_BASE_ADDR	4	IMPORTED	Global
 1f801004	LABEL	EXP2_BASE_ADDR	4	IMPORTED	Global
@@ -391,6 +391,8 @@
 20000258	FUNC	gte_ApplyMatrixSV	1	IMPORTED	Global
 2000025c	FUNC	gte_CompMatrix	1	IMPORTED	Global
 20000260	FUNC	gte_ApplyRotMatrix	1	IMPORTED	Global
+800127c8	FUNC	cd_load_sync	164	USER_DEFINED	Global
+80012cfc	FUNC	cd_dir_pos	72	USER_DEFINED	Global
 800139e4	FUNC	movie_queue_play	628	USER_DEFINED	Global
 80013c58	FUNC	movie_queue_volume_init	124	USER_DEFINED	Global
 80022144	FUNC	main	104	USER_DEFINED	Global

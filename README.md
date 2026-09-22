@@ -89,7 +89,7 @@ test it, so expect to find the places where it quietly assumed its own workflow.
 |---|---|---|
 | 1 | Text drawn by the game's own renderer — dialogue, menus, item and insect names | **The priority.** |
 | 2 | Japanese text inside textures (197 images; the picture diary is 94 of them) | After 1. Three paths, chosen per image in [research/textures-plan.md](research/textures-plan.md): **programmatic** (138 — blank the flat panel and typeset the English with the game's own glyphs; the diary, the encyclopedia spreads, the UI plates), **redraw** (28 — stylised lettering, book covers, the farewell note on the log), **subtitle** composited beside the object (1). 30 stay Japanese by the charter — a shop sign is a shop sign. |
-| 3 | Narration inside the movies (`__STR/M27.IKI`, the opening; `M28.IKI`, the one ending movie — what the five epilogues differ in is not video, PLAN `FMV-02`) | In scope since 2026-09-20 — Jay, after playing: the opening "definitely needs subtitles". The player draws 24-bit frames straight into VRAM, so subtitles are either engine-drawn through a hook in its frame loop or burned into the frames ([research/movies.md](research/movies.md); the choice is PLAN `FMV-01`). |
+| 3 | Narration inside the movies (`__STR/M27.IKI`, the opening; `M28.IKI`, the one ending movie) | In scope since 2026-09-20 — Jay, after playing: the opening "definitely needs subtitles". The player draws 24-bit frames straight into VRAM, so the subtitles are composited into each frame by a hook in the player (`asm/movie.asm`, ruled 2026-09-22 over burning them in — [research/movies.md](research/movies.md) § 5, § 7); proven with one cue over the opening on both emulators. Left: the cue file, its carrier in the build, the narration itself (PLAN `FMV-02`–`FMV-04`). |
 | 4 | Voices (`__STR/BOKU_XA.XAM`) | **Kept Japanese on purpose** — subtitles, not a dub (see above). |
 
 ## The central risk: the game writes vertically
@@ -164,7 +164,7 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, build-days, patch, apply-patch, test, lint, smoke
+make.sh              every recurring command: import, extract, movies, build-days, patch, apply-patch, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, trial, patch, apply-patch
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import

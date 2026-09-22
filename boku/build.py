@@ -293,13 +293,7 @@ def apply_sector_edit(
     (`boku.relocate.FreeSpace`). The manifest names the file a sector really belongs to, so
     a diff of the built image can be checked against it row by row (`boku trial`).
     """
-    writes = []
-    for i in range(edit.sectors):
-        write = writer.write_data_sector(
-            edit.lba + i, edit.new[i * FORM1_DATA_SIZE : (i + 1) * FORM1_DATA_SIZE]
-        )
-        if write is not None:
-            writes.append(write)
+    writes = writer.write_data_sectors(edit.lba, edit.new)
     name, origin = _owning_file(entries, edit.lba)
     ledger.add(writes, name, origin)
 

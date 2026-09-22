@@ -21,6 +21,18 @@ function M.numenv(name, default)
     return n
 end
 
+-- The decimal numbers in an environment variable ("59,199,399") as a set, and how many
+-- distinct ones there were: the shape every "which frames do you want" list here wants.
+function M.numlist(name, default)
+    local set, count = {}, 0
+    for token in string.gmatch(os.getenv(name) or default or '', '%d+') do
+        local n = tonumber(token)
+        if not set[n] then count = count + 1 end
+        set[n] = true
+    end
+    return set, count
+end
+
 function M.say(fmt, ...) print(string.format(fmt, ...)) end
 
 -- Main RAM only; see smoke.lua for why masking any other address is silently wrong.
@@ -106,8 +118,29 @@ function M.press(b) pad.setOverride(b) end
 function M.release(b) pad.clearOverride(b) end
 function M.release_all() for _, b in pairs(M.BTN) do pad.clearOverride(b) end end
 
--- Frame scheduler: M.on_frame(fn) is called with the frame number every vsync;
--- M.script{ {frame, fn}, ... } runs fn once at that frame.
+-- The cold boot's input, one home for every script that replays it. Frames are GPU vsyncs
+-- from process start (retail SCPH-5500 BIOS, interpreter); what each press reaches, and the
+-- rest of the boot's timeline, is boot-to-dialogue.lua's header, where they were measured.
+M.HOLD = 5
+M.BOOT_PRESSES = { { 2430, 'START' }, { 2600, 'CIRCLE' } }
+M.SKIP_MOVIE = { { 3600, 'START' } }
+
+-- M.script(list, ...) turns {frame, button name} pairs into the frame -> function table an
+-- M.on_frame body indexes: each press is held M.HOLD vsyncs and then released.
+function M.script(...)
+    local out = {}
+    for _, list in ipairs({ ... }) do
+        for _, press in ipairs(list) do
+            local button = M.BTN[press[2]]
+            assert(button, 'no pad button named ' .. tostring(press[2]))
+            out[press[1]] = function() M.press(button) end
+            out[press[1] + M.HOLD] = function() M.release(button) end
+        end
+    end
+    return out
+end
+
+-- Frame scheduler: M.on_frame(fn) is called with the frame number every vsync.
 M.frame = 0
 local listeners, keep = {}, {}
 M.keep = keep

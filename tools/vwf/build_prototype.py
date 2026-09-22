@@ -57,7 +57,7 @@ import subprocess
 import sys
 import unicodedata
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -65,11 +65,25 @@ sys.path.insert(0, str(REPO))
 
 from boku import edc  # noqa: E402
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack  # noqa: E402
-from boku.disc import DiscImage, DiscWriter, SectorWrite  # noqa: E402
+from boku.build import verify_sectors  # noqa: E402
+from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
 from boku.importer import IMAGE_SHA1, sha1_of  # noqa: E402
+from boku.movie_block import (  # noqa: E402
+    BLOCK_LBA,
+    BLOCK_RAM,
+    CELL,
+    MAGIC,
+    MASK,
+    RECORD_SIZE,
+    SCREEN_WIDTH,
+    BlockError,
+    Cue,
+    encode_block,
+)
 from boku.ppf import differing_spans  # noqa: E402
 from boku.reinsert import MAP_WORK_AREA_END  # noqa: E402
+from boku.relocate import PREFIX_FILLER, Run, SectorEdit, padded  # noqa: E402
 from boku.sites import line_key_of, page_waits  # noqa: E402
 from boku.text import PlacedSite, SiteIndex, TextError  # noqa: E402
 from boku.tim import parse_exact  # noqa: E402
@@ -98,17 +112,40 @@ SYSMSG_REMAP = {13: 14}
 """`sysmsg_draw` draws id 13 as 14 (`research/text-outside-events.md` § Readers)."""
 FONT_MEMBER = "ONMEM.BIN"
 FONT_CHILD = 2
-CELL = 12
 SHEET_COLUMNS = 21
 SHEET_PLANES = 4
 SHEET_SLOTS = 1512
-SCREEN_WIDTH = 320
 
 PAGE_BREAK = " // "
 """How `translation/samples/` writes a page boundary."""
 
 EDITS_NAME = "edits.json"
 """The edit set `boku build --vwf` reads (`boku.build.load_edit_set` is its one reader)."""
+
+MOVIE_BLOCK_NAME = "movie-subtitles.bin"
+"""The cue block `asm/movie.asm` reads at every movie (`boku.movie_block`), written under
+`files/` and into the image's filler sectors at `BLOCK_LBA`.
+
+**The block and the hooks go into this script's own image and into no `edits.json`.** The
+block belongs to no file, so an edit set cannot carry it, and `BLOCK_LBA` is inside the
+relocation arena `boku.relocate` hands out (`research/relocation.md`): a `--vwf` image with
+the hooks and no block would read whatever the allocator had left there at every movie.
+What keeps them out is that the exported executable is a pass of its own, assembled with
+`MOVIE_SUBTITLES=0` so that `asm/movie.asm` is never included -- the edit set is cut from
+an executable the hooks were never in, rather than from one they were taken back out of.
+`PLAN FMV-04` milestone 2 gives the block a carrier, and the hooks travel with it."""
+MOVIE_CUE = Cue(
+    120,
+    300,
+    ("Far away, I could see the village", "of Sagi-no-sato at the foot of the mountain..."),
+)
+"""`FMV-04` milestone 1's one hard-coded cue, aimed at the opening (`M27`, id 23) at STR
+frames 120-300 (8-20 s). The block carries no movie key and `movie_sub_blit` asks only
+`start <= frame <= end`, so this cue is drawn over **every** movie whose frame numbers reach
+120, not the opening alone (`research/movies.md` § 7 counts them); the per-movie key is
+milestone 2. The words are a placeholder -- the game's own first narration line, `E0001.0`
+in `translation/days/day01.txt` -- not the monologue's translation, which does not exist
+yet; the proof is that the pixels land, not what they say."""
 
 
 class BuildRefused(Exception):
@@ -756,15 +793,17 @@ def run_armips(
     ids: int,
     layout: Layout,
     original: bool,
+    extra: Mapping[str, int] = {},
 ):
     """One armips pass; `files` maps each `-strequ` name (`EXE_PATH`, `TITLE_PATH` ...) to
-    the copy armips patches in place. Returns the symbols it defined."""
+    the copy armips patches in place, `extra` is every `-equ` the layout does not carry.
+    Returns the symbols it defined."""
     symbols = table.with_suffix(".sym")
     command = [str(armips), asm.name, "-sym", str(symbols)]
     for name, value in [*files.items(), ("TABLE_PATH", table)]:
         command += ["-strequ", name, str(value)]
     equates = [(name.upper(), getattr(layout, name)) for name in layout.ARMIPS_EQUATES]
-    for name, value in [("TABLE_IDS", ids), *equates, ("ORIGINAL", int(original))]:
+    for name, value in [("TABLE_IDS", ids), *equates, *extra.items(), ("ORIGINAL", int(original))]:
         command += ["-equ", name, str(value)]
     # armips resolves `.include` against the working directory, so run it from asm/.
     done = subprocess.run(
@@ -791,7 +830,13 @@ class Image:
 
 
 def assemble(
-    armips: Path, asm: Path, images: list[Image], table: bytes, layout: Layout, work: Path
+    armips: Path,
+    asm: Path,
+    images: list[Image],
+    table: bytes,
+    layout: Layout,
+    work: Path,
+    extra: Mapping[str, int] = {},
 ) -> tuple[dict[str, bytes], dict[str, int]]:
     """Returns ({image name: patched bytes}, symbols). Refuses unless the ORIGINAL pass
     reproduces every image byte for byte."""
@@ -800,7 +845,7 @@ def assemble(
     checks = {image.equate: work / f"{image.name}.original-pass" for image in images}
     for image in images:
         checks[image.equate].write_bytes(image.stock)
-    run_armips(armips, asm, checks, table_path, len(table), layout, original=True)
+    run_armips(armips, asm, checks, table_path, len(table), layout, original=True, extra=extra)
     for image in images:
         echoed = checks[image.equate].read_bytes()
         if echoed != image.stock:
@@ -816,8 +861,46 @@ def assemble(
     patched = {image.equate: work / image.name for image in images}
     for image in images:
         patched[image.equate].write_bytes(image.stock)
-    symbols = run_armips(armips, asm, patched, table_path, len(table), layout, original=False)
+    symbols = run_armips(
+        armips, asm, patched, table_path, len(table), layout, original=False, extra=extra
+    )
     return {image.name: patched[image.equate].read_bytes() for image in images}, symbols
+
+
+MOVIE_SUB_RECORD_SHIFT = RECORD_SIZE.bit_length() - 1
+"""`movie_sub_blit` reaches a glyph record with one `sll`, so the record size is a power of
+two and this is its log."""
+if 1 << MOVIE_SUB_RECORD_SHIFT != RECORD_SIZE:
+    raise BuildRefused(f"a glyph record is {RECORD_SIZE} bytes; the blit indexes it by shift")
+
+
+def movie_equates(block: bytes) -> dict[str, int]:
+    """The `-equ`s `asm/movie.asm` takes: where this block is, and the numbers of its format.
+
+    Every one of them is `boku.movie_block`'s -- the assembly restates none of them, so a
+    change to the block's layout cannot leave the routine reading the old one.
+    """
+    return {
+        "MOVIE_SUB_BLOCK": BLOCK_RAM,
+        "MOVIE_SUB_LBA": BLOCK_LBA,
+        "MOVIE_SUB_SECTORS": form1_sectors(len(block)),
+        "MOVIE_SUB_MAGIC": MAGIC,
+        "MOVIE_SUB_MASK_ROWS": MASK,
+        "MOVIE_SUB_RECORD_SHIFT": MOVIE_SUB_RECORD_SHIFT,
+    }
+
+
+def movie_block_for(font: Mapping[str, Glyph]) -> bytes:
+    """`MOVIE_CUE` encoded over `font`, the encoder's refusals reported as this script's.
+
+    `--font` is a build input and the cue is text, so a glyph file without the cue's comma
+    or hyphen is an input problem like any other -- not a `BlockError` traceback past
+    `main`'s "Nothing further was written".
+    """
+    try:
+        return encode_block([MOVIE_CUE], font)
+    except BlockError as error:
+        raise BuildRefused(f"the movie cue: {error}. Nothing further was written.") from error
 
 
 RUN_MERGE_GAP = 32
@@ -1048,22 +1131,74 @@ def turn_the_hand(blob: bytes, base: int) -> tuple[list[RawRange], dict[str, obj
     return ranges, {"sprite": HAND_SPRITE, "was": f"{old_w}x{old_h}", "now": f"{old_h}x{old_w}"}
 
 
-def changed_words(stock: bytes, patched: bytes, gap: range) -> list[dict[str, str]]:
-    """Every changed executable word outside the gap (file offsets), which the manifest hashes."""
-    out = []
-    for offset in range(0, len(stock), 4):
-        if offset in gap:
-            continue
-        if stock[offset : offset + 4] != patched[offset : offset + 4]:
-            out.append(
-                {
-                    "ram": f"0x{offset + EXE_LOAD_BIAS:08X}",
-                    "file": f"0x{offset:X}",
-                    "old": stock[offset : offset + 4].hex(" "),
-                    "new": patched[offset : offset + 4].hex(" "),
-                }
-            )
-    return out
+@dataclass(frozen=True)
+class Region:
+    """A block of the executable the patch fills wholesale, and the manifest's record of it.
+
+    The free space after the advance table and the movie island are both of these: hundreds
+    of changed words each, carried in the manifest as one SHA-1 rather than as word rows.
+    Leaving a block out of the word list and hashing it have to be the same act, or its
+    bytes go unrecorded -- so `changed_words` takes these objects, which `hashed_region`
+    builds with the hash in them, and not bare ranges.
+    """
+
+    offsets: range
+    """Where the block is in the executable, as file offsets."""
+    record: dict[str, object]
+    """What the manifest says about it, `sha1` included."""
+
+
+def hashed_region(
+    name: str, start: str, end: str, prefix: str, symbols: Mapping[str, int], exe: bytes
+) -> Region:
+    """The block between two of armips' symbols, and the manifest record of it.
+
+    `prefix` gathers the symbols inside the block -- `[start, end)`, so the symbol that
+    marks the end is the boundary and not a thing in the block, while the one that marks
+    the beginning is both and is listed. The block's own address is therefore in `symbols`
+    exactly once, and no key of the record repeats it.
+    """
+    for symbol in (start, end):
+        if symbol not in symbols:
+            raise BuildRefused(f"{name}: {ASM.name} defined no {symbol}")
+    first, last = symbols[start] - EXE_LOAD_BIAS, symbols[end] - EXE_LOAD_BIAS
+    if last <= first:
+        raise BuildRefused(f"{name}: {end} (0x{symbols[end]:08X}) is not past {start}")
+    return Region(
+        range(first, last),
+        {
+            "bytes": last - first,
+            "symbols": {
+                symbol: f"0x{symbols[symbol]:08X}"
+                for symbol in sorted(symbols)
+                if symbol.startswith(prefix) and first <= symbols[symbol] - EXE_LOAD_BIAS < last
+            },
+            "sha1": hashlib.sha1(exe[first:last]).hexdigest(),
+        },
+    )
+
+
+def changed_words(stock: bytes, patched: bytes, *regions: Region) -> list[dict[str, str]]:
+    """Every changed executable word outside `regions` (file offsets).
+
+    Only the words that differ are considered: `differing_spans` is the tree's one
+    difference scanner and a whole-executable word loop was most of this call.
+    """
+    offsets = {
+        offset
+        for first, last in differing_spans(stock, patched)
+        for offset in range(first & ~3, last, 4)
+    }
+    return [
+        {
+            "ram": f"0x{offset + EXE_LOAD_BIAS:08X}",
+            "file": f"0x{offset:X}",
+            "old": stock[offset : offset + 4].hex(" "),
+            "new": patched[offset : offset + 4].hex(" "),
+        }
+        for offset in sorted(offsets)
+        if not any(offset in region.offsets for region in regions)
+    ]
 
 
 # --- the image ------------------------------------------------------------------------
@@ -1126,6 +1261,35 @@ def write_ranges(writer, entries: Mapping[str, object], ranges: Sequence[RawRang
             patch.new,
             ledger,
         )
+
+
+def write_movie_block(writer: DiscWriter, block: bytes, ledger: Ledger) -> None:
+    """The cue block into the filler sectors at `BLOCK_LBA`, which must still be filler.
+
+    `write_data_sector` converts zero Form 2 filler and refuses XA, but it overwrites a
+    Form 1 sector without a word, so the span is verified first as any relocation's is: an
+    image that already holds a block here (a build over a built image) or a member the
+    allocator placed here is a refusal, not a block laid over it.
+    """
+    data = padded(block)
+    run = Run(BLOCK_LBA, form1_sectors(len(block)))
+    if not PREFIX_FILLER.contains(run):
+        raise BuildRefused(
+            f"LBA {run.start}..{run.end - 1} is not inside the relocation arena "
+            f"({PREFIX_FILLER.start}..{PREFIX_FILLER.end - 1}), the filler this block is "
+            f"laid in. Nothing further was written."
+        )
+    edit = SectorEdit(run.start, bytes(len(data)), data, f"the movie cue block at LBA {run.start}")
+    try:
+        verify_sectors(writer, [edit], refused=BuildRefused)
+    except DiscError as error:
+        # Form 2 carrying anything but zeros: real-time data, which `read_form1_span`
+        # refuses to flatten. Here that is an image whose LBA 1040 is XA, not filler.
+        raise BuildRefused(
+            f"LBA {run.start}..{run.end - 1} cannot be read as filler: {error}. "
+            f"Nothing further was written."
+        ) from error
+    ledger.add(writer.write_data_sectors(edit.lba, edit.new), MOVIE_BLOCK_NAME, BLOCK_LBA)
 
 
 def font_child_range(archive: Archive) -> tuple[int, int]:
@@ -1209,19 +1373,36 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     work = out / "files"
     work.mkdir(parents=True, exist_ok=True)
     (work / "font-sheet.tim").write_bytes(new_tim)
+    block = movie_block_for(font)
+    (work / MOVIE_BLOCK_NAME).write_bytes(block)
     # `Archive.blob` copies, and each overlay is wanted three times below; cut once.
     stock_overlays = {name: archive.blob(archive.member(name)) for name in DRAWING_OVERLAYS}
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
         Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
-    patched, symbols = assemble(
-        Path(args.armips), Path(args.asm), images, bytes(table), layout, work
-    )
+    # Two patch passes over one source. The image is assembled with `asm/movie.asm`; the
+    # executable the edit set is cut from is assembled without it, which is what keeps the
+    # movie hooks out of `edits.json` (`MOVIE_BLOCK_NAME`). Each pass brings its own
+    # `ORIGINAL` gate, so the retail bytes come back under both.
+    equates = movie_equates(block)
+    arguments = (Path(args.armips), Path(args.asm), images, bytes(table), layout, work)
+    exported_images, _ = assemble(*arguments, equates | {"MOVIE_SUBTITLES": 0})
+    patched, symbols = assemble(*arguments, equates | {"MOVIE_SUBTITLES": 1})
     patched_exe = patched[EXE_NAME]
     patched_overlays = {
         name: patched[name] for name in DRAWING_OVERLAYS if patched[name] != stock_overlays[name]
     }
-    gap_range = range(symbols["vwf_advance"] - EXE_LOAD_BIAS, symbols["vwf_free"] - EXE_LOAD_BIAS)
+    gap = hashed_region(
+        "the renderer's free space", "vwf_advance", "vwf_free", "vwf_", symbols, patched_exe
+    )
+    island = hashed_region(
+        "the movie island",
+        "movie_sub_frame_no",
+        "movie_sub_end",
+        "movie_sub_",
+        symbols,
+        patched_exe,
+    )
 
     provenance = {
         "format": 1,
@@ -1239,20 +1420,23 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             "ids": len(table),
             "sha1": hashlib.sha1(table).hexdigest(),
         },
-        "gap": {
-            "ram": f"0x{symbols['vwf_advance']:08X}",
-            "first_free_byte": f"0x{symbols['vwf_free']:08X}",
-            "hooks": {
-                name: f"0x{symbols[name]:08X}"
-                for name in sorted(symbols)
-                if name.startswith("vwf_") and name not in ("vwf_advance", "vwf_free")
-            },
-            "sha1": hashlib.sha1(patched_exe[gap_range.start : gap_range.stop]).hexdigest(),
-        },
+        "gap": gap.record,
         "cells": {
             character: {"id": cells[character], "advance": font[character].advance}
             for character in sorted(cells)
         },
+    }
+    # The image's own record, and not `edits.json`'s: only the image this script writes
+    # carries the block and the hooks (`MOVIE_BLOCK_NAME`).
+    movie_subtitles = {
+        "file": f"files/{MOVIE_BLOCK_NAME}",
+        "lba": BLOCK_LBA,
+        "sectors": form1_sectors(len(block)),
+        "ram": f"0x{BLOCK_RAM:08X}",
+        "bytes": len(block),
+        "sha1": hashlib.sha1(block).hexdigest(),
+        "cue": {"start": MOVIE_CUE.start, "end": MOVIE_CUE.end, "lines": list(MOVIE_CUE.lines)},
+        "island": island.record,
     }
     ranges = [
         RawRange(EXE_NAME, 0, stock_exe, patched_exe, "VWF executable patch"),
@@ -1272,7 +1456,11 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         )
         for name in sorted(patched_overlays)
     ]
-    edits = edit_entries(ranges)
+    # `ranges` is what the image is given; the edit set is the same patch cut from the
+    # executable assembled without the movie hooks (`MOVIE_BLOCK_NAME`). `ranges[0]` is the
+    # executable; nothing else differs between the two passes.
+    exported = [replace(ranges[0], new=exported_images[EXE_NAME])]
+    edits = edit_entries(exported + ranges[1:])
     (out / EDITS_NAME).write_text(
         json.dumps(provenance | {"edits": edits}, indent=2) + "\n", encoding="utf-8"
     )
@@ -1332,6 +1520,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         entries = {entry.path: entry for entry in writer.walk()}
         exe_entry, archive_entry = entries[f"/{EXE_NAME}"], entries[f"/{ARCHIVE_NAME}"]
         write_ranges(writer, {EXE_NAME: exe_entry, ARCHIVE_NAME: archive_entry}, ranges, ledger)
+        write_movie_block(writer, block, ledger)
         for _, copies, encoded, _ in lines:
             placed: PlacedSite
             for placed in copies:
@@ -1357,8 +1546,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     )
 
     manifest = provenance | {
+        "movie_subtitles": movie_subtitles,
         "result_sha1": sha1_of(image),
-        "exe_words": changed_words(stock_exe, patched_exe, gap_range),
+        "exe_words": changed_words(stock_exe, patched_exe, gap, island),
         "lines": [
             {
                 "site": spec.site_id,
@@ -1440,11 +1630,14 @@ def main() -> int:
         print(f"build_prototype: {error}", file=sys.stderr)
         return 1
     table, gap = manifest["table"], manifest["gap"]
+    # The gap starts at the advance table and the hooks follow it, so the free byte is the
+    # one past the block and the hooks are every symbol in it but the table itself.
+    hooks = [name for name in gap["symbols"] if name != "vwf_advance"]
     out = Path(args.out)
     print(f"wrote {out / EDITS_NAME if args.edits_only else out / 'image.cue'}")
     print(
-        f"  advance table: {table['ids']} bytes at {table['ram']}, then "
-        f"{' '.join(gap['hooks'])}; gap free from {gap['first_free_byte']}"
+        f"  advance table: {table['ids']} bytes at {table['ram']}, then {' '.join(hooks)}; "
+        f"gap free from 0x{int(table['ram'], 16) + gap['bytes']:08X}"
     )
     if args.edits_only:
         changed = sum(len(edit["old"]) // 2 for edit in manifest["edits"])

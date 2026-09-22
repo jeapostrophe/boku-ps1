@@ -638,6 +638,28 @@ class DiscWriter(DiscImage):
         raw[SUBHEADER_OFFSET : SUBHEADER_OFFSET + SUBHEADER_SIZE] = FILLER_TO_FORM1_SUBHEADER
         return self.write_sector_data_raw(lba, bytes(raw), data)
 
+    def write_data_sectors(self, lba: int, data: bytes) -> list[SectorWrite]:
+        """`write_data_sector` over a whole run: `data` is a whole number of Form 1 user-data
+        sectors, written from `lba` on, and the sectors it left alone are not in the result.
+
+        The one splitter of a blob into sectors on the write side, so a caller that has a
+        run of sectors to write (`boku.build.apply_sector_edit`'s relocations, the movie
+        subtitle block) does not carry its own loop and its own `is not None`.
+        """
+        if not data or len(data) % FORM1_DATA_SIZE:
+            raise DiscError(
+                f"LBA {lba}: {len(data)} bytes is not a whole number of "
+                f"{FORM1_DATA_SIZE}-byte Form 1 sectors"
+            )
+        writes = []
+        for index in range(len(data) // FORM1_DATA_SIZE):
+            write = self.write_data_sector(
+                lba + index, data[index * FORM1_DATA_SIZE : (index + 1) * FORM1_DATA_SIZE]
+            )
+            if write is not None:
+                writes.append(write)
+        return writes
+
     def write_sector_data_raw(self, lba: int, raw: bytes, data: bytes) -> SectorWrite | None:
         """`write_sector_data` over a caller-supplied raw sector rather than the stored one."""
         new = edc.set_form1_data(raw, data)
