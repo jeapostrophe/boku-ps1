@@ -16,7 +16,7 @@ by dependency, and the project's pace is set by Fable throughput, which Jay has 
 **Classes and ids spent so far:** `ENV-01`–`ENV-05` environment · `RSH-01`–`RSH-02` research ·
 `REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
 pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-04`
-movies · `REL-01`–`REL-03` release.
+movies · `VO-01`–`VO-04` voice-over · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
 trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
@@ -643,6 +643,47 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       watching (the stairs movies and the other oddities go there). A movie is finalized when
       its row says what it shows and its cues (`FMV-02`) are timed to that picture through
       `FMV-04`'s hook, checked in the game — Jay's finalized state. Harmed: the player.
+
+## Voice-over — speech with no text on the disc, outside the movies
+
+Jay, 2026-09-22, after playing: the five endings are voice-overs over a still image with no
+subtitles — one ending movie, then narration that differs; and the same shape occurs in play
+("the second time you interact with the shortcut well the narrator says he thought the well
+was suspicious"). What is known: every null-text event entry is an `XA` opcode (`0x0F`, 446
+entries; 108 XA nodes in the scene graph — `research/text-format.md`, `research/data/scenes.tsv`),
+listed as `(voice only)` rows in the day files so the ids line up; `translation/voice-only.md`
+names the worded ones found so far and says the listening pass has not been made; the endings
+are `ENDOTI.OVL` (mode `0x10`, entered after `MOVIE 24`) with five packs `OTI00`–`OTI04`, each
+a still plus the credits line texture (`research/data/texture-census.tsv` `credits`), and
+`ENDOTI` calls `glyph_draw` nowhere (`research/text-outside-events.md`).
+
+- [ ] **[VO-01]** **The inventory.** Every voice-only clip that says words, in one list —
+      `research/data/voice-only.tsv`, one row per XA node (event, node, speaker, XA channel
+      and sector range from the voice key, seconds), generated the way `movies.tsv` is, with
+      a hand column for what is said. The listening pass: ASR (Whisper, Japanese — not
+      installed; `research/tooling-setup.md` § XA) over every clip's decoded audio, then a
+      reader marks each row *wordless* or gives its gist; the 108 nodes vs 446 entries are
+      reconciled in the row. Includes the epilogue narration once `VO-03` finds its keys.
+      Harmed: the player, who hears the well's narrator and reads nothing; the translator,
+      who cannot see what is missing.
+- [ ] **[VO-02]** **Subtitles for a voice-only clip in an event.** Fable (RE): the `XA`
+      handler `0x8002F588` plays the voice and draws nothing; `XAMSG` plays a voice and
+      draws a page. Find the cheapest way to give an `XA` entry text — whether a non-null
+      text pointer on an `XA` entry already draws (the entry layout has the slot,
+      `research/text-format.md` `off[4+2i]`), or the opcode must become `XAMSG` and what
+      else differs (page timing, the hold — `TXT-09`), so that a `(voice only)` row in a day
+      file that carries English becomes a subtitle through the existing reinserter and
+      band. Measured on the well. Harmed: the player.
+- [ ] **[VO-03]** **The five endings and the credits.** Fable (RE): how `ENDOTI` picks and
+      plays an epilogue (the ★ count → `OTI0n`; the narration's XA keys), what the credits
+      are — texture (`OTI0n`'s credits line is one), code, or the ending movie — and how
+      much text that is; then how to draw subtitles there, since `ENDOTI` draws no glyphs:
+      the dialogue renderer called from the overlay, or `FMV-04`'s composite. Harmed: the
+      player, at the payoff of the game.
+- [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
+      translated like a day file — the `(voice only)` rows gain English in place, and the
+      epilogues get their own file keyed by ending and time — reviewed against the
+      Japanese, then checked in the game through `VO-02`/`VO-03`. Harmed: the player.
 
 ## Release
 
