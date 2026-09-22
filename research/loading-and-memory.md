@@ -85,7 +85,7 @@ everything above its level**, and a mode's loads bump-allocate from there with
 
 | level | base | bytes to `0x801F7FF0` | modes | cost of entering |
 |---|---|---:|---|---|
-| A `0x800258F4` | `0x801179F4` | 919,036 | 0, 1 `BUMPER`, 2 `TITLE`, 8, 11–13 `ZUKAN` (the diary), 14, 16 `ENDOTI` | the live map, the model pool and both map halves are overwritten |
+| A `0x800258F4` | `0x801179F4` | 919,036 | 0, 1 `BUMPER`, 2 `TITLE`, 8, `ZUKAN` 11 (the diary), 12 (the kite book), 13 (the insect book), 14, 16 `ENDOTI` | the live map, the model pool and both map halves are overwritten |
 | B `0x800258F8` | `0x801B3DF4` | 279,036 | 3, 4 (menus), 6 `TAKO`, 7 `MUSI`, 10 `HHON`, 15 `TITLE` (saving from the game) | the other-map half and the saved background are overwritten; A and the models survive |
 | C `0x800258FC` | `0x801F41F4` | 15,868 | 5 (field), 9, 17 | nothing |
 

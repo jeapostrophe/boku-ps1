@@ -179,6 +179,32 @@ one array is the "write the diary and sleep?" select.
 So the diary is wholly a texture job (README § "What gets translated", row 2): 94 pages plus
 the date strips, no text arrays, no fragments.
 
+## The insect and kite books
+
+**The encyclopedia spreads are pixels too, and `hhon@5328` is not their text** (`GFX-05`,
+measured 2026-09-21 on PCSX-Redux, `tools/redux/book-pokes.lua`, log and shots under
+`work/gfx05/`). `ZUKAN.OVL` runs all three desk books — mode 11 the diary, mode 12 the kite
+book (`TZKAN`), mode 13 the insect book (`zukan_insect_book_load`: `MZKAN1` before 19:00,
+`MZKAN0` after, the `MOPA`/`MOPN` opening frames, `MZFURIN`) — and none of them calls
+`glyph_draw`: zero calls over 900 frames with a spread up.
+
+`hhon@5328` belongs to `HHON.OVL`, **mode 10, the insect box** (the cage on the desk), which
+has two screens that read it:
+
+* the **grid** (`hhon_page_draw`, entered from the hub's second cursor slot): 60 cells of
+  `g_insect_cells` (`0x8007EBF4`, insect ids 0–31, 56–59, 32–55 in reading order), one icon per
+  insect whose book state `g_insect_book_state` (`0x8003DF92 + 3·id`; 0 unseen, 1 seen, 2
+  caught, 3 set by `0x80037CC8`) is non-zero. `hhon_entry_draw` draws **item `id`** for the
+  cell under the cursor, or **item 60** — the array's last — when its state is 0. So the
+  array is one entry per insect id 0–59 plus the unseen placeholder, which is also what
+  glossary § 4a assumes;
+* the **hub** (`hhon_hub_draw`): `hhon_text_scroll_v` draws the entry of the insect in the
+  selected cage slot (`0x80046F28 + 12·slot`, byte 0 = id, 99 = empty → item 60) as the label
+  under the cage, scrolled with the box.
+
+Neither screen shows a `MZKAN` page, so the spreads' species name, family, size, food and body
+are all `GFX-06`'s ([textures-plan.md](textures-plan.md) § "The 26 encyclopedia spreads").
+
 ## Line ids for these surfaces
 
 `<file>@<original offset>.<item>` as proposed in text-format.md, with `<file>` ∈ `exe` (offset =

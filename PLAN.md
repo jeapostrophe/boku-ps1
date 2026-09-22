@@ -550,20 +550,23 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       unused dummy and must be skipped deliberately; (6) each page is stored once, so 94
       independent edits and no propagation. The 94 entries are new English (`TRN-04`'s
       table). Harmed: the player, who writes a diary every night.
-- [ ] **[GFX-05]** **Is the insect book's body text already a line?** One breakpoint at
-      `hhon_entry_draw` (`0x8007C278`, alias `hhon_text_draw_v`) with the book open: do its
-      glyphs land on a `MZKAN` spread or on a screen of their own? Evidence for "their own"
-      so far: the body text is visibly baked into all 18 spreads, 18 pages cannot be one per
-      insect against 57 names, the glossary already treats `hhon@5328.*` as one entry per
-      insect, and the scroll walker's origins are off-page (`research/textures-plan.md`).
-      Fable, one run. Decides `GFX-06`'s size. Harmed: whoever typesets 18 paragraphs twice,
-      or loses them.
-- [ ] **[GFX-06]** **The encyclopedia spreads** — 18 insect (`MZKAN0/1`, one layout, type on flat
-      white beside the photo) and 8 kite (`TZKAN`, flat cream): programmatic; blank the page
+- [x] **[GFX-05]** **Is the insect book's body text already a line?** MEASURED 2026-09-21
+      (`tools/redux/book-pokes.lua`, `work/gfx05/`): **no — (a)**. The `MZKAN` spreads are
+      `ZUKAN.OVL` mode 13 and draw no glyph; `hhon@5328` is drawn only in `HHON.OVL` mode
+      10, the insect *box* — `hhon_entry_draw` on its 60-cell grid screen and
+      `hhon_text_scroll_v` as the cage label on the hub, neither over a page; one entry per
+      insect id 0–59 plus the unseen placeholder (item 60). Also found: `MZKAN0`/`MZKAN1`
+      are the **same 9 spreads** lit for night/day (`zukan_insect_book_load`, hour < 19), so
+      the book is 9 pages, not 18. `research/textures-plan.md` § "The 26 encyclopedia
+      spreads", `research/text-outside-events.md` § "The insect and kite books". Original
+      row: one breakpoint at `hhon_entry_draw` with the book open; decides `GFX-06`'s size.
+- [ ] **[GFX-06]** **The encyclopedia spreads** — 9 insect pages (`MZKAN0/1`: the same 9 in
+      two lightings, one layout, type on flat white beside the photo; each English page
+      written to both packs) and 8 kite (`TZKAN`, flat cream): programmatic; blank the page
       area, keep the photo/kite panel, re-rule under the header, reflow the vertical body to
-      horizontal (the diary's answer applies). Body paragraphs only if `GFX-05` says they are
-      pixels. Text: species name (glossary § 4a), family, size, food, body; kite name,
-      difficulty, how to build. Harmed: the player who opens the book.
+      horizontal (the diary's answer applies). Every field is pixels (`GFX-05`). Text:
+      species name (glossary § 4a), family, size, food, body; kite name, difficulty, how to
+      build. Harmed: the player who opens the book.
 - [ ] **[GFX-07]** **UI plates and the title menu** — 17 programmatic images: `T_TITLE` **first**
       (four menu lines on transparent, outlined with a drop shadow — Jay, 2026-09-20: "needs
       to be translated early"), `T_CONFIG` value plates, the oval action buttons across seven

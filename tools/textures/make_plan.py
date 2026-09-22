@@ -44,10 +44,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
         18,
         "P",
         "insect spread: name + family + wingspan + food, then a body paragraph",
-        "new; species name from glossary s4a. UNSETTLED: hhon@5328.<n> may be this body text",
+        "new; species name from glossary s4a; every field is pixels (GFX-05: hhon@5328 is "
+        "the insect box's own screen)",
         "flat white page right of the photo panel; horizontal header block over a green rule, "
-        "vertical body columns below. One layout, 18 pages; blank the white page only. See "
-        "textures-plan.md: break on hhon_entry_draw 0x8007C278 before typesetting the body",
+        "vertical body columns below. One layout; MZKAN0 and MZKAN1 are the same 9 spreads "
+        "lit for night and day, so each English page is written to both; blank the white "
+        "page only",
     ),
     (
         r"^_DATA_TZKAN\.BIN__",

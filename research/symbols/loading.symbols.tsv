@@ -126,9 +126,23 @@
 800402D8	number_draw2	FUNC	sprite digits (not font glyphs); = number_draw_b in text-renderer.md
 80036700	g_smallkana_ids	CONST	3 glyph ids nudged by line_draw; copies in TITLE.OVL 0x80079BD4 and MUSI.OVL 0x8007A8B8 hold 4
 80036708	g_insect_name_remap	CONST	s16[4] ids, s16[4] name lines
-8007B410	hhon_page_draw	FUNC	HHON.OVL
+8007B410	hhon_page_draw	FUNC	HHON.OVL: the grid screen — hhon_entry_draw of the cell under the cursor, then hhon_grid_icons_draw
 8007C278	hhon_entry_draw	FUNC	HHON.OVL: own vertical walker, x -= 14 per 0x8001; = hhon_text_draw_v in text-renderer.md
 80084F64	musi_move_draw	FUNC	MUSI.OVL
 8007C604	musi_hint_draw	FUNC	MUSI.OVL
 8007EDB0	musi_rank_draw	FUNC	MUSI.OVL
 8007C684	tako_crash_draw	FUNC	TAKO.OVL
+8007AAC8	hhon_hub_draw	FUNC	HHON.OVL: mode 10 hub (the box); cage label via hhon_cage_label_draw
+8007B540	hhon_cage_label_draw	FUNC	HHON.OVL: hhon_text_scroll_v of the selected cage slot, scrolled by g_hhon_scroll
+8007B250	hhon_grid_icons_draw	FUNC	HHON.OVL: one icon per g_insect_cells entry with a non-zero book state
+8007B71C	hhon_grid_input	FUNC	HHON.OVL: d-pad over the 60-cell grid (g_insect_cells), sets g_hhon_cell
+8007EBF4	g_insect_cells	DATA	HHON.OVL: u8[60] insect id per grid cell
+80080564	g_hhon_cell	BSS	HHON.OVL: grid cell under the cursor
+80080600	g_hhon_state	BSS	HHON.OVL: sub-state; index into the handler table at 0x8007E850
+800805DC	g_hhon_scroll	BSS	HHON.OVL: hub scroll 0..200; s in hhon_text_scroll_v
+8003DF92	g_insect_book_state	BSS	byte 2 of the 3-byte insect records at 0x8003DF90; 0 unseen, 1 seen, 2 caught, 3 set by 0x80037CC8
+8007B8B4	zukan_insect_book_load	FUNC	ZUKAN.OVL: MZKAN1 before 19:00 / MZKAN0 after, then MZFURIN
+8007BC64	zukan_insect_book_update	FUNC	ZUKAN.OVL: mode 13
+8007C690	zukan_kite_book_update	FUNC	ZUKAN.OVL: mode 12
+8007AC90	zukan_diary_update	FUNC	ZUKAN.OVL: mode 11
+800459DC	g_zukan_state	BSS	sub-state of ZUKAN.OVL's three book state machines (EXE BSS)

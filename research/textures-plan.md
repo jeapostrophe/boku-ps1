@@ -84,10 +84,14 @@ larger than any one day file.
 **They are one layout with a per-page photograph, not 48 paintings.** This is the answer to the
 question `GFX-03` was going to have to ask first.
 
-* `\_DATA\MZKAN0.BIN` and `\_DATA\MZKAN1.BIN` hold **9 spreads each = 18 insect pages**, every
-  one 252×188 8bpp with **one** CLUT. The layout is identical on all 18: a photographic panel
-  top-left; to its right a **horizontal** header block (species name, family, wingspan or body
-  length, food); a green horizontal rule; then the body paragraph in **vertical** columns
+* `\_DATA\MZKAN0.BIN` and `\_DATA\MZKAN1.BIN` hold **the same 9 insect spreads twice** —
+  `MZKAN1` is the pack loaded before 19:00 and `MZKAN0` after (`zukan_insect_book_load`), and
+  child *n* of one differs from child *n* of the other only by a lighting shift (mean 8 levels
+  between the pair, 42 between different pages; measured 2026-09-21, `work/gfx05`) — so **9 pages
+  to typeset, 18 images to write**, every one 252×188 8bpp with **one** CLUT. The layout is
+  identical on all 18: a photographic panel top-left; to its right a **horizontal** header
+  block (species name, family, wingspan or body length, food); a green horizontal rule; then
+  the body paragraph in **vertical** columns
   filling the lower two-thirds. The type sits on **flat white paper**, not on the photograph —
   which is what makes it P and not R.
 * `\_DATA\TZKAN.BIN` holds **8 kite spreads**, 244×186 8bpp, one CLUT, a different but equally
@@ -96,42 +100,22 @@ question `GFX-03` was going to have to ask first.
 * `MZKAN.BIN` *without a digit* is not a page — it is a 44×74 sprite set, listed under
   `title/menu/UI art` below.
 
-So the 49 of the census (48 `yes` + 1 `maybe`) is **26 pages + 21 cover frames + 2 item
-pictures**, and only the 26 are a typesetting job. Geometry to blank: the white/cream page area only, leaving the photo or
+So the 49 of the census (48 `yes` + 1 `maybe`) is **26 page images (17 distinct pages: 9 insect
+in two lightings, 8 kite) + 21 cover frames + 2 item pictures**, and only the 17 pages are a
+typesetting job. Geometry to blank: the white/cream page area only, leaving the photo or
 kite panel untouched; re-rule the single horizontal rule under the header; reflow the vertical
 body to horizontal (the same reflow decision the diary faces, and it should be the same answer).
 
-The insect book's cover calls it a **rare**-insect encyclopedia, and 18 pages against the 57
-insect names in [../translation/glossary.md](../translation/glossary.md) § 4a is consistent with
-that: the book is not a page per catchable insect.
+The insect book's cover calls it a **rare**-insect encyclopedia, and 9 pages against the 60
+insect ids of `HHON`'s grid (57 names in [../translation/glossary.md](../translation/glossary.md)
+§ 4a) is consistent with that: the book is not a page per catchable insect.
 
-> **The one thing this audit could not settle, and it governs 18 of the P rows.**
-> `HHON.OVL` also carries an **insect-book entry array, `hhon@5328`: 61 items, 2,384 glyphs**
-> ([data/text-arrays.tsv](data/text-arrays.tsv); with the 3-line select `hhon@6874` beside it
-> that is the 62 strings / 2,396 glyphs [text-outside-events.md](text-outside-events.md) counts
-> for the overlay). Two vertical walkers draw it — `hhon_entry_draw` (`0x8007C278`;
-> [text-renderer.md](text-renderer.md) calls the same function `hhon_text_draw_v`, surface 3)
-> and `hhon_text_scroll_v` (`0x8007C1C4`, surface 4). So either
-> **(a)** the `MZKAN` pages are a fixed printed reference and `hhon@5328` is a *separate*
-> per-insect entry surface — in which case the 18 spreads' body text is new work as stated — or
-> **(b)** the renderer draws `hhon@5328` *over* the `MZKAN` page, the baked body text is
-> something else (a sample, or a different screen), and those 18 rows need only their header
-> block blanked while the body is **already a line id**.
-> Three things favour (a). The body text is visibly baked into all 18 images, and 18 pages
-> cannot be one-per-insect against 57 insect names. The translation side already reads
-> `hhon@5328` that way: [../translation/glossary.md](../translation/glossary.md) § 4a keys the
-> insect names to `exe@8003D2E0.*` *and* `hhon@5328.*`, and rules that "in the insect book the
-> entry's first line is the name" — one entry per insect, not one per `MZKAN` page. And the
-> scrolling walker's origins, `(0x32, 0x110−s)` / `(0x5A, 0xFE−s)`, are nowhere near a `MZKAN`
-> page's columns: a 252×188 page centred on a 320-wide screen spans x 34–286, and these vertical
-> walkers step 14 px *leftwards* per column, so a run starting at x 50 is off the page's left
-> edge by its third column. That walker is drawing on a screen of its own. (`hhon_entry_draw`'s own origins,
-> `(0x100, 0x2C)` and `(0x124, 0x26)`, are the ones that *do* fall near the page — 0x124 = 292
-> is already past its right edge.) But it is not proven, and getting it wrong means either
-> typesetting 18 paragraphs twice or losing them.
-> **The check is one breakpoint**, and it belongs to whoever opens `GFX-03`: break at
-> `hhon_entry_draw` (`0x8007C278`) with the insect book open and see whether the glyphs it
-> emits land on top of a `MZKAN` page or on a screen of their own.
+**The body paragraphs are pixels, and nothing in `hhon@5328` duplicates them** (`GFX-05`,
+measured 2026-09-21). The `MZKAN` spreads are `ZUKAN.OVL`'s insect-book mode and draw no glyph;
+`hhon@5328` is drawn only by `HHON.OVL`, the insect *box*, on screens of its own with no page
+under them. The measurement, the modes and which item each walker draws are
+[text-outside-events.md](text-outside-events.md) § "The insect and kite books"; the walkers'
+origins are [text-renderer.md](text-renderer.md) § 3, surfaces 3 and 4.
 
 ### The 21 book-opening frames — **R**
 
@@ -360,8 +344,8 @@ tiles would be invisible to it twice over. **Audited, and there is none.**
 **So: no Japanese anywhere on this disc is assembled from tiles.** The only tile compositing that
 happens is the diary's day numeral, and a numeral needs no translation. `GFX-03`'s surface is
 exactly the 197 images of the census, and the `TXT` side's is exactly the 301 strings — the two
-inventories meet with no gap between them and no overlap, with the single possible exception of
-the insect-book body paragraph flagged above.
+inventories meet with no gap between them and no overlap (the one candidate overlap, the
+insect-book body paragraph, was closed by `GFX-05` — § "The 26 encyclopedia spreads").
 
 *How far this is measured:* two UV tables were parsed by hand; the others inside packs were not
 enumerated, so "no UV table spells Japanese" is measured for those two and inferred for the
@@ -371,8 +355,7 @@ selecting the font page (VRAM x = 768) outside `glyph_draw` — and **has never 
 
 ## The new English text this creates
 
-All of it is new: **not one texture string has a line id today** (the one candidate exception is
-the insect-book body paragraph — see the `hhon@5328` box above). The translation files
+All of it is new: **not one texture string has a line id today**. The translation files
 (`translation/days/*.txt`) hold event dialogue keyed `E<dd>NN.<page>`; the UI/array strings that
 `TXT-05` uses live as `exe@<RAM>.<item>` fixtures in `tools/vwf/prototype-lines.tsv`. Texture
 strings need a third namespace, and `tex@<member>.<n>` (with `nikki@`, `mzkan@`, `tzkan@` for the
@@ -382,7 +365,7 @@ here, not deciding it.
 | # | id space | what to translate | volume |
 |---|---|---|---:|
 | 1 | `nikki@NIKKI_nnn` | picture-diary entries, one per page | **94 entries** |
-| 2 | `mzkan@MZKAN{0,1}.n` | insect spreads: species name (glossary § 4a), family, wingspan/body length, food, body paragraph — **the body paragraph only if the `hhon@5328` question above resolves to (a)** | 18 × 5 fields |
+| 2 | `mzkan@MZKAN.n` | insect spreads: species name (glossary § 4a), family, wingspan/body length, food, body paragraph — all pixels (§ "The 26 encyclopedia spreads"); one id per page, written to child *n* of both `MZKAN0` and `MZKAN1` | 9 × 5 fields |
 | 3 | `tzkan@TZKAN.n` | kite spreads: kite name, difficulty bracket, how to build it | 8 × 3 fields |
 | 4 | `tex@DOPA1`, `tex@MOPA1`, `tex@TOPA1` | 3 book cover titles + the insect book's author-and-photographer credit | 4 strings |
 | 5 | `tex@PK_ITM.0` | radio-exercise attendance card: title + footer line | 2 lines |
@@ -401,7 +384,7 @@ here, not deciding it.
 | 18 | `tex@M_S01000.*` | "bug swap notebook" cover | 2 lines |
 | 19 | `tex@MZKAN.*` | brush-lettered back plaque + 2 action plates | 3 strings |
 
-Rows 1–3 are **120 pages** and dwarf everything else; rows 11–19 are a few dozen short strings
+Rows 1–3 are **111 pages** and dwarf everything else; rows 11–19 are a few dozen short strings
 that a single pass produces. The glossary already governs rows 2 and 3 (species and kite names)
 and row 6 (Saori, and the register she uses with Boku — the glossary's § 1 entry for her *weird
 kid / rotten brat* cites `E1861.6` and `E2760.0` as the two lines that fix how she talks to him;

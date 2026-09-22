@@ -708,10 +708,12 @@ to `E0112`:
 
 ## The `HHON` walkers
 
-**Documented only; not patched, not reached.** `HHON.OVL` is the insect book, which needs
-the insect-collecting kit (`E0107`, day 1 evening at the desk) and then an entry in the book
-— the sub-screen (△) reached from free roam on this route is the item menu (`item_menu_draw`,
-surface 12: the desk, the calendar, the radio-calisthenics card), not the book. The two
+**Documented only; not patched.** `HHON.OVL` is the insect box, which in play needs the
+insect-collecting kit (`E0107`, day 1 evening at the desk) and then a caught insect — the
+sub-screen (△) reached from free roam on this route is the item menu (`item_menu_draw`,
+surface 12: the desk, the calendar, the radio-calisthenics card), not the box. On Redux it is
+reached without any of that by `tools/redux/book-pokes.lua`, which performs `mode_set` from Lua
+(`GFX-05`; the walkers' measured screens are text-renderer.md § 3, rows 3–4). The two
 walkers are [text-renderer.md](text-renderer.md) § 4c's: each swaps which register takes
 `+0xC` and turns `x −= 0xE; y = 0x20` into `y += pitch; x = left` — four immediates or
 registers each plus new origins — and their texts are the `HHON` arrays of
