@@ -35,7 +35,7 @@ Before any of the generic advice: I read the image directly. These are facts abo
 
 **The `.IKI` files are Sony STR video, and specifically the IKI bitstream variant [M]** — I verified the discriminator on five files. Each video sector is Mode 2 **Form 1**, submode **0x48**, payload beginning `60 01 01 80` (magic 0x80010160), interleaved ~7:1 with Form 2 XA audio (submode 0x64, `file=1`, channels 0–7). Reading the frame header:
 
-| File | chunks/frame | bytes used | @0x16 | @0x18 | @0x1A | @0x1C |
+| File | chunks (first frame only) | bytes used | @0x16 | @0x18 | @0x1A | @0x1C |
 |---|---|---|---|---|---|---|
 | M010.IKI | 8 | 15,564 | `0x3800` | **320** | **240** | 0 |
 | M031.IKI | 5 | 8,124 | `0x3800` | 320 | 240 | 0 |
@@ -489,7 +489,7 @@ Identification: entropy/histogram sweep, magic sniff, then the reliable method �
 ## 6. FMV — STR/MDEC and subtitling
 
 ### 6.1 What you have
-Confirmed by direct measurement (§0): 25 `.IKI` files, 320×240, **IKI bitstream variant**, Form 1 video (submode 0x48) interleaved ~7:1 with Form 2 XA audio, at 10 sectors/frame and 2× disc speed → 15 fps. From the committed jPSXdec index [V]: **12,915 frames ≈ 14.3 minutes of video**; `M27.IKI` (4,244 frames) and `M28.IKI` (4,199) are 65% of it — **[I] almost certainly the endings**, since BnN1 has multiple.
+Confirmed by direct measurement (§0): 25 `.IKI` files, 320×240, **IKI bitstream variant**, Form 1 video (submode 0x48) interleaved ~7:1 with Form 2 XA audio, at 10 sectors/frame and 2× disc speed → 15 fps. From the committed jPSXdec index [V]: **12,915 frames ≈ 14.3 minutes of video**; `M27.IKI` (4,244 frames) and `M28.IKI` (4,199) are 65% of it — measured 2026-09-21 ([movies.md](movies.md) § 1): `M27` is the **opening**, `M28` the one **ending** movie; the five epilogues are not separate videos.
 
 ### 6.2 jPSXdec — indexes by content, replaces in place
 **v2.1 beta rev4378, 2026-05-17.** Pure Java, no JNI — runs natively on an arm64 Temurin/Zulu JDK 17 or 21; only *rebuilding from source* wants JDK 8. Zero macOS issues in the tracker. [V]
@@ -535,7 +535,7 @@ SectorErrorCorrection.rebuildErrorCorrection(abRawData, _subHeader.getSubMode().
 // hand marks unused video sectors and non-video so jpsxdec won't recognize
 // them or use them.
 ```
-and spec §3.10: *"There are only as many iki video sectors as needed to hold all the frame's data. Remaining sectors are null."* **A subtitled IKI frame must fit in exactly the sectors the original frame already used** — tighter than for a normal STR game. This is a jPSXdec gap, not a hardware limit. [I] BnN's static-camera frames compress small (M27/M28 use only 2 chunks per frame — 2,300 bytes), so subtitle-only edits should usually fit.
+and spec §3.10: *"There are only as many iki video sectors as needed to hold all the frame's data. Remaining sectors are null."* **A subtitled IKI frame must fit in exactly the sectors the original frame already used** — tighter than for a normal STR game. This is a jPSXdec gap, not a hardware limit. Measured 2026-09-21 ([movies.md](movies.md) § 4): the opening's and ending's frames sit at the 8-sector ceiling (3,912 of `M27`'s 4,239 frames use all 8, max 16,128 bytes exactly), so a subtitled frame has no spare bytes and is re-quantised to fit — the "2 chunks per frame" in § 0's table is that file's *first* frame, a fade-in, not the movie.
 
 Quality: no published numeric benchmark exists. Manual §10.3 claims double-precision math makes it *"at least as good as the AVI2STR/movconv/mc32 tool found in the PlayStation 1 Dev kit"*, with four named missing optimisations. §10.2's practical lever: **contrast dominates MDEC frame size far more than colour**; grey is cheapest; blur hard edges, dim brights and lift darks if frames won't fit.
 

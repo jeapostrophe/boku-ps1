@@ -590,18 +590,35 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
 ## Movies
 
-- [ ] **[FMV-01]** **The movie-subtitle mechanism.** Jay, 2026-09-20, after playing: the opening
-      cutscene "definitely needs subtitles" — this reversed README row 3. Find whether the STR
-      player exposes a per-frame path our renderer can draw over (the `MOVIE` opcode's
-      number → `.IKI` table; the player's frame callback in the EXE), and if not, what
-      burning the text into the frames costs (the STR codec, ~300 MB of video, quality loss).
-      Fable (RE). `[MINE: product]` between the two after the measurement. Split from one
-      row into three (Jay, 2026-09-21). Harmed: the player, who misses the narration that
-      frames the whole game.
-- [ ] **[FMV-02]** **Translate the narration.** The opening monologue and the five endings
+- [ ] **[FMV-01]** **The movie-subtitle mechanism.** MEASURED 2026-09-21 (`research/movies.md`):
+      `g_movie_table` at `0x80029604` maps `MOVIE n` to its `.IKI` — the opening is id 23
+      = `M27.IKI` (4,239 frames), the ending id 24 = `M28.IKI` (4,194 frames, unskippable),
+      **the only ending movie**. The player (`movie_run`) is a blocking loop: `DecDCTin`
+      mode 3 → **24-bit RGB**, slices `LoadImage`d from a DMA callback, never the OT; the
+      frame number is in hand every frame (`movie_frame_volume`'s `a0`); the loop idles on
+      the ring most of each frame; the font page and CLUTs survive playback. So the GPU
+      cannot draw text on the frame as shipped (16-bit words over 3-byte pixels). Three
+      ways, costed in § 3–5: **E1** switch playback to 15-bit (37 listed words) and draw
+      cues with the VWF renderer into a private OT before the flip — movies band; **E2**
+      keep 24-bit and blit 1-bit glyph masks into the slice buffer in `movie_dctout_cb` —
+      picture untouched, ~3× the asm, interrupt context; **burn** with jPSXdec (installed;
+      ffmpeg cannot decode IKI video) — frames already at the 8-sector ceiling, 45 dB on
+      one measured frame, ~16 KB of patch per touched frame (80–135 MB). Cues for E1/E2 live
+      in the relocation arena, keyed by frame. Recommendation in the note: E2, E1 as the
+      fallback. **`[MINE: product]` E1 / E2 / burn** — the row closes on the ruling and the
+      chosen design becomes the implementation row. Original row: find the per-frame path
+      or the burn cost (Jay, 2026-09-20: the opening "definitely needs subtitles", reversing
+      README row 3; split into three rows 2026-09-21). Harmed: the player, who misses the
+      narration that frames the whole game.
+- [ ] **[FMV-02]** **Translate the narration.** The opening monologue and the five epilogues
       (`translation/voice-only.md`; Q11 (b)). No text exists on the disc for any of it — the
-      Japanese has to be transcribed from the XA/movie audio first, then translated and
-      reviewed like a day file, keyed by movie and time. Harmed: the player.
+      Japanese has to be transcribed from the XA audio first (ffmpeg `-f psxstr` extracts it
+      from the `.IKI`, `research/tooling-setup.md`), then translated and reviewed like a day
+      file, keyed by movie and frame (`FMV-01`: 15 fps, header numbers 1-based). Corrected
+      2026-09-21: the disc has **one** ending movie (`M28.IKI`), so what distinguishes the
+      five epilogues is not video — the game enters mode `0x10` (`ENDOTI.OVL`,
+      `research/loading-and-memory.md`) after it, unread; the transcription has to find
+      where each epilogue's narration is before it can key it. Harmed: the player.
 - [ ] **[FMV-03]** **Finalize the movies one by one** — timing each line to the picture through
       `FMV-01`'s mechanism, checking every movie in the game, Jay's finalized state. Harmed:
       the player.

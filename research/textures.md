@@ -234,5 +234,5 @@ one correct for the wooden desk and one correct for the photograph printed on th
   something is visibly there and unread.
 * Text drawn by the renderer over a texture (the diary's day number is the proven case) is not
   visible to this census at all. A texture that looks blank here may carry text in game.
-* FMV frames (`__STR/*.IKI`) are out of scope (README § "What gets translated", row 3) and are
-  not TIMs; nothing here covers them.
+* FMV frames (`__STR/*.IKI`) are not TIMs and nothing here covers them; their subtitles are
+  [movies.md](movies.md) (README § "What gets translated", row 3).

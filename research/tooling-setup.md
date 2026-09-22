@@ -214,6 +214,12 @@ example. The flags that matter, all verified by running them:
   `PCSX.addBreakpoint` still returns a breakpoint object and the breakpoint simply never fires,
   with no warning. Measured by arming at an address the PC had been *observed* to hold
   (0x800588a8): no hit in 400 frames without the flag, hit at frame 81 with it.
+* **A breakpoint callback must `return true` to keep firing.** Returning `false` (or nothing)
+  fires it once and never again — measured 2026-09-21 on the movie player: six breakpoints
+  returning `false` each counted exactly 1 hit over 5,600 frames while the PC was visibly
+  looping through them; returning `true`, they produced [movies.md](movies.md) § 2.2's
+  per-frame counts. `boot-to-dialogue.lua`'s `return false` is fine only because it wants
+  one hit.
 * **`-interpreter`** — the arm64 dynarec dies with `Illegal instruction: 4` (exit 132, no output
   at all) on `-run` with a retail BIOS. The debugger wants the dynarec off anyway. The windowed
   arm64 build has its own limit: playing the day-1 build (Jay, 2026-09-20) it aborted at the
@@ -458,7 +464,9 @@ slice of the image decodes directly: 2,400 sectors from LBA 54417 (`dd bs=2352 s
 count=2400`) probed with `ffprobe -f psxstr` give `adpcm_xa` streams at 37,800 Hz mono, one per
 interleaved channel. So a voiced line's clip is its voice key (start sector, end sector,
 channel — `research/text-format.md`) sliced with `dd` and decoded with `ffmpeg -f psxstr -i
-slice.bin -map 0:a:<channel> clip.wav`. The `.IKI` movies are STR and take the same demuxer.
+slice.bin -map 0:a:<channel> clip.wav`. The `.IKI` movies take the same demuxer **for their
+audio only**: ffmpeg's `mdec` decoder rejects every IKI video frame, and jPSXdec is the
+decoder and encoder for the pictures ([movies.md](movies.md) § 4).
 No speech-to-text is installed; `whisper` (Japanese) is the obvious transcriber for `FMV-02`
 and for `TRN-08`'s "listen to the clip" — the model that translates cannot hear, so what it
 would receive is a transcript with timing, not sound. sox does not know XA.
