@@ -27,7 +27,7 @@ line-length = 100
 # Lint and format the project's own Python only. research/ holds Markdown whose code blocks
 # quote other projects verbatim (ruff reformats those), tools/ghidra/ is Jython 2, and the
 # ignored directories hold scratch and third-party code.
-extend-exclude = ["research", "reference", "work", "disc", "build", "tools/ghidra"]
+extend-exclude = [".claude", "research", "reference", "work", "disc", "build", "tools/ghidra"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

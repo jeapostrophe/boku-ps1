@@ -84,14 +84,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       0RGB1555 (expected values from libretro.h's bit layout, padded pitch included), the
       schedule parsers, and the PNG writer against an independent reader; the two unexercised
       pixel paths turned out correct.
-- [ ] **[ENV-06]** **The memory-card save format and a corpus of saves** (Jay, 2026-09-22): decode
-      DuckStation's `.mcd` save for this game (day, hour, flags, the ★/event counts that pick
-      an ending) and build a corpus — every day's morning, each ending's precondition, the
-      branch points — generated or edited rather than played, so a scene can be reached in
-      seconds for testing and screenshots. Jay's first save is in DuckStation's normal memory
-      card directory. A save holds only progress state, but check it carries no game text
-      before tracking any. Top tier (RE), bounded — "a little time/tokens". Harmed: Jay and
-      every agent that has to replay the game to reach a scene.
+- [x] **[ENV-06]** **The memory-card save format and a corpus of saves.** DONE 2026-09-22:
+      `research/save-format.md`; `boku save`, `./make.sh save`/`saves`/`boot-save`; 30 mornings
+      (Aug 2–31) + 5 ending-band cards, generated from a new game's RAM and never tracked (a
+      card carries the game's icon and title strings). Proven on Beetle (day03, day25,
+      ending-oti3-15stars, clock checked) and loaded on Redux (day25). The ★ → epilogue rule
+      is decoded from `ending_pick` (13–15 `OTI03`, 10–12 `OTI01`, 7–9 `OTI00`, 4–6 `OTI02`,
+      0–3 `OTI04`). The cards are date-correct but carry no earlier day's story flags;
+      flag-gated scenes take `--flag`. Closed as *no*: branch-point saves with a real
+      playthrough's flags — reopen when a lane cannot reach a scene with `--flag`.
 
 ## Recon — where every piece of Japanese lives
 
@@ -477,35 +478,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
       committed scene by scene. Harmed: the player.
-- [ ] **[TRN-08]** **The packet, redone to Jay's spec** (2026-09-21, after reading
-      `work/packets/day01/E0121.md`). What a translator gets is: a system part — the day-file
-      format, the style guide's rulings, the glossary, the bible's day summary (no line
-      citations) — and then the scene as `[E0121.0]` + the Japanese lines with only the
-      **page breaks** marked, in the day-file shape. Drop from the packet: PLAN citations, the
-      "four of six flags" statistics, the chorus-format aside, "in the order the game plays it"
-      framing for a linear scene, pixel widths, `boku lint`, byte counts, copy counts, frame
-      timers, column splits — a translator asked not to let constraints bend the translation
-      should not be handed the constraints; the lint holds them. Keep: the neighbouring scenes'
-      English (it comes from the day files — `PacketBuilder._neighbours` → `settled`), the
-      voice clip reference per line. Closed as *no* (Jay, 2026-09-21): listening to the clip
-      for intonation — the translating model cannot hear, and hand-judging or an ML pass is not
-      worth it; `research/tooling-setup.md` § XA keeps the decode fact. **Add: a render check**
-      (Jay, 2026-09-21) — before a line is finalized in the game, a pass with our own rendering
-      model says it *would* display: `boku lint --encoder cellmap` already measures every page
-      in pixels against the band; the missing half is a mock-up of each page drawn with the
-      sheet's glyphs at the band geometry (the layout engine has the widths; no emulator), so
-      a reviewer or Jay can eyeball a day's pages as images. That is the *rendered* state in
-      `TRN-04`'s chain. **Then the comparison** (Jay, 2026-09-21): re-translate days 1–7 and
-      `shared.txt` through the new packet and compare against the held first draft (tag
-      `first-draft-2026-09-21`; `git diff first-draft-2026-09-21 -- translation/days/`) — the
-      diff judges the packet as much as the lines, and the better line wins per line before
-      `TRN-04`'s table restarts from *drafted*. Bug: `parse_rulings` emits a style-guide
-      heading that contains SETTLED even when no bullet under it is marked, so § 17 appears
-      as an empty section. Agent shape: (b) one directed translator per day that receives the
-      bible/glossary/guide once and the events one by one, with the parent doing the saving —
-      instead of N full Claude Code instances each inheriting `CLAUDE.md`; a lint warning on
-      em dashes (style guide § 18). Harmed: the translator (tedium, constraint-driven
-      distortion) and Jay, who reads the packets.
+- [ ] **[TRN-08]** **The packet, redone to Jay's spec — the comparison.** The engineering is
+      DONE (2026-09-22): `boku packet` writes `system.md` once plus one part per event in the
+      day-file shape (Jay's drop list enforced by test), `boku save-event` saves a directed
+      translator's answers, `parse_rulings` returns every style-guide section, `boku lint`
+      warns `em-dash`, and `./make.sh mockup` draws every page with the sheet's glyphs at the
+      band geometry (the *rendered* state's check). Left: re-translate days 1–7 and
+      `shared.txt` through it and compare against the held first draft (tag
+      `first-draft-2026-09-21`); the better line wins per line before `TRN-04`'s table
+      restarts from *drafted*. Harmed: the translator and Jay.
 - [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the first thing every player sees:
       the memory-card and save/load messages (32), the title and config labels, the controls
       help, item names and descriptions, the 57 insect names, photo captions, kite names
@@ -577,7 +558,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       per-region CLUT lives in the drawing code), the record screens (`FS/PK/TK_WAL`),
       `T_MEMORY`'s heading, `TZICON`, the radio-exercise card (`PK_ITM 0x6c`). Split between
       renderer and texture per screen is tabled in `research/textures-plan.md` § UI. Harmed:
-      the player, at the first screen.
+      the player, at the first screen. **`T_TITLE` DONE 2026-09-22**: `translation/textures/ui.txt` →
+      `boku/texture_text.py` `title_menu`, sprite records widened to 128 px
+      (`research/texture-recipes.md` § `T_TITLE`), proven on Beetle by
+      `tests/test_real_title_menu_beetle.py`. Remaining: `T_CONFIG`, the action-button
+      atlases, `FS/PK/TK_WAL`, `T_MEMORY`, `TZICON`, `PK_ITM 0x6c`.
 - [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
       to the original CLUT and committed as new pixels: three book covers consistently across
       their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
