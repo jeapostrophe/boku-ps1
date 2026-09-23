@@ -646,3 +646,7 @@ E1052.5	Boku	I'm not hiding anythiiing.
 
 # --- E1053: A18 -- the secret base
 E1053.0	Specs	The real problem is the African turtle in Doctor Dolittle. // How many tens of thousands of years old is it, anyway?
+
+# --- E1150: A18 -- the secret base
+E1150.0	Specs	Why doesn't anybody read books at all?
+E1150.1	Fat	Geh-heh-heh, 'cause if I got any smarter than this, // I couldn't take over my old man's job.

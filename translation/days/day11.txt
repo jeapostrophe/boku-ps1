@@ -1,0 +1,74 @@
+# day11 (translation/days/README.md)
+# --- E1121: G03 -- kitchen
+E1121.0	Aunt	Eek! What Moe bought isn't mirin, it's salad oil! // Oh, nooo! // My simmered fish has turned into a meuniere!
+
+# --- E1130: G15 -- the sisters' room
+E1130.0	Moe	Ehehe... // Actually, right now, Onee-chan is really happy...
+E1130.1	Boku	Why?
+E1130.2	Moe	Just because.
+E1130.3	Moe	Because I'm happy, that's why.
+
+# --- E1172: I33 -- close-up
+E1172.0	Moe	Ahh, tomorrow's coming again...
+
+# --- E1101: G02 -- breakfast
+E1101.0	Uncle	Boku-kun, tomorrow a monk is coming to Uncle's house, // and while he's here, you're not to go off playing; you're to stay right here, understood?
+E1101.1	Boku	Huh? Why is a monk coming?
+E1101.2	Uncle	Tomorrow, you see... // Uncle's house used to have a boy, // and it's the anniversary of his death.
+E1101.3	Aunt	At your house too, Boku-kun, // a monk sometimes comes on the anniversary of Grandpa's death, doesn't he?
+E1101.4	Boku	...Yeah.
+E1101.5	Uncle	Well then, itadakimaasu.
+E1101.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+
+# --- E1102: G02 -- after breakfast
+E1102.0	Uncle	Gochisosama deshita.
+E1102.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1102.2	Moe	I'm going to Sagi-no-sato today to mail a letter. Is there anything else you need?
+E1102.3	Aunt	Oh, you're going? // Then pick up some mirin at Yamashita's.
+E1102.4	Moe	Roger!
+
+# --- E1120: H06 -- garden off the veranda, the washing line
+E1120.0	Aunt	An important, important letter~
+E1120.1	Boku	Hey, what song is that?
+E1120.2	Aunt	Huh? Hm-hm... the Important Letter Song!
+E1120.3	Aunt	An important, important letter~
+
+# --- E1112: G01 -- living room
+E1112.0	Uncle	I'd like to split a bit more firewood before I fire the kiln at the end of the month. // I'd better hurry up and buy a new axe, and get rid of the old one I put in the shed...
+E1112.1	Uncle	Come to think of it, the axe I put away in the shed has gone missing. // It's not as if a moon bear came and took it...
+E1112.2	Uncle	Mm... the wind chime sounds nice... nice breeze...
+
+# --- E1131: G15 -- the sisters' room
+E1131.0	Moe	Sparklers are sad, aren't they?
+E1131.1	Boku	How come?
+E1131.2	Moe	Hmm...
+E1131.3	Moe	Ehe... // Maybe because when you stare at them, you go cross-eyed.
+E1131.4	Boku	...Huh?
+E1131.5	Moe	Ahh, tomorrow's coming again...
+
+# --- E1140: H09 -- garden corner where Shirabe watches ants
+E1140.0	Boku	Don't the soft noodles at school lunch give you a tummy ache? They're so greasy.
+E1140.1	Shirabe	Huh? That's never happened to me.
+E1140.2	Boku	But I like soft noodles. // You can smell them from about third period on.
+E1140.3	Shirabe	At our school... // on soft-noodle days only, the bread gets smaller, and it's called "diet bread".
+
+# --- E1141: G06 -- TV room
+E1141.0	Shirabe	The sound a firework makes when you put it in the bucket of water is like Ultraman.
+E1141.1	Shirabe	Don't your hands smell like fireworks?
+
+# --- E1104: G02 -- after dinner
+E1104.0	Uncle	Gochisosama deshita.
+E1104.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1104.2	Moe	Oh yes, I've got a souvenir from Sagi-no-sato today.
+E1104.3	Shirabe	What is it, what is it?
+E1104.4	Moe	So, after this, everybody assemble on the veranda!
+E1104.5	Shirabe	What is it, whaaat?
+E1104.6	Aunt	Hm-hm-hm... Boku-kun, shall we put you in a yukata?
+E1104.7	Boku	Huh?
+
+# --- E1105: G17 -- the veranda; H06 -- the garden (sparklers)
+E1105.0	Boku	Give me one.
+E1105.1	Shirabe	Here, then.
+
+# --- E1171: G17 -- the veranda
+E1171.0	Moe	Ugh, I got smoke in my eyes...
