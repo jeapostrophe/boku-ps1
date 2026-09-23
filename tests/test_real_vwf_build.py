@@ -28,10 +28,11 @@ from pathlib import Path
 
 import pytest
 
-from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive
+from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, Archive, overlay_read_end_of
 from boku.build import (
     EditSet,
     check_before_writing,
+    check_resident,
     load_edit_set,
     verify_written_sectors,
 )
@@ -96,6 +97,17 @@ def test_every_old_range_the_renderer_patch_carries_is_what_the_image_holds(
     different dump, or one already applied, is a refusal here and not a boot loop.
     """
     check_before_writing(real_image, tmp_path / "out", edit_set.edits, what="vwf-verify")
+
+
+def test_no_executable_byte_the_renderer_patch_writes_is_under_an_overlay_load(
+    edit_set: EditSet, archive: Archive
+):
+    """Resident means below the overlay region (research/text-renderer.md § 6): a table in
+    the heap raise was zeroed by the first bug-sumo match. `check_resident` refuses the
+    whole region only because the furthest load reaches past the executable's end, which
+    is asserted here rather than assumed."""
+    assert overlay_read_end_of(archive.exe) >= EXE_LOAD_BIAS + len(archive.exe)
+    check_resident(edit_set.edits)
 
 
 def test_the_renderer_patch_writes_only_the_two_files_a_patch_may_write(edit_set: EditSet):

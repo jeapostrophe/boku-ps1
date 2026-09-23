@@ -25,9 +25,11 @@ import re
 import struct
 from bisect import bisect_right
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+from boku.disc import form1_sectors
 from boku.edc import FORM1_DATA_SIZE
 from boku.tim import parse as parse_tim
 
@@ -43,6 +45,21 @@ EXE_LOAD_BIAS = 0x8000F800
 
 OVERLAY_LOAD_ADDRESS = 0x80079A08
 """Where every `.OVL` member loads (`research/text-format.md`; hypothesis for three of them)."""
+
+
+def overlay_read_end(sizes: Iterable[int]) -> int:
+    """First RAM byte past everything loading an overlay of one of `sizes` bytes writes:
+    a load is whole sectors (research/text-renderer.md § 6)."""
+    return OVERLAY_LOAD_ADDRESS + SECTOR * max((form1_sectors(size) for size in sizes), default=0)
+
+
+def overlay_read_end_of(exe: bytes) -> int:
+    """`overlay_read_end` over the `.OVL` entries of `exe`'s own `g_cd_dir` -- the size words
+    `cd_load_sync` reads, so a patched executable's grown overlay counts at its new size."""
+    return overlay_read_end(
+        entry.size for entry in read_exe_dir(exe) if entry.name.upper().endswith(".OVL")
+    )
+
 
 DIR_COUNT_ADDR = 0x80024698
 """`g_cd_dir.count`. The three arrays are found from it, never by their own addresses."""

@@ -159,8 +159,12 @@ region is sized for `MUSI.OVL`:
 | `TITLE` (244) | 34,532 | 53,944 | 2, 15 |
 | `MUSI` (129) | 88,466 | **10** | 7 |
 
-An overlay may therefore be **extended at its end** (raise `g_cd_dir_size`; new arrays or code
-go there and the `lui`/`addiu` pairs are repointed) — except `MUSI`. *Hypothesis:* no overlay
+A load writes **whole sectors** (`cd_load_sync` reads `cd_dir_sectors(i)` of them), so it
+reaches past the file to the next 2,048-byte boundary: `MUSI` writes up to `0x8008FA08`, into
+the heap's first 1,636 bytes (harmless in retail, fatal to anything a patch keeps there —
+[text-renderer.md](text-renderer.md) § 6). An overlay may therefore be **extended at its end** (raise `g_cd_dir_size`; new arrays or code
+go there and the `lui`/`addiu` pairs are repointed) — `MUSI` only as far as `0x8008F800`, the
+heap start the renderer patch raises (`asm/vwf.asm`). *Hypothesis:* no overlay
 uses memory past its file end as bss; a `lui`-pair scan finds no genuine access there, only
 stale-register artefacts. The field modes load no overlay, so the region holds whatever ran
 last; it is not a home for code that must persist.

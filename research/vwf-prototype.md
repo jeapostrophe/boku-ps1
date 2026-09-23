@@ -147,14 +147,12 @@ arrays of [text-outside-events.md](text-outside-events.md).
 
 ### The free space
 
-**The table lives in the heap-raise gap**, `0x8008F3A4…0x8008F7FF` (1,116 bytes, already inside
-the file, above every overlay): one data word moves the heap's first byte to `0x8008F800`. Chosen
-over the dead-code islands because it is the only candidate whose deadness was *measured* with
-write-breakpoints rather than inferred from missing references ([renderer-runtime.md](renderer-runtime.md)
-§ Q5), it is one contiguous `.area`, and it costs nothing but 1.1 KB of heap. Layout of the
-(c2) build (`edits.json` → `gap`): `vwf_advance` **812 bytes** at `0x8008F3A4`;
-`vwf_select_xmax/ymax` at `0x8008F6D0`; `vwf_select_advance` and `vwf_select_box` from
-`0x8008F6D8`; free again from `vwf_free` — the table is as long as the highest cell any English character was
+**The table lives in the PC-host island**, `0x8005CD44…0x8005DCF8` (4,020 bytes of dead
+PC file-server code; who owns which region, and why the heap-raise gap it first lived in is not
+resident — `MUSI.OVL`'s load zeroes it — is [text-renderer.md](text-renderer.md) § 6). Layout
+of the (c2) build (`edits.json` → `gap`): `vwf_advance` **812 bytes** first, then
+`vwf_select_xmax/ymax` and the bodies `vwf_select_advance` and `vwf_select_box`; free again
+from `vwf_free` — the table is as long as the highest cell any English character was
 given, so it grows with the free-cell allocation, not with the font. **The walkers' step
 bodies live in the walker island**, the second part of `dbg_font_init` `0x800221CC…0x80022494`
 (712 bytes, [text-renderer.md](text-renderer.md) § 6 candidate 2): `asm/vwf.asm` splits it at
@@ -489,7 +487,7 @@ ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 | `0x80043834`, `48` | 12a `text_draw_line_h` (item, kite names; fishing) | `addiu s0,s0,2` · `addiu s1,s1,0xC` (delay slot) | `jal vwf_step_s1_s0_cur` · `nop` |
 | `0x800438A4`, `B8` | 12b `text_draw_h` (descriptions, captions; fishing) | the same two | the same two |
 
-**Free space**: `0x80068AF0` heap bump pointer `0x8008F3A4` → `0x8008F800`; `0x8008F3A4…` the
+**Free space**: `0x8005CD44…` (the PC-host island, [text-renderer.md](text-renderer.md) § 6) the
 table, the select's variables and bodies; `0x800222EC…0x80022494` (the upper part of `dbg_font_init`, dead)
 the walker bodies.
 

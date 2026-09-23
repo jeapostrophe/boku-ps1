@@ -43,7 +43,9 @@ from boku import __version__, edc
 from boku.archive import (
     ARCHIVE_NAME,
     DEFAULT_DISC_DIR,
+    EXE_LOAD_BIAS,
     EXE_NAME,
+    OVERLAY_LOAD_ADDRESS,
     Archive,
     ArchiveError,
 )
@@ -302,6 +304,24 @@ def check_no_sector_clash(
     (`TXT-05`'s renderer edit set) was never in that set.
     """
     check_no_double_write(patches, sectors, archive, refused=BuildRefused)
+
+
+def check_resident(edits: Sequence[ByteEdit]) -> None:
+    """Refuse an executable edit inside the overlay region.
+
+    The executable is loaded once, by the BIOS; from `g_overlay_base` to the end of the file
+    every byte is rewritten by some overlay load (a load is whole sectors, and `MUSI.OVL`'s
+    reaches past the file's end -- research/text-renderer.md § 6), so a table or hook kept
+    there is zeroed and never comes back. A `BOKU.BIN` edit is an overlay's own bytes.
+    """
+    for edit in edits:
+        ram = edit.offset + EXE_LOAD_BIAS
+        if edit.file == EXE_NAME and edit.end + EXE_LOAD_BIAS > OVERLAY_LOAD_ADDRESS:
+            raise BuildRefused(
+                f"{edit.reason}: 0x{ram:08X} is in the overlay region, which every overlay "
+                f"load rewrites from 0x{OVERLAY_LOAD_ADDRESS:08X}; a resident patch belongs "
+                f"below it (research/text-renderer.md § 6)"
+            )
 
 
 def apply_sector_edit(
@@ -915,6 +935,7 @@ def build(
     # `plan` checks its own edits are disjoint; the caller's binary patches (less the ones
     # it carried) were not in that set.
     check_disjoint(edits)
+    check_resident(edits)
     sectors = [*(the_plan.sectors if the_plan else ()), *sector_patches]
     check_sectors_disjoint(sectors)
     if archive is not None:
@@ -1246,6 +1267,7 @@ __all__ = [
     "apply_edit",
     "build",
     "check_no_sector_clash",
+    "check_resident",
     "file_entries",
     "format_summary",
     "lay_out",

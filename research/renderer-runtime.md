@@ -134,9 +134,11 @@ fills the gap with a sentinel and arms 279 word write-breakpoints. Over 12,000 f
 overlay, memory-card check, two FMVs, six map loads, ten events — **0 write hits and 0 of 279
 sentinel words changed**; the game ran normally on the smaller heap. The watch can fire: armed
 from power-on without the raise it logs 1,953 hits (BIOS clear, load, `main`'s clear) — the red
-run. **Correction to text-renderer.md § 6:** `0x80068AF0` is not a constant "base": it is the
+run. **Not resident, though:** loading `MUSI.OVL` zeroes it (text-renderer.md § 6, measured
+2026-09-23). **Correction to text-renderer.md § 6:** `0x80068AF0` is not a constant "base": it is the
 **bump pointer itself** (`0x800C6160` by the end of the run). Raising its initial word still
-works, for that reason. Not covered: `MUSI`/`HHON`/`ZUKAN`/`TAKO` overlays, a save, a full day.
+works, for that reason. Overlays: `MUSI` overwrites the gap and `TAKO` does not; `HHON`, `ZUKAN`
+and `TITLE` end lower than `TAKO` (sector-rounded), so they cannot reach it.
 
 ## Q6 — `dbg_vprintf` / `dbg_printf`
 

@@ -306,19 +306,24 @@ The zero runs *inside* the image (`0x800258B1`, `0x80035788`, `0x8003DB03`, `0x8
 
 Candidates, cheapest first:
 
-1. **Raise the heap's start: write `0x8008F800` into `0x80068AF0`'s initial word** (one word, file
-   `0x592F0`). Because that word is the bump pointer, raising the value it starts at is exactly
-   "allocate nothing below here", which is why the trick works at all. The 1,116 bytes
-   `0x8008F3A4…0x8008F800` are already inside the file (`0x7FBA4…0x80000`), loaded by the BIOS,
-   above every overlay, and after the change nothing clears or allocates them. Costs the heap
-   1.1 KB. **Measured** ([renderer-runtime.md](renderer-runtime.md) § Q5), not hypothesis: with the
-   word raised, the gap filled with a sentinel and 279 word write-breakpoints armed, boot, title,
-   two FMVs, six map loads and ten events over 12,000 frames produced **0 write hits and 0 changed
-   sentinel words**, and the game ran normally on the smaller heap; the same watch armed without
-   the raise logs 1,953 hits, so it can fire. Still unwatched: the `MUSI`/`HHON`/`ZUKAN`/`TAKO`
-   overlays, a save, and a full day. Going further (heap start higher **and** a larger `t_size`) is the
-   same mechanism plus a longer file, which moves `BOKU.BIN`'s LBA and therefore all of
-   `g_cd_dir_lba` — avoid unless needed.
+1. **The heap raise is not resident space.** Writing `0x8008F800` into `0x80068AF0`'s initial
+   word (file `0x592F0`) leaves `0x8008F3A4…0x8008F800` inside the file and never allocated
+   ([renderer-runtime.md](renderer-runtime.md) § Q5 watched it through boot, title, two FMVs, six
+   map loads and ten events). **But an overlay load writes whole sectors**: `cd_load_sync`
+   (`0x800127C8`) reads `cd_dir_sectors(i)` sectors, so `MUSI.OVL`'s 88,466 bytes are 44 sectors
+   and the load writes `0x80079A08…0x8008FA08`, zeroing the whole gap (the tail of its last
+   sector is zeros). Measured on PCSX-Redux 2026-09-23 with `tools/redux/overlay-overrun.lua` (it
+   fills the range with a sentinel and makes the CPU call `file_load(i, g_overlay_base)` from
+   the title screen; its header gives the variables, run through `tools/redux/run-on-image.sh
+   <image> drive.lua`): `MUSI` (129) changed **all 1,116** of the gap's bytes and **none** of the
+   advance table's new home; `TAKO` (239) changed none of the gap. Every other overlay's
+   sector-rounded end is below `0x8008F3A4` (`TITLE` `0x80082208`, the next highest). So the
+   raise is kept only as room for `MUSI`'s own bytes (without it a grown `MUSI` would put its
+   file under the heap's first allocations), and the build refuses any executable edit from
+   `g_overlay_base` up (`boku.build.check_resident`) -- the whole region, because the furthest
+   load already reaches past the executable's end (`boku.archive.overlay_read_end_of`).
+   Going further (a larger `t_size`) is impossible without moving `SYSTEM.CNF` (LBA 279) and the
+   `__STR` directory (280), and would cost heap anyway.
 2. **Dead code, unreferenced by any `jal`, data word or `lui` pair in any image**
    (`work/txt01/dead.py`): `0x80012E04…0x80013070` — 620 contiguous bytes (`cd_dir_sectors_form2`,
    `0x80012E40`, `0x80012E64`, `cd_dir_search_file`, `cd_dir_find`, `0x80012FF8`);
@@ -344,6 +349,19 @@ Candidates, cheapest first:
    can hold nothing a running patch reads. `PCread/PCopen/PClseek` are referenced (PC-host file
    path); `PCcreat` (32 bytes) is not.
 6. For *tables*: the font TIM's 24 blank cells and `ONMEM.BIN` growth are [font.md](font.md)'s.
+
+**Who owns which resident region** (the one home of this table; 2026-09-23). Measured dead by
+reference scan over the executable and all seven overlays (`jal`/`j`, `lui` pairs, data words,
+`$gp`-relative accesses; `work/pipe07/ram/` in the arrays lane's scratch) unless a row says more:
+
+| region | bytes | what it was | owner |
+|---|---:|---|---|
+| `0x8005CD44…0x8005DCF8` | 4,020 | the PC-host module (`PCload`/`PCsave`, libsn `PCopen`/`PCread`/…), reached only from `g_pc_host` branches; `asm/vwf.asm` clears `g_pc_host` (`0x80023830`) in the file, so no branch can be taken even before `sys_init`. On the stock image an exec watch (`tools/vwf/island-watch.lua`, `BOKU_ISLAND_RANGE=8005CD44,8005DCF8`, under `drive.lua` with the boot presses to 19,300 frames) saw no hit through boot, the arrival sequence, free roam, START and the item menu; sumo, fishing and a save were not walked | renderer (`asm/vwf.asm`: advance table, select hooks) |
+| `0x800101D8…0x800115D8` | 5,120 | `\_DATA` path strings, read only by the PC-host path and dead `cd_dir_*` helpers | relocated text arrays (`PLAN PIPE-07`) |
+| `0x80025120…0x80025860` | 1,856 | `dbg_font_init`'s 8×8 font and CLUT (only it refers to them) | relocated text arrays (`PLAN PIPE-07`) |
+| `0x800221CC…0x80022494` | 712 | `dbg_font_init` | movie loader / walker bodies (candidate 2) |
+| `0x80012E04…0x80013070`, `0x80037698`, `0x80043928` | 620, 352, 296 | dead functions | movie hooks, voice-only hooks (candidate 2) |
+| `0x8008F3A4…0x8008F800` | 1,116 | the heap raise | `MUSI.OVL`'s own bytes only (candidate 1) |
 
 ## 7. The `TXT-04` trial — no new code
 
@@ -398,8 +416,8 @@ an **unvoiced `MSG`** line, which the arrival sequence contains none of. Per que
   glyphs, so three 40-glyph English lines fit. **Free-roam, bug sumo and the menus were not
   sampled**, and a vsync sample can land mid-build.
 * **Q5 — answered.** With the heap start raised to `0x8008F800`, 12,000 frames of boot, title, two
-  FMVs, six map loads and ten events wrote nothing into `0x8008F3A4…0x8008F7FF`; § 6 candidate 1
-  carries the numbers and the overlays still unwatched.
+  FMVs, six map loads and ten events wrote nothing into `0x8008F3A4…0x8008F7FF` — but loading
+  `MUSI.OVL` does; § 6 candidate 1.
 * **Q6 — answered.** `dbg_vprintf` and `dbg_printf` took 0 hits over the same 12,000 frames, in a
   run where other breakpoints demonstrably fired. A full day of play and sumo are still not covered.
 * **Q7 — answered except for unvoiced `MSG`.** The `0x8002` operand counts 30 Hz ticks, the last

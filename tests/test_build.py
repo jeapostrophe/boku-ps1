@@ -15,7 +15,13 @@ from pathlib import Path
 import pytest
 
 from boku import REPO_ROOT
-from boku.archive import ARCHIVE_NAME, EXE_NAME, OVERLAY_LOAD_ADDRESS
+from boku.archive import (
+    ARCHIVE_NAME,
+    EXE_LOAD_BIAS,
+    EXE_NAME,
+    OVERLAY_LOAD_ADDRESS,
+    overlay_read_end,
+)
 from boku.arrays import SELECT_LINES_ADDR
 from boku.boxes import box_for
 from boku.build import (
@@ -25,6 +31,7 @@ from boku.build import (
     answer_pair_patches,
     build,
     check_no_sector_clash,
+    check_resident,
     lay_out,
     load_edit_set,
 )
@@ -612,3 +619,44 @@ def test_no_relocation_at_all_compares_nothing():
     """A build with no growth writes no sector by LBA, so there is nothing to clash with."""
     patch = ByteEdit(file=ARCHIVE_NAME, offset=0, old=b"\0" * 4, new=b"\1" * 4, reason="sheet")
     check_no_sector_clash([patch], [], ArchiveAt1000())
+
+
+# --- what an overlay load overwrites ------------------------------------------------------------
+
+
+def test_an_overlay_load_writes_whole_sectors_from_the_overlay_base():
+    """A load is whole sectors, so it ends on a sector boundary past the file's own end."""
+    assert overlay_read_end([1]) == OVERLAY_LOAD_ADDRESS + 2048
+    assert overlay_read_end([2048, 44 * 2048 - 1]) == OVERLAY_LOAD_ADDRESS + 44 * 2048
+
+
+def test_an_executable_patch_in_the_overlay_region_is_refused():
+    """One byte into the region is refused; a patch ending at it, or in `BOKU.BIN`, is not."""
+    region = OVERLAY_LOAD_ADDRESS - EXE_LOAD_BIAS
+
+    def edit(file: str, offset: int) -> ByteEdit:
+        return ByteEdit(file=file, offset=offset, old=b"\0" * 4, new=b"\1" * 4, reason="table")
+
+    check_resident([edit(EXE_NAME, region - 4), edit(ARCHIVE_NAME, region)])
+    straddling = rf"table: 0x{OVERLAY_LOAD_ADDRESS - 3:08X} is in the overlay region"
+    with pytest.raises(BuildRefused, match=straddling):
+        check_resident([edit(EXE_NAME, region - 3)])
+
+
+def test_a_renderer_patch_alone_is_checked_against_the_overlay_loads_too(
+    disc_dir, real_image, tmp_path
+):
+    """`boku build --vwf` with no translation opens no walk, and the check must not need one:
+    the edit set is exactly the patch that puts resident bytes in the executable."""
+    ram = OVERLAY_LOAD_ADDRESS + 0x15A00  # past MUSI's file end, inside its last sector
+    at = ram - EXE_LOAD_BIAS
+    old = (disc_dir / "files" / EXE_NAME).read_bytes()[at : at + 4]
+    patch = ByteEdit(file=EXE_NAME, offset=at, old=old, new=b"\1\2\3\4", reason="a table")
+    with pytest.raises(BuildRefused, match=r"a table: .* overlay load"):
+        build(
+            source=real_image,
+            out_dir=tmp_path / "out",
+            disc_dir=disc_dir,
+            binary_patches=[patch],
+            dry_run=True,
+        )

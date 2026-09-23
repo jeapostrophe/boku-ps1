@@ -20,8 +20,8 @@
 ; arena, bg_swap_in's 0x6000 scratch and the stack (top 0x801FFFF0). Measured on the retail
 ; layout over the arrival sequence and free roam (tools/vwf/stack-probe.lua): the stack's
 ; low-water mark is 0x801FF040, 4,016 bytes deep, and the level-C bump pointer never moved;
-; the gap from the scratch's end to that mark is 20,044 bytes, less the 1,116 the width
-; table's heap raise already spent. research/vwf-prototype.md § "The map work area".
+; the gap from the scratch's end to that mark is 20,044 bytes, less the 1,116 the heap
+; raise (vwf.asm) spends. research/vwf-prototype.md § "The map work area".
 ;
 ; The reinserter measures against the same figure: build_prototype.py writes it to
 ; edits.json as map_work_area_end and boku build hands it to the plan.
