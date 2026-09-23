@@ -98,7 +98,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       DuckStation-ready cards with obvious names and the simplest documented way to load one
       (his own card is never touched); every day's morning, a card just before the ending for
       each ending band (to judge the ending and the ~1,180-frame lead `FMV-04` measured), and a
-      finished-game card so Summer Memories opens (the finished-file marker, decoded).
+      finished-game card so Summer Memories opens (the finished-file marker, decoded). All of it a
+      `./make.sh` verb working from a contributor's own import — other translators will want the
+      saves too (Jay).
       Harmed: Jay, who replays the game to reach a scene.
 - [ ] **[ENV-08]** **Boku's cage and bug sumo, decoded** (Jay, 2026-09-23: "worth it to me"):
       the cage record at `0x80045A10` and the insect box at `0x80046F28` decoded from the
