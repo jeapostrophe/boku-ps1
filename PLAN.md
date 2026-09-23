@@ -254,9 +254,16 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       evening lines drawn from a relocated EV member on Beetle. The card-check and settings
       screens Jay saw in Japanese are `TITLE.OVL` renderer text with no translation rows —
       the array/overlay half of `TRN-04` (308 lines on six surfaces, `boku coverage` lists
-      them as `not-event`), not a renderer miss. **Left to do:** the two `HHON.OVL`
-      walkers, the 20 fixed-pitch surfaces and their arrays, the 23 computed-id `glyph_draw`
-      sites (not covered by the free-cell gate); and watching the heap gap and stack under
+      them as `not-event`), not a renderer miss. **Done 2026-09-22:** the controls-help screen (START) and
+      the item-name walkers proportional, proven on both emulators; descriptions, captions,
+      kite and fishing covered through the same walkers in tests, not yet on screen;
+      untranslated text on every hooked menu keeps its original 12/10-px spacing (the
+      card-check screen had been drawn at 14); step code in the `dbg_font_init` space, shared
+      with the movie loader (`asm/walkers.asm`; `tests/mips.py` runs the game's walkers on the
+      patched EXE). **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
+      surfaces 9 (with its return-value change), 11, 25, 26 and the card-screen yes/no (18);
+      the 23 computed-id `glyph_draw` sites (probably covered by the site index plus
+      `code_glyph_ids` — needs a test that proves it); watching the heap gap and stack under
       the four overlays / a save / menus, sumo and fishing. (Round 3, 2026-09-21: the
       "head drawn over the band" was a misread of a zoom — measured, the head is behind
       the band and the ordering table is stock; the select box now derives from the row
@@ -302,8 +309,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       5th on 8 and overflows 3 SELECT rows; c2 (cells re-aligned) leaves 4 pages
       (`E0771.0`, `E0772.1`, `E0773.2`, `E4028.11`) — 757 of 761 lines laid out. Jay ranked
       c1 > c2 with "lint decides fit" (2026-09-20), so the build is c2; c1 stays behind
-      `--advance-model c1`.** Still to measure:
-      every other surface. Original row — for every box geometry the game uses:
+      `--advance-model c1`.** **Measured 2026-09-22**
+      (`research/data/text-boxes.tsv`, enforced by build and lint): controls help,
+      memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
+      code-file menus use the drawn 248-px row. Still to measure: descriptions and captions,
+      kite names, fishing, fish names, extras, insect names, the insect box and bug sumo. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
       minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
