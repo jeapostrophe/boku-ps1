@@ -18,11 +18,11 @@
 # --- E0401: G02 -- breakfast
 E0401.0	Shirabe	Hey... Shirabe will show you some fun places.
 E0401.1	Boku	Huh?
-E0401.2	Shirabe	Fun places, a whole mountain of them, I'll show you arouuund. // So you must be ever so very extra-specially grateful.
+E0401.2	Shirabe	I'll show you fun places, thiiis many, a whole mountain of them. // So you must be ever so very extra-specially grateful.
 E0401.3	Shirabe	Shirabe's been here longer than you, after all. // Kyahaha!
 E0401.4	(voice only)
-E0401.5	Uncle	Well then, itadakimaasu.
-E0401.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E0401.5	Uncle	Well then, itadakimaasu!
+E0401.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E0402: G02 -- after breakfast
 E0402.0	Uncle	Gochisosama deshita.
@@ -45,7 +45,7 @@ E0471.0	Shirabe	Ken-bo!
 E0471.1	(voice only)
 E0471.2	Shirabe	So you came after all... I'm such a heartbreaker.
 E0471.3	Shirabe	Now then, follow along behind Shirabe, quick-quick. // I'll go on ahead as far as the bridge.
-E0471.4	Narrator	For me, it was somehow my first encounter in life // with a terribly high-maintenance creature.
+E0471.4	Narrator	For me, it was with a terribly high-maintenance creature... // that I had the first encounter of my life.
 E0471.5	(voice only)
 
 # --- E0442: A06 -- the bridge over the Yukino River
@@ -57,7 +57,7 @@ E0442.4	Shirabe	Yeah, the snow that falls from the sky.
 E0442.5	Boku	Ohh, so it snows here.
 E0442.6	Shirabe	Doesn't it snow at all where you live?
 E0442.7	Boku	No, only once in a while.
-E0442.8	Shirabe	Hm-hm, poor you. // ...But really, it's because it's a river where lots of fireflies are born, pop-pop-pop, // that it got the name Yukino River.
+E0442.8	Shirabe	Hm-hm, poor you. // ...But really, it's because it's a river where lots of fireflies are born, pop-pop-pop, // that it got the name Yukino River, they say.
 E0442.9	Boku	Huh...? Why's that?
 E0442.10	Shirabe	Huh?
 E0442.11	Boku	Why would fireflies popping out mean it gets named for snow?
@@ -95,22 +95,22 @@ E0444.10	Shirabe	That's right, nihihi. Well, on to the next one.
 
 # --- E0445: A03 -- sunflowers by the pond
 E0445.0	Boku	Huh? It's Auntie.
-E0445.1	Aunt	Hm-hm...... // I was waiting here, thinking I'd take a picture // of the two of you getting along.
+E0445.1	Aunt	Hm-hm...... // The two of you, getting along... // I thought I'd take a picture of that, so I was waiting here.
 E0445.2	Shirabe	Our mom used to be a photographer in Tokyo, a long time ago... Amazing, right?
 E0445.3	Boku	A photographer?
 E0445.4	Aunt	But I was only an assistant. I got married and came here before I was a real one... // Come on, you two, line up, line up.
-E0445.5	Aunt	Okay, and what does Dad like best?
+E0445.5	Aunt	Okay, what does Dad like best?
 E0445.6	Shirabe	Cheese!
 E0445.7	(voice only)
 E0445.8	Aunt	I'll show you the photo when it's ready. // When you go home, show it to Yuzuki-san too. // I'm sure she'll be pleased!
-E0445.9	Shirabe	Who's Yuzukiii?
+E0445.9	Shirabe	Yuzuki? Whooo's that?
 E0445.10	Boku	My mom.
-E0445.11	Aunt	We'll have to tell your mom you've been a good boy.
-E0445.12	Boku	Okay.
+E0445.11	Aunt	You'll have to tell your mom you've been a good boy.
+E0445.12	Boku	Yeah.
 E0445.13	Aunt	Well then, you two get along, now.
 E0445.14	Shirabe	I think Shirabe will go home soon too. // The bridge past here has fallen down, // and over that way there's a gigantic beehive... // ...you can keep watch on the watermelon field or something.
 E0445.15	Shirabe	It was a teeny bit fun. Bye...
-E0445.16	Shirabe	But don't you go calling me Pipsqueak too, okaaay?
+E0445.16	Shirabe	But don't you start calling me Pipsqueak too. I won't haaave it!
 # NOTE E0445.5-.6: the aunt never says "cheese"; she asks what Dad likes best and the child
 #   shouts it (glossary § 8).
 
@@ -130,11 +130,11 @@ E0412.0	Uncle	Boku-kun, when you fish in the ponds and rivers around here, // be
 E0412.1	Uncle	Now listen: // either watch the fish move and time your strike to set the hook, // or, when you can't see well, put on a light float as a marker.
 
 # --- E0405: A14 -- the watermelon field; D16 -- the summit
-E0405.0	Narrator	The watermelon thief was a local child, one who looked every bit as if he were strong in the arm. // And then my usual habit began.
+E0405.0	Narrator	The watermelon thief was a local child who looked every inch the brawny sort. // And then my usual habit began.
 E0405.1	Boku	Hic!
 E0405.2	Boy	Is somebody there?
 E0405.3	Boku	Hic!
-E0405.4	Narrator	It was all over! Just as I thought so...
+E0405.4	Narrator	It was all over! Just as I thought that...
 E0405.5	(voice only)
 E0405.6	Boy	Tch! Some wild dog come down from the mountains, maybe...
 E0405.7	Narrator	That howl rang out from somewhere far away, deep in the heart of the mountains, // utterly out of keeping with the noisy summer hills, lonely and sad...
@@ -152,17 +152,17 @@ E0404.8	Aunt	All right, I'll start making it right away.
 
 # --- E0406: G01 -- living room; I06 -- the ice shaver
 E0406.0	Boku	Wow, amazing!
-E0406.1	Shirabe	Be sure to eat it with lots and lots of gratitude.
+E0406.1	Shirabe	Be sure to eat it properly, with lots and lots of gratitude.
 E0406.2	Aunt	Shirabe, honestly... // Boku-kun, there's all the ice you could want, so eat lots. // Living deep in the mountains like this, with no doctor, // if you catch a cold or get stung by a bee, you can't go straight to the hospital, // so we always keep ice ready.
 E0406.3	Moe	And what with one thing and another, we've grown very hardy.
 E0406.4	Shirabe, Moe, Boku, Aunt	Hahaha.
 E0406.5	Uncle	That reminds me, Boku-kun, you mustn't go messing with the beehive. // When Uncle was a kid, he once knocked down a beehive with a fishing rod, // and a whole swarm of bees chased him. Oh, he had an awful time of it.
-E0406.6	Boku	Okay, got it, Uncle. // I'll never do anything like that.
+E0406.6	Boku	Yeah, got it, Uncle. // I'll never do anything like that.
 E0406.7	Boku	Auntie, gochisosama!
 E0406.8	Aunt	Why, it was nothing fancy.
 E0406.9	Aunt	Oh, Boku-kun, another helping of shaved ice, then.
 E0406.10	Aunt	But don't eat too much and upset your tummy.
-E0406.11	Shirabe	Be sure to eat it with lots and lots of gratitude, so grateful you could die.
+E0406.11	Shirabe	Be sure to eat it properly, with lots and lots of gratitude, so grateful you could die.
 E0406.12	Aunt	Shirabe, honestly...
 E0406.13	Shirabe, Moe, Boku, Aunt	Hahaha.
 E0406.14	Boku	Auntie, gochisosama deshita!
@@ -173,7 +173,7 @@ E0434.1	Moe	I'd like to make this my staple food.
 
 
 # --- E0441: G06 -- TV room
-E0441.0	Shirabe	Shirabe was waiting, meaning to show you all sorts of things, // and you went off somewhere halfway through. You really are ungrateful!
+E0441.0	Shirabe	You! Shirabe went to all the trouble of waiting to show you all sorts of things, and... // you go off somewhere partway through. You really are ungrateful!
 E0441.1	Shirabe	Honestly, what are you thinking...
 E0441.2	Shirabe	Today was lots and lots of fun, wasn't it? // Next time, I'll take you even farther...
 

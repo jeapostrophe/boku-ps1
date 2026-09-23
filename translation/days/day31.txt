@@ -7,8 +7,8 @@ E3101.3	Aunt	Are you all right?
 E3101.4	Uncle	Well, more or less.
 E3101.5	Moe	Take care of yourself.
 E3101.6	Uncle	Mm, thanks.
-E3101.7	Uncle	Well then, itadakimaasu.
-E3101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E3101.7	Uncle	Well then, itadakimaasu!
+E3101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E3102: G02 -- after breakfast
 E3102.0	Uncle	Gochisosama deshita.

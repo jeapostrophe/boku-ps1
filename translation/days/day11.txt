@@ -12,13 +12,13 @@ E1130.3	Moe	Because I'm happy, that's why.
 E1172.0	Moe	Ahh, tomorrow's coming again...
 
 # --- E1101: G02 -- breakfast
-E1101.0	Uncle	Boku-kun, tomorrow a monk is coming to Uncle's house, // and while he's here, you're not to go off playing; you're to stay right here, understood?
+E1101.0	Uncle	Boku-kun, tomorrow a monk is coming to Uncle's house, // and while he's here, you're not to go off playing; you're to stay right here.
 E1101.1	Boku	Huh? Why is a monk coming?
 E1101.2	Uncle	Tomorrow, you see... // Uncle's house used to have a boy, // and it's the anniversary of his death.
 E1101.3	Aunt	At your house too, Boku-kun, // a monk sometimes comes on the anniversary of Grandpa's death, doesn't he?
 E1101.4	Boku	...Yeah.
-E1101.5	Uncle	Well then, itadakimaasu.
-E1101.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E1101.5	Uncle	Well then, itadakimaasu!
+E1101.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E1102: G02 -- after breakfast
 E1102.0	Uncle	Gochisosama deshita.
@@ -40,7 +40,7 @@ E1112.2	Uncle	Mm... the wind chime sounds nice... nice breeze...
 
 # --- E1131: G15 -- the sisters' room
 E1131.0	Moe	Sparklers are sad, aren't they?
-E1131.1	Boku	How come?
+E1131.1	Boku	How come, I wonder?
 E1131.2	Moe	Hmm...
 E1131.3	Moe	Ehe... // Maybe because when you stare at them, you go cross-eyed.
 E1131.4	Boku	...Huh?

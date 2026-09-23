@@ -11,8 +11,8 @@ E1701.6	Boku	Who is she?
 E1701.7	Uncle	Wolf... Girl. // She's a pretty university student who shuts herself away in these mountains every summer, // and she comes to our house to borrow the bath.
 E1701.8	Aunt	She brings loads of books and lives in a tent. // If you go left at the Jizo-sama and through the forest, there's a big pond, isn't there?
 E1701.9	Uncle	This year she seems to have pitched her tent around there, // so you should go and have a look too, Boku-kun.
-E1701.10	Uncle	Well then, itadakimaasu.
-E1701.11	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E1701.10	Uncle	Well then, itadakimaasu!
+E1701.11	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 # NOTE E1701.7: the nickname spelled out syllable by syllable in the Japanese; the English words
 #   said slowly (style guide § 7).
 
@@ -30,7 +30,7 @@ E1712.0	Uncle	Maybe Uncle will take a walk over by the Wolf Girl's tent too.
 E1712.1	Uncle	I think I'll go to the barber's tomorrow.
 
 # --- E1710: H26 -- the workshop
-E1710.0	Uncle	This year the Wolf Girl seems to have pitched her tent near Dragon God Pond, left at the Jizo-sama, // so you should go and meet her.
+E1710.0	Uncle	This year the Wolf Girl is near Dragon God Pond, left at the Jizo-sama... // she seems to have pitched her tent there, so you should go and meet her.
 E1710.1	Boku	Hey, there's a kind of strange machine in the forest.
 E1710.2	Uncle	...A strange machine? // What sort of machine is it?
 E1710.3	Boku	It goes "Flash!" and lights up.

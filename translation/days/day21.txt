@@ -11,14 +11,14 @@ E2101.3	Boku	Huh? No, I wasn't.
 E2101.4	Aunt	Shirabe-chan, what makes you think so?
 E2101.5	Shirabe	A woman's intuition!
 E2101.6	Aunt	Oh my!
-E2101.7	Uncle	Well then, itadakimaasu.
-E2101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E2101.7	Uncle	Well then, itadakimaasu!
+E2101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E2120: H11 -- outside the workshop
 E2120.0	Aunt	Auntie's got 4.0, you know.
 E2120.1	Boku	Got what?
 E2120.2	Aunt	Eyesight, in both eyes...
-E2120.3	Aunt	Oh? Are those migrating birds...
+E2120.3	Aunt	Huh? Are those migrating birds, I wonder...
 # NOTE E2120.0: eyesight on the Japanese decimal scale, where 1.0 is normal; 4.0 is impossible,
 #   which is the joke (style guide § 11).
 
@@ -40,7 +40,7 @@ E2105.9	Boku	Huh?
 E2105.10	Moe	Mm, no, it's nothing.
 
 # --- E2109: G15 -- the sisters' room
-E2109.0	Moe	Sorry to you, Boku-kun, but somehow, thanks to the shock in the bath... // the fog in my heart cleared a little, and I feel easier.
+E2109.0	Moe	This isn't fair on you, Boku-kun, but somehow, thanks to the shock in the bath... // the fog in my heart cleared a little, and I feel easier.
 E2109.1	Boku	......
 E2109.2	Moe	But studying and youth and all that... // the troublesome stuff, I still don't feel like doing any of it...
 E2109.3	Moe	Ahh, I really don't feel like doing anything at aaall.
@@ -66,7 +66,7 @@ E2130.2	Boku	...Nutrition.
 E2140.0	Shirabe	Pervert!
 E2140.1	Boku	Nyaah! Your mom's got an outie belly button!
 E2140.2	Shirabe	Ah! I'm telling Mom on you!
-E2140.3	Boku	Ah! Don't! Auntie looks scary when she's mad...
+E2140.3	Boku	Ah! Don't! Auntie would be scary if she got mad...
 E2140.4	Shirabe	Hehe, when our mom gets mad, // even Dad gets locked in the storeroom.
 # NOTE E2140.1: the stock playground taunt; "your mom" here is his own aunt.
 

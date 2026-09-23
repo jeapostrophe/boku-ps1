@@ -11,8 +11,8 @@ E1901.0	Shirabe	Onee-chan's not here.
 E1901.1	Aunt	No, she isn't.
 E1901.2	Uncle	Well, a person won't die from not eating for two or three days, but... // if it drags on too long, we'll have to properly... // be her dad and mom about it.
 E1901.3	Aunt	That's right.
-E1901.4	Uncle	Well then, itadakimaasu.
-E1901.5	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E1901.4	Uncle	Well then, itadakimaasu!
+E1901.5	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E1902: G02 -- after breakfast
 E1902.0	Uncle	Gochisosama deshita.
@@ -60,8 +60,8 @@ E1930.6	Boku	......
 E1930.7	Moe	I told you, just leave me alone...
 
 # --- E1931: G15 -- the sisters' room
-E1931.0	Moe	Onee-chan has made up her mind. Sorry for all the trouble I've caused you, Boku-kun...
-E1931.1	Moe	I'm going to make the most of this chance... and diet like there's no tomorrow!
+E1931.0	Moe	Onee-chan has made up her mind. Sorry for causing you all sorts of trouble too, Boku-kun...
+E1931.1	Moe	I'm going to make the most of this chance... and go on a diet, all the way!
 
 # --- E1940: H04 -- garden corner where Shirabe watches ants
 E1940.0	Shirabe	What kind of things do they sell at the penny-candy shop in your town?

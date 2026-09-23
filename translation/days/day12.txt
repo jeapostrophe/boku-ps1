@@ -44,7 +44,7 @@ E1203.11	Monk	Where did you kidnap him from?
 
 # --- E1230: G15 -- the sisters' room
 E1230.0	Moe	That monk just now was funny, wasn't he? // Every year he powers up a little more.
-E1230.1	Moe	If only I had a cheerful personality like that...
+E1230.1	Moe	If only I had a cheerful personality like that too...
 
 # --- E1232: G17 -- the veranda
 E1232.0	Boku	Why aren't you playing your pipe today?
@@ -61,4 +61,4 @@ E1241.1	Boku	Yeah, and since they went to Tetra Paks, it's even worse. // When y
 E1241.2	Shirabe	The milk at our school still comes in bottles...
 
 # --- E1204: G06 -- TV room
-E1204.0	Aunt	The monk has gone home. He said "danke schoen". // Thank you for sitting through it, Boku-kun. You can go out and play now.
+E1204.0	Aunt	The monk has gone home. He said "danke schoen". // Good work, Boku-kun. You can go out and play now.

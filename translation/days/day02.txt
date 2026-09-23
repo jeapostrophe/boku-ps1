@@ -38,10 +38,10 @@ E0220.2	Aunt	Especially on a lovely day like this... // when I hang out loads an
 E0220.3	Boku	What's that supposed to mean...
 E0220.4	Aunt	Hm-hm. But when you get married too, Boku-kun... // and you get the chance to hang out lots of washing, // you might understand, just a little.
 E0220.5	Boku	You think so?
-E0220.6	Aunt	Only, you'll have to become // a husband who properly helps his wife.
-E0220.7	Aunt	Hm-hm... Or else it might be a sad life where you never understand.
+E0220.6	Aunt	Mind you, only if you proooperly... // become a husband who can help his wife out.
+E0220.7	Aunt	Hm-hm... It might be a sad life, never understanding as long as you live.
 E0220.8	Aunt	Come to think of it, there seems to be someone here... // who still hasn't carried out this morning's promise...
-E0220.9	Aunt	Oh, and Boku-kun... if you keep up your morning-glory duty and don't forget, // then before summer vacation is over and you go home, Auntie will give you a present!
+E0220.9	Aunt	Oh, and Boku-kun... if you keep on being morning-glory captain and don't forget, // then before summer vacation is over and you go home, Auntie will give you a present!
 
 # --- E0207: the morning-glory trellis (H05), from day 2 once appointed. No text — the spigot
 #     and the watering animation; it sets flag 6 (watered today).
@@ -52,7 +52,7 @@ E0210.1	Uncle	Boku-kun! This is Uncle's workshop. // What do you think? Quite an
 E0210.2	Uncle	The big kiln a little farther on toward the creek is called a climbing kiln, // and we work hard keeping a fire going in it for a day and a night to finish the pottery.
 E0210.3	Boku	Huh? So you might light the fire while I'm here?
 E0210.4	Uncle	Hmm, actually, in summer it's hot when you fire the kiln, so I don't really want to, // but by the end of August, I expect quite a lot of things will have piled up to be fired, // so I suppose I'll have to light it then.
-E0210.5	Boku	That sounds kind of exciting.
+E0210.5	Boku	I'm kind of looking forward to it.
 E0210.6	Uncle	Uncle's looking forward to it too, apart from the heat.
 E0210.7	Uncle	Oh, you're still here? // Uncle's house has a back gate beside the veranda, // and from there you can go over the bridge and out into the mountains. // Children should go and play in the great outdoors. // The mountains are dangerous at night, so that gate is only open in the daytime, though.
 
@@ -91,7 +91,7 @@ E0240.6	Boku	......
 E0204.0	Uncle	Gochisosama deshita.
 E0204.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0204.2	Uncle	Come to think of it, the watermelon thieves have been bad again lately. // If it gets any worse than this, we might need someone to keep watch.
-E0204.3	Uncle	Boku-kun, if you see anything, please let me know.
+E0204.3	Uncle	Boku-kun, you too. If you see anything, please let me know.
 E0204.4	Narrator	At that time, what had happened at the secret base... // for some reason, I did not tell my uncle.
 
 # --- E0213: G01 -- living room

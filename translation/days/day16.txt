@@ -21,7 +21,7 @@ E1612.6	Uncle	One day, Nora was suddenly just there, in front of our gate. // An
 # NOTE E1612.5: nora, "stray"; the uncle explains the name, so the word shows (glossary § 1).
 
 # --- E1610: H26 -- the workshop
-E1610.0	Uncle	Boku-kun, have you had a ride // on Uncle's special swing yet?
+E1610.0	Uncle	Boku-kun, Uncle's special swing... // have you had a ride on it yet?
 E1610.1	[SEL]	Yes | No
 E1610.2	Uncle	Have you? Well, be careful when you ride it.
 E1610.3	Uncle	Oh...... not yet? // It's fun. Go on, hurry up and ride it.
@@ -38,11 +38,11 @@ E1630.5	Moe	That is a secret.
 E1632.0	Boku	Doing okay today?
 E1632.1	Moe	Well, who knows? Hm-hm... // But I think the tone is ringing out a bit better than before. // Because, you know...
 E1632.2	Boku	Because?
-E1632.3	Moe	Because it feels like my playing // is making the air around me just a little bit... lustrous.
+E1632.3	Moe	Because the air around me, just a little bit... // it feels like my playing is making it lustrous.
 E1632.4	Boku	What's that supposed to mean?
 E1632.5	Moe	What, I wonder... // Kind of high-grade countryside, I guess?
 E1632.6	Boku	I don't think so.
-E1632.7	Moe	Aww, how cruel.
+E1632.7	Moe	Huh? How cruel.
 E1632.8	Moe	Hey... // I wonder if anyone... has ever tried to count the stars.
 E1632.9	Moe	If you strain your eyes, even in the dark between the stars, // tiny grains of light, like fine dust... // don't you feel like the star-dust is packed in there, tight?
 E1632.10	Moe	When I went to Tokyo on the school trip in elementary school...

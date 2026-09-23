@@ -21,14 +21,14 @@
 E0605.0	Shirabe	Boo!
 E0605.1	Boku	Whoa!
 E0605.2	Shirabe	It's breakfast time.
-E0605.3	Boku	Mm...... Huh? What about the exercises?
+E0605.3	Boku	Mm...... Huh? What about calisthenics?
 E0605.4	Shirabe	Sleepyhead!
 
 # --- E0006 / E0007: the breakfast chorus (G02), 7:00 and 8:00 — day-independent; translated in
 #     shared.txt, not here, so that each event is translated once (days/README.md § shared.txt).
 
 # --- E0620: H06 -- garden off the veranda, the washing line
-E0620.0	Aunt	Boku-kun, Uncle wasn't here last night, and you didn't run off after all, did you?
+E0620.0	Aunt	Boku-kun, last night, even with Uncle away, you didn't make a break for it, did you.
 E0620.1	Aunt	You slept in quite late this morning, didn't you?
 E0620.2	Boku	Yeah.
 E0620.3	Aunt	Boku-kun, aren't you hiding something from Auntie?
@@ -43,9 +43,11 @@ E0620.11	Aunt	But the firefly got to be with you until morning, // so maybe it h
 E0620.12	Aunt	Hmm? Who knows? // Look in your own bug cage and see for yourself.
 E0620.13	Boku	Whoa, thanks, Auntie!
 E0620.14	Aunt	But seen in the daytime, a firefly's just a longhorn beetle, isn't it?
+# NOTE E0620.0: "dassō" is a jailbreak, a soldier deserting — her joke about the night the warden
+#   was away; "make a break for it" is the same joke.
 
 # --- E0606: G06 -- TV room (August 6, the Hiroshima memorial on the news)
-E0606.0	(voice only)
+E0606.0	(voice only)	At today's Peace Memorial Ceremony, a great many people have gathered in Hiroshima's Peace Park.
 
 # --- E0640: H09 -- garden corner where Shirabe watches ants
 E0640.0	Shirabe	You know, Shirabe... // just loves little ants.
@@ -63,7 +65,7 @@ E0640.9	Shirabe	Shirabe is absolutely going to be big.
 
 # --- E0614: A14 -- the watermelon field
 E0614.0	Uncle	Today I'm keeping watch like this, so the watermelon thieves won't come.
-E0614.1	Uncle	Ahh, it's on a hot day like this that I'd most like to eat a cold watermelon.
+E0614.1	Uncle	Ahh, a hot day like this is just when I want to eat cold watermelon.
 
 # --- E0650: A18 -- the secret base, the three boys
 E0650.0	Specs	Here he comes, here he comes...
@@ -76,11 +78,11 @@ E0650.6	Guts	This one's Mammoth Fatso.
 E0650.7	Fat	Shut up!
 E0650.8	Guts	He's called Fat. Get along with him, okay?
 E0650.9	Boku	What does that mean?
-E0650.10	Fat	See, there was this foreign girl who came to help out on a farm in Sagi-no-sato, // and she gazed at yours truly, all dreamy, her eyes all shining, and said:
+E0650.10	Fat	See, there was this foreign girl who came to help out on a farm in Sagi-no-sato, // and she gazed at yours truly, all dreamy, her eyes all misty, and said:
 E0650.11	Guts, Fat, Specs	Ohhh! Fat!
 E0650.12	(voice only)
 E0650.13	Boku	So what does it mean?
-E0650.14	Guts	And this one's Specs. He's got a real good head on him.
+E0650.14	Guts	And this one's Specs. This guy is smaaart.
 E0650.15	Specs	Hello, Boku-kun. You have beautiful eyes, you know.
 E0650.16	Boku	...Huh?
 E0650.17	Guts	He's a bit of a weird guy, but // if you pick on him, you'll have me to answer to.
@@ -95,19 +97,21 @@ E0650.18	Boku	I told you, I wouldn't do that!
 E0651.0	Guts	You didn't tell your uncle our secret, right?
 E0651.1	Boku	...Of course not.
 E0651.2	Guts	If you break your promise...
-E0651.3	Guts, Fat, Specs	It's the hundred wrist-slaps!
+E0651.3	Guts, Fat, Specs	The penalty: a hundred wrist-slaps!
 E0651.4	Guts	What grade are you in?
 E0651.5	Boku	Third grade.
-E0651.6	Guts	Oh yeah? I'm in fifth.
+E0651.6	Guts	Ohh, is that all? I'm in fifth.
 E0651.7	Fat	Yours truly is in fourth.
 E0651.8	Specs	Everyone's bigger than me. I'm only in second grade.
 E0651.9	Boku	Same as Shirabe?
 E0651.10	Specs	Yes, yes, she's horrible! Horrible! // She makes picking on me part of her daily routine, you know. // She's really horrible! Horrible!
+# NOTE E0651.6: "nandā" is deflation — he has just heard "third grade" and pulls rank — not
+#   surprise; day 5 renders the same word "Ohh, is that all?" (E0551.24), and so does this line.
 
 # --- E0652: A18 -- the secret base
 E0652.0	Fat	Where are you living right now?
 E0652.1	Boku	At my uncle's... the house just below here.
-E0652.2	Fat	Huh? That's the Soranos' place!
+E0652.2	Fat	Huh? That's Sorano-san's place!
 E0652.3	Boku	Yeah, that's right.
 E0652.4	Fat	I see, that place, huh.
 E0652.5	Boku	What's wrong?
@@ -116,16 +120,19 @@ E0652.7	Boku	Huh? Moe-neechan?
 E0652.8	Fat	Why, you...! // Want me to stick my hand down your throat and turn you inside out?
 E0652.9	Guts	Now, now, easy, easy.
 E0652.10	Fat	Moe-san really is wonderful, isn't she... // Lucky you, getting to live in that house with her... // Hey, why don't we secretly swap places, just for one day?
+# NOTE E0652.2: "Sorano-san's place" is the glossary's (§ 1).
 
 # --- E0653: A18 -- the secret base
 E0653.0	Specs	Boku-kun, are you someone who reads lots of books?
 E0653.1	Boku	Yeah, I love them.
-E0653.2	Specs	Thank goodness... I've had trouble, because the kids around me and I have nothing to talk about.
+E0653.2	Specs	Thank goodness... I've had trouble, because the kids around me and I don't have the same things to talk about.
 E0653.3	Guts, Fat	That makes us sound like idiots!
+# NOTE E0653.2: "you see" renders the explanatory "-n da" in Specs's register (style guide § 5);
+#   nothing else is added — "awanakute" is "don't match", not "never".
 
 # --- E0607: B10 -- the hill; I35 -- close-up
 E0607.0	Boku	Yaaawn...
-E0607.1	Narrator	The view from the top of the hill was somehow less a thing for a deep breath // than for a big yawn: a truly leisurely view.
+E0607.1	Narrator	The view from the top of the hill was somehow less suited to a deep breath // than to a big yawn; it was a truly unhurried scene.
 E0607.2	Boku	Yaaawn...
 
 
@@ -137,7 +144,7 @@ E0609.0	Boku	Is this cracked, gata-pon tree a sawtooth oak?
 # NOTE E0608.0, E0609.0: gata-pon is Boku's own sound word for the bark (glossary § 3).
 
 # --- E0612: G01 -- living room
-E0612.0	Uncle	Ahh, that was exhausting. // Today Uncle spent the whole day keeping watch over the watermelon field. // But thanks to that, the damage today was zero.
+E0612.0	Uncle	Ahh, that was exhausting. // Today Uncle spent the whole day keeping watch over the watermelon field. // But I'm pleased to report that today's losses came to zero.
 E0612.1	Uncle	Keeping watch today really wore me out... // But of course, on a day like this, the watermelon thieves don't show up...
 E0612.2	Uncle	Well, well... but I'm quiiitting watch duty in the field after just today. // Because it's such hard work. No, really...
 

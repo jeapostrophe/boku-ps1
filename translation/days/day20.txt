@@ -12,7 +12,7 @@ E2006.8	Uncle	Is it the entrance exams you don't want?
 E2006.9	Moe	......
 E2006.10	Uncle	Won't you... tell me why?
 E2006.11	Uncle	J-joints?
-E2006.12	Uncle	Mm-hm, and besides... // an education isn't something you absolutely need to go out into the world, // and a girl like you, Moe, could pick up learning naturally without going on to higher schools, I think. // But if you don't take some time to sort out a bit more what you're thinking now, // I suspect it'll end in something you regret.
+E2006.12	Uncle	Mm-hm, and besides... // a school record isn't something you absolutely need to go out into the world, // and a girl like you, Moe, could pick up culture naturally without going on to higher schools, I think. // But if you don't take some time to sort out a bit more what you're thinking now, // I suspect it'll end in something you regret.
 E2006.13	Moe	But you and Mom are so unfair!
 
 # --- E2060: D07 -- Saori's camp
@@ -25,24 +25,24 @@ E2060.5	Saori	Hmph. Kids fall for anything.
 E2060.6	Saori	Oh... I forgot to go and buy more of the paints I'm running out of.
 
 # --- E2002: G02 -- breakfast
-E2002.0	Uncle	Who'd have thought she'd give up even on going to high school... // I thought Moe was a little more grown-up than that...
+E2002.0	Uncle	Who'd have thought she'd give up even on going to high school... // Dad thought Moe was a little more grown-up than that...
 
 # --- E2020: H07 -- outside the dining room
 E2020.0	Aunt	Our daughter has gotten so tough.
 E2020.1	Aunt	It must be because her parents are so excellent.
 
 # --- E2012: G01 -- living room
-E2012.0	Uncle	Phew......
+E2012.0	Uncle	Sigh......
 E2012.1	Boku	What's wrong?
 E2012.2	Uncle	At your age, // your dad and mom are still perfect beings, right?
 E2012.3	Boku	I don't really get what you mean.
-E2012.4	Uncle	For Uncle, his parents... // at least until Uncle was past thirty, // he never could find any human flaws in them, or any big deceptions... // In a way, they were close to perfect... // But now it's Uncle's turn to be the parent, // and what do you know, his fifteen-year-old daughter broke straight through his front line...
+E2012.4	Uncle	Uncle's own parents... // at least until Uncle was past thirty, // Uncle never could find any human flaws in them, or any big deceptions... // In a way, they were close to perfect... // But now it's Uncle's turn to be the parent, // and what do you know, Uncle's fifteen-year-old daughter broke straight through the front line...
 E2012.5	Boku	...You lost?
 E2012.6	Uncle	Maybe so... // But maybe parents are like this in every age.
 E2012.7	Uncle	Even the breeze blowing through the veranda feels kind of halfhearted today...
 
 # --- E2010: H26 -- the workshop
-E2010.0	Uncle	Say... Boku-kun, what kind of job do you think you'd like to do when you grow up?
+E2010.0	Uncle	Hey... Boku-kun, what kind of job do you think you'd like to do when you grow up?
 E2010.1	Boku	Huh? // Me... // I'm thinking about it...
 
 # --- E2031: G16 -- Moe's bed
@@ -70,7 +70,7 @@ E2004.2	Saori	Yusaku-san, Kaa-san, I've come to borrow the bath.
 E2004.3	Saori	Kaa-san, I'm sorry to intrude so late.
 E2004.4	Aunt	That's all right. Think of it as your own home, and take your time in the bath.
 E2004.5	Saori	Thank you very much.
-E2004.6	Saori	Oh? Nice to meet you...
+E2004.6	Saori	Huh? Nice to meet you...
 E2004.7	Aunt	This boy is my big brother's child. His mother's about to give birth, so we're looking after him...
 E2004.8	Boku	...I-I'm Boku.
 E2004.9	Saori	Oh, I'm Saori. Good evening! Hehe... what a little cutie.

@@ -20,17 +20,17 @@
 # --- E0701: G02 -- breakfast
 E0701.0	Boku	Yesterday I climbed all the way to the top of the hill. // The view was really nice.
 E0701.1	Moe	A nice view... then maybe that hill over there?
-E0701.2	Uncle	Yes, that'll be the one.
+E0701.2	Uncle	Yeah, that's right.
 E0701.3	Uncle	When these kids were much, much smaller, // we'd all climb up that hill and fly kites. // ...That's right, on the bookshelf in the living room there's a kite book we bought back then... // Shall Uncle make you a kite?
 E0701.4	Boku	Yay! Thanks, Uncle!
 E0701.5	Uncle	Then you are to look at the book and choose the kite you want made! // And in the daytime, when Uncle's in the workshop, come and tell me which one you chose.
-E0701.6	Boku	Okay, I will.
-E0701.7	Uncle	Well then, itadakimaasu.
-E0701.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E0701.6	Boku	Yeah, I'll do that.
+E0701.7	Uncle	Well then, itadakimaasu!
+E0701.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E0720: H06 -- garden off the veranda, the washing line
-E0720.0	Boku	Auntie, you hang out the washing outside almost every day, // so how come your skin is so white?
-E0720.1	Aunt	Hmm, I wonder why? // Maybe because I eat lots of fruit with vitamin C in it. // And sometimes, to keep my skin white, I wash my face with nightingale droppings.
+E0720.0	Boku	Auntie, you hang out the washing outside almost every day, // so how come your skin's so fair?
+E0720.1	Aunt	Hmm, I wonder why? // Maybe because I eat lots of fruit with vitamin C in it. // And sometimes, so my skin will get fairer, I wash my face with nightingale droppings.
 E0720.2	Boku	Nightingale droppings? // There's really such a thing in the world... // Poop?
 E0720.3	Aunt	That's right.
 E0720.4	Boku	Nightingale droppings... there's really such a thing?
@@ -65,21 +65,21 @@ E0710.12	Uncle	Do your best to fly Uncle's kite up high.
 E0710.13	Uncle	Uncle's kite ought to fly a bit higher than that... // If you fly it high enough to see from here, I'll make you the next one.
 E0710.14	Uncle	Is kite-flying hard? Anyway, fly it higher, much higher. // Then I should surely be able to see it even from this workshop's window.
 E0710.15	Uncle	The kite I gave you the other day is the last one, so do your best to fly it up high.
-E0710.16	Uncle	Eh, what's this... you want the Square Kite? // All right, all right... then give me about two days.
-E0710.17	Uncle	Eh, what's this... you want the Nina Kite? // All right, all right... then give me about two days.
-E0710.18	Uncle	Eh, what's this... you want the Cicada Kite? // All right, all right... then give me about two days.
-E0710.19	Uncle	Eh, what's this... you want the Bird Kite? // All right, all right... then give me about two days.
-E0710.20	Uncle	Eh, what's this... you want the Carp-streamer Kite? // All right, all right... then give me about two days.
-E0710.21	Uncle	Eh, what's this... you want the Airplane Kite? // All right, all right... then give me about two days.
-E0710.22	Uncle	Eh, what's this... you want the Kite Train? // All right, all right... then give me about two days.
-E0710.23	Uncle	Eh, what's this... you want the Portrait Kite? // All right, all right... then give me about two days.
+E0710.16	Uncle	Oh? Let's see, let's see... So it's the Square Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.17	Uncle	Oh? Let's see, let's see... So it's the Nina Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.18	Uncle	Oh? Let's see, let's see... So it's the Cicada Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.19	Uncle	Oh? Let's see, let's see... So it's the Bird Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.20	Uncle	Oh? Let's see, let's see... So it's the Carp-streamer Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.21	Uncle	Oh? Let's see, let's see... So it's the Airplane Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.22	Uncle	Oh? Let's see, let's see... So it's the Kite Train you want, is it? // Right, right... Then please give me about two days.
+E0710.23	Uncle	Oh? Let's see, let's see... So it's the Portrait Kite you want, is it? // Right, right... Then please give me about two days.
 E0710.24	Uncle	It seems you'd like me to make you a kite, but I'm sorry. // Even if I started now, it wouldn't be finished while you're still here.
 E0710.25	Uncle	The kite isn't ready yeeet. // Please wait just a little longer.
 E0710.26	Uncle	Boku-kun, your kite's finished.
 E0710.27	Uncle	Boku-kun, this is the last kite. It's finally finished!
 E0710.28	Boku	Thanks, Uncle.
 E0710.29	Uncle	Then your goal, for now, // is to fly that kite high, high up in the sky, high enough to be seen from this house's garden.
-E0710.30	Boku	Okay, Uncle, leave it to me! // I'll do my best.
+E0710.30	Boku	Yeah! Leave it to me, Uncle! // I'll do my best.
 E0710.31	(unlabelled)	Got the Square Kite.
 E0710.32	(unlabelled)	Got the Nina Kite.
 E0710.33	(unlabelled)	Got the Cicada Kite.
@@ -100,13 +100,13 @@ E0733.1	Moe	Oh, this? Well... // I wanted to thank the person who's teaching me 
 E0733.2	Boku	Hmm, Onee-chan, you're like a grown-up lady.
 E0733.3	Moe	Huh? Hm-hm-hm... thank you, Boku-kun. // But you know, making these pressed flowers is a little bit special.
 E0733.4	Boku	Huh! Why?
-E0733.5	Moe	Hahaha, that's what you call a se-cret. // ...Still, it's been lovely weather for a long, long time now, hasn't it?
+E0733.5	Moe	Hahaha, that's what you call a se-cret. // ...Anyway, it's been fine weather for aaages now, hasn't it?
 
 # --- E0780: B02; B03 -- forest path with the yellow flowers
 E0780.0	Moe	Me, I... on blue-sky days like this, // I love how cool the breeze is that blows now and then from the shade of the trees... // The wind carries the lush scent of the forest... // If I could, always, here in the green of this deep forest... // I'd like to just live quietly, without thinking about anything at aaall... // And then, before I knew it... I'd have turned into an old lady. // ...That's how I'd like it.
 E0780.1	Moe	Hey, Boku-kun, help me look for flowers to press. // I'm... bad at choosing anything.
 E0780.2	Moe	These yellow globeflowers... // if you find a cute one, bring it to me.
-E0780.3	Boku	Okay, got it, Onee-chan.
+E0780.3	Boku	Yeah, got it, Onee-chan.
 
 # --- E0781-E0785: the five flower spots on B03, examined (each once; the flower is carried one at
 #     a time). E0787: the map's own auto event. No text on the disc for any of them.
@@ -131,14 +131,14 @@ E0751.1	Guts	There's chalk next to the ring, right? // Use it to write how stron
 E0751.2	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
 
 # --- E0752: A18 -- the secret base (Guts's tips, days 16-22)
-E0752.0	Guts	Before a match, try tapping your bug's back on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
+E0752.0	Guts	Before a match, try tapping your bug on the back while it's on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
 E0752.1	Guts	In bug sumo... // first off, you lose if your bug falls out of the ring, or runs out of stamina and flips over. // And a bug that loses can't be used for the rest of that day, got it? // Well, everybody puts their losing bugs up for trade right away anyway. // So if a bug you want shows up, just win, and make them put it up for trade.
 E0752.2	Guts	There's chalk next to the ring, right? // Use it to write how strong a bug you want us to put out. // You're still a beginner, Boku-chan, so we'll put out whatever bug you want. // By the way, for each kind of bug, we call the biggest, strongest one the King.
 E0752.3	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
 
 # --- E0753: A18 -- the secret base (Guts's tips, from day 23)
 E0753.0	Guts	If our strong-class bugs start losing to yours one after another, Boku-chan, // we'll get serious and go find even stronger ones!
-E0753.1	Guts	Before a match, try tapping your bug's back on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
+E0753.1	Guts	Before a match, try tapping your bug on the back while it's on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
 E0753.2	Guts	In bug sumo... // first off, you lose if your bug falls out of the ring, or runs out of stamina and flips over. // And a bug that loses can't be used for the rest of that day, got it? // Well, everybody puts their losing bugs up for trade right away anyway. // So if a bug you want shows up, just win, and make them put it up for trade.
 E0753.3	Guts	There's chalk next to the ring, right? // Use it to write how strong a bug you want us to put out. // You're still a beginner, Boku-chan, so we'll put out whatever bug you want. // By the way, for each kind of bug, we call the biggest, strongest one the King.
 E0753.4	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
@@ -147,45 +147,45 @@ E0753.4	Guts	But you can only request a King for one match a day. // Because no 
 # --- E0761: A18 -- the secret base (Fat's tips, days 1-14)
 E0761.0	Fat	Gahaha, bugs are amazing! // As soon as a match is over, it's like their stamina's full again.
 E0761.1	Fat	Just look at yours truly and you'll see: with bugs too, naturally, the bigger ones are stronger.
-E0761.2	Fat	But the strongest of all has got to be Rhino Beetle-chan.
+E0761.2	Fat	But I guess the strongest of all is Rhino Beetle-chan.
 
 # --- E0762: A18 -- the secret base (Fat's tips, days 16-22)
 E0762.0	Fat	Bug sumo is just like people sumo: the more you win, the stronger you get.
 E0762.1	Fat	Gahaha, bugs are amazing! // As soon as a match is over, it's like their stamina's full again.
 E0762.2	Fat	Just look at yours truly and you'll see: with bugs too, naturally, the bigger ones are stronger.
-E0762.3	Fat	But the strongest of all has got to be Rhino Beetle-chan.
+E0762.3	Fat	But I guess the strongest of all is Rhino Beetle-chan.
 
 # --- E0763: A18 -- the secret base (Fat's tips, from day 23)
 E0763.0	Fat	Depending on the kind, some of them pull off a big comeback move right at the edge of the ring!
 E0763.1	Fat	Bug sumo is just like people sumo: the more you win, the stronger you get.
 E0763.2	Fat	Gahaha, bugs are amazing! // As soon as a match is over, it's like their stamina's full again.
 E0763.3	Fat	Just look at yours truly and you'll see: with bugs too, naturally, the bigger ones are stronger.
-E0763.4	Fat	But the strongest of all has got to be Rhino Beetle-chan.
+E0763.4	Fat	But I guess the strongest of all is Rhino Beetle-chan.
 
 
 # --- E0771: A18 -- the secret base (Specs's tips, days 1-14)
-E0771.0	Specs	Each kind of bug has its own traits, like being sturdy, so its stamina doesn't go down easily. // In people, it's like the difference between me and Fat.
+E0771.0	Specs	Each kind of bug has its own traits, like being sturdy and slow to lose stamina. // In people terms, it's like the difference between me and Fat.
 E0771.1	Specs	If you make them wrestle lots of different opponents, // you start to see how the moves each bug has match up, and that's interesting.
 E0771.2	Specs	Even in the same kind of bug, the males and the females fight differently. // Hehe, you know, it's sort of like the difference between boys and girls, and that's interesting.
 
 # --- E0772: A18 -- the secret base (Specs's tips, days 16-22)
 E0772.0	Specs	Did you try tapping your bug's back before the match? // If you tap it again and again, the way it gets angry changes, and an angry bug seems to pull off its moves more easily.
-E0772.1	Specs	Each kind of bug has its own traits, like being sturdy, so its stamina doesn't go down easily. // In people, it's like the difference between me and Fat.
+E0772.1	Specs	Each kind of bug has its own traits, like being sturdy and slow to lose stamina. // In people terms, it's like the difference between me and Fat.
 E0772.2	Specs	If you make them wrestle lots of different opponents, // you start to see how the moves each bug has match up, and that's interesting.
 E0772.3	Specs	Even in the same kind of bug, the males and the females fight differently. // Hehe, you know, it's sort of like the difference between boys and girls, and that's interesting.
 
 # --- E0773: A18 -- the secret base (Specs's tips, from day 23)
-E0773.0	Specs	Do you know about the Giant Stag Beetle? // You hardly ever get hold of one, but it's every bit as strong as that makes it sound.
+E0773.0	Specs	Do you know about the Giant Stag Beetle? // You hardly ever get hold of one, but it has strength to match.
 E0773.1	Specs	Did you try tapping your bug's back before the match? // If you tap it again and again, the way it gets angry changes, and an angry bug seems to pull off its moves more easily.
-E0773.2	Specs	Each kind of bug has its own traits, like being sturdy, so its stamina doesn't go down easily. // In people, it's like the difference between me and Fat.
+E0773.2	Specs	Each kind of bug has its own traits, like being sturdy and slow to lose stamina. // In people terms, it's like the difference between me and Fat.
 E0773.3	Specs	If you make them wrestle lots of different opponents, // you start to see how the moves each bug has match up, and that's interesting.
 E0773.4	Specs	Even in the same kind of bug, the males and the females fight differently. // Hehe, you know, it's sort of like the difference between boys and girls, and that's interesting.
 
 # --- E0712: G01 -- living room
 E0712.0	Uncle	Boku-kun, have you gotten used to this house by now?
 E0712.1	[SEL]	Yes | No
-E0712.2	Uncle	I see... // This house was originally a farmhouse from around Kanazawa, built in the middle of the Meiji era. // The person who lived here before Uncle bought it and relocated it here.
-E0712.3	Boku	Relo-cated?
+E0712.2	Uncle	I see... // This house was originally a farmhouse from around Kanazawa, built in the middle of the Meiji era, they say. // It was the person who lived here before Uncle who bought it and relocated it here.
+E0712.3	Boku	What's ree-lo-kated?
 E0712.4	Uncle	It means moving house, building and all. // Kind of like a hermit crab, isn't it?
 E0712.5	Uncle	Mmm, there's quite a nice breeze coming in today.
 # NOTE E0712.3: ichiku (moving a building to a new site); Boku repeats a word he does not know
@@ -206,6 +206,6 @@ E0704.2	Aunt	Here, Boku-kun, this is for you.
 E0704.3	Boku	Oh, the photo's ready. Thanks, Auntie.
 
 # --- E0741: G06 -- TV room
-E0741.0	Shirabe	What a big fish.
-E0741.1	Boku	...Oh, it's the TV.
-E0741.2	Shirabe	When I grow up, I want to live in a house where I can keep one of these in the bathtub.
+E0741.0	Shirabe	What an awfully big fish.
+E0741.1	Boku	...Oh, it's only the TV.
+E0741.2	Shirabe	When I'm grown, I should like to live in a house where one could keep one of these in the bathtub.

@@ -18,9 +18,9 @@ E0301.0	Uncle	Boku-kun, have you been to the pond yet? // There are lots of big 
 E0301.1	Boku	Whoa! Loooads of them? That sounds great, that sounds great!
 E0301.2	Uncle	If you want to use a fishing rod, it's in this...
 E0301.3	Uncle	...the shed on the right when you go out the kitchen door, so take it with you.
-E0301.4	Boku	Okay, got it. Thanks, Uncle.
-E0301.5	Uncle	Well then, itadakimaasu.
-E0301.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E0301.4	Boku	Yeah, got it. Thanks, Uncle.
+E0301.5	Uncle	Well then, itadakimaasu!
+E0301.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E0302: G02 -- after breakfast
 E0302.0	Uncle	Gochisosama deshita.
@@ -56,9 +56,9 @@ E0384.0	Uncle	With that, Boku-kun, we're about done. // Well, well, thank you fo
 E0384.1	Aunt	Somehow I've worked up a good sweat myself.
 
 # --- E0340: H04 -- garden corner where Shirabe watches ants
-E0340.0	Shirabe	Boys are so crude, I can't stand them.
-E0340.1	Boku	...What's "crude"?
-E0340.2	Shirabe	Not knowing things like that is what's called crude.
+E0340.0	Shirabe	Boys are so uncouth. I simply loathe them.
+E0340.1	Boku	...What's "uncouth"?
+E0340.2	Shirabe	Not knowing this sort of thing is what one calls uncouth.
 E0340.3	Boku	What do you do here every day?
 E0340.4	Shirabe	What does it matter to you!
 E0340.5	Boku	Are you looking at the ground?
@@ -66,22 +66,36 @@ E0340.6	Shirabe	Huh? Whyyy would Shirabe be looking at the dirt?
 E0340.7	Boku	There's nothing here but ants.
 E0340.8	Shirabe	...Say, have you ever seen a queen ant?
 E0340.9	Boku	Huh?
-E0340.10	Shirabe	Stop, stop. What I just said is nashinko.
+E0340.10	Shirabe	Never mind, never mind. What I just said is nashinko.
 E0340.11	Shirabe	I told you, leave me alone!
-# NOTE E0340.0-.2: gasatsu (rough, crude): Boku does not know the word, and Shirabe's definition
-#   is circular (bible § 6, kind 1); "crude" carries it without mangling.
-# NOTE E0340.10: nashinko, Shirabe's coinage from nashi ("none", "cancelled"); kept as a sound
-#   (style guide § 7).
+# NOTE E0340.0-.2: gasatsu — a grown-up word Boku does not know, and Shirabe's definition is
+#   circular (bible § 6, style guide § 8 kind 1). "Uncouth" is the English word an eight-year-old
+#   playing a lady would use and a nine-year-old would not know; the circular definition is
+#   translated as it stands.
+# NOTE E0340.10: nashinko is her coinage (style guide § 7: nashinko stays as a sound) — "doesn't
+#   count". "Yame, yame" is Shirabe cancelling her own slip (the queen ant she studies), not an
+#   order to Boku — so "never mind", not "stop".
 
 # --- E0305: G06 -- TV room (the high-school baseball broadcast)
-E0305.0	(voice only)
-E0305.1	(voice only)
-E0305.2	(voice only)
-E0305.3	(voice only)
-E0305.4	(voice only)
+E0305.0	(voice only)	The Summer National High School Baseball Championship. // Today's first game: representing Kumamoto, Asosan Minami High, // and representing Miyagi, Chigi Agricultural High. // Top of the second inning, Asosan Minami at bat. // Chigi Agricultural leads 2 to 1, and their ace, Hoshigaki, delivers! // Ah, a big curveball... just misses. // Three straight balls to Satsuma, the left fielder batting sixth. A jam for Chigi!
+E0305.1	(voice only)	The Summer National High School Baseball Championship. // Today's second game: representing Hiroshima, Hiroshima Maritime High, // and representing Niigata, Niigata Inekari Agricultural High. // Bottom of the third, Niigata Inekari at bat. // Hiroshima Maritime's first-year pitcher, Otafuku. // His elbow injury had people worried, but he's pitching so well you'd never know it, // and Hiroshima Maritime now holds a big lead over Niigata Inekari, 3 to 0.
+E0305.2	(voice only)	The Summer National High School Baseball Championship. // Today's third game: representing North Hokkaido, Nemuro Ryuhyo High, // and representing Toyama, Toyama Pharmaceutical College High. // We're in the bottom of the seventh, with Toyama Pharmaceutical at bat. // Now, Nemuro Ryuhyo's ace, Hanasaki, gave up a flood of runs when Toyama batted around in a furious first inning, // but from the second on, he seems to have managed to keep Toyama's bats in check. // Even so, it's 8 to 2, and Toyama's big lead holds.
+E0305.3	(voice only)	The Summer National High School Baseball Championship. // Today's fourth game: representing Aichi, Nagoya Daimyo Technical High, // and representing Okinawa, Okinawa Kaisen High. // The third game dragged on, so play began about an hour behind schedule. // Okinawa Kaisen's pitcher, Gushiken. The first pitch... there it goes, and it's hit! // But Daimyo Tech's Tokugawa seems to have skied it. // Oh! It's carrying farther than you'd think... carrying, carrying... it's gone! A home run on the very first pitch!
+E0305.4	(voice only)	The Summer National High School Baseball Championship: today's results. // Game one: representing Kumamoto, Aso Minami High, // and representing Miyagi, Chigi Agricultural High. // In the top of the second, Aso Minami made the most of a wobble in Chigi ace Hoshigaki's pitch selection, // scored a flood of runs, and won easily, 7 to 2. // Game two: representing Hiroshima, Hiroshima Maritime High, // and representing Niigata, Niigata Inekari Agricultural High. // Hiroshima Maritime's first-year pitcher Otafuku saw the elbow injury everyone feared flare up again, // and in the end it seems to have called the goddess of victory over to Niigata Inekari's side. // The teams traded runs one at a time, and after a close game Niigata Inekari Agricultural won, 4 to 3. // Game three: representing North Hokkaido, Nemuro Ryuhyo High, // and representing Toyama, Toyama Pharmaceutical College High. // In the first inning, Toyama batted around in a furious rally, and Nemuro Ryuhyo gave up all of eight runs, // then closed the gap in the third and the eighth, and in extra innings, top of the eleventh, their ace Hanasaki... // ...hit a triple himself, and Nemuro came from behind to take the win, 9 to 8. // Game four: representing Aichi, Nagoya Daimyo Technical High, // and representing Okinawa, Okinawa Kaisen High. // Daimyo Tech's Tokugawa homered off the very first pitch of the first inning, and that decided the game: // Nagoya Daimyo Technical High won, 1 to 0. // This has been Yoshimoto of NHN Osaka, reporting from Koshien Stadium.
+# NOTE E0305.0-.4: a school name translates its type (Agricultural, Maritime, Technical,
+#   Pharmaceutical College) and keeps the rest as a name, gag words included: Inekari (rice
+#   harvest), Kaisen (seafood), Ryuhyo (Nemuro's drift ice), Daimyo, Asosan (Mount Aso). The
+#   people are gag names kept as sounds: Hoshigaki (dried persimmon), Satsuma (sweet potato),
+#   Otafuku (the Hiroshima sauce), Hanasaki (Nemuro's crab), Gushiken (an Okinawan name, the
+#   boxer Yoko Gushiken's), Tokugawa (the Owari Tokugawa, lords of Nagoya), Yoshimoto of Osaka
+#   (the comedy agency), NHN (NHK).
+# UNSURE E0305.0-.4: readings taken from the ASR, not confirmed by ear: Asosan Minami in .0,
+#   Aso Minami in .4 (what each clip's ASR heard; one school, so one of them is likely wrong);
+#   Chigi; Otafuku (one pass heard Tafuku); Ryuhyo (the live clip's pass heard Ryuhei); Kaisen
+#   (seafood per the results clip; the live clip's passes heard the homophone "naval battle").
 
 # --- E0312: G01 -- living room
-E0312.0	Uncle	Uncle's fields are only just big enough // to grow what we eat ourselves. // The easy way is always the best way.
+E0312.0	Uncle	Uncle's field, for what we eat at home... // we only farm just enough ground for that. // In everything, the easy way is the best way.
 E0312.1	Uncle	Thank you for your hard work helping in the field today. // Uncle's field is small, // so it might be just the right size for you to help with, Boku-kun.
 
 # --- E0303: G02 -- dinner
@@ -120,7 +134,10 @@ E0341.0	Shirabe	I only just ate, but I'm already hungry. // Aww, I want the haru
 E0341.1	Boku	What's that?
 E0341.2	Shirabe	...Huh? You don't know it?
 E0341.3	Boku	Huh?
-E0341.4	Shirabe	A school-lunch cafeteria with no harusame salad? Your place is a hundred years behind.
+E0341.4	Shirabe	A cafeteria without harusame salad? Where you come from is a hundred years behind the times.
 E0341.5	Shirabe	You know...
 E0341.6	Boku	What?
 E0341.7	Shirabe	...Never mind.
+# NOTE E0341.0, .4: harusame salad stays "harusame salad" (Jay, 2026-09-21: it should stay
+#   Japanese); kyushoku sentaa → "cafeteria" (Jay, 2026-09-21: "school-lunch center" is too
+#   literal). Glossary § 5, the school-lunch conversations.

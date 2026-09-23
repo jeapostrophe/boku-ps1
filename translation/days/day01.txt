@@ -69,7 +69,7 @@ E0185.0	Aunt	Well then, until dinner... // there's about an hour left, I'd say? 
 # --- E0112: G01 -- living room
 E0112.0	Uncle	Boku-kun, is this the first time you've lived in a house with a veranda?
 E0112.1	[SEL]	Yes | No
-E0112.2	Uncle	Wherever you are in this house, a cool, pleasant breeze comes in... // so we do have an electric fan, but we've hardly ever used it.
+E0112.2	Uncle	Wherever you are in this house, a cool, pleasant breeze comes in... // so we do have an electric fan, just in case, but we've hardly ever used it.
 E0112.3	Boku	Oh, I see.
 E0112.4	Uncle	Mm-hm. In the old days, houses were all like this. // When all the ground around is buried under concrete, // I suppose it doesn't work out this way...
 E0112.5	Uncle	The high ceilings are nice, aren't they?
@@ -83,7 +83,7 @@ E0114.4	Boku	Yay! All right!
 E0114.5	Uncle	But it's a hand-me-down from Uncle's child. // Is that all right?
 E0114.6	Boku	Yeah, that's fine! Show me, show me!
 E0114.7	Uncle	Then I'll bring it to you after dinner. // ...You are to wait for it in eager anticipation!
-E0114.8	Boku	Okay. Thanks, Uncle.
+E0114.8	Boku	Yeah. Thanks, Uncle.
 E0114.9	Narrator	I was so happy that my heart pounded as it does after a footrace...
 
 # --- E0121: G03 -- kitchen
@@ -116,7 +116,7 @@ E0140.11	Shirabe	......
 E0001.0	Narrator	Far off, I could see the village of Sagi-no-sato at the foot of the mountain...
 
 # --- E0190: A19
-E0190.0	Uncle	All right! Playtime is over for today! // Dinner is reeeady!
+E0190.0	Uncle	All right! Playtime is over for today! // Dinner's already reeeady!
 
 # --- E0103: G02 -- dining room
 E0103.0	Uncle	Well then, itadakimasu!

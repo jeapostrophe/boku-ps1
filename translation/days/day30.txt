@@ -3,7 +3,7 @@
 E3006.0	(unlabelled)	Found Shirabe's ribbon.
 
 # --- E3007: C04 -- far end of the log bridge
-E3007.0	Uncle	All right! Playtime is over for today! // Dinner is reeeady!
+E3007.0	Uncle	All right! Playtime is over for today! // Dinner's already reeeady!
 
 # --- E3023: H06 -- garden off the veranda (day 30: where is Shirabe? the quiz)
 E3023.0	Aunt	Hey, Boku-kun, have you seen Shirabe? // She's been gone for a while now... // I've looked everywhere I could think of, one after another. What could have happened to her...
@@ -50,7 +50,7 @@ E3024.4	Boku	Maybe Shirabe went away... // because I'm going home tomorrow?
 E3024.5	Aunt	Yes, that might be it. At first glance she seems strong-willed, that girl, but... // deep down she's a very gentle, sensitive child...
 E3024.6	Boku	I'll try my best to find her.
 E3024.7	Aunt	All right. Then, Boku-kun, you look over toward the sea... // But don't go anywhere dangerous.
-E3024.8	Boku	Okay, I know.
+E3024.8	Boku	Yeah, I know.
 E3024.9	Aunt	Shirabe... Shirabe-chaaan...
 
 # --- E3034: B05 -- just beyond the beehive
@@ -74,8 +74,8 @@ E3001.7	Aunt	Hm-hm-hm, what a funny girl.
 E3001.8	Shirabe	...I said it's nothing.
 E3001.9	Boku	Weirdooo.
 E3001.10	Shirabe	......
-E3001.11	Uncle	Well then, itadakimaasu.
-E3001.12	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E3001.11	Uncle	Well then, itadakimaasu!
+E3001.12	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E3002: G02 -- after breakfast (Shirabe gone)
 E3002.0	Uncle	Gochisosama deshita.
@@ -109,13 +109,15 @@ E3042.4	Shirabe	What's that supposed to mean?
 E3042.5	Boku	Anyway, why don't you go home?
 E3042.6	Shirabe	No! I've got something to do here. // More importantly, did you see my ribbon lying near the house? // I lost it this morning... I tie it on with a rubber band.
 E3042.7	Boku	...Everyone's worried.
-E3042.8	Shirabe	You're so persistent... Do something about it, you're my lackey, aren't you!
+E3042.8	Shirabe	You're so persistent... Do something about it, you're my servant, my ge-Boku, aren't you!
 E3042.9	Boku	...What's that supposed to mean?
 E3042.10	Shirabe	Stop pestering me! Nyaah!
 E3042.11	Boku	Nyaah yourself!
-E3042.12	Shirabe	You know...
+E3042.12	Shirabe	You're so...
 E3042.13	Boku	What?
 E3042.14	Shirabe	Oh, forget it. Do whatever you want!
+# NOTE E3042.8: geboku (manservant), written in katakana, ends in his name; "my ge-Boku" keeps
+#   the homophone (style guide § 8, kind 3), and .9 is Boku reacting to his name made into "servant".
 E3042.15	Boku	What's with her?
 # NOTE E3042.3: the nickname said syllable by syllable, as the English words said slowly (style
 #   guide § 7).
@@ -145,7 +147,7 @@ E3022.0	Aunt	Auntie really wanted to become a proper professional photographer i
 
 # --- E3031: G15 -- the sisters' room
 E3031.0	Moe	Today, Shirabe... when Dad found her, she was in the sunflower field, apparently. // Take good care of Shirabe's present, okay...
-E3031.1	Boku	Okay!
+E3031.1	Boku	Yeah!
 E3031.2	Moe	Did Shirabe go out first thing in the morning // to pick sunflowers to give you, Boku-kun, I wonder?
 E3031.3	Boku	I wonder...
 E3031.4	Moe	I hear it was you who found Shirabe today, Boku-kun. // I'm sorry my little sister caused you trouble. Thank you...

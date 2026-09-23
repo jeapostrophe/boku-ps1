@@ -26,7 +26,7 @@ E0930.6	Moe	An exam student, huh... what a dreary youth.
 
 # --- E0931: G15 -- the sisters' room
 E0931.0	Moe	Ahh, enough studying, quit, quit... // What a pain...
-E0931.1	Moe	I wonder if a war might start, and next year's entrance exams would just get canceled, snap?
+E0931.1	Moe	Maybe a war or something will start, and next year's entrance exams will just vanish, snap?
 E0931.2	Moe	But if a war really did start, that'd be kind of a problem.
 
 # --- E0940: H10 -- garden corner where Shirabe watches ants

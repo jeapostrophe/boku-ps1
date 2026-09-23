@@ -39,7 +39,7 @@ E1820.10	Boku	...That.
 E1820.11	Aunt	Leave Onee-chan be today, all right?
 
 # --- E1812: G01 -- living room
-E1812.0	Uncle	Something I heard at the barber's today: // our watermelons are getting a name for themselves down in the village as pretty good.
+E1812.0	Uncle	Something I heard at the barber's today: // our watermelons are getting a name for themselves at the foot of the mountain as pretty good.
 E1812.1	Uncle	Especially among the children, it seems. // They're for our own use, so they shouldn't be on sale anywhere...
 
 # --- E1803: G02 -- dinner

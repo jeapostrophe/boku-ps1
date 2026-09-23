@@ -1,6 +1,6 @@
 # arrays (translation/days/README.md)
 # --- exe@80029920: a spoken message the program holds itself, outside every event
-exe@80029920.0	Uncle	All right! Playtime is over for today! // Dinner is reeeady!
+exe@80029920.0	Uncle	All right! Playtime is over for today! // Dinner's already reeeady!
 # NOTE exe@80029920.0: the same recording as the uncle's call E0190.0; the same English.
 
 # --- exe@80029AFC: ant-count message; code writes 3 digit glyphs into words 1-3
@@ -107,7 +107,7 @@ exe@8003D5F0.1	(unlabelled)	No MEMORY CARD is inserted.
 exe@8003D5F0.2	(unlabelled)	Could not access the MEMORY CARD.
 exe@8003D5F0.3	(unlabelled)	There are no free blocks on the MEMORY CARD.
 exe@8003D5F0.4	(unlabelled)	There is no file for this game.
-exe@8003D5F0.5	(unlabelled)	There is no file of a finished game.
+exe@8003D5F0.5	(unlabelled)	There is no file that has finished this game.
 exe@8003D5F0.6	(unlabelled)	Which file do you want to load?
 exe@8003D5F0.7	(unlabelled)	Which file do you want to save to?
 exe@8003D5F0.8	(unlabelled)	Start the game as it is?
@@ -151,7 +151,7 @@ exe@8003DA00.1	(unlabelled)	Specimens + Bug Cage
 exe@8003DA00.2	(unlabelled)	Kites
 exe@8003DA00.3	(unlabelled)	Belongings
 exe@8003DA00.4	(unlabelled)	Endings
-exe@8003DA00.5	(unlabelled)	Dinner Quiz Record
+exe@8003DA00.5	(unlabelled)	Dinner Quiz Accuracy
 
 # --- exe@8003DA4C: fish names
 exe@8003DA4C.0	(unlabelled)	Iwana
@@ -176,7 +176,6 @@ exe@800461CC.4	(unlabelled)	Carp-streamer Kite
 exe@800461CC.5	(unlabelled)	Airplane Kite
 exe@800461CC.6	(unlabelled)	Kite Train
 exe@800461CC.7	(unlabelled)	Portrait Kite
-# UNSURE exe@800461CC.1: nina-dako, meaning not established (glossary § 4d, marked there).
 
 # --- exe@80046214: item names
 exe@80046214.0	(unlabelled)	Radio-Calisthenics Card
@@ -230,7 +229,7 @@ exe@80046398.3	(unlabelled)	With this, loads of bugs will come. My own special s
 exe@80046398.4	(unlabelled)	Found by the sea. A strange shape. Who dropped it?
 exe@80046398.5	(unlabelled)	Whose treasure is it? Deep in the cave, playing hide-and-seek all this time.
 exe@80046398.6	(unlabelled)	Something Shirabe dropped. A cute little red ribbon.
-exe@80046398.7	(unlabelled)	A present from Shirabe. A lively sunflower that hasn't wilted.
+exe@80046398.7	(unlabelled)	A present from Shirabe. Lively sunflowers that haven't wilted.
 exe@80046398.8	(unlabelled)	Sorry, Ken-bo. When winter comes, just this spot might be cold.
 exe@80046398.9	(unlabelled)	The first one I've ever seen. The snake's shape is still all there.
 exe@80046398.10	(unlabelled)	Let's press these pretty flowers. Their name is globeflower.
@@ -242,7 +241,7 @@ exe@80046614.0	(unlabelled)	In the forest, a sudden flash... It gave me a real f
 exe@80046614.1	(unlabelled)	I won't be scared anymore. A machine like this... Nyaaaah!
 exe@80046614.2	(unlabelled)	I was sure I'd struck a slightly cooler pose than that...
 exe@80046614.3	(unlabelled)	Piggy nose!
-exe@80046614.4	(unlabelled)	The timing, just perfect: strike a pose!
+exe@80046614.4	(unlabelled)	The timing was spot on too: strike a pose!
 exe@80046614.5	(unlabelled)	Shirabe and me, the two of us. Taken by Auntie.
 exe@80046614.6	(unlabelled)	I was flying a kite, and Auntie came and took this for me.
 exe@80046614.7	(unlabelled)	In front of the sunflowers: strike a pose!
@@ -260,14 +259,14 @@ exe@80046614.18	(unlabelled)	Morning glory in bloom, day 9. Do your best next ye
 
 # --- hhon@5328: insect book entries (60 = empty slot)
 hhon@5328.0	(unlabelled)	Swallowtail. It lives all over Japan, and I see it in my town too. It's a little weak in the cold, they say.
-hhon@5328.1	(unlabelled)	Yellow Swallowtail. Its caterpillar's a weird one: carrots and parsley, which I can't stand, it loooves.
-hhon@5328.2	(unlabelled)	Long-tailed Swallowtail. Birthdays: the summer ones somehow grow bigger than the spring ones. Strange, isn't it, Long-tail-kun?
+hhon@5328.1	(unlabelled)	Yellow Swallowtail. Its caterpillar's a weird one. They say it really, really looooves carrots and parsley, the things I can't stand.
+hhon@5328.2	(unlabelled)	Long-tailed Swallowtail. Birthdays: for some reason the summer-born ones grow bigger than the spring ones, it seems. Strange, isn't it, Long-tail-kun?
 hhon@5328.3	(unlabelled)	Chinese Peacock (Karasu-ageha, "crow swallowtail"). Such pretty blue and green wings, and they call it a crow? Poor thing! Look closely: it's a snappy dresser.
 hhon@5328.4	(unlabelled)	Musk Swallowtail. It's the male, but it's snazzier than the female, and it even wears perfume. I'll try hard too.
 hhon@5328.5	(unlabelled)	Bluebottle. Just born, its stripes are yellow-green, and right before your eyes they turn blue... A big makeover by the power of the sun!
 hhon@5328.6	(unlabelled)	Mikado Swallowtail. It lives in places like India and Sri Lanka too, they say. I'd like to go, but which countries are those?
 hhon@5328.7	(unlabelled)	Cabbage White. Its caterpillar loves cabbage! It eats and eats, and it turns up just about everywhere.
-hhon@5328.8	(unlabelled)	Clouded Yellow. Its pink edging, if you look closely, is a little cute, like a girl's!
+hhon@5328.8	(unlabelled)	Clouded Yellow. Its pink edging, if you look closely, is a little cute. Like a girl!
 hhon@5328.9	(unlabelled)	Red Admiral. It rests stock-still all day, and when evening comes, it starts moving. It likes staying up late.
 hhon@5328.10	(unlabelled)	Comma. Wings all bumpy? Other cho, other butterflies, don't have that, not even a cho-tto bit!
 hhon@5328.11	(unlabelled)	Blue Admiral. Its lovely lapis-blue wings are the color of the night sky in Uncle's valley.
@@ -275,12 +274,12 @@ hhon@5328.12	(unlabelled)	Peacock. Four eyes on its wings, and its real eyes too
 hhon@5328.13	(unlabelled)	Great Purple Emperor. Great big, colorful, and just plain beautiful: Japan's king of butterflies.
 hhon@5328.14	(unlabelled)	Poplar Admiral. It lives in cool places, like up on high mountains, and it likes to sunbathe.
 hhon@5328.15	(unlabelled)	Loomis's Blue. Because of pesticides, fewer and fewer, and soon there'll be none? I will never, ever allow that!
-hhon@5328.16	(unlabelled)	Green Hairstreak. All over the world it has a hundred kinds of relatives, they say, and this is one of them.
+hhon@5328.16	(unlabelled)	Green Hairstreak. All over the world it has as many as a hundred kinds of relatives, they say, and this is one of them.
 hhon@5328.17	(unlabelled)	Pale Grass Blue. The leopard spots on its wings are its trademark. There are lots on the southern islands, and it grew up eating wood sorrel leaves.
 hhon@5328.18	(unlabelled)	Short-tailed Blue (Tsubame-shijimi, "swallow blue"). Swallow-colored, with a swallow's forked tail on its wings, but it doesn't migrate.
 hhon@5328.19	(unlabelled)	Chestnut Tiger. When the season comes, it migrates like a bird. It's a bit of an odd one.
 hhon@5328.20	(unlabelled)	Bushbrown. It likes cloudy days better than sunny ones, they say. Mind you, I don't like it too hot either.
-hhon@5328.21	(unlabelled)	Tengu Butterfly. The bump on its head is like a tengu's nose, and its dead-leaf pattern that fools its enemies is a real tengu's cloak of invisibility!
+hhon@5328.21	(unlabelled)	Tengu Butterfly. The bump on its head is like a tengu's nose too, and its dead-leaf pattern that fools its enemies is a real tengu's cloak of invisibility!
 hhon@5328.22	(unlabelled)	Green Skipper. Pretty wings, a big tummy and big eyes. I love its shiny metal gleam!
 hhon@5328.23	(unlabelled)	Miyama Stag Beetle ♂. Beech and sawtooth-oak sap is its favorite food! Its head sticks out in a funny shape, a bit odd...
 hhon@5328.24	(unlabelled)	Giant Stag Beetle ♂. Say "stag beetle" and this is the one! It grows big, and it's just plain strong! Stag beetle Kiiing!
@@ -288,7 +287,7 @@ hhon@5328.25	(unlabelled)	Flat Stag Beetle. The big tooth on the very inside of 
 hhon@5328.26	(unlabelled)	Little Stag Beetle. It really is a little guy, but once in a while one grows to over 5 centimeters!
 hhon@5328.27	(unlabelled)	Saw Stag Beetle ♂. Just like its name, it's like a saw! Its jagged horns are its trademark!
 hhon@5328.28	(unlabelled)	Red-legged Stag Beetle. Willow sap is its favorite food. It sits on the branches, and if you shake the tree, it falls down.
-hhon@5328.29	(unlabelled)	Oni Stag Beetle. It's small and pretty cute, really, so maybe it's its short horns that look like an oni's horns?
+hhon@5328.29	(unlabelled)	Oni Stag Beetle. It's small and pretty cute, and yet maybe its short horns look like an oni's horns?
 hhon@5328.30	(unlabelled)	Rhinoceros Beetle ♂. It fights with just one horn, but it shows amazing strength. Stag beetles are nothing to it.
 hhon@5328.31	(unlabelled)	Heike Firefly. Even as an egg, even as a larva, it glows its whole life long. A strange light that isn't hot when you touch it: the summer firefly.
 hhon@5328.32	(unlabelled)	River Damselfly. It lives by the rivers in the mountains, with wings of all sorts of colors: orange, clear, brown.
@@ -299,14 +298,14 @@ hhon@5328.36	(unlabelled)	Silver Emperor. The pond and around it is its territor
 hhon@5328.37	(unlabelled)	Salt Skimmer. Its body starts out straw-colored, but as it grows it gets covered in white powder, as if it's been dusted with salt.
 hhon@5328.38	(unlabelled)	Summer Red Dragonfly. When it's all grown up, it turns bright red from head to tail. The red dragonfly, the color of sunset.
 hhon@5328.39	(unlabelled)	Eyebrow Red Dragonfly. It's a dragonfly, but look closely and it really has eyebrows. It surprised me.
-hhon@5328.40	(unlabelled)	Butterfly Dragonfly. It's a dragonfly, so why "cho", butterfly? A weird dragonfly with a weird name, and cho-mini, super-mini, at that.
+hhon@5328.40	(unlabelled)	Butterfly Dragonfly (Cho-tonbo). It's a dragonfly, so why "cho", butterfly? A weird dragonfly with a weird name, and cho-mini, super-mini, at that.
 hhon@5328.41	(unlabelled)	Lord Grasshopper. It jumps dozens of times its own height, which is pretty amazing. But in big swarms, it's a bad one that wrecks the fields.
 hhon@5328.42	(unlabelled)	Kutsuwamushi. In the grassy clearings in the woods, it's only the males that go gacha-gacha.
 hhon@5328.43	(unlabelled)	Kusakiri. It likes damp grassland. At night it sings one long jiiii without stopping.
-hhon@5328.44	(unlabelled)	Umaoi. Its song, zuii-cho, sounds like a packhorse man urging his horse along, so they named it Umaoi, "horse-driver".
+hhon@5328.44	(unlabelled)	Umaoi. Its song, zuii-cho, sounds like a packhorse man urging his horse along, so it got the name Umaoi, "horse-driver", they say.
 hhon@5328.45	(unlabelled)	Kirigirisu. Its favorite foods are things like leeks and cucumbers. In the heat of the day, it sings gii-chon.
 hhon@5328.46	(unlabelled)	Enma Cricket. It has a scary name, Enma, the king of hell, but it calls in the autumn with a cool voice: koro-koro-rii-rii.
-hhon@5328.47	(unlabelled)	Kusahibari. In summer by day, in autumn by night, it sings gently: firirirri.
+hhon@5328.47	(unlabelled)	Kusahibari. In summer by day, in autumn by night, it sings gently: firiririri.
 hhon@5328.48	(unlabelled)	Suzumushi. Its old name was Matsumushi, and now it's called Suzumushi. Which name does it like better?
 hhon@5328.49	(unlabelled)	Matsumushi. Its old name was Suzumushi, and now it's called Matsumushi. A confusing relationship.
 hhon@5328.50	(unlabelled)	Nii-nii-zemi. Cherry tree trunks are its favorite. It has a kind of unusual song: chiii-iii.
@@ -315,7 +314,7 @@ hhon@5328.52	(unlabelled)	Ezo-zemi. It likes pine and cedar trees. It perches he
 hhon@5328.53	(unlabelled)	Higurashi. It likes dim thickets. When evening comes, it sings kana-kana-kana, so sadly.
 hhon@5328.54	(unlabelled)	Min-min-zemi. Min-min-min-min, it sings and sings, but its life is only two weeks. Min-min-min-min... how sad.
 hhon@5328.55	(unlabelled)	Tsukutsuku-boshi. Lots of them come out in the second half of August, so they call it the cicada that announces autumn.
-hhon@5328.56	(unlabelled)	Miyama Stag Beetle ♀. The females work hard too, laying eggs so there'll be lots of stag beetles to catch next year. Good for them!
+hhon@5328.56	(unlabelled)	Miyama Stag Beetle ♀. The females work hard too, laying eggs so there'll be lots of stag beetles to catch next year too. Good for them!
 hhon@5328.57	(unlabelled)	Giant Stag Beetle ♀. No big horns, but for sheer body size, it won't lose to the other males!
 hhon@5328.58	(unlabelled)	Saw Stag Beetle ♀. However small it is, it worked hard for two or three years inside a rotting log, from egg to grown beetle.
 hhon@5328.59	(unlabelled)	Rhinoceros Beetle ♀. The female is small, after all, with no horn, so it's weak. At first glance, just a plain scarab.
@@ -390,7 +389,7 @@ zukan@32E8	[SEL]	Write in your diary and go to sleep? | Yes | No
 exe@code:80037544	(unlabelled)	Date caught {month}/{day}
 
 # --- exe@code:80037698: specimen made, month, day (no caller found)
-exe@code:80037698	(unlabelled)	Pinned
+exe@code:80037698	(unlabelled)	Date mounted
 
 # --- exe@code:800377F8: wins, losses
 exe@code:800377F8	(unlabelled)	WL

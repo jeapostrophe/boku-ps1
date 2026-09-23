@@ -10,7 +10,7 @@ E2360.6	Saori	What?
 E2360.7	Boku	the mosquitoes will eat you.
 
 # --- E2320: H10 -- the garden corner
-E2320.0	Aunt	Boku-kun... Boku's summer vacation has only one week left. // Hurry up and do the things you want to do while you still can!
+E2320.0	Aunt	Boku-kun... Boku's summer vacation, too, is down to its last week now. // Hurry up and do the things you want to do while you still can!
 E2320.1	Aunt	Auntie would like a summer vacation too, even just a week or so.
 # NOTE E2320.0: the game's title phrase in dialogue (style guide § 1).
 
@@ -26,7 +26,7 @@ E2330.1	Moe	Ahh... I want someone, anyone, to cheer me up.
 E2330.2	Moe	Oh, what's this?
 E2330.3	Boku	This... ana-ana-bobon.
 E2330.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
-E2330.5	Boku	So it is a book from outer space.
+E2330.5	Boku	So it really is an alien's book.
 E2330.6	Moe	Dummy, this is English. En-glish!
 E2330.7	Boku	Onee-chan, can you understand English?
 E2330.8	Moe	Of course I can't. It's the class of the teacher I hate most.
@@ -34,7 +34,7 @@ E2330.9	Moe	I'll try reading the letter a little.
 E2330.10	Boku	Yeah, let me hear it, let me hear it!
 E2330.11	(voice only)
 E2330.12	Moe	...The letter was in English too, I'm afraid.
-E2330.13	Boku	Aww, man...
+E2330.13	Boku	Groan...
 E2330.14	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
 E2330.15	Boku	...Onee-chan, are you doing that on purpose?
 E2330.16	Moe	Huh? What? Whaaat? What do you mean?
@@ -49,7 +49,7 @@ E2331.1	Moe	How come, I wonder? I'm just a little bit interested.
 E2331.2	Boku	Hey, I found something strange, deep in the cave.
 E2331.3	Moe	Huh, whaaat? // Mmm, I'm in lazybones mode right now, so bring it tomorrow afternoon.
 E2331.4	Moe	Onee-chan's all sleepy already...
-E2331.5	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2331.5	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
 E2331.6	Boku	But whose is it?
 E2331.7	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2331.8	Moe	From tomorrow...

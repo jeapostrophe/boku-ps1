@@ -19,14 +19,14 @@
 E0502.0	Uncle	Gochisosama deshita.
 E0502.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0502.2	Aunt	Yu-chan, you're going to the meeting in Sagi-no-sato tonight, aren't you?
-E0502.3	Uncle	Yep! It's something about how, so that firefly larvae can breed in creeks outside Tsukiyono too, // we should think a bit more about how we use pesticides... that seems to be the idea of the meeting. // I'll eat dinner and head off after that.
+E0502.3	Uncle	Yeah! Something about getting firefly larvae to breed in the creeks outside Tsukiyono too, // by being a bit more careful about how we use pesticides... that seems to be what the meeting is for. // I'll have dinner, and then go.
 E0502.4	Boku	Firefly larvae?
 E0502.5	Uncle	Ah, there's a kind of firefly that spends its larval stage in the river. // They eat the river snails and grow big. // Oh yes, Uncle will be out tonight, but // it's dangerous, so you're not to go to Firefly Creek.
-E0502.6	Boku	Okay, got it, Uncle.
+E0502.6	Boku	Yeah, got it, Uncle.
 E0502.7	Narrator	That was my one and only chance to go to Firefly Creek at night.
 
 # --- E0520: H06 -- garden off the veranda, the washing line
-E0520.0	Aunt	Boku-kun! Shall we play guess-the-dinner? // If you'd like to play, come and talk to Auntie in the kitchen in the late afternoon.
+E0520.0	Aunt	Boku-kun! Shall we play the guess-the-dinner game? // If you'd like to play, come and talk to Auntie in the kitchen in the late afternoon.
 E0520.1	Aunt	Auntie looks forward to making everyone's meals every day...
 E0520.2	Aunt	Boku-kun, you must be missing your mom by now. // I wonder if you've gotten homesick?
 E0520.3	Boku	What's homesick?
@@ -36,12 +36,12 @@ E0520.6	Aunt	Oh? You're not lonely?
 E0520.7	Boku	...Nope.
 E0520.8	Aunt	Well, well, you're quite the grown-up, Boku-kun.
 E0520.9	Boku	Yeah. But now that I know what homesick means, // I kind of want to try getting homesick.
-E0520.10	Aunt	...I see. Well, good luck with that.
+E0520.10	Aunt	...I see. Well then, do your best.
 E0520.11	Aunt	You know, Auntie... // got homesick right away when she first came out to Tokyo as a young woman.
 
 # --- E0510: H26 -- the workshop
 E0510.0	Boku	Oh, there's a model airplane in front of you, Uncle!
-E0510.1	Uncle	Yep! // When Uncle's child was still little, airplanes were the thing that child loved most. // So Auntie put it together, working very hard at it.
+E0510.1	Uncle	Yeah! // When Uncle's child was still little, that child loved airplanes. // So Auntie put it together, working very hard at it.
 E0510.2	Boku	Can't you build them, Uncle?
 E0510.3	Uncle	Ahaha, Uncle can build them, and he likes building them, // but this sort of thing is mostly Auntie's department.
 E0510.4	Boku	Uncle, have you ever seen fireflies?
@@ -50,7 +50,7 @@ E0510.5	Uncle	Mm-hm. Besides, in the old days you could see them all over the pl
 #   is never named (bible § 3).
 
 # --- E0540: H09 -- garden corner where Shirabe watches ants
-E0540.0	Shirabe	Today again, the worker ants are working away, busy-busy, doing their best. // How beautiful...
+E0540.0	Shirabe	The worker ants are hard at work again today, toiling and toiling away. // How beautiful...
 E0540.1	Shirabe	Did you try the fortune-telling Jizo today? // If you do it again and again until you get Great Luck, // even someone as unlucky as you might have a slightly better life from now on.
 E0540.2	Boku	But then... I'd have to hit Jizo-sama over and over!
 E0540.3	Shirabe	Better than getting hit by me, isn't it?
@@ -73,8 +73,8 @@ E0551.13	Boku	Yeah, I know.
 E0551.14	Boy	Okay, all right!
 E0551.15	Boy	My name's Guts.
 E0551.16	Guts	This is our secret secret base. // Heh, pretty cool, huh?
-E0551.17	Guts	Actually, nobody but members is allowed in.
-E0551.18	Guts	But from now on, you're granted special permission to enter!
+E0551.17	Guts	Actually, nobody but members is allowed in, but...
+E0551.18	Guts	From now on, you're granted special permission to enter!
 E0551.19	Boku	Is that because I know the watermelon secret?
 E0551.20	Guts	Heh, that's right.
 E0551.21	Boku	Hey, hey, so what's the password?
@@ -100,7 +100,7 @@ E0504.2	Moe	No, it's baggy because Dad forced himself into it.
 E0504.3	Shirabe	Could Dad wear Shirabe's too?
 E0504.4	Aunt	Well then...
 E0504.5	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
-E0504.6	Aunt	Mom could probably wear it. // They'd turn into shorts, though.
+E0504.6	Aunt	Mom could probably wear it. // It'd end up as shorts, though.
 
 # --- E0541: G06 -- TV room
 E0541.0	Shirabe	Huh, I'm hungry again...
@@ -110,4 +110,4 @@ E0541.3	Boku	Then when you line up by height at school, what number are you from
 E0541.4	Shirabe	...Well, excuse me. First place.
 E0541.5	Shirabe	If you call me Pipsqueak, I won't forgive you. // Shirabe's going to be big someday...
 E0541.6	Boku	Do you know Guts-kun?
-E0541.7	Shirabe	Yeah, I know Gacchan. // He's friends with that scaredy-cat Specs in Shirabe's class and the fat one in the upper grade.
+E0541.7	Shirabe	Yeah, I know Gacchan. // He's friends with that scaredy-cat Specs in Shirabe's class and the fat one from the upper grades.

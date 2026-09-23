@@ -4,7 +4,7 @@ E2760.0	Saori	Take care of yourself, you rotten brat.
 E2760.1	Boku	Huh?
 E2760.2	Saori	Tomorrow I'm going down the mountain and back to the university.
 E2760.3	Boku	...I see.
-E2760.4	Saori	Heh... you lonely?
+E2760.4	Saori	Ohh... you lonely?
 E2760.5	Boku	Why would I be?
 E2760.6	Saori	...Well...
 E2760.7	Boku	I'm not lonely at all, not one bit, not a speck, not a smidge, not at aaall! // I'd miss an ant's uvula more than I'd miss you!
@@ -24,7 +24,7 @@ E2760.19	Saori	Rotten brat...
 # --- E2720: H08 -- the yard
 E2720.0	Boku	Auntie... I just noticed something. // When on earth do you do the washing?
 E2720.1	Aunt	Huh? Why, before you all wake up for radio calisthenics, Boku-kun...
-E2720.2	Aunt	Before radio calisthenics, the washing and getting breakfast ready... // every bit of it, I've finished.
+E2720.2	Aunt	Before radio calisthenics, the washing and getting breakfast ready... // I have every last bit of it done.
 
 # --- E2710: H26 -- the workshop
 E2710.0	Uncle	I'm opening the kiln tonight, so come and see. // Heaps and heaps of treasure!
@@ -36,7 +36,7 @@ E2710.5	Uncle	Well, who can say...
 E2710.6	Uncle	Boku-kun, I'm opening the kiln tonight, so come and see. It'll be fun!
 
 # --- E2712: G01 -- living room (the tanka again)
-E2712.0	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it. // I see... if I'm still like this, then I'm still a small vessel, aren't I...
+E2712.0	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it. // I see... if I'm still like this, then I, too, am still a small vessel, aren't I...
 E2712.1	Uncle	What's on TV again?
 # NOTE E2712.0: utsuwa ga chiisai, "the vessel is small", is to be a small-minded man; a potter says
 #   it of himself (style guide § 10). His plain adult "I", alone (§ 2).
@@ -47,11 +47,11 @@ E2714.1	Uncle	What sort of image shall I take on next, I wonder?
 
 # --- E2730: G16 -- Moe's bed
 E2730.0	Boku	Onee-chan, maybe you just love sleeping, don't you...
-E2730.1	Moe	Yep. If I had the time, I'd like to sleep about fifteen hours every day...
+E2730.1	Moe	Yeah. If I had the time, I'd like to sleep about fifteen hours every day...
 E2730.2	Moe	Oh, what's this?
 E2730.3	Boku	This... ana-ana-bobon.
 E2730.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
-E2730.5	Boku	So it is a book from outer space.
+E2730.5	Boku	So it really is an alien's book.
 E2730.6	Moe	Dummy, this is English. En-glish!
 E2730.7	Boku	Onee-chan, can you understand English?
 E2730.8	Moe	Of course I can't. It's the class of the teacher I hate most.
@@ -59,7 +59,7 @@ E2730.9	Moe	I'll try reading the letter a little.
 E2730.10	Boku	Yeah, let me hear it, let me hear it!
 E2730.11	(voice only)
 E2730.12	Moe	...The letter was in English too, I'm afraid.
-E2730.13	Boku	Aww, man...
+E2730.13	Boku	Groan...
 E2730.14	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
 E2730.15	Boku	...Onee-chan, are you doing that on purpose?
 E2730.16	Moe	Huh? What? Whaaat? What do you mean?
@@ -76,7 +76,7 @@ E2732.4	Boku	......
 E2732.5	Moe	The clouds are so pretty, lit up by the moon.
 E2732.6	Moe	If the same sky and clouds as in the city could be seen here at the same time, // then even after you've gone home, Boku-kun, on the phone, you know... // we could look at the same sky, and talk about the same things, feeling the same way.
 E2732.7	Moe	Ahh... I really am a gloomy type, aren't I? // What on earth am I doing outside at this hour?
-E2732.8	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2732.8	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
 E2732.9	Boku	But whose is it?
 E2732.10	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2732.11	Moe	From tomorrow...
@@ -91,4 +91,4 @@ E2740.1	Shirabe	Come to think of it, a long time ago, when I played hide-and-see
 E2741.0	Shirabe	This is just between us... // A long time ago, Shirabe knocked down the pottery at the back of Dad's workshop... // shelf and all...
 E2741.1	Boku	Huh? What a bad kid you are.
 E2741.2	Shirabe	What I just said... is an absolute secret from everyone, okay?
-E2741.3	Shirabe	But the firing's done now, so once again Dad's failures... // I have the fun of smashing them to bits, crash, crash.
+E2741.3	Shirabe	But the firing's done, so now there are more of Dad's failures... // for me to have fun smashing to bits, crash, crash!

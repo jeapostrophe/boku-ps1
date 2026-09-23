@@ -26,17 +26,17 @@ E1406.9	Shirabe	Hm? What's up?
 E1406.10	Boku	...Nothing.
 E1406.11	Boku	Aww... I dozed off.
 E1406.12	Shirabe	Aww... I dozed off.
-E1406.13	Boku	Hey! Don't copy me!
+E1406.13	Boku	Huh? Don't copy me!
 E1406.14	Shirabe	Oh, look, look! The sun's going down into the sea...
 
 # --- E1402: G02 -- after breakfast
 E1402.0	Uncle	Gochisosama deshita.
 E1402.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E1402.2	Uncle	Mmm, lovely weather again today.
-E1402.3	Aunt	So, the two of you are going to the Cape of Winds after all, right?
+E1402.3	Aunt	Hey, the two of you are going to the Cape of Winds after all, aren't you?
 E1402.4	Shirabe	Yeah, we're going!
 E1402.5	Uncle	Anyway, it's a long way, so no dawdling on the way, all right? // If you don't get there before evening and end up half in tears, don't come crying to Dad.
-E1402.6	Shirabe	Okay, got it.
+E1402.6	Shirabe	Yeah, got it.
 E1402.7	Shirabe	Well then, follow Shirabe properly. // For now, Shirabe will go on ahead as far as the new bridge.
 
 # --- E1420: H06 -- garden off the veranda; H08 -- the yard (the aunt's war story)
@@ -44,8 +44,8 @@ E1420.0	Aunt	Tomorrow's the grave visit already... // Boku's summer vacation is 
 E1420.1	Boku	Hey, the war that ended on tomorrow's date, which war was it?
 E1420.2	Aunt	Well, tomorrow's anniversary of the end of the war... // it's the day the Pacific War ended, when Auntie was just about as old as you are now. // Auntie grew up in a port town in Hokkaido called Otaru, // and one morning, when she climbed the hill near our house, // all of a sudden, there were lots and lots of big American warships floating in the harbor. // Auntie got such a fright that she hurried back and hid in the house.
 E1420.3	Boku	Were you scared of meeting Americans?
-E1420.4	Aunt	Yes, because we'd been taught that if the American soldiers caught us, // they'd sprinkle us with salt and crunch us up, head first. // But, you know, one of the American soldiers who came ashore // picked up a little stray kitten in the alley in front of our house, // and when I secretly watched him through a crack in the window, going "Meow... meow..." to it, // Auntie thought, "Why, he's a human being, the same as us."
-E1420.5	Aunt	It's been thirty years since that day...
+E1420.4	Aunt	Yes, because if the American soldiers caught us, // they'd sprinkle us with salt and crunch us up, head first, we'd been taught. // But, you know, one of the American soldiers who came ashore // picked up a little stray kitten in the alley in front of our house, // and when I secretly watched him through a crack in the window, going "Meow... meow..." to it, // Auntie thought, "Why, he's a human being, the same as us."
+E1420.5	Aunt	It's already been thirty whole years since that day...
 # NOTE E1420.0: the game's title phrase in dialogue: "Boku's summer vacation" (style guide § 1).
 
 # --- E1412: G01 -- living room
@@ -67,10 +67,10 @@ E1430.2	Moe	Ehehe... well, what could it be?
 E1430.3	Moe	Don't tell me... I wrote the address wrong?
 
 # --- E1431: G15 -- the sisters' room
-E1431.0	Moe	Tomorrow it'll be August 15th already... // Ahh, I'd like to go to the sea or somewhere...
+E1431.0	Moe	Tomorrow it'll be August 15 already... // Ahh, I'd like to go to the sea or somewhere...
 E1431.1	Moe	But I can't swim at all... // I once nearly drowned washing my face.
 E1431.2	Moe	How was the Cape of Winds?
-E1431.3	Boku	Good! The sunset went into the sea with a sizzle.
+E1431.3	Boku	Yeah, the sunset went into the sea with a sizzle.
 E1431.4	Moe	Ahaha... that sounds fun.
 E1431.5	Boku	But I... thought about my mom, out on the cape.
 

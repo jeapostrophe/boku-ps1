@@ -7,7 +7,7 @@ ruled by Jay on 2026-09-20; the question as put, the options and his words are r
 change to it is made here with a dated note. One ruling (Q7, § 9) is an early default that Jay
 marked revisitable; nothing else is open. The story, the cast and how each person talks are
 in [bible.md](bible.md); every term that must be rendered one way is in
-[glossary.md](glossary.md); the one sample scene left is in [samples/](samples/); the speech that has no text on the disc is listed in
+[glossary.md](glossary.md); the speech that has no text on the disc is listed in
 [voice-only.md](voice-only.md). Licence: CC BY-SA 4.0 (`LICENSE-translation`).
 
 Line ids (`E0406.2`, `hhon@5328.13`) are the ones defined in `research/text-format.md` and

@@ -2,7 +2,7 @@
 # --- E2820: H06 -- garden off the veranda
 E2820.0	Aunt	Oh! A contrail!
 E2820.1	Boku	Huh? Where, where?
-E2820.2	Aunt	If Auntie is ever born again, // I'd like to try being a jumbo jet pilot.
+E2820.2	Aunt	If Auntie is ever born again, // I'd like to try being a jumbo jet pilot, too.
 E2820.3	Boku	Huh? But... // don't women usually want to be stewardesses?
 E2820.4	Aunt	No... if I'm going to be anything, it's a pilot, hands down.
 
@@ -12,7 +12,7 @@ E2812.1	Uncle	The autumn wind... somehow it's sad.
 
 # --- E2803: G02 -- dinner (the fever)
 E2803.0	Aunt	What's the matter?
-E2803.1	Boku	I just... don't want to eat.
+E2803.1	Boku	I kind of... don't want to eat.
 E2803.2	Uncle	You too, Boku-kun?
 E2803.3	Boku	Huh...?
 E2803.4	Uncle	Just kidding, just kidding.
@@ -20,7 +20,7 @@ E2803.5	Shirabe	That just now... I didn't get it.
 E2803.6	Aunt	Don't tell me... maybe you've got a fever?
 
 # --- E2830: G15 -- the sisters' room
-E2830.0	Boku	Onee-chan, I... // really wish I could stay in this house a little longer.
+E2830.0	Boku	Onee-chan, I... // actually want to stay in this house a little longer.
 E2830.1	Moe	I see... Then you made lots of good memories, Boku-kun.
 E2830.2	Boku	Yeah. I'm sure they'll be my treasure.
 E2830.3	Moe	I see...
@@ -32,13 +32,13 @@ E2830.6	Moe	I'm going to try hard too... and find a treasure for life, for sure.
 E2840.0	Shirabe	Ahh, how boring. // Shirabe wants to turn into a butterfly and fly in the sky...
 E2840.1	Boku	Auntie says she wants to be a pilot.
 E2840.2	Shirabe	Then Shirabe wants to be a stewardess.
-E2840.3	Shirabe	Everyone in our family seems to like high places, somehow. Why is that, I wonder?
+E2840.3	Shirabe	Everyone in our family seems to like high places, somehow. I wonder why?
 E2840.4	Boku	......
 
 # --- E2850: A18 -- the secret base ("when do you go home?")
 E2850.0	Specs	Hey, summer vacation's almost over... // when are you going back to your house, Boku-kun?
 E2850.1	Boku	Probably on the thirty-first, I think.
-E2850.2	Fat	Heh, hurry on home and suck on your mommy's boobies.
+E2850.2	Fat	Hehe, hurry on home and suck on your mom's boobies.
 E2850.3	Guts	I see, that's right... // you've got to go back sometime, huh.
 E2850.4	Boku	Yeah......
 

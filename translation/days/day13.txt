@@ -5,7 +5,7 @@ E1302.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E1302.2	Uncle	Boku-kun, have you caught enough creepy-crawlies by now to become a professor of insects?
 E1302.3	[SEL]	Yes | No
 E1302.4	Uncle	Then, when you want to catch even rarer insects, // there's the insect field guide on the bookshelf in the living room! Read it carefully, // find out where the bugs live, and lie in wait for them.
-E1302.5	Boku	Okay, got it. The insect field guide in the living room.
+E1302.5	Boku	Yeah, got it. The insect field guide in the living room.
 
 # --- E1320: H08 -- the yard
 E1320.0	Aunt	Boku-kun, are you fine with any kind of insect?

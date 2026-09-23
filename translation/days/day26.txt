@@ -7,7 +7,7 @@ E2615.3	Uncle	Phew... just a little more...
 
 # --- E2616: H15 -- the climbing kiln
 E2616.0	Uncle	I did it! It's finally reached the target temperature. // Now if I can just work hard and hold it there for two hours, we're okay!
-E2616.1	Uncle	All right, one last big push. Keep at it!
+E2616.1	Uncle	All right, one last big push. Here I go!
 E2616.2	Uncle	Phew... come to think of it, that rain just now stopped in an instant, but it sure came down hard, didn't it?
 
 # --- E2617: H13 -- behind the workshop
@@ -26,7 +26,7 @@ E2660.1	Boku	What! Why?
 E2660.2	Saori	Autumn's almost here, so there's no use struggling!
 E2660.3	Boku	......
 E2660.4	Boku	Lady, you don't come for baths much.
-E2660.5	Saori	Nah, it's not that cold yet, so I wash in the pond in the daytime.
+E2660.5	Saori	Yeah, it's not that cold yet, so I wash in the pond in the daytime.
 
 # --- E2614: H13 -- behind the workshop (the morning after the night's firing)
 E2614.0	Boku	Uncle, what did you do all night?
@@ -52,7 +52,7 @@ E2630.5	Moe	If my grades aren't bad when the new term starts, // maybe I'll stud
 E2630.6	Moe	Oh, what's this?
 E2630.7	Boku	This... ana-ana-bobon.
 E2630.8	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
-E2630.9	Boku	So it is a book from outer space.
+E2630.9	Boku	So it really is an alien's book.
 E2630.10	Moe	Dummy, this is English. En-glish!
 E2630.11	Boku	Onee-chan, can you understand English?
 E2630.12	Moe	Of course I can't. It's the class of the teacher I hate most.
@@ -60,7 +60,7 @@ E2630.13	Moe	I'll try reading the letter a little.
 E2630.14	Boku	Yeah, let me hear it, let me hear it!
 E2630.15	(voice only)
 E2630.16	Moe	...The letter was in English too, I'm afraid.
-E2630.17	Boku	Aww, man...
+E2630.17	Boku	Groan...
 E2630.18	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
 E2630.19	Boku	...Onee-chan, are you doing that on purpose?
 E2630.20	Moe	Huh? What? Whaaat? What do you mean?
@@ -79,7 +79,7 @@ E2632.6	Boku	I wonder what summer vacation will be like twenty years from now...
 E2632.7	Moe	Hmm...
 E2632.8	Boku	Hey, I picked up something strange, deep in the cave.
 E2632.9	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
-E2632.10	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2632.10	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
 E2632.11	Boku	But whose is it?
 E2632.12	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2632.13	Moe	From tomorrow...

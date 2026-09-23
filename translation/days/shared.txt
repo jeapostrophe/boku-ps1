@@ -131,7 +131,7 @@ E1006.3	(voice only)
 
 # --- E0003: H26 -- the workshop
 E0003.0	Boku	......
-E0003.1	Uncle	Ah, that's dangerous, so don't touch it. // That shelf isn't very well built; it seems to wobble a bit. // I've fixed it again and again, but why does it keep falling down?
+E0003.1	Uncle	Ah, that's dangerous, so don't touch it. // That shelf isn't very well built; it seems to wobble a bit. // I've fixed it again and again, but whyyy does it keep falling down?
 E0003.2	Uncle	That seems to have fallen down sometime during the night... // It ought to be a bit sturdier than that, though...
 
 # --- E8054: H13 -- behind the workshop
@@ -159,21 +159,21 @@ E4022.0	Boku	Whoa-oa-oa......
 E4022.1	Boku	Aaagh!
 E4022.2	Aunt	So you're finally awake. // You have to be careful around beehives. // It'd be awful if you got stung somewhere important.
 E4022.3	Aunt	Well, I thought you'd gone and died, // but by the look of you, you've got plenty of life left in you!
-E4022.4	Aunt	What a shame... While you were out cold, Boku-kun, // I was going to have everyone eat something delicious without you.
+E4022.4	Aunt	What a shame... While you were out cold, Boku-kun, // aaall of us were going to go and eat something delicious.
 
 # --- E4023: C04 -- far end of the log bridge; G17 -- the veranda
 E4023.0	Boku	Whoa-oa-oa......
 E4023.1	Boku	Aaagh!
 E4023.2	Aunt	So you're finally awake. // You have to be careful around beehives. // It'd be awful if you got stung somewhere important.
 E4023.3	Aunt	Well, I thought you'd gone and died, // but by the look of you, you've got plenty of life left in you!
-E4023.4	Aunt	What a shame... While you were out cold, Boku-kun, // I was going to have everyone eat something delicious without you.
+E4023.4	Aunt	What a shame... While you were out cold, Boku-kun, // aaall of us were going to go and eat something delicious.
 
 # --- E4024: D10; G17 -- the veranda
 E4024.0	Boku	Whoa-oa-oa......
 E4024.1	Boku	Aaagh!
 E4024.2	Aunt	So you're finally awake. // You have to be careful around beehives. // It'd be awful if you got stung somewhere important.
 E4024.3	Aunt	Well, I thought you'd gone and died, // but by the look of you, you've got plenty of life left in you!
-E4024.4	Aunt	What a shame... While you were out cold, Boku-kun, // I was going to have everyone eat something delicious without you.
+E4024.4	Aunt	What a shame... While you were out cold, Boku-kun, // aaall of us were going to go and eat something delicious.
 # NOTE E4022-E4024: one recording in three places (the hive, the log bridge, a fall at D10); the
 #   beehive warning is in all three, as in the Japanese.
 
@@ -237,10 +237,10 @@ E4047.0	(voice only)
 # --- E4052: G06 -- TV room
 E4052.0	(voice only)
 E4052.1	(voice only)
-E4052.2	(voice only)
-E4052.3	(voice only)
-E4052.4	(voice only)
-E4052.5	(voice only)
+E4052.2	(voice only)	Today, at a nursery school in Toyohashi, Aichi Prefecture, // the huge stock of toilet paper the school had been hoarding was all eaten by the goat it keeps.
+E4052.3	(voice only)	Since the year began, with the explosive vinyl-kite craze, // accidents with kite strings tangled in power lines have surged nationwide.
+E4052.4	(voice only)	Today, in Koto Ward, Tokyo, Japan's first convenience store opened its doors.
+E4052.5	(voice only)	What will fate bring?
 E4052.6	(voice only)
 E4052.7	(voice only)
 
@@ -414,8 +414,8 @@ E8050.0	(unlabelled)	There's a white gas stove, polished till it shines.
 
 # --- E8052: G06 -- TV room
 E8052.0	(unlabelled)	A big wide-open mouth, going "Oink."
-# UNSURE E8052.0: the object is not named; by the "buu" and the open mouth, very likely the
-#   pig-shaped mosquito-coil holder of a Showa summer. Rendered as the line says it.
+# NOTE E8052.0: the object is not named; by the "buu" and the open mouth, very likely the
+#   pig-shaped mosquito-coil holder of a Showa summer. Rendered as the line says it, unnamed.
 
 # --- E8053: H05 -- the morning-glory trellis
 E8053.0	(unlabelled)	The sky-blue hose on the tap is glittering in the sun.
@@ -458,8 +458,8 @@ E8066.0	(unlabelled)	Climbing Kiln-san is bright red and angry.
 
 
 # --- E0006: G02 -- breakfast
-E0006.0	Uncle	Well then, itadakimaasu.
-E0006.1	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E0006.0	Uncle	Well then, itadakimaasu!
+E0006.1	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E0007: G02 -- breakfast
 E0007.0	Uncle	Gochisosama deshita.
@@ -482,13 +482,13 @@ E4028.7	Aunt	Tonight's dinner was... // Hamburg steak, simmered vegetables, and 
 E4028.8	Aunt	Tonight's dinner was... // tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
 E4028.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I pulled it all together as Chinese.
 E4028.10	Aunt	Tonight's dinner was... // sashimi, simmered hijiki and tempura. I put together a purely Japanese spread.
-E4028.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu. Every one of them is Auntie's favorite.
-E4028.12	Aunt	Tonight's dinner was... // omurice with cheese papillote, fried tofu braised with greens and so on. I tried combining them.
+E4028.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu, aaall of them Auntie's favorites.
+E4028.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried combining things.
 E4028.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I pulled it all together to Shirabe's taste.
-E4028.14	Aunt	Tonight's dinner was... // cabbage rolls, grilled eggplant, and an open omelette on top. I pulled it all together to Moe's taste.
-E4028.15	Aunt	Tonight's dinner was... // curry rice with marinated horse mackerel, salad, edamame and so on. I worked hard on it.
-E4028.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad. Italian style, by main force.
-E4028.17	Aunt	Tonight's dinner was... // the deluxe nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
+E4028.14	Aunt	Tonight's dinner was... // cabbage rolls and grilled eggplant, with an open omelette thrown in, put together to Moe's taste.
+E4028.15	Aunt	Tonight's dinner was... // curry rice, marinated horse mackerel, salad and edamame, and so on and so on. I worked hard on it.
+E4028.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad, forced into being Italian-style.
+E4028.17	Aunt	Tonight's dinner was... // I went and had the top-grade nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
 # NOTE E4028.17: Osho ("king") Sushi's Hisha ("rook") Set is a shogi joke (glossary § 1, shop names).
 
 # --- E0020: G04, G05 -- the bath
@@ -500,9 +500,9 @@ E0020.1	(voice only)
 
 # --- E0002: H16 -- the path toward the Yukino River, at night
 E0002.0	Uncle	Hey, now, Boku-kun... Boku-kun, honestly...
-E0002.1	Uncle	At this hour, entry beyond this point is prohibited. // When it's dark and you can't see where you're stepping, you'll go plop right into the Yukino River. // That's the rule at Uncle's house. // ...Is that understood?
+E0002.1	Uncle	No entry beyond this point at this hour. // When it gets dark and you can't see your feet, you'll go splash into the Yukino River. // That's the rule at Uncle's house. // ...Is that understood?
 E0002.2	[SEL]	Yes | No | Could you tell me again?
-E0002.3	Uncle	Very good! A sensible child. Well done!
+E0002.3	Uncle	Gooood! What a sensible boy. Well done!
 
 # --- E0010: G02 -- dinner
 E0010.0	Uncle	Gochisosama deshita.
@@ -510,7 +510,7 @@ E0010.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 
 # --- E0023: G14 -- Boku's room
 E0023.0	Uncle	Boku-kun, let's write in your picture diary and say good night.
-E0023.1	Boku	Okay. Good night, Uncle.
+E0023.1	Boku	Yeah. Good night, Uncle.
 
 # --- E8026: G09 -- the front entrance
 E8026.0	(voice only)
@@ -536,7 +536,7 @@ E0807.5	Boku	All right!
 E0830.0	Moe	Hm-hm, Boku-kun has finally invaded...
 E0830.1	Boku	Moe-neechan... // can I... come and play here any time?
 E0830.2	Moe	Yeah, sure. // But be quiet when I'm studying.
-E0830.3	Boku	Huh, Onee-chan, you like studying?
+E0830.3	Boku	Ohh, Onee-chan, so you like studying.
 E0830.4	Moe	Ahaha... I only like the things I like.
 E0830.5	Boku	So what do you like?
 E0830.6	Moe	Japanese and art, and I like music too.
@@ -577,7 +577,7 @@ E0923.2	Boku	Auntie, were you taking pictures?
 E0923.3	Aunt	Yes, I was taking pictures of you flying your kite.
 E0923.4	Boku	Oh, is that all.
 E0923.5	Aunt	Well then, a souvenir photo.
-E0923.6	Aunt	And what does Uncle like best?
+E0923.6	Aunt	What does Uncle like best?
 E0923.7	Boku	Huh?
 E0923.8	(voice only)
 E0923.9	Aunt	Well, I'll head home ahead of you.
@@ -586,14 +586,14 @@ E0923.9	Aunt	Well, I'll head home ahead of you.
 
 # --- E0950: A18 -- the secret base
 E0950.0	Fat	They don't sell replacement strings for Coca-Cola yo-yos at the toy shop, do they?
-E0950.1	Guts	But our village doesn't even have a toy shop.
+E0950.1	Guts	But our village doesn't have a toy shop, does it.
 
 # --- E0904: G02 -- after dinner (the master of the pond)
 E0904.0	Uncle	Gochisosama deshita.
 E0904.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0904.2	Boku	Oh yeah, a really, really, really big fish // jumped in the pond with a big splash.
 E0904.3	Uncle	That must have been the master of the pond, coming to say hello to you, Boku-kun.
-E0904.4	Boku	Hey, Uncle... // could even I catch a fish that big?
+E0904.4	Boku	Hey, Uncle... // could I catch even a fish that big?
 E0904.5	Uncle	Hmm, you'd have to make a really big tenkara fly.
 E0904.6	Boku	What should I do?
 E0904.7	Uncle	Let's see... // then go and find something in the mountains that could be material for a fly. // Then Uncle will make you a handmade, extra-large fly.
@@ -660,7 +660,7 @@ E1251.1	Boku	...Bench.
 
 # --- E1252: A18 -- the secret base
 E1252.0	Fat	Were model planes big where you're from too?
-E1252.1	Boku	Yeah! But I'm... // lousy at bending the bamboo strips and cutting the aluminum tubes...
+E1252.1	Boku	Yeah! But I'm... // lousy at bending the bamboo strips and cutting the aluminium tubes...
 
 # --- E1253: A18 -- the secret base
 E1253.0	Specs	When I grow up, I'm going to be an important person and build a big library in this village.
@@ -744,7 +744,7 @@ E1650.3	Specs	You guys... it's not about winning or losing. You need more room i
 E1650.4	Guts, Fat	No waaay!
 
 # --- E1651: A18 -- the secret base
-E1651.0	Guts	Heh-heh-heh, next time I'll really let 'em have it.
+E1651.0	Guts	Hm-hm-hm, next time I'll really let 'em have it.
 
 # --- E1652: A18 -- the secret base
 E1652.0	Fat	Rider Snack says "a sister product of Kappa Ebisen" on the bag, // but it tasted totally different, didn't it?
@@ -781,7 +781,7 @@ E1706.4	Narrator	Incidentally, this word has no meaning whatsoever.
 #   (glossary § 3).
 
 # --- E1750: A18 -- the secret base (the secret weapon)
-E1750.0	Guts	Heh-heh-heh-heh, my secret weapon finally makes its entrance! // If you want to fight it, choose a King match in bug sumo!
+E1750.0	Guts	Hm-hm-hm-hm, my secret weapon finally makes its entrance! // If you want to fight it, choose a King match in bug sumo!
 
 # --- E1751: A18 -- the secret base
 E1751.0	Guts	Boku-chan, I accept you as one of us for real.
@@ -947,7 +947,7 @@ E6001.19	Saori	A Japanese wolf... // the voice of a Japanese wolf, which should 
 
 # --- E2206: A10 -- the big tree past the corn (the snake)
 E2206.0	Boku	Aaah, a snake!
-E2206.1	Boku	No, no, go away!
+E2206.1	Boku	No, no, I said no!
 E2206.2	Uncle	What's the matter? Boku-kun, are you all right?
 E2206.3	Uncle	You're safe now.
 E2206.4	Boku	......
@@ -1091,7 +1091,7 @@ E2303.2	Shirabe	Makes no sense.
 E2303.3	Moe	...
 E2303.4	(unlabelled)	Anyway, I'll read it.
 E2303.5	Shirabe	What's that?
-E2303.6	Moe	Shirabe, be quiet! // I'm reading...
+E2303.6	Moe	Shirabe, be quiet! // I'm going to read it...
 E2303.7	Moe	Spring: the flow of the great river, the fragrance of the flowers in full bloom... // Now America, the land of dreams I read of in the adventure novels of Mark Twain, and // the country of my birth... this beloved homeland of mine, Japan, are at war. // Tom Sawyer. Huckleberry Finn. // The wind and the sunlight that blow across the fields and hills where they played... // I wished that one day I might feel them on my own skin... // Until today, I have studied their language, in secret and with all my heart, but... // that too, it seems, has nearly reached its end. // I have had to hide my English dictionary here as well. // If this war should end, and I am still alive, // then this innocent resolve of mine, pure as spring water... // and this elation, like the south wind that heralds the coming of spring... // these I wish to convey to my future self.    Spring, Showa 17...
 E2303.8	Uncle	The name?
 E2303.9	Moe	It isn't written.
@@ -1132,8 +1132,8 @@ E2401.13	Moe	Is that so? That's amazing.
 E2401.14	Shirabe	And I'll make it go vroom-vroom.
 E2401.15	Boku	Make what?
 E2401.16	Shirabe	My Benz!
-E2401.17	Uncle	Well then, itadakimaasu.
-E2401.18	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+E2401.17	Uncle	Well then, itadakimaasu!
+E2401.18	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E2451: A18 -- the secret base
 E2451.0	Guts	Last year I swiped a mineral specimen from the science room at school... // Well, it's just iron ore, but it's a treasure, heavy in your hand and glittering...
@@ -1166,7 +1166,7 @@ E2504.5	Aunt	Hm? What is it?
 E2504.6	Narrator	I did not want to go home yet... // For some reason, those words were the ones I simply could not say.
 E2504.7	Boku	...I'm glad I came here, too.
 E2504.8	Aunt	Hm-hm-hm...... thank you. // I'm happy you like it here, Boku-kun.
-E2504.9	Shirabe	Before anyone noticed, you've turned into one of our family's kids.
+E2504.9	Shirabe	Before anyone noticed, you've turned completely into one of our kids.
 E2504.10	Boku	Then am I Shirabe's Onii-chan too?
 E2504.11	Shirabe	No way!
 E2504.12	Aunt	Come on, let's hurry up and say gochisosama.
@@ -1200,13 +1200,13 @@ E4064.7	Aunt	Tonight's dinner was... // Hamburg steak, simmered vegetables, and 
 E4064.8	Aunt	Tonight's dinner was... // tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
 E4064.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I pulled it all together as Chinese.
 E4064.10	Aunt	Tonight's dinner was... // sashimi, simmered hijiki and tempura. I put together a purely Japanese spread.
-E4064.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu. Every one of them is Auntie's favorite.
-E4064.12	Aunt	Tonight's dinner was... // omurice with cheese papillote, fried tofu braised with greens and so on. I tried combining them.
+E4064.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu, aaall of them Auntie's favorites.
+E4064.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried combining things.
 E4064.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I pulled it all together to Shirabe's taste.
-E4064.14	Aunt	Tonight's dinner was... // cabbage rolls, grilled eggplant, and an open omelette on top. I pulled it all together to Moe's taste.
-E4064.15	Aunt	Tonight's dinner was... // curry rice with marinated horse mackerel, salad, edamame and so on. I worked hard on it.
-E4064.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad. Italian style, by main force.
-E4064.17	Aunt	Tonight's dinner was... // the deluxe nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
+E4064.14	Aunt	Tonight's dinner was... // cabbage rolls and grilled eggplant, with an open omelette thrown in, put together to Moe's taste.
+E4064.15	Aunt	Tonight's dinner was... // curry rice, marinated horse mackerel, salad and edamame, and so on and so on. I worked hard on it.
+E4064.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad, forced into being Italian-style.
+E4064.17	Aunt	Tonight's dinner was... // I went and had the top-grade nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
 
 # --- E3171: H02 -- front of the house (Father arrives)
 E3171.0	Father	Well, well, you've all taken such good care of him... // Hey, you, you've got to thank them properly, now...
@@ -1224,8 +1224,8 @@ E3174.1	Aunt	Onii-chan! Give what everything you've got?
 E3174.2	Father	Hmm, what indeed... gahahahaha!
 E3174.3	(voice only)
 E3174.4	Aunt	Somehow I'm so glad to see you looking happy, Onii-chan!
-E3174.5	Father	Is that so... but you're one to talk, Kaoru.
-E3174.6	Aunt	Yes!
+E3174.5	Father	Is that so... but you look happy too, Kaoru.
+E3174.6	Aunt	Yeah!
 # NOTE E3174.1, .4: the aunt calls her own older brother, Boku's father, "Onii-chan", a name
 #   (style guide § 2), the same word as her dead son's.
 
@@ -1234,8 +1234,8 @@ E3175.0	(voice only)
 
 # --- E3176: H02 -- front of the house
 E3176.0	Aunt	Somehow I'm so glad to see you looking happy, Onii-chan!
-E3176.1	Father	Is that so... but you're one to talk, Kaoru.
-E3176.2	Aunt	Yes!
+E3176.1	Father	Is that so... but you look happy too, Kaoru.
+E3176.2	Aunt	Yeah!
 
 # --- E3177: I31 -- close-up
 E3177.0	Moe	Wah! Mom! No fair!

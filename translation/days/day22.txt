@@ -28,7 +28,7 @@ E2212.2	Uncle	I see... seventeen years have gone by already...
 
 # --- E2210: H26 -- the workshop
 E2210.0	Uncle	Boku-kun, I wonder what kind of girl you'll marry someday?
-E2210.1	[SEL]	A glamorous beauty | The daughter of a great fortune | An older woman
+E2210.1	[SEL]	A glamorous beauty | A zaibatsu heiress | An older woman
 E2210.2	Uncle	I don't think you know what those words mean... but personality is what really matters in a person!
 E2210.3	Uncle	I suppose having money is better than not having it... // Uncle's never been rich, so honestly, I wouldn't know.
 E2210.4	Uncle	Actually, Auntie is a year older than Uncle. // It was an arranged marriage, and yet right up until we registered it, I believed she was younger.
@@ -50,7 +50,7 @@ E2203.8	Boku	Awww...
 E2203.9	Shirabe	Ohoho, today nothing but kappa is allowed, I'll have you know!
 E2203.10	Boku	Ugh...
 E2203.11	Aunt	Now, now.
-E2203.12	Boku	I'm gonna eat you uuup...
+E2203.12	Boku	I'll eat you uuup...
 E2203.13	Moe	I can't eat hamachi.
 E2203.14	Boku	Oh! I love it!
 E2203.15	Shirabe	I said no!
@@ -59,7 +59,7 @@ E2203.17	Shirabe	You get kappa!
 E2203.18	Boku	...I think I'm going to turn delinquent.
 E2203.19	Moe	Hey, when are we giving them the present?
 E2203.20	Uncle	Well then, first, a few words from Dad...
-E2203.21	Shirabe, Moe, Boku, Aunt	Itadakimaaasu.
+E2203.21	Shirabe, Moe, Boku, Aunt	Itadakimaaasu!
 # NOTE E2203.0-.2: the deluxe/delicate mix-up of day 18 (E1821.8), swapped (style guide § 8 kind 2).
 
 # --- E2205: G06 -- TV room (the presents)
@@ -77,7 +77,7 @@ E2205.5	Moe	Cho as in butterfly. A bow tie!
 E2231.0	Moe	Hey, do you think I'll be able to find a treasure for life too?
 E2231.1	Boku	......?
 E2231.2	(unlabelled)	Hey, Onee-chan, in your whole life so far, what's the most important thing?
-E2231.3	Moe	What, I wonder? // Well, my parents and my brother and sister, my best friends, all the other people close to me... // I think they're all really important, but apart from them... // about all I can think of that's precious to me // is happy memories from when I was a kid...
+E2231.3	Moe	What, I wonder? // Well, my parents and my siblings, my best friends, all the other people close to me... // I think they're all really important, but apart from them... // for me, about the only thing is happy memories from when I was a kid... // that I can think of as precious.
 E2231.4	Boku	Hmm, so memories are your precious treasure.
 E2231.5	Moe	Yeah, and then maybe that music box.
 E2231.6	Moe	That music box makes such a cute sound, you know.
@@ -95,7 +95,7 @@ E2204.2	Aunt	Onee-chan, Shirabe, thank you so much for today. // Dad and Mom wil
 E2204.3	Moe	Treasures, huh... // I'd like something I could call a treasure for life, too...
 E2204.4	Uncle	You're only fifteen, Moe. // Surely you'll be able to find as many as you like from now on?
 E2204.5	Moe	Hmm, that's how life ought to be, isn't it...
-E2204.6	Moe	That reminds me. At our school, that vice-principal who tries too hard... // they say that during the war, the vice-principal hid some precious treasure in the hills behind here.
+E2204.6	Moe	That reminds me. At our school, that vice-principal who tries too hard... // they say that during the war, he hid some precious treasure of his own in the hills behind here.
 E2204.7	Shirabe	Huh? What, what, whaaat...
 E2204.8	Uncle	But a wartime treasure, if you and Moe saw it now, Shirabe, // would probably be surprisingly shabby, I think.
 E2204.9	Moe	What could it be?

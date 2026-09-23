@@ -26,13 +26,13 @@ E2507.6	Aunt	...Yes, it did.
 E2507.7	Uncle	Well then, I suppose I'll go and get the kiln ready...
 
 # --- E2520: H17 -- the woodshed
-E2520.0	Aunt	Uncle says he's going to work hard and fire the kiln starting today. // Apparently if you don't go and watch at the right times, // you might miss the interesting parts, // so you go and watch lots of times too, Boku-kun...
+E2520.0	Aunt	Uncle says he's going to work hard and fire the kiln starting today. // Apparently if you don't go and watch at the right times, // you might miss the interesting parts, // so you do your best and go and watch lots of times too, Boku-kun...
 E2520.1	Aunt	Still, there really has been so little rain this summer.
 E2520.2	Aunt	I hope Grandma's house in Shikoku isn't suffering from a water shortage.
 
 # --- E2510: H26 -- the workshop
 E2510.0	Uncle	I've finished getting the kiln ready. // I'll light it in the evening, so come and watch, Boku-kun.
-E2510.1	Boku	Okay, I can't wait.
+E2510.1	Boku	Yeah, I can't wait.
 
 # --- E2514: H15 -- the climbing kiln (the firing begins)
 E2514.0	Uncle	Boku-kun, you came, just like you promised. // Now, I'll light the fire in the kiln's firebox.
@@ -44,7 +44,7 @@ E2514.5	Uncle	Ahaha, well, of course. // And after that, around early tomorrow a
 E2514.6	Boku	Uh-huh, uh-huh.
 E2514.7	Uncle	and around evening I seal up this firebox and put the fire out.
 E2514.8	Boku	And then it's done?
-E2514.9	Uncle	Yep! // But I have to wait for it to cool down on its own before opening the kiln, // so you'll have to wait till the evening of the day after tomorrow to meet what's been fired.
+E2514.9	Uncle	Yeah! // But I have to wait for it to cool down on its own before opening the kiln, // so you'll have to wait till the evening of the day after tomorrow to meet what's been fired.
 E2514.10	Boku	Whew... that's a long wait.
 E2514.11	Uncle	I'm getting hungry already.
 
@@ -52,7 +52,7 @@ E2514.11	Uncle	I'm getting hungry already.
 E2515.0	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it.
 E2515.1	Uncle	Tomorrow, around the time the sun comes up, // I'll need even more firewood than now, // so I'd better work hard and split it tonight...
 E2515.2	Boku	Hey, what does that poem just now mean?
-E2515.3	Uncle	Something like, "Once night falls, you really can feel the autumn now"... // that sort of thing.
+E2515.3	Uncle	Once night falls, you really do feel it's autumn now... // is about the size of it, I suppose.
 E2515.4	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it.
 E2515.5	Boku	.........
 # NOTE E2515.0: the uncle's tanka, 5-7-5-7-7 in classical grammar, as five short lines, literal
@@ -67,7 +67,7 @@ E2530.3	Moe	So I'd like to lie down a little longer.
 E2530.4	Moe	Oh, what's this?
 E2530.5	Boku	This... ana-ana-bobon.
 E2530.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
-E2530.7	Boku	So it is a book from outer space.
+E2530.7	Boku	So it really is an alien's book.
 E2530.8	Moe	Dummy, this is English. En-glish!
 E2530.9	Boku	Onee-chan, can you understand English?
 E2530.10	Moe	Of course I can't. It's the class of the teacher I hate most.
@@ -75,7 +75,7 @@ E2530.11	Moe	I'll try reading the letter a little.
 E2530.12	Boku	Yeah, let me hear it, let me hear it!
 E2530.13	(voice only)
 E2530.14	Moe	...The letter was in English too, I'm afraid.
-E2530.15	Boku	Aww, man...
+E2530.15	Boku	Groan...
 E2530.16	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
 E2530.17	Boku	...Onee-chan, are you doing that on purpose?
 E2530.18	Moe	Huh? What? Whaaat? What do you mean?
@@ -95,7 +95,7 @@ E2532.7	Moe	Wow... a moratorium, huh...
 E2532.8	Boku	Sounds like a planetarium.
 E2532.9	Boku	Hey, I picked up something strange, deep in the cave.
 E2532.10	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
-E2532.11	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2532.11	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
 E2532.12	Boku	But whose is it?
 E2532.13	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2532.14	Moe	From tomorrow...
