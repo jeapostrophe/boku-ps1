@@ -1,0 +1,84 @@
+# day24 (translation/days/README.md)
+# --- E2460: D07 -- Saori's camp
+E2460.0	Boku	Lady, what do you study at school?
+E2460.1	Saori	......Doodling.
+E2460.2	Boku	Huh?
+E2460.3	Boku	Hey, you've brought lots of books. How did you carry them all here?
+E2460.4	Saori	......Sheer grit.
+E2460.5	Boku	Huh?
+
+# --- E2420: H07 -- outside the dining room
+E2420.0	Aunt	I'm starting to run out of ideas for dinner...
+E2420.1	Aunt	I know! I haven't made that one for a while.
+
+# --- E2412: G01 -- living room
+E2412.0	Uncle	Tomorrow I'm lighting the kiln.
+E2412.1	Boku	What! Really?
+E2412.2	Uncle	Yep! // While you're here, I really ought to show you something amazing at least once.
+E2412.3	Uncle	I'll have to watch over the kiln all night long, // but Boku-kun, you mustn't stay up late with me.
+
+# --- E2430: G16 -- Moe's bed
+E2430.0	Moe	Lately I've been sleepy in the daytime. // I wonder if Onee-chan has turned into a nocturnal type.
+E2430.1	Boku	A nock-turtle type?
+E2430.2	Moe	It means active at night. // Like Owl-san, or Bat-kun... // Giant Flying Squirrel-san and Momonga-chan, too.
+E2430.3	Moe	But don't ask me the difference between Giant Flying Squirrel-san and Momonga-chan.
+E2430.4	Moe	Oh, what's this?
+E2430.5	Boku	This... ana-ana-bobon.
+E2430.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+E2430.7	Boku	So it is a book from outer space.
+E2430.8	Moe	Dummy, this is English. En-glish!
+E2430.9	Boku	Onee-chan, can you understand English?
+E2430.10	Moe	Of course I can't. It's the class of the teacher I hate most.
+E2430.11	Moe	I'll try reading the letter a little.
+E2430.12	Boku	Yeah, let me hear it, let me hear it!
+E2430.13	(voice only)
+E2430.14	Moe	...The letter was in English too, I'm afraid.
+E2430.15	Boku	Aww, man...
+E2430.16	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
+E2430.17	Boku	...Onee-chan, are you doing that on purpose?
+E2430.18	Moe	Huh? What? Whaaat? What do you mean?
+E2430.19	Moe	I'll have that letter translated by dinner.
+E2430.20	Boku	Can you?
+E2430.21	Moe	Oh, be quiet! // When I think someone's secret is packed in here, my heart pounds with excitement... // and somehow my own misery feels lighter.
+# NOTE E2430.0-.1: yorugata ("a night type"), which Boku repeats as a word he does not know
+#   (style guide § 8 kind 1); Moe then explains it. Musasabi and momonga are the giant and the
+#   small flying squirrels; "momonga" is also the English name of the small one.
+
+# --- E2432: G17 -- the veranda (the stars; living alone in spring)
+E2432.0	Boku	It's a really pretty starry sky.
+E2432.1	Moe	Yeah.
+E2432.2	Boku	When I go back to the city, I won't be able to see it anymore.
+E2432.3	Moe	Yeah.
+E2432.4	Boku	Onee-chan, are you going to live on your own from next spring?
+E2432.5	Moe	Mmm...
+E2432.6	Boku	I see... so you'll be gone from here.
+E2432.7	Moe	Yeah.
+E2432.8	Boku	......
+E2432.9	Moe	But...
+E2432.10	(voice only)
+E2432.11	Moe	When I graduate, I'll come back for sure.
+E2432.12	Boku	Absolutely?
+E2432.13	Moe	Yeah!
+E2432.14	(voice only)
+E2432.15	Moe	Onee-chan's the tofu man tonight.
+E2432.16	Boku	Hey, I picked up something strange, deep in the cave.
+E2432.17	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
+E2432.18	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2432.19	Boku	But whose is it?
+E2432.20	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
+E2432.21	Moe	From tomorrow...
+E2432.22	Boku	What?
+E2432.23	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+# NOTE E2432.15: the clarinet squawk (.14) sounds like the horn of the tofu seller who comes round
+#   the streets in the evening.
+
+# --- E2440: H04 -- garden corner where Shirabe watches ants
+E2440.0	Boku	Pipsqueak, you really love little ants, don't you?
+E2440.1	Shirabe	Well, if you were born somewhere with so little entertainment, // anyone would make friends with little ants!
+E2440.2	Shirabe	Everyone in our family except Dad has 2.0 eyesight in both eyes.
+
+# --- E2441: G06 -- TV room
+E2441.0	Shirabe	What does the Wolf Girl come all the way out to the countryside for, I wonder?
+E2441.1	Shirabe	She must really like our bath.
+E2441.2	Shirabe	Hey, a wolf is that bad guy in the fairy tales, right?
+E2441.3	Shirabe	In every age, women are drawn to wickedness, aren't they?

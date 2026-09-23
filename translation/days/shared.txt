@@ -1110,3 +1110,37 @@ E2304.0	Uncle	Gochisosama deshita.
 E2304.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E2304.2	Aunt	Here, Boku-kun, this is for you.
 E2304.3	Boku	Oh, the photo's ready. Thanks, Auntie.
+
+# --- E2405: E08 -- the secret shortcut, a hole in the cave; I12 -- close-up
+E2405.0	Narrator	This hole seemed to lead somewhere... // or so I thought.
+
+# --- E2401: G02 -- breakfast ("I'll go to school after all")
+E2401.0	Moe	Um...
+E2401.1	Uncle	What is it?
+E2401.2	Moe	Dad, Mom... I'm sorry... is what I wanted to say.
+E2401.3	Aunt	What's the matter?
+E2401.4	Moe	I think maybe I'll go on to high school properly after all...
+E2401.5	Uncle	I see. That's good.
+E2401.6	Aunt	Mm, well done! Go for it, Moe! Mom's rooting for you.
+E2401.7	Moe	But...
+E2401.8	Uncle	What is it, Moe?
+E2401.9	Moe	...Nothing.
+E2401.10	Uncle	You mean that to go to high school, // you'll have to leave this house and live on your own?
+E2401.11	Moe	Yeah... it's kind of lonely, isn't it?
+E2401.12	Shirabe	Shirabe's going to be an idol singer!
+E2401.13	Moe	Is that so? That's amazing.
+E2401.14	Shirabe	And I'll make it go vroom-vroom.
+E2401.15	Boku	Make what?
+E2401.16	Shirabe	My Benz!
+E2401.17	Uncle	Well then, itadakimaasu.
+E2401.18	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+
+# --- E2451: A18 -- the secret base
+E2451.0	Guts	Last year I swiped a mineral specimen from the science room at school... // Well, it's just iron ore, but it's a treasure, heavy in your hand and glittering...
+
+# --- E2452: A18 -- the secret base
+E2452.0	Fat	Menko? What's that? // Around here we call them patchi. // The little dents on them are for bundling them up with rubber bands, you know. // What? Everybody knows that...?
+# NOTE E2452.0: patchi, the local name for menko cards, glossed by the line itself (style guide § 5).
+
+# --- E2453: A18 -- the secret base
+E2453.0	Specs	In The Eight Dog Chronicles, I can name all the jewels, // but I'm never sure of the order...
