@@ -115,7 +115,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       arena laid out once at boot, and it is full: a map pack loads at `0x801B3DF4` and
       `map_commit` traps if child 6 starts past `0x6400` (tightest map `M_H06001`: 2,664 bytes
       of head room; median 12,624); `EV` members share one `0x4000` buffer, up to 10 per map;
-      overlays load at `0x80079A08`–`0x8008F3A4` (`MUSI.OVL` has 10 bytes free). All arena
+      overlays load at `0x80079A08`–`0x8008F3A4` (`MUSI.OVL` has 10 bytes free), and a load writes whole sectors, up to `0x8008FA08`. All arena
       addresses are computed from pack offsets, not observed — `PIPE-03` carries the check.
       Closed as *no*: the 18 computed-index load sites inside overlays (no text-bearing member
       is unaccounted for; reopen if `PIPE-01`'s extractor finds a member nobody loads).
@@ -221,8 +221,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [ ] **[TXT-05]** **The renderer patch.** The DIALOGUE surface is prototyped and runs on both
       emulators (2026-09-20, `asm/dialogue.asm`, `tools/vwf/build_prototype.py`,
       `research/vwf-prototype.md`): 21 EXE words — direction, pen, the band, line pitch, the
-      nine-slot table-lookup advance (no trampoline), heap start raised to make room for the
-      width table in the measured-dead gap; every site carries its retail instruction and the
+      nine-slot table-lookup advance (no trampoline), the width table and select hooks in
+      the dead PC-host island `0x8005CD44…0x8005DCF8` (the heap-raise gap is zeroed by
+      `MUSI.OVL`'s whole-sector load, measured 2026-09-23; `boku.build.check_resident`
+      refuses any executable edit in the overlay region); every site carries its retail instruction and the
       build refuses unless the `ORIGINAL=1` arm reassembles the EXE byte-identically. The font
       sheet is rebuilt at build time from the contributor's disc with Latin cells
       left-aligned in FREE cells (cells the Japanese script draws are never moved, and a gate
@@ -267,8 +269,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
       surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
       the 23 computed-id `glyph_draw` sites (probably covered by the site index plus
-      `code_glyph_ids` — needs a test that proves it); watching the heap gap and stack under
-      the four overlays / a save / menus, sumo and fishing. (Round 3, 2026-09-21: the
+      `code_glyph_ids` — needs a test that proves it); watching the stack under the four
+      overlays / a save / menus, sumo and fishing. Step routines share one width lookup;
+      walker island 276/424 bytes used. (Round 3, 2026-09-21: the
       "head drawn over the band" was a misread of a zoom — measured, the head is behind
       the band and the ordering table is stock; the select box now derives from the row
       geometry; a text-only test refuses overlapping `.org`/`.area` blocks, the trap that
@@ -510,13 +513,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       all applied). What reaches the screen is `PIPE-07`'s and `TXT-05`'s: the build places
       only what fits each item's own bytes, and `boku lint` names every line it cannot place.
 - [ ] **[PIPE-07]** **Array English on screen.** `boku lint --encoder cellmap` over
-      `arrays.txt` (2026-09-23): 183 `array-bytes` (an item's English outgrows its bytes —
-      code-file arrays have no slack: relocate the array and patch its `lui`/`addiu` pairs,
-      `research/text-format.md`), 19 `array-width` (help-screen boxes, `research/data/
-      text-boxes.tsv`), 9 `unencodable` (the controls help's `{G:n}` button tokens and ○ × ↓
-      need to pass through the cell-map encoder), 106 `array-group` and 7 `not-placeable`
-      warnings (lines drawn as groups; code labels and the save title with no text site).
-      Done when the lint shows none of these errors and the build refuses no array line.
+      `arrays.txt` (2026-09-23, after the glyph passthrough and the build's multi-line
+      wrapping): 209 `array-bytes` (an item's English outgrows its bytes — code-file arrays
+      have no slack: relocate the array and patch its `lui`/`addiu` pairs; the regions each
+      lane owns are `research/text-renderer.md` § 6), 24 `array-lines`, 12 `array-width`,
+      74 `array-group` and 7 `not-placeable` warnings (lines drawn as groups; code labels and
+      the save title with no text site); `unencodable` is 0 (`{G:n}` and ○ × ↓ draw the
+      sheet's own cells, `boku.layout.sheet_cells`). Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
@@ -672,14 +675,20 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       clean; the doubtful words are `VO-05`'s. Left: **[MINE: product]** whether the two songs
       (the `M27` opening theme, the `M28` credits song) get sing-along subtitles — the lyrics
       are translated and sit commented out under `# SONG`, so a yes is removing the prefix
-      (recommended: yes). Harmed: the player.
+      (recommended: yes) — and a yes also needs a per-cue position in the cue file
+      (`[MINE: contract]`), since all ten `M28` song segments fall on the credits scrolling
+      through the subtitle rows. Harmed: the player.
 - [ ] **[FMV-03]** **Finalize the movies one by one.** The list is
       `research/data/movies.tsv` — one row per `MOVIE` id (27; 25 files), generated by
       `./make.sh movies` (2026-09-22), which also decodes every movie with its narration into
       `work/movies/*.avi` for watching; `what_it_shows` is the hand column Jay fills from
       watching (the stairs movies and the other oddities go there). A movie is finalized when
       its row says what it shows and its cues (`FMV-02`) are timed to that picture through
-      `FMV-04`'s hook, checked in the game — Jay's finalized state. Harmed: the player.
+      `FMV-04`'s hook, checked in the game — Jay's finalized state. Review tooling DONE
+      2026-09-23: `./make.sh movie-timing` / `movie-review`, 14 cues retimed, the review page
+      is `work/movie-review/index.html` (`research/movies.md` § 10); for Jay at review: four
+      `M27` cues (1221, 1332, 1629, 1672) read at 17.8–21.3 characters a second with every
+      boundary at its limit — accept, or the wording changes. Harmed: the player.
 
 ## Voice-over — speech with no text on the disc, outside the movies
 
