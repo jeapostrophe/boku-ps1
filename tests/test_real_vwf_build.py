@@ -283,7 +283,17 @@ def test_every_written_line_reads_back_as_the_words_the_build_laid_out(
     for line_id in sorted(written):
         sites = built_walk.by_line.get(line_id)
         assert sites, f"{line_id} is not a line of the built image"
-        was = {words_of(walk_reader.raw(archive, site)) for site in walk_reader.by_line[line_id]}
+        if line_id in walk_reader.voice_only:
+            # A subtitle (PLAN VO-02) fills an entry the import leaves null, at every copy.
+            assert len(sites) == len(walk_reader.voice_only[line_id]), (
+                f"{line_id}'s subtitle reached {len(sites)} of "
+                f"{len(walk_reader.voice_only[line_id])} copies"
+            )
+            was = set()
+        else:
+            was = {
+                words_of(walk_reader.raw(archive, site)) for site in walk_reader.by_line[line_id]
+            }
         now = {words_of(built_walk.raw(built, site)) for site in sites}
         assert len(now) == 1, f"{line_id}'s copies disagree in the built image"
         if now != was:
