@@ -21,6 +21,10 @@ from boku.layout import ANSWER_PAIR
 from boku.script_store import load_store
 
 HELP, CARD = "exe@80029B20", "exe@8003D5F0"
+FISH = ("exe@800462C8", "exe@800462E4", "exe@80046314", "exe@80046334")
+"""The fishing messages: `fish_msg_draw` draws them exactly as `bag_draw` draws an item's
+description, so each has the descriptions' box."""
+BOX_FIELDS = ("x", "right", "pitch", "lines")
 
 
 def word(archive: Archive, ram: int, overlay: str | None = None) -> int:
@@ -97,6 +101,14 @@ def test_the_bag_and_extras_pens_are_their_drawers_literals(archive):
     for prefix in ("exe@80046398", "exe@80046614"):
         assert box_for(f"{prefix}.0").x == desc & 0xFFFF
     assert set(pens("exe@8003DA00", range(5)).values()) == {extras & 0xFFFF}
+    fish = word(archive, 0x80043F40)  # fish_msg_draw: text_draw_h(msg, 0xB8, 0x7E) too
+    assert fish == desc and word(archive, 0x80043F48) == word(archive, 0x80041858), (
+        "fish_msg_draw no longer draws where bag_draw draws the descriptions"
+    )
+    for prefix in FISH:
+        mine, theirs = box_for(f"{prefix}.0"), box_for("exe@80046398.0")
+        assert mine is not None, f"{prefix} has no measured box"
+        assert [getattr(mine, f) for f in BOX_FIELDS] == [getattr(theirs, f) for f in BOX_FIELDS]
     label5 = word(archive, 0x800803E0, "TITLE.OVL")  # 20a: addiu s1,zero,0x72
     assert label5 >> 16 == 0x2411 and box_for("exe@8003DA00.5").x == label5 & 0xFFFF
 
@@ -117,6 +129,7 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         "exe@80046214": step(0x80043848),  # text_draw_line_h
         "exe@80046398": step(0x800438B8),  # text_draw_h
         "exe@80046614": step(0x800438B8),
+        **dict.fromkeys(FISH, step(0x800438B8)),  # fish_msg_draw -> text_draw_h
         "exe@8003DA00": step(0x80080790, "TITLE.OVL"),  # extras_draw
         "title@7A78": step(0x8007D050, "TITLE.OVL"),  # the answers' drawer
     }
@@ -156,3 +169,13 @@ def test_the_answers_constants_are_where_the_drawer_holds_them(archive):
     asm = (REPO_ROOT / "asm" / "title.asm").read_text(encoding="utf-8")
     found = re.search(r"^YESNO_SECOND\s+equ\s+(0x[0-9A-Fa-f]+)", asm, re.M)
     assert found and int(found.group(1), 16) == ANSWER_PAIR.second_x
+
+
+def test_the_ant_message_is_laid_out_in_the_dialogue_band_pencil_and_all():
+    """`ant_msg_open` hands the ant count to `dialog_open`: its box is `DIALOGUE_BAND`
+    itself, the next-page pencil's guard on line 3 included, not a row that copies it."""
+    from boku.boxes import box_spec_for
+    from boku.layout import DIALOGUE_BAND
+
+    assert box_spec_for("exe@80029AFC.0") is DIALOGUE_BAND
+    assert box_for("exe@80029AFC.0") is None, "one home: no text-boxes row restates the band"

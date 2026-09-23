@@ -50,6 +50,8 @@ What it checks, and where each rule comes from
 * **`answer-pair`** -- the card screens' two answers (`title@7A78.0`) not written as
   `Yes | No`; their widths and cells are `array-width` and `array-bytes`
   (`boku.layout.ANSWER_PAIR`).
+* **`array-counted`** -- an item whose cells the program overwrites before drawing
+  (`boku.arrays.COUNTED_CELLS`, the ant count) keeps digits there.
 * **`array-width`** -- an array item wider, in pixels, than its surface's measured box
   (`boku.boxes`, `research/data/text-boxes.tsv`, `PLAN TXT-07`). A surface with no row has
   not been measured and is held to its bytes alone. **`array-lines`**: an item whose box
@@ -100,7 +102,7 @@ from pathlib import Path
 from boku import REPO_ROOT, clip_subs, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
 from boku.arrays import byte_limit
-from boku.boxes import TextBox, box_for
+from boku.boxes import TextBox, box_for, box_spec_for
 from boku.code_text import (
     DATE_LABELS,
     lay_out_code_label,
@@ -682,14 +684,13 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
                 check = "array-bytes"
             context.say(row, check, ERROR, problem.split(": ", 1)[-1])
         return
-    box = box_for(row.line_id, context.options.boxes)
     laid = lay_out_array(
         row.line_id,
         text,
         original_bytes(record, context.table),
         encoder,
         size,
-        box.spec if box else None,
+        box_spec_for(row.line_id, context.options.boxes),
     )
     if not laid.problems:
         context.array_words[row.line_id] = laid.words
@@ -707,6 +708,8 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
             check = "unencodable"
         elif "no English was given" in problem:
             check = "array-empty"
+        elif "writes its count into cells" in problem:
+            check = "array-counted"
         context.say(row, check, severity, detail)
 
 

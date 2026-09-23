@@ -22,7 +22,7 @@ from functools import cache
 from pathlib import Path
 
 from boku import REPO_ROOT
-from boku.layout import BoxSpec
+from boku.layout import DIALOGUE_BAND, BoxSpec
 
 BOXES_TSV = REPO_ROOT / "research" / "data" / "text-boxes.tsv"
 COLUMNS = ("line_id", "x", "right", "pitch", "lines", "surface", "basis")
@@ -85,6 +85,20 @@ def load_boxes(path: Path = BOXES_TSV) -> dict[str, TextBox]:
                 raise BoxError(f"{path.name} row {number}: {box.line_id} is listed twice")
             boxes[box.line_id] = box
     return boxes
+
+
+IN_THE_BAND = frozenset({"exe@80029AFC.0"})
+"""Array items drawn by `dialog_open`: `ant_msg_open` (0x80032030) opens the ant count as a
+dialogue, so it is laid out in the dialogue band, pencil guard included."""
+
+
+def box_spec_for(line_id: str, boxes: dict[str, TextBox] | None = None) -> BoxSpec | None:
+    """What an array item is laid out in: the dialogue band for an item `dialog_open` draws,
+    else its row's box, else `None` (a surface nobody has measured)."""
+    if line_id in IN_THE_BAND:
+        return DIALOGUE_BAND
+    box = box_for(line_id, boxes)
+    return box.spec if box is not None else None
 
 
 def box_for(line_id: str, boxes: dict[str, TextBox] | None = None) -> TextBox | None:

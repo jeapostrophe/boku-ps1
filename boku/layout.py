@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import NamedTuple, Protocol
 from unicodedata import category
 
+from boku.arrays import COUNTED_CELLS
 from boku.glyphs import (
     END_WORD,
     NEWLINE_WORD,
@@ -639,6 +640,14 @@ def lay_out_array(
             cells.append(NEWLINE_WORD)
         cells += laid.cells
     new = (*cells, words[-1])
+    counted = COUNTED_CELLS.get(line_id)
+    if counted is not None:
+        digits = {sheet_cells(encoder, digit).cells[0] for digit in "0123456789"}
+        if not all(cell in digits for cell in new[counted.start : counted.stop]):
+            problems.append(
+                f"{line_id}: the program writes its count into cells {counted.start}-"
+                f"{counted.stop - 1} before drawing, so the English has digits there"
+            )
     if size is not None and 2 * len(new) > size:
         problems.append(
             f"{line_id}: {text!r} needs {2 * len(new)} bytes and the array item holds "

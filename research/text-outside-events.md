@@ -234,6 +234,28 @@ reader's pair can point into the executable. `boku.arrays.ANCHORS` names one pai
 which the walk reads the start from, so a built image is walked where its code looks.
 Not moved: the raw (`R`) rows, whose cell count is their reader's loop bound.
 
+## Items drawn as a group, and what each needs
+
+An item with a line break inside it, or a raw row with none, is laid out only where its
+surface's box is known (`research/data/text-boxes.tsv`; `boku.layout.lay_out_array`). As of
+2026-09-23:
+
+* **Laid out.** The four fishing messages (`exe@800462C8` … `exe@80046334`):
+  `fish_msg_draw` (`0x80043ED8`) calls `text_draw_h(msg, 0xB8, 0x7E)` exactly as `bag_draw`
+  draws an item's description, so they take the descriptions' box. The ant count
+  (`exe@80029AFC`) is opened with `dialog_open`, so it takes the dialogue band; its words
+  1-3 are overwritten with the count by `ant_msg_open` (`boku.arrays.COUNTED_CELLS`). An
+  **E** item may break its lines where the English needs, since `text_nth` finds items by
+  their `0x8000` alone (`boku.reinsert.check_words`).
+* **Need the drawer changed** -- raw rows whose cell count is the drawer's loop bound, so
+  English longer than the Japanese cannot be data: the fortune (`exe@80036750`, 4 × 3 cells,
+  vertical, copied to the stack), the kite crash banner (`tako@440`, 4 cells, vertical),
+  the bug-sumo button hint (`musi@348`, 7 cells) and strength labels (`musi@358`, 3 × 2-3
+  cells). These are renderer surfaces (`PLAN TXT-05`).
+* **Waits for a layout ruling.** The insect box's 60 entries (`hhon@5328`), drawn by
+  `hhon_entry_draw` vertically; English needs the surface redrawn and the array moved into
+  a `HHON.OVL` extension (5,454 bytes, too large for resident space).
+
 ## Line ids for these surfaces
 
 Their English is `translation/days/arrays.txt` (PLAN `TRN-09`; format in that directory's

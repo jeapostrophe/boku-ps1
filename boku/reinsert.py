@@ -270,7 +270,8 @@ def check_words(site: Site, words: Sequence[int], original: Sequence[int]) -> No
     * a **select** has no terminator and is exactly `L` lines, each ended by a bit-15 word,
       with `L` coming from the executable (`research/text-format.md` § SELECT);
     * an **array item** is delimited by its control words and its neighbours are found by
-      scanning past them, so the control words must come back in the same order.
+      scanning past them, so the control words must come back in the same order -- except
+      in an **E** item, found by its one `0x8000`, where a `0x8001` only starts a line.
     """
     kind = site.kind.split("+")[0]
     if kind == "MSG":
@@ -299,6 +300,15 @@ def check_words(site: Site, words: Sequence[int], original: Sequence[int]) -> No
         if not words or not words[-1] & 0x8000:
             raise ReinsertRefused(
                 f"{site.line_id}: every line of a select ends with a control word",
+                [site.line_id],
+            )
+    elif kind == "ARR-E":
+        # `text_nth` finds item k by counting `0x8000`s; a `0x8001` inside an item only
+        # starts a line (research/text-format.md), so the English may break differently.
+        if not words or words[-1] != END_WORD or _control_words(words).count(END_WORD) != 1:
+            raise ReinsertRefused(
+                f"{site.line_id}: an E array item ends with its one {{END}}, which is how "
+                f"the next item is found; these words do not",
                 [site.line_id],
             )
     elif kind.startswith("ARR"):

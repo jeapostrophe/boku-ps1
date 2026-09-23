@@ -24,6 +24,7 @@ import pytest
 from boku import relocate
 from boku.archive import (
     EV_DIR_INDEX,
+    EXE_NAME,
     MAP_DIR_INDEX,
     SECTOR,
     SUB_ARCHIVES,
@@ -38,6 +39,7 @@ from boku.reinsert import (
     MAP_WORK_AREA_END,
     ByteEdit,
     ReinsertRefused,
+    check_words,
     directory_edits,
     map_head_room,
     map_work_records,
@@ -54,6 +56,7 @@ from boku.relocate import (
     check_placements,
     plan_layout,
 )
+from boku.sites import Site
 from boku.sites import walk as walk_all_sites
 from tests import synth_archive as synth
 
@@ -1052,3 +1055,29 @@ def test_a_patch_across_two_children_is_refused_by_what_it_crosses():
     patch = ByteEdit("BOKU.BIN", at, archive.boku[at : at + 2], b"\xee\xee", "texture")
     with pytest.raises(ReinsertRefused, match="across two of its children or in the padding"):
         rebuilt(archive, GROWS, carry=[patch])
+
+
+def _array_site(kind: str) -> Site:
+    return Site(
+        "EXE", EXE_NAME, "array@0x1000", 0, 0, 0, 0x1000, 8, 0, kind, "exe@80001000.0", 0x1000
+    )
+
+
+def test_an_e_item_may_break_its_lines_anywhere_but_ends_where_it_ended():
+    """An **E** item is found by `text_nth` counting `0x8000`s; a `0x8001` inside it only
+    starts a line (`research/text-format.md`), so English may take a different number of
+    lines. The ant message ("000 ants died.") fits one line where the Japanese took two."""
+    site = _array_site("ARR-E")
+    original = (0x100, NEWLINE_WORD, 0x101, END_WORD)
+    check_words(site, (0x200, 0x201, END_WORD), original)
+    with pytest.raises(ReinsertRefused, match="ends with its one"):
+        check_words(site, (0x200, END_WORD, 0x201, END_WORD), original)
+    with pytest.raises(ReinsertRefused, match="ends with its one"):
+        check_words(site, (0x200, NEWLINE_WORD), original)
+
+
+def test_an_l_item_s_control_words_still_may_not_move():
+    """In an **L** array every bit-15 word ends an item, so the count is the partition."""
+    site = _array_site("ARR-L")
+    with pytest.raises(ReinsertRefused, match="may not move"):
+        check_words(site, (0x200, NEWLINE_WORD, 0x201, NEWLINE_WORD), (0x100, NEWLINE_WORD))

@@ -68,7 +68,7 @@ from boku.arrays import (
     byte_limit,
     read_code_labels,
 )
-from boku.boxes import box_for
+from boku.boxes import box_for, box_spec_for
 from boku.code_text import (
     DATE_LABELS,
     code_label_edits,
@@ -839,14 +839,13 @@ def lay_out(
                 )
                 out.append(LineResult(entry.line_id, laid, laid.problems))
                 continue
-            measured = box_for(entry.line_id)
             laid = lay_out_array(
                 entry.line_id,
                 " ".join(entry.pages),
                 original,
                 encoder,
                 byte_limit(entry.line_id, sites[0].size),
-                measured.spec if measured else None,
+                box_spec_for(entry.line_id),
             )
         else:
             out.append(

@@ -549,3 +549,16 @@ def test_two_answers_that_do_not_fit_the_row_are_refused(text, complaint):
     original = raw(0x100, 0x101, 0x102, 0x103, 0x104)
     laid = lay_out_answer_pair("title@7A78.0", text, original, answer_encoder(), 299)
     assert any(complaint in problem for problem in laid.problems), laid.problems
+
+
+def test_the_ant_count_s_cells_must_be_digits_in_the_english():
+    """`ant_msg_open` stores the count into words 1-3 before the message is drawn."""
+    original = raw(0x17, 0x34, 0x34, 0x34, 0x100, NEWLINE_WORD, 0x100, END_WORD)
+    encoder = CellMapEncoder({**{c: (400 + i, 6) for i, c in enumerate('"0ants died.')}})
+    box = BoxSpec(width=999, lines=3, pitch=14, name="the band")
+    good = lay_out_array("exe@80029AFC.0", '"000 ants died."', original, encoder, None, box)
+    assert good.problems == ()
+    bad = lay_out_array("exe@80029AFC.0", '"Ants died: 000"', original, encoder, None, box)
+    assert "writes its count into cells 1-3" in bad.problems[-1]
+    token = lay_out_array("exe@80029AFC.0", '{G:23}000 ants died."', original, encoder, None, box)
+    assert token.problems == (), "a glyph token is one cell: the digits are still cells 1-3"

@@ -269,6 +269,11 @@ will look (`boku.pointers`, `PLAN PIPE-07`). On the import each resolves to the 
 own address, and every reference `boku.pointers.scan` finds is checked against the list on
 the real disc (`tests/test_real_pointers.py`)."""
 
+COUNTED_CELLS: dict[str, range] = {"exe@80029AFC.0": range(1, 4)}
+"""Items whose cells the program overwrites before drawing: `ant_msg_open` (0x80032030)
+stores three random digits (`0x34 + d`) into words 1-3 of the ant message, so the English
+must have a digit at each of those cells, or the count lands in the middle of a word."""
+
 RELOCATABLE_SHAPES = frozenset({"E", "L", "S", "S1"})
 """Arrays a build may move whole: their items are found by walking control words from
 the start, so only the start's address pairs change. A raw (`R`) row's cell count is its
