@@ -616,11 +616,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       (`research/movies.md` § 7); the block has no movie key yet, so the prototype's cue
       plays over every movie reaching frame 120, and `boku build --vwf` carries none of the
       movie sites until (2); the 620-byte island is full — the per-movie select goes in the
-      712-byte island at `0x800221CC` or in the loaded block. (2) The cue file format
-      (keyed by movie and frame — what `FMV-02` writes), the block's carrier in `boku build`
-      (reserved LBAs vs a member is the implementer's call — Jay, 2026-09-22: "I want it to
-      work"; either way the relocation allocator must not hand out the block's sectors) and
-      the per-movie select. RULED 2026-09-22 (Jay, watching `build/vwf`): the outline/shadow
+      712-byte island at `0x800221CC` or in the loaded block. (2) DONE 2026-09-22 — `translation/movies.txt` keyed by movie file and STR frame
+      (`translation/README.md` § movies.txt, `boku.movie_cues`, linted by `boku lint`); per-movie
+      select in the `0x800221CC` island by `g_movie_name`; the block carried by `boku build
+      --vwf` from `edits.json` `sectors` into `MOVIE_BLOCK_RESERVE` (LBA 1014–1045), which the
+      allocator never hands out; `./make.sh build-days` carries the hooks. Redux gate on M27 +
+      M60 pixel-exact, one movie's cue never drawn on the other; Beetle exact
+      (`research/movies.md` § 8). RULED 2026-09-22 (Jay, watching `build/vwf`): the outline/shadow
       style and the rows (200/214) are good — "the pixels work", not cropped on DuckStation;
       still to check that every cue fits and sits at the right point in the audio (the
       prototype's one cue is mistimed by construction). Note `build/vwf/image.cue` is the

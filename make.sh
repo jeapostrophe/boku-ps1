@@ -195,7 +195,7 @@ cmd_build_days() {
     # A second .cue named by the revision, so the emulator's window title says what is
     # being played while builds and edits overlap (Jay, 2026-09-20). Same image.img.
     local id
-    id="$(date -u +%Y%m%dT%H%MZ)-$(git describe --always --dirty --abbrev=8)"
+    id="$(date -u +%Y%m%dT%H%MZ)-$(git describe --always --dirty --abbrev=8 --exclude='*')"
     rm -f build/days/days-*.cue
     cp build/days/image.cue "build/days/days-$id.cue"
     echo "$id" > build/days/BUILD-ID.txt
