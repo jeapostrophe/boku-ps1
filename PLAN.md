@@ -266,7 +266,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       to their box by the build) proven on both emulators, reached with generated cards /
       pokes; the card screens' two answers (surface 18): the row is written `Yes | No` and the
       build rewrites the drawer's split and count in `TITLE.OVL`, proven on both emulators.
-      **Left to do:** the insect box (the two `HHON.OVL` walkers): measured and reached on
+      **Done 2026-09-23:** surfaces 9 (`sysmsg_draw` returns a pixel width and
+      its five callers take it), 11 and 25/26 installed and tested instruction by instruction
+      in `tests/mips.py`; not reached on screen (the cage HUD needs a caught insect; fishing
+      and sumo need days of play). **Left to do:** screen proof of surfaces 9/11/25/26; bug
+      sumo's fixed-x names (`0x8007E6E4` and kin draw the next item 96 px after a name —
+      place it after the measured width instead); the insect box (the two `HHON.OVL` walkers): measured and reached on
       both emulators; the row walkers are designed and parked (`research/vwf-prototype.md` §
       "The HHON walkers") until the entries can grow (`PIPE-07`) and **[MINE: product]** a
       layout that holds the English's 9–15 lines is chosen — the notebook page holds 8 rows
@@ -325,8 +330,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       (`research/data/text-boxes.tsv`, enforced by build and lint): controls help,
       memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
       code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, three
-      lines, wrapped by the build), summer-memories labels. Still to measure: kite names,
-      fishing, fish names, insect names, the insect box and bug sumo. Original row — for every box geometry the game uses:
+      lines, wrapped by the build), summer-memories labels. Widest English per surface (2026-09-23):
+      insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Still to
+      measure: kite names and the cage HUD, fishing and sumo boxes. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
       minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
