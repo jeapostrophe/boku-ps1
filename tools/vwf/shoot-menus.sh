@@ -3,7 +3,9 @@
 # emulators: the card check (TITLE.OVL), then the arrival sequence played out into free
 # roam, START (the controls-help screen) and the item menu (triangle, then circle on the
 # bag) -- with items 1-3 poked into it, for their names and a description -- and, from
-# memory cards, "load this file?" and the summer-memories screen. PNGs land in
+# memory cards, "load this file?" and the summer-memories screen; and the insect box's
+# notebook page and grid, forced open (book-pokes.lua on Redux, the same writes as pokes on
+# Beetle) -- still Japanese: the walkers are not installed. PNGs land in
 # work/txt05/menus/ (gitignored: the game's pixels).
 #
 # The cards come from ./make.sh saves (run it first): day05 for the load flow, and a
@@ -37,7 +39,7 @@ if [ "${ONLY:-beetle}" = beetle ]; then
 # Beetle: frames are retro_run calls; free roam is reached by 24,000 with the boot presses.
 beetle title --frames 3900 --press 3300:START --press 3600:CIRCLE --shot 3800:card-check
 beetle roam --frames 24000 --press-file "$repo/tools/libretro/boot-to-dialogue.press" \
-    --state-out 24000:free
+    --state-out 24000:free --ram-out 24000:free
 beetle help --state-in "$work/roam/free.state" --frames 400 --press 30:START --shot 390:help
 beetle items --state-in "$work/roam/free.state" --frames 600 --press 30:TRIANGLE \
     --press 300:CIRCLE --shot 500:items
@@ -49,6 +51,23 @@ beetle load --memcard "$saves/corpus/day05.mcd" --frames 4400 --press 3300:START
 beetle extras --memcard "$work/finished.mcd" --frames 6100 --press 3300:START \
     --press 3610:DOWN --press 3640:DOWN --press 3700:CIRCLE --press 4350:CIRCLE \
     --press 4700:CIRCLE --shot 6000:summer-memories
+# The insect box: tools/redux/book-pokes.lua's mode_set as pokes -- mode 10, the previous
+# mode (the live one), the change flag, and the arena the mode's g_modes record names, all
+# read from this image's RAM (the map-area raise moves the arena) -- with insect 0 at book
+# state 2 and in cage slot 0. DOWN scrolls the hub to its notebook page; the grid sub-state
+# (0x11) opens the grid. research/vwf-prototype.md § "The HHON walkers".
+modes=$(uv run python -c "
+import struct, sys
+ram = open(sys.argv[1], 'rb').read()
+u32 = lambda a: struct.unpack_from('<I', ram, a - 0x80000000)[0]
+arena = struct.pack('<I', u32(u32(0x800236BC + 16 * 10 + 12))).hex()
+print(f'{ram[0x237E4]:02x} {arena}')" "$work/roam/free.ram") || { echo "no RAM dump of free roam" >&2; exit 2; }
+previous=${modes% *} arena=${modes#* }
+beetle insects --state-in "$work/roam/free.state" --frames 1520 \
+    --poke 1:8003DF92=02 --poke 1:80046F28=00 --poke 1:80046F2B=01 \
+    --poke "3:800237E5=$previous" --poke 3:800237E0=0A --poke 3:800237E4=0A \
+    --poke 3:80024728=01000000 --poke "3:800258E0=$arena" \
+    --press 300:DOWN --shot 380:hub-page --poke 600:80080600=11000000 --shot 1500:grid
 fi
 
 if [ "${ONLY:-redux}" = redux ]; then
@@ -95,6 +114,13 @@ run load drive.lua BOKU_FRAMES=3200 BOKU_SHOT_AT=3200 BOKU_PREFIX=load \
 run extras drive.lua BOKU_FRAMES=5000 BOKU_SHOT_AT=5000 BOKU_PREFIX=extras \
     BOKU_INPUT="2430:START:5;2590:DOWN:5;2620:DOWN:5;2690:CIRCLE:5;3100:CIRCLE:5;3400:CIRCLE:5" \
     -memcard1 "$work/redux-finished.mcd"
+# The insect box, forced open (book-pokes.lua): the hub scrolled to its page, then the grid.
+run hub drive.lua BOKU_LOAD=free BOKU_FRAMES=420 BOKU_SHOT_AT=410 BOKU_PREFIX=hub-page \
+    BOKU_POKES="$repo/tools/redux/book-pokes.lua" BOKU_MODE=10 BOKU_SEEN=0=2 BOKU_CAUGHT=0=0 \
+    BOKU_W32=200:0x800805DC=200
+run grid drive.lua BOKU_LOAD=free BOKU_FRAMES=420 BOKU_SHOT_AT=410 BOKU_PREFIX=grid \
+    BOKU_POKES="$repo/tools/redux/book-pokes.lua" BOKU_MODE=10 BOKU_SEEN=0=2 BOKU_CAUGHT=0=0 \
+    BOKU_SUBSTATE=120:17
 uv run python "$repo/tools/redux/shot2png.py" "$BOKU_WORK"/shots/*.raw >/dev/null
 grep -H "ISLAND\|EXIT" "$work"/redux-*.log
 fi

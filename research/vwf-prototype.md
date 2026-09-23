@@ -23,7 +23,7 @@ select geometry are build arguments, and the typeface is an input file.
 | 5 the controls-help screen (START in free roam) | **done, proven on both emulators** (2026-09-22) |
 | 12 item names and descriptions (the bag, △ then ○) | **done, proven on both emulators** — descriptions wrapped to three lines in their box (2026-09-23, items poked into the bag: § "Screens behind a save"); captions, kite names and fishing ride the same two walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
 | 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
-| 3, 4 the insect book's two walkers (`HHON.OVL`) | **documented only**, not patched: § "The `HHON` walkers" |
+| 3, 4 the insect book's two walkers (`HHON.OVL`) | measured, and a row version prototyped on both emulators; **not installed** — real English does not fit yet (§ "The `HHON` walkers") |
 | the other fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
 
 ## Build and look
@@ -825,33 +825,57 @@ to `E0112`:
 
 ## The `HHON` walkers
 
-**Documented only; not patched.** `HHON.OVL` is the insect box, which in play needs the
-insect-collecting kit (`E0107`, day 1 evening at the desk) and then a caught insect — the
-sub-screen (△) reached from free roam on this route is the item menu (`item_menu_draw`,
-surface 12: the desk, the calendar, the radio-calisthenics card), not the box. On Redux it is
-reached without any of that by `tools/redux/book-pokes.lua`, which performs `mode_set` from Lua
-(`GFX-05`; the walkers' measured screens are text-renderer.md § 3, rows 3–4). The two
-walkers are [text-renderer.md](text-renderer.md) § 4c's: each swaps which register takes
-`+0xC` and turns `x −= 0xE; y = 0x20` into `y += pitch; x = left` — four immediates or
-registers each plus new origins — and their texts are the `HHON` arrays of
-[text-outside-events.md](text-outside-events.md). Decision **A** (route the step through the
-width table with a `jal` body) once the hook site's registers are read; the free space for
-the bodies is § "The free space"'s next island.
+**Measured and prototyped; not installed (2026-09-23).** `HHON.OVL` is the insect box
+(mode 10). Its two walkers draw an item of `hhon@5328` — one entry per insect id, item 60
+the unseen placeholder; an **E** array, so `0x8001` breaks a line — down columns right to
+left (y += 12 a glyph; a break: x −= 14, back to the top):
 
-**Reaching it on Beetle** (2026-09-23, not yet done): from free roam △ opens the desk with
-the hand on the bag; RIGHT ×2 is the net, UP from there the cage, and ○ zooms into a 3-D view
-of the cage whose pad works (DOWN turns the view; the hand sits on もどる). With insect 5 poked
-into cage slot 0 (`0x80046F28` = `05 00 00 01`) and its book state set — live, or through a
-generated card — no insect and no label appeared in that view, so the cage slot's other
-bytes, or the path from that view to the grid, are still to find. `tools/redux/book-pokes.lua`
-reaches the grid on Redux by forcing the mode, which is enough to measure it but not to
-confirm on Beetle.
+| walker | screen | stock origin | the area the text sits on |
+|---|---|---|---|
+| `hhon_entry_draw` `0x8007C278` | the grid (`hhon_page_draw`): the entry of the insect under the cursor | columns from (0x124, 0x26); the placeholder from (0x100, 0x2C) | the cream panel at the right, x 214…310, y 12…172 (frame at 311) |
+| `hhon_text_scroll_v` `0x8007C1C4` | the hub scrolled down to its notebook page: the entry of the insect in the selected cage slot | columns from x 0x5A (0x32 for the placeholder), y hanging from the scroll (54 at the page) | the page, x ~18…106 (then the specimen box), y 54 to the count digit near 160 |
+
+**A row version was built and drawn**, and is parked, not committed: both walkers' glyph
+step through the width table (a body in the pointer step's place, as `text_draw_line_h`'s),
+a break moving y down 12 and x back to a left edge — rows from (220, 20) on the grid and
+from (20, 54) on the page. With fixture entries it drew correctly on both emulators. It was
+backed out for two reasons, both measured:
+
+* **Real English does not fit — in bytes or in the box.** `boku lint` over the translated
+  `hhon@5328` entries in `arrays.txt`: every entry needs roughly 2.5× its bytes (item 0:
+  226 for 90), and at the page's 86 px they wrap to 9–15 rows where the page holds 8 and the
+  grid panel 12 (12-px rows from y 20 to 172). So the build would place none of them.
+* **Untranslated entries got worse.** As rows, each Japanese column (up to eleven glyphs,
+  132 px) runs off both areas, and the sheet's vertical-form marks lie on their sides. With
+  every entry still Japanese, the patch only degraded the screen.
+
+What installing it needs, in order: `hhon@5328` able to grow — it is in `HHON.OVL`, loaded
+into the overlay area, so the overlay grows or the array moves out (the arrays lane's
+relocation); a layout that holds 9–15 lines (a tighter row pitch — the glyphs' ink is 10 rows
+— or a second page, or the grid's panel for both screens); and a per-entry switch, so an
+untranslated entry keeps its columns: the width routine already knows (`vwf_width_12`
+leaves `at` non-zero exactly when the cell is English), and a break and the origin can
+branch on the entry's first glyph. The parked source is `work/lane/hhon.asm.parked` in this
+lane's worktree, not tracked.
+
+**Reaching it.** In play the box needs a caught insect; poking the cage slot at
+`0x80046F28` alone, live or through a card, drew nothing. Both emulators force it the way
+`tools/redux/book-pokes.lua` does (`GFX-05`): `mode_set(10)` — the mode byte pair
+`0x800237E0/E4`, the previous mode `0x800237E5`, the change flag `0x80024728`, and the arena
+word `0x800258E0` from the mode's `g_modes` record, which the map-area raise moves, so it is
+read from each image's RAM — with insect 0 given book state 2 (`0x8003DF92`; book-pokes.lua's
+legend: 0 unseen, 1 seen, 2 caught) and put in cage slot 0. On Beetle the hub's pad works:
+DOWN scrolls to the notebook page; the grid opens by writing its sub-state (`0x80080600` =
+`0x11`) once the hub is up (○ on the specimen box did not open it). On Redux the pad does
+not register in mode 10, so the scroll (`0x800805DC` = 200) and the grid are written too.
+`tools/vwf/shoot-menus.sh` shoots both screens on both emulators.
 
 ## Not done
 
 * **Summer memories' label 5** (walker 20a) is not on the screen shot. **`HHON`** is
-  documented, not patched. **The A-decision surfaces marked "table"** in § "The fixed-pitch surfaces" (9, 11,
-  25, 26) are not code yet. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
+  measured and prototyped, not installed (§ "The `HHON` walkers"). **The A-decision
+  surfaces marked "table"** in § "The fixed-pitch surfaces" (9, 11, 25, 26) are not code
+  yet. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
   route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
   bodies add only the table byte.
