@@ -279,7 +279,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       page, or the grid panel on both screens; untranslated entries keep their columns; the remaining fixed-pitch
       surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
       the stack under a real save, a sumo bout and fishing (measured 2026-09-23 on Beetle:
-      free roam 0x228, item menu 0x298, insect box 0x350, kite 0x348, sumo setup 0x320,
+      free roam 0x228, item menu 0x3DC8 (one 0x3CA8-byte frame in mode 4 / TAKO, never
+      coexisting with the level-C scratch — `research/vwf-prototype.md` § "The map work
+      area"), insect box 0x350, kite 0x348, forced MUSI 0x320 (not a bout's depth),
       forced mode 15 0xFB0 — none past the 4,016 bytes the map-area raise was sized for).
       Done 2026-09-23: the computed-id `glyph_draw` sites — 59 draw sites, 25 ids proven by
       a path-following scan, the 24 unresolved each named with what it walks
