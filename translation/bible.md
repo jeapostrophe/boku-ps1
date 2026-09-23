@@ -365,15 +365,16 @@ said and found in each base [script], and the walkthroughs' route descriptions. 
 
 **Flags evident from the script** (`g_flags[n]`; [script-inference]): 5 morning-glory duty ·
 10 has the rod · 11 hive down · 21 Shirabe's tour done (2 = photo handed over) · 22 watermelon
-thief seen (2 = after the howl) · 25 Guts's pact · 26 went to the fireflies · 30 met all three
+thief seen (2 = after the howl) · 23 guess-the-dinner game played (the aunt's invitation `E0520`
+changes once it is set; `E0221`'s game setting it is inferred, the setter is not traced) · 25 Guts's pact · 26 went to the fireflies · 30 met all three
 boys · 32 carrying sugar water · 33 reached the hill · 34 kites offered · 37/38 Moe's flowers ·
 39 has the axe · 42 log bridge (2 = done) · 73 days chopped · 44/45/49/50/53 the giant-fish
-chain · 48 morning glory bloomed · 55 Cape of Winds (2 = go) · 57–60 its stations · 61 ear bone
+chain · 48 morning glory bloomed · 55 Cape of Winds (2 = go) · 57–60 the Cape of Winds stations · 61 ear bone
 · 65/68/69/70 the secret-weapon chain (70 = shortcut known) · 72 counter stepping the boys'
 small talk · 76 met Saori · 78 sun shower · 79 has the book · 83 book given to Moe · 84 letter
 read · 85 Mt. Teppen (2 = told at dinner) · 89–93 the sugar-water trap (93 = the photograph) ·
-102/110 snake / skin · 117 caught the giant fish · 118/119 day 30: ribbon reported / Shirabe
-found · 131–145, 147–153 corn ears, flowers · 172 which camera pose · 248 "spoken to Saori
+102/110 snake / skin · 117 caught the giant fish · 118 day 30: ribbon reported · 119 day 30:
+Shirabe found · 131–145, 147–153 corn ears, flowers · 172 which camera pose · 248 "spoken to Saori
 today" · 251 sequencer for multi-map cutscenes (days 11, 29, 31) · 254 has heard the night rule.
 
 **For whoever builds the pipeline** (none of this is a style decision):

@@ -12,6 +12,7 @@ parser that silently matched nothing would leave every packet quietly context-fr
 
 from __future__ import annotations
 
+import csv
 import re
 from pathlib import Path
 
@@ -24,9 +25,11 @@ from boku.packets import (
     ARRAYS_NAME,
     CHECKLIST_NAME,
     DAYS_DIR,
+    DINING_ROOM,
     EVENT_HEADER,
     ORDER_NAME,
     SYSTEM_NAME,
+    VOICE_ONLY_TSV,
     DayFile,
     PacketBuilder,
     PacketRefused,
@@ -40,6 +43,7 @@ from boku.packets import (
     japanese_text,
     main_packet,
     parse_day_rows,
+    parse_flags,
     parse_places,
     part_file,
     save_event,
@@ -727,6 +731,60 @@ def test_a_quiz_message_no_day_asks_is_named(store, builder):
     assert f"No day's row names `{CHOICE}`" in part
 
 
+def test_a_voice_only_line_carries_the_gist_the_voice_only_table_gives(store, builder):
+    """`E0504.0`'s row said nothing of the car coming and going. The gist is the TSV's own
+    `said` and `notes`, read here with `csv` rather than through the loader under test."""
+    lines = [
+        line
+        for line in VOICE_ONLY_TSV.read_text(encoding="utf-8").splitlines()
+        if not line.startswith("#")
+    ]
+    row = next(r for r in csv.DictReader(lines, delimiter="\t") if r["said"] and r["notes"])
+    scene = event(store, "E9001")
+    scene["nodes"][2]["line"] = row["line_id"]
+    scene["lines"].append(row["line_id"])
+    context = builder.event_part(scene, 1, 1).split("## Your answer")[0]
+    assert row["said"] in context and row["notes"] in context
+
+
+def test_every_flag_the_bible_lists_is_named_in_a_condition(store):
+    """Bible § 8 names the flags; a condition printed "story flag 21 is 1" and no more. The
+    numbers are read off the bible's own paragraph, each item's leading numbers."""
+    bible = (REPO_ROOT / "translation" / "bible.md").read_text(encoding="utf-8")
+    paragraph = bible.split("**Flags evident", 1)[1].split("**For whoever", 1)[0]
+    leading = {int(m) for m in re.findall(r"(?:^|\u00b7)\s*(\d+)", paragraph.split("): ", 1)[1])}
+    flags = Policy.load().flags
+    assert leading <= set(flags), (
+        f"flags the bible names and the packet does not: {leading - set(flags)}"
+    )
+    assert 23 in flags, "the dinner game's flag is in bible § 8"
+    number = min(leading)
+    words = condition_in_words(f"flag[{number}]==1", flags)
+    assert words == f"story flag {number} ({flags[number]}) is 1"
+
+
+def test_the_flag_list_s_runs_and_pairs_each_name_every_flag_they_cover():
+    """§ 8 writes `37/38`, `57\u201360` and `131\u2013145, 147\u2013153`; the comma form was read
+    as no flag at all."""
+    flags = parse_flags(
+        "## 8. Flags\n\n**Flags evident from the script** (`g_flags[n]`): 5 duty \u00b7 "
+        "37/38 flowers \u00b7 57\u201360 stations \u00b7 131\u2013145, 147\u2013153 corn ears, "
+        "flowers\n\n**For whoever builds** it\n"
+    )
+    assert flags[5] == "duty" and flags[38] == "flowers" and flags[58] == "stations"
+    assert flags[131] == flags[153] == "corn ears, flowers" and 146 not in flags
+
+
+@pytest.mark.parametrize(("hour", "meal"), [(7, "breakfast"), (8, "breakfast"), (18, "dinner")])
+def test_a_scene_at_the_dining_room_names_the_meal(store, builder, hour, meal):
+    """`E0502` at 8:00 read to its translator as dinner."""
+    scene = event(store, "E9001")
+    scene["where"]["bases"] = [DINING_ROOM]
+    scene["when"]["meal_hour"] = hour
+    when = next(line for line in builder.event_part(scene, 1, 1).splitlines() if "**When**" in line)
+    assert meal in when
+
+
 # --- the destination a packet may never be written to ---------------------------------------------
 
 
@@ -764,13 +822,13 @@ def test_the_cli_refuses_both_or_neither_selector(tmp_path, capsys):
     ],
 )
 def test_a_condition_reads_as_a_sentence(condition, expected):
-    assert condition_in_words(condition) == expected
+    assert condition_in_words(condition, {}) == expected
 
 
 def test_a_parenthesised_conjunction_is_read_term_by_term():
     """`E0121`'s entry condition: the group's parentheses sit on its first and last terms,
     and a term that kept one was printed in its symbols -- `(hour>=14` -- not in words."""
-    words = condition_in_words("(hour>=14 & hour<=17 & lflag==0)")
+    words = condition_in_words("(hour>=14 & hour<=17 & lflag==0)", {})
     assert words == (
         "the hour is at least 14 and the hour is at most 17 and "
         "this event's own progress counter is 0"
@@ -780,14 +838,14 @@ def test_a_parenthesised_conjunction_is_read_term_by_term():
 def test_a_group_inside_a_clause_stays_a_group():
     """`a & (b | c)` split on every `|` read as two clauses, `a and b -- or -- c`: another
     condition. Split at depth 0 only, the group keeps its parentheses in words."""
-    words = condition_in_words("hour>=14 & (opt0 | opt1)")
+    words = condition_in_words("hour>=14 & (opt0 | opt1)", {})
     assert words == (
         "the hour is at least 14 and (the player chose option 1 or the player chose option 2)"
     )
 
 
 def test_a_compound_condition_keeps_its_structure():
-    words = condition_in_words("flag[43]>=1 & lflag==0 | opt1")
+    words = condition_in_words("flag[43]>=1 & lflag==0 | opt1", {})
     assert " and " in words
     assert " -- or -- " in words
 

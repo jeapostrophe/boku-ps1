@@ -42,10 +42,11 @@ byte-identical files: no timestamp, no absolute path, no set iteration in the ou
 from __future__ import annotations
 
 import argparse
+import csv
 import re
 import sys
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import dropwhile
@@ -128,9 +129,27 @@ IDEOGRAPHIC_SPACE = "\u3000"
 Japanese punctuates with; the packet joins a page's columns with one."""
 
 
+VOICE_ONLY_TSV = REPO_ROOT / "research" / "data" / "voice-only.tsv"
+
+
 class PacketRefused(Exception):
     """A destination this tool must not write to, a scene it cannot assemble, or an answer
     it will not save."""
+
+
+def voice_only_gists(path: Path = VOICE_ONLY_TSV) -> dict[str, str]:
+    """`research/data/voice-only.tsv`'s gist of each voice-only line: its `said` column (an
+    English gist, or `wordless`) and its `notes`, which say what the sound is."""
+    if not path.is_file():
+        raise PacketRefused(f"{path} is missing; it is tracked, so this checkout is incomplete")
+    rows = (
+        line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")
+    )
+    out: dict[str, str] = {}
+    for row in csv.DictReader(rows, delimiter="\t"):
+        said, notes = (row.get("said") or "").strip(), (row.get("notes") or "").strip()
+        out[row["line_id"]] = f"{said}: {notes}" if said and notes else said or notes
+    return out
 
 
 # --- where a packet may be written ------------------------------------------------------------
@@ -211,6 +230,8 @@ class Policy:
     places: tuple[tuple[str, str], ...] = ()
     """The bible's § 7 map base -> place table, one row per base."""
     cast: tuple[CastEntry, ...] = ()
+    flags: Mapping[int, str] = field(default_factory=dict)
+    """The bible's § 8 story flags by number: what a `flag[n]` test is about."""
 
     @classmethod
     def load(cls, directory: Path = TRANSLATION_DIR) -> Policy:
@@ -220,6 +241,7 @@ class Policy:
             day_rows=parse_day_rows(bible),
             places=parse_places(bible),
             cast=parse_cast(bible),
+            flags=parse_flags(bible),
         )
 
     def day_row(self, day: int) -> str | None:
@@ -275,6 +297,32 @@ def parse_day_rows(bible: str) -> tuple[tuple[range, str, str], ...]:
             last = max(first, following - 1)
         out.append((range(first, last + 1), what, ids))
     return tuple(out)
+
+
+_FLAG_ITEM = re.compile(r"^(\d+(?:\s*[/,\u2013-]\s*\d+)*)\s+(.+)$", re.S)
+
+
+def parse_flags(bible: str) -> dict[int, str]:
+    """The bible's § 8 "Flags evident from the script" list: `n name` items joined by ` · `,
+    `37/38` naming two flags, `57-60` a run of them, `131-145, 147-153` two runs."""
+    body = next((lines for heading, lines in _sections(bible, 2) if heading.startswith("8.")), [])
+    text = " ".join(body)
+    start = text.find("**Flags evident")
+    if start < 0:
+        return {}
+    paragraph = text[start:].split("**For whoever", 1)[0]
+    paragraph = paragraph.split("): ", 1)[-1]
+    out: dict[int, str] = {}
+    for item in paragraph.split(" · "):
+        match = _FLAG_ITEM.match(item.strip())
+        if match is None:
+            continue
+        name = re.sub(r"\s+", " ", match.group(2)).strip().rstrip(".")
+        for part in re.split(r"[/,]", match.group(1)):
+            ends = [int(n) for n in re.split(r"\s*[\u2013-]\s*", part.strip())]
+            for number in range(ends[0], ends[-1] + 1):
+                out.setdefault(number, name)
+    return out
 
 
 def parse_places(bible: str) -> tuple[tuple[str, str], ...]:
@@ -337,9 +385,9 @@ _CONDITION = re.compile(
 _COMPARISON = {"==": "is", ">=": "is at least", "<=": "is at most", "!=": "is not"}
 
 
-def condition_in_words(condition: str) -> str:
+def condition_in_words(condition: str, flags: Mapping[int, str]) -> str:
     """One edge condition as a sentence. The symbolic form is always shown beside it."""
-    return _in_words(condition, " -- or -- ") if condition else ""
+    return _in_words(condition, flags, " -- or -- ") if condition else ""
 
 
 def _split_top(text: str, separator: str) -> list[str]:
@@ -371,23 +419,25 @@ def _closing(text: str) -> int:
     return -1
 
 
-def _in_words(expression: str, either: str = " or ") -> str:
+def _in_words(expression: str, flags: Mapping[int, str], either: str = " or ") -> str:
     """`|` over `&` over terms, each split only at its own depth: a group inside a clause
     reads as a parenthesised group, `a and (b or c)`, never as a third clause."""
     expression = _unwrap(expression)
     clauses = _split_top(expression, "|")
     if len(clauses) > 1:
-        return either.join(_in_words(clause) for clause in clauses)
+        return either.join(_in_words(clause, flags) for clause in clauses)
     terms = _split_top(expression, "&")
     if len(terms) == 1:
-        return _term_in_words(expression)
+        return _term_in_words(expression, flags)
     return " and ".join(
-        f"({_in_words(term)})" if len(_split_top(_unwrap(term), "|")) > 1 else _in_words(term)
+        f"({_in_words(term, flags)})"
+        if len(_split_top(_unwrap(term), "|")) > 1
+        else _in_words(term, flags)
         for term in terms
     )
 
 
-def _term_in_words(term: str) -> str:
+def _term_in_words(term: str, flags: Mapping[int, str]) -> str:
     match = _CONDITION.fullmatch(term)
     if match is None:
         return term
@@ -398,7 +448,9 @@ def _term_in_words(term: str) -> str:
     if match.group(2):
         return f"this event's own progress counter {_COMPARISON[match.group(2)]} {match.group(3)}"
     if match.group(4):
-        return f"story flag {match.group(4)} {_COMPARISON[match.group(5)]} {match.group(6)}"
+        number = int(match.group(4))
+        name = f" ({flags[number]})" if number in flags else ""
+        return f"story flag {number}{name} {_COMPARISON[match.group(5)]} {match.group(6)}"
     if match.group(7):
         # The place is in the event's map legend, not here: `E0710` tests eight maps in
         # three hundred conditions, and naming each place in each was 45 KB of packet.
@@ -526,6 +578,11 @@ def select_text(japanese: Japanese, shape: tuple[int, int]) -> str:
     return SampleScenes.OPTION.join(fields)
 
 
+DINING_ROOM = "G02"
+"""The base meals are eaten at (bible § 7)."""
+BREAKFAST_ENDS = 12
+"""Breakfast is at 7 and dinner at 18 (bible § 2): a meal hour before noon is breakfast."""
+
 _MAP_NAMED = re.compile(r"(?:map[=!]=|MAP:)([A-Z]\d+)")
 
 
@@ -574,6 +631,7 @@ class PacketBuilder:
     file_order: dict[str, list[str]] = field(default_factory=dict)
     """Each translation file's events, in its order: where a scene's neighbours are."""
     table: GlyphTable = field(default_factory=GlyphTable.load)
+    voice_only: Mapping[str, str] = field(default_factory=voice_only_gists)
 
     @classmethod
     def build(
@@ -804,11 +862,14 @@ class PacketBuilder:
         when = [_day_text(scene)]
         if hour is not None:
             when.append(f"from {hour}:00")
+            meal = scene["when"]["meal_hour"]
+            if meal is not None and DINING_ROOM in scene["where"]["bases"]:
+                when.append("breakfast" if meal < BREAKFAST_ENDS else "dinner")
         elif slots:
             when.append(f"time slot(s) {slots}")
         condition = scene["when"]["condition"]
         if condition:
-            when.append(f"when {condition_in_words(condition)}")
+            when.append(f"when {condition_in_words(condition, self.policy.flags)}")
         places = self.places(scene)
         slots = {member["slot"] for member in scene["cast"]} | {
             speaker["slot"]
@@ -836,6 +897,16 @@ class PacketBuilder:
         clips = self.clips(scene)
         if clips:
             out.append(f"* **Voice clips**: {', '.join(clips)}")
+        heard = [
+            f"`{line_id}` {self.voice_only[line_id]}"
+            for line_id in scene_line_ids(scene)
+            if line_id in self.voice_only
+        ]
+        if heard:
+            out.append(
+                f"* **Heard with no text** (the `(voice only)` rows; our gist, in English): "
+                f"{'; '.join(heard)}"
+            )
         onward = dict.fromkeys(
             handover["event"]
             for handover in scene.get("handovers") or []
@@ -874,7 +945,7 @@ class PacketBuilder:
                     if target in nodes
                     else f"`{target}` comes next"
                 )
-                words = condition_in_words(edge["condition"])
+                words = condition_in_words(edge["condition"], self.policy.flags)
                 forks.append(f"  * {goes}" + (f" when {words}" if words else ""))
         if not forks:
             return []
