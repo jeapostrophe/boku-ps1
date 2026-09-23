@@ -235,7 +235,7 @@ ibis (*toki* — Saori's example of what publicity does to a rare animal, `E6000
 (`musi@358`, fixed 3 × 3 cells); △で虫をたたく "△: tap your bug" (`musi@348`, 7 cells); 勝 / 敗
 W / L (immediate glyphs, `exe@code:800377F8`). Move names (`musi@2C.0`–`.31`): real sumo
 techniques keep their Japanese names, as English sumo broadcasting does — *buchikamashi,
-tsuppari, utchari, gaburi-yori, uwate-nage, hiki-otoshi, susoharai, sukui-nage, okuri-dashi,
+tsuppari, utchari, gaburi-yori, uwate-nage, hiki-otoshi, susoharai, sukui-nage, tsuri-dashi,
 ashi-hiki†, tsuki-dashi, saba-ori, harite, abise-taoshi†*; the jokes are translated —
 ブレンバスター Brainbuster, カマバサミ Mantis Scissors, カマバスター Mantis Buster, ひっくり返し
 Flip-over; state names (待機 Waiting, 休息 Resting, 前進 Advance, 後退 Retreat, 組み合う Grapple,

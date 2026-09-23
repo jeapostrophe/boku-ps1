@@ -9,6 +9,8 @@ ones: the loader is checked against the translation it exists to read.
 
 from __future__ import annotations
 
+import re
+
 from boku import REPO_ROOT
 from boku.translation import PreEncoded, SampleScenes, TranslationEntry, select_fields
 
@@ -26,7 +28,10 @@ def test_it_reads_the_tracked_drafts_without_a_problem():
     assert source.problems == (), source.problems
     ids = [entry.line_id for entry in source]
     assert len(ids) == len(set(ids)), "an id read twice would be written twice"
-    assert all(i.startswith("E") for i in ids)
+    # An event line (`E0406.2`) or an array/code line (`exe@8003D5F0.13`, `title@code:8007BB60`,
+    # `translation/days/arrays.txt`, PLAN TRN-09) -- nothing else is a line id.
+    shapes = re.compile(r"E\d{4}\.\d+|(exe|hhon|musi|tako|title|zukan)@[0-9A-Za-z:]+(\.\d+)?")
+    assert [i for i in ids if not shapes.fullmatch(i)] == []
     assert any(entry.options for entry in source), "no [SEL] row; the drafts have some"
     assert any(len(entry.pages) > 1 for entry in source), "no ` // ` row; the drafts have some"
 
