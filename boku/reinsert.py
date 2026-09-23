@@ -274,7 +274,7 @@ def check_words(site: Site, words: Sequence[int], original: Sequence[int]) -> No
         if not words or words[-1] != END_WORD:
             raise ReinsertRefused(
                 f"{site.line_id}: a message ends with {{END}}; these words end with "
-                f"{words[-1] if words else 'nothing':#06x}",
+                + (f"{words[-1]:#06x}" if words else "nothing"),
                 [site.line_id],
             )
         if _control_words(words).count(END_WORD) != 1:
@@ -360,7 +360,15 @@ def _entry_bytes(block: Block, message: _Message) -> bytes:
     site = message.site
     index = 4 + 2 * site.index
     old = block.entries[index] if index < len(block.entries) else None
-    if old is None:
+    if not site.size:
+        # A voice-only slot (`sites.Walk.voice_only`): the null entry a subtitle fills.
+        if old is not None or block.entries[index - 1] is None:
+            raise ReinsertRefused(
+                f"{site.line_id}: entry {index} of its block is not a voice-only slot",
+                [site.line_id],
+            )
+        old = b""
+    elif old is None:
         raise ReinsertRefused(f"{site.line_id}: entry {index} of its block is null", [site.line_id])
     if old[: site.size] != message.was:
         raise ReinsertRefused(
@@ -591,7 +599,13 @@ def plan(
     """
     sites: list[Site] = []
     for line_id in replacements:
-        found = walk.by_line.get(line_id)
+        found = walk.by_line.get(line_id) or walk.voice_only.get(line_id)
+        if found and in_place and not found[0].size:
+            raise ReinsertRefused(
+                f"{line_id} is a voice-only entry: its text offset is null, so there are no "
+                f"bytes to overwrite in place and its block has to be rebuilt",
+                [line_id],
+            )
         if not found:
             raise ReinsertRefused(
                 f"no text site is called {line_id!r}; the ids are the ones "

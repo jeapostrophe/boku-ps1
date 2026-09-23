@@ -20,6 +20,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+VOICE_ONLY = "(voice only)"
+"""The speaker field of a row for a clip with no text on the disc."""
+
 
 class TranslationError(Exception):
     """A translation file this loader cannot read."""
@@ -45,6 +48,12 @@ class TranslationEntry:
     @property
     def is_select(self) -> bool:
         return bool(self.options) or bool(self.prompts)
+
+    @property
+    def voice_only(self) -> bool:
+        """A subtitle for a clip with no text on the disc (`VO-02`): laid out against the
+        clip's length rather than an original's page timers."""
+        return self.speaker == VOICE_ONLY
 
 
 def select_fields(entry: TranslationEntry, prompts: int) -> tuple[tuple[str, ...], ...]:
@@ -102,7 +111,8 @@ class SampleScenes:
     contain: `#` comments, and `line id <TAB> speaker <TAB> English`, where ` // ` is a
     page break in the same position as the original's, ` | ` separates the options of a
     `[SEL]` row, and a row whose speaker is `(voice only)` has no text on the disc and is
-    listed only so the ids line up.
+    listed only so the ids line up -- unless it carries English, which is then a subtitle
+    for the clip (`voice_only`, `PLAN VO-02`).
 
     **Do not build on this.** When `PIPE-02` is settled, the committed format gets its own
     source and this one can go.
@@ -115,7 +125,7 @@ class SampleScenes:
     PAGE_BREAK = " // "
     OPTION = " | "
     SELECT = "[SEL]"
-    VOICE_ONLY = "(voice only)"
+    VOICE_ONLY = VOICE_ONLY
 
     def __iter__(self) -> Iterator[TranslationEntry]:
         return iter(self.entries)
@@ -137,7 +147,7 @@ class SampleScenes:
                     continue
                 line_id, speaker = fields[0].strip(), fields[1].strip()
                 text = fields[2].strip() if len(fields) > 2 else ""
-                if speaker == cls.VOICE_ONLY or not text:
+                if not text:
                     continue
                 if line_id in seen:
                     problems.append(f"{where}: {line_id} was already given at {seen[line_id]}")

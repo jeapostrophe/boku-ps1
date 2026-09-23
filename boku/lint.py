@@ -84,6 +84,7 @@ from boku.layout import (
     StockEncoder,
     label_allowance,
     lay_out_array,
+    lay_out_subtitle,
     measure,
     original_marks,
     speaker_label,
@@ -235,8 +236,9 @@ class Row:
         return self.path.name
 
     @property
-    def voice_only(self) -> bool:
-        return self.speaker == SampleScenes.VOICE_ONLY or not self.text
+    def has_english(self) -> bool:
+        """A `(voice only)` row has none unless it gives a subtitle (`VO-02`)."""
+        return bool(self.text)
 
     @property
     def is_select(self) -> bool:
@@ -412,12 +414,15 @@ class _Context:
 def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Finding]:
     """Every finding over these rows, sorted by file then row."""
     context = _Context(store=store, options=options, table=GlyphTable.load())
-    english = [row for row in rows if not row.voice_only]
+    english = [row for row in rows if row.has_english]
     _check_ids(context, rows, english)
     for row in english:
+        if row.entry.voice_only:
+            _check_subtitle(context, row)
+            continue
         record = store.lines.get(row.line_id)
         if record is None:
-            continue  # unknown, or voice-only: `_check_ids` has already said so
+            continue  # unknown: `_check_ids` has already said so
         _check_row(context, row, record)
         if options.additive:
             _check_additive(context, row, record)
@@ -448,6 +453,16 @@ def _check_ids(context: _Context, rows: Sequence[Row], english: Sequence[Row]) -
             ERROR,
             f"{row.line_id} is given English twice; first at {first.file}:{first.number}",
         )
+
+
+def _check_subtitle(context: _Context, row: Row) -> None:
+    """A `(voice only)` row's English (`VO-02`): what the band can draw, with no Japanese to
+    hold it against. Its page timers come from the clip at build time, so only the fit and the
+    cells are checked here -- the same problems `boku.build` would refuse the line for."""
+    options = context.options
+    laid = lay_out_subtitle(row.line_id, row.entry.pages, 0, options.encoder, options.box)
+    for problem in laid.problems:
+        context.say(row, "subtitle-fit", ERROR, problem)
 
 
 def _check_row(context: _Context, row: Row, record: dict) -> None:
@@ -664,7 +679,7 @@ def _check_loader_agreement(rows: Sequence[Row]) -> Iterator[Finding]:
     theirs = {entry.line_id: entry for entry in SampleScenes.from_paths(paths)}
     mine: dict[str, tuple[Row, TranslationEntry]] = {}
     for row in rows:
-        if not row.voice_only and row.line_id not in mine:
+        if row.has_english and row.line_id not in mine:
             mine[row.line_id] = (row, row.entry)
     for line_id in sorted(set(mine) | set(theirs)):
         here = mine.get(line_id)

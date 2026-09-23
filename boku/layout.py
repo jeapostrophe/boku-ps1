@@ -53,6 +53,7 @@ from boku.glyphs import (
     words_of,
 )
 from boku.sites import page_waits
+from boku.voice import subtitle_waits
 
 STOCK_ADVANCE = 14
 """Every fixed-pitch surface steps 14 px per cell (`research/vwf-prototype.md`)."""
@@ -360,6 +361,49 @@ def lay_out_message(
             f"{len(pages)}; pages turn on the voice clip's own frame countdown, so the "
             f"count is fixed and text may not move across a break"
         )
+    return _paginate(
+        line_id,
+        pages,
+        waits,
+        encoder,
+        box,
+        problems,
+        indent_continuations=indent_continuations,
+        opening=opening,
+        closing=closing,
+    )
+
+
+def lay_out_subtitle(
+    line_id: str,
+    pages: Sequence[str],
+    ticks: int,
+    encoder: Encoder,
+    box: BoxSpec = DIALOGUE_BAND,
+) -> LaidOut:
+    """A voice-only clip's subtitle (`VO-02`): the translator's pages, timed to the clip.
+
+    There is no original to follow — the entry had no text — so the page count is the
+    translator's and each page's operand is its share of the clip's `ticks`
+    (`boku.voice.subtitle_waits`). Drawn undressed: the clip has no label or marks on the
+    disc to put back (`original_marks` reads them off Japanese text that does not exist).
+    """
+    return _paginate(line_id, pages, subtitle_waits(pages, ticks), encoder, box, [])
+
+
+def _paginate(
+    line_id: str,
+    pages: Sequence[str],
+    waits: Sequence[int],
+    encoder: Encoder,
+    box: BoxSpec,
+    problems: list[str],
+    *,
+    indent_continuations: bool = False,
+    opening: str = "",
+    closing: str = "",
+) -> LaidOut:
+    """Wrap each page into the box, lint it, and encode it with `waits` after each break."""
     dressed = list(pages)
     if dressed:
         dressed[0] = opening + dressed[0]

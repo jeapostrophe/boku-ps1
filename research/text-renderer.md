@@ -327,6 +327,8 @@ Candidates, cheapest first:
    About 3.1 KB, in islands. (Function starts are heuristic — re-check each island's bounds when
    used.) **Taken:** `0x80012E04` and `dbg_font_init` `0x800221CC` hold the movie-subtitle
    hooks' code (`asm/movie.asm`; `research/movies.md` § 7–8, where each was watched dead).
+   `date_label_draw_b` and `0x80043928` hold the voice-only subtitle hooks (`asm/voice.asm`;
+   bounds re-read there: each ends at the next function's `addiu sp`).
 3. **The house debug printer** `0x80022494…0x80022D64` (~2 KB) plus its 8×8 font data at
    `0x80025120`: `dbg_printf` has 100 call sites, but `dbg_font_init` is never called and
    `dbg_putc` writes through the pointer it would have set (`0x80028C24`, NULL), so every site

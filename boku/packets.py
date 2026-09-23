@@ -600,7 +600,7 @@ class PacketBuilder:
         rows, _ = load_rows(translation_paths(translations))
         english: dict[str, list[Row]] = {}
         for row in rows:
-            if not row.voice_only:
+            if row.has_english:
                 english.setdefault(row.line_id, []).append(row)
         return cls(
             store=store,

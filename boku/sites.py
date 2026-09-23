@@ -42,7 +42,7 @@ from boku.archive import (
     tim_length,
 )
 from boku.arrays import SelectTables, legacy_spans, walk_all
-from boku.events import OP_MSG, OP_SELECT, OP_XA, OP_XAMSG, Block, Ins, iter_blocks
+from boku.events import OP_MSG, OP_SELECT, OP_XA, OP_XAMSG, Block, BlockInstance, Ins, iter_blocks
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, iter_tokens, words_of
 
 RESIDENT_BLOCK_ADDRS = (0x80029920, 0x80029A40, 0x80029A8C)
@@ -102,6 +102,11 @@ class Walk:
     sites: list[Site] = field(default_factory=list)
     problems: list[str] = field(default_factory=list)
     by_line: dict[str, list[Site]] = field(default_factory=dict)
+    voice_only: dict[str, list[Site]] = field(default_factory=dict)
+    """Every copy of every voice-only entry -- a voice key named only by `XA`, its text offset
+    null: the slot `VO-02` writes a subtitle into. Kept out of `by_line` because no reader
+    reaches it and the tables never list it. Each is a `MSG+XA` site of `size` 0 whose
+    `offset`/`absolute` point at the entry's voice key, which times the subtitle."""
 
     def raw(self, archive: Archive, site: Site) -> bytes:
         source = archive.exe if site.file == "EXE" else archive.boku
@@ -163,9 +168,14 @@ def _select_extent(blk: bytes, o: int, limit: int, lines: int) -> int | None:
 
 
 def walk_block(
-    block: Block, select_lines, problems: list[str], where: str
+    block: Block,
+    select_lines,
+    problems: list[str],
+    where: str,
+    voice_only: list[tuple[int, int]] | None = None,
 ) -> list[tuple[int, int, int, str, int, bool]]:
-    """`(index, offset, size, kind, slack, voiced)` for every text entry of one block.
+    """`(index, offset, size, kind, slack, voiced)` for every text entry of one block, and
+    into `voice_only` `(index, offset of its key)` for each voice-only one (`Walk.voice_only`).
 
     Every structural claim is checked here rather than downstream: the header size, the
     odd entry count, the 12-byte voice keys, that each message operand is in range, that
@@ -201,8 +211,12 @@ def walk_block(
         if text_span is None:
             if named - {"XA"}:
                 problems.append(f"{where}: null text {i} referenced as {named}")
+            elif named and key_span and voice_only is not None:
+                voice_only.append((i, key_span[0]))
             continue
-        named = named - {"XA"}
+        if named == {"XA"}:
+            named = {"MSG"}  # a voice-only entry a build gave a subtitle (VO-02)
+        named -= {"XA"}
         if len(named) > 1:
             problems.append(f"{where}: message {i} referenced two ways {named}")
         select = next((x for x in named if x != "MSG"), None)
@@ -224,6 +238,24 @@ def walk_block(
             problems.append(f"{where}: message {i} slack {slack}")
         out.append((i, to, size, kind, slack, bool(key_span)))
     return out
+
+
+def _block_site(inst: BlockInstance, i: int, to: int, size: int, slack: int, kind: str) -> Site:
+    """Message `i` of a block in `BOKU.BIN`, `to` bytes into the block."""
+    return Site(
+        file="BOKU",
+        member=inst.member.short_name,
+        container=inst.container,
+        table=inst.table,
+        block_id=inst.event_id,
+        index=i,
+        offset=inst.offset_in_member + to,
+        size=size,
+        slack=slack,
+        kind=kind,
+        line_id=f"E{inst.event_id:04d}.{i}",
+        absolute=inst.member.offset + inst.offset_in_member + to,
+    )
 
 
 # --- the whole disc --------------------------------------------------------------------------
@@ -250,25 +282,13 @@ def walk(archive: Archive, array_partition: str = "reader", *, code_files: bool 
     for inst in iter_blocks(archive):
         block = Block(inst.data)
         where = f"{inst.member.short_name} {inst.container}[{inst.table}] id {inst.event_id}"
-        base = inst.member.offset + inst.offset_in_member
-        entries = walk_block(block, select_lines, result.problems, where)
+        voice_only: list[tuple[int, int]] = []
+        entries = walk_block(block, select_lines, result.problems, where, voice_only)
         for i, to, size, kind, slack, voiced in entries:
-            add(
-                Site(
-                    file="BOKU",
-                    member=inst.member.short_name,
-                    container=inst.container,
-                    table=inst.table,
-                    block_id=inst.event_id,
-                    index=i,
-                    offset=inst.offset_in_member + to,
-                    size=size,
-                    slack=slack,
-                    kind=kind + ("+XA" if voiced else ""),
-                    line_id=f"E{inst.event_id:04d}.{i}",
-                    absolute=base + to,
-                )
-            )
+            add(_block_site(inst, i, to, size, slack, kind + ("+XA" if voiced else "")))
+        for i, key_at in voice_only:
+            slot = _block_site(inst, i, key_at, 0, 0, "MSG+XA")
+            result.voice_only.setdefault(slot.line_id, []).append(slot)
 
     if not code_files:
         return result

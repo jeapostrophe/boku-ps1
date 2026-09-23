@@ -28,7 +28,9 @@ are `./make.sh mockup`'s.
 * **`[SEL]` rows are choice menus**: the options separated by ` | `, as many as the Japanese
   has and in its order. When the menu opens with a question, the question is the first field.
 * **`(voice only)` rows** have no text on the disc and are listed so the ids line up. Return
-  them as they are.
+  them as they are, unless you are asked for the clip's words: then write the English after a
+  second tab, split into pages with ` // ` wherever you like; it is shown as a subtitle while
+  the clip plays, with no speaker label.
 * **`#` lines are not script.** `# --- E0121: …` opens an event and says where it happens;
   `# NOTE E0121.3: …` is a translator's note on a rendering (a pun, a choice a reviewer should
   know about); `# UNSURE E0121.3: …` flags a line you are not sure of, so that the reviewer

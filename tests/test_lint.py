@@ -572,3 +572,30 @@ def test_a_cue_file_named_on_the_command_line_that_is_not_there_is_an_error(tmp_
     with pytest.raises(OSError):
         lint_movie_file(tmp_path / "movie.txt", options, tmp_path / "cells.json")
     assert lint_movie_file(None, options, None) == []
+
+
+# --- voice-only subtitles (VO-02) ---------------------------------------------------------------
+
+
+def test_a_voice_only_row_with_english_is_linted_as_a_subtitle(store, tmp_path):
+    """Its English is what the band will draw, so the band's limits apply; there is no
+    Japanese to hold it against, and the build and the lint read the row the same way."""
+    rows = [row for row in GOOD if row[0] != VOICE_ONLY]
+    clean = [*rows, (VOICE_ONLY, "(voice only)", "I thought the well was odd. // So I looked.")]
+    assert run(store, tmp_path, clean, label=False) == []
+
+    too_long = " ".join(["wide"] * 60)
+    finding = only(
+        run(store, tmp_path, [*rows, (VOICE_ONLY, "(voice only)", too_long)], label=False),
+        "subtitle-fit",
+    )
+    assert finding.severity == ERROR
+    assert "lines in" in finding.message
+
+
+def test_a_subtitle_given_twice_is_an_error(store, tmp_path):
+    first = write_translation(tmp_path / "day99.txt", [(VOICE_ONLY, "(voice only)", "One.")])
+    second = write_translation(tmp_path / "shared99.txt", [(VOICE_ONLY, "(voice only)", "Two.")])
+    rows, _ = load_rows(translation_paths([first, second]))
+    findings = lint_rows(store, rows, Options(encoder=StockEncoder.load(), label=False))
+    assert only(findings, "translated-twice").file == "shared99.txt"

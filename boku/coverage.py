@@ -232,7 +232,7 @@ def _rows_by_id(rows: Sequence[Row]) -> dict[str, Row]:
     lint's finding, not this tool's)."""
     chosen: dict[str, Row] = {}
     for row in rows:
-        if row.line_id not in chosen or (chosen[row.line_id].voice_only and not row.voice_only):
+        if row.line_id not in chosen or (not chosen[row.line_id].has_english and row.has_english):
             chosen[row.line_id] = row
     return chosen
 
@@ -275,7 +275,7 @@ def _classify(line_id: str, row: Row | None, manifest: Manifest) -> tuple[str, s
     if row is None:
         return MISSING, "no row in the translation for this id -- nobody was asked for it"
     origin = _origin(row)
-    if row.voice_only:
+    if not row.has_english:
         return MISSING, (
             f"{origin} lists it '(voice only)', but the disc holds text for it, so the "
             f"game draws that text"
@@ -329,7 +329,7 @@ def coverage(store: Store, rows: Sequence[Row], day: int, manifest: Manifest) ->
             continue
         surface = surface_of(line_id)
         row = by_id.get(line_id)
-        english = f" (English at {_origin(row)})" if row and not row.voice_only else ""
+        english = f" (English at {_origin(row)})" if row and row.has_english else ""
         if surface == NO_EVENT:
             reason = (
                 f"an event id no scene in the store claims: the extract wrote the record "

@@ -33,8 +33,10 @@ import subprocess
 import sys
 import tempfile
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
+from itertools import accumulate, pairwise
 from pathlib import Path
 
 from boku import REPO_ROOT
@@ -108,6 +110,53 @@ class VoiceError(Exception):
     """Something this step cannot do, for a reason the message states in full."""
 
 
+def own_sectors(start: int, end: int, where: str) -> int:
+    """A clip's own sectors, `start` and `end` included (a key with `end == start` still
+    plays one)."""
+    span = end - start
+    if span < 0 or span % INTERLEAVE:
+        raise VoiceError(
+            f"{where}: key {start}..{end} is not a whole number of "
+            f"{INTERLEAVE}-sector channel strides"
+        )
+    return span // INTERLEAVE + 1
+
+
+# --- subtitle timing (VO-02) ------------------------------------------------------------------
+
+TICK_HZ = 30
+"""`event_update` runs every other vsync, and a page's `0x8002` operand counts its calls
+(`research/renderer-runtime.md` § Q7)."""
+
+SEEK_TICKS = 11
+"""What the first page waits beyond its share: the text is up the tick the `XA` opcode
+runs, the voice only once the drive has seeked (measured once, `research/event-scripts.md`
+§ Voice-only entries)."""
+
+
+def clip_ticks(key: bytes) -> int:
+    """How many event ticks the clip a 12-byte voice key names plays for."""
+    k = decode_voice_key(key)
+    sectors = own_sectors(k["start"], k["end"], "a voice key")
+    return round(sectors * SAMPLES_PER_SECTOR * TICK_HZ / XA_RATE)
+
+
+def subtitle_waits(pages: Sequence[str], ticks: int) -> list[int]:
+    """The `0x8002` operand after each page but the last: its share of the clip.
+
+    Pages share the clip in proportion to their length in characters -- the only measure of
+    how long a line takes to say that a translation carries -- and the first also covers
+    `SEEK_TICKS`. The last page needs no timer: the subtitle closes when the clip stops.
+    Every wait is at least 1, because `dialog_draw` never counts a zero down.
+    """
+    weights = [max(1, len(page)) for page in pages]
+    bounds = [round(ticks * shown / sum(weights)) for shown in accumulate(weights, initial=0)]
+    waits = [end - begin for begin, end in pairwise(bounds[:-1])]
+    if waits:
+        waits[0] += SEEK_TICKS
+    return [max(1, wait) for wait in waits]
+
+
 # --- the inventory ------------------------------------------------------------------------------
 
 
@@ -133,15 +182,7 @@ class VoiceNode:
 
     @property
     def sectors(self) -> int:
-        """The clip's own sectors, `start` and `end` included (a key with `end == start`
-        still plays one)."""
-        span = self.end - self.start
-        if span < 0 or span % INTERLEAVE:
-            raise VoiceError(
-                f"{self.line_id}: key {self.start}..{self.end} is not a whole number of "
-                f"{INTERLEAVE}-sector channel strides"
-            )
-        return span // INTERLEAVE + 1
+        return own_sectors(self.start, self.end, self.line_id)
 
     @property
     def seconds(self) -> float:

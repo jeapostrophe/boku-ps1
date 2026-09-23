@@ -60,6 +60,7 @@ CELL             equ 12             ; glyph_draw's sprite is 12 x 12 (0x8002BB4C
 .include "dialogue.asm"
 .include "select.asm"
 .include "arena.asm"
+.include "voice.asm"
 .include "movie.asm"
 
 ; ---- the heap's first byte ---------------------------------------------------------------

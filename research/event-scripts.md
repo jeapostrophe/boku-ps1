@@ -76,14 +76,14 @@ reading of which engine calls the handler makes (*hypothesis* where it says so).
 | `0C` | SE | 4 | `0x8002F35C` | 639 | sound effect |
 | `0D` | **XAMSG** | 4 | `0x8002F458` | 2,487 | `u8 dd @2, u8 nn @3, u8 msg @4, u8 take @5, u8 speaker @6`. Waits while a voice is playing, then `voice_start(msg)` `0x8002CF14`, `talk_set(speaker)` `0x8003125C`, `msg_open(msg)` `0x8002CF9C`. `dd nn take` is the recording name the debug HUD prints as `"%02d%02d_%02d"` — `ddnn` is the event id the clip was recorded for (breakfast's shared lines are `0007_xx` in every day's event) |
 | `0E` | **MSG** | 4 | `0x8002F524` | 114 | `u8 msg @4, u8 f @7`: `msg_open(msg)`, no voice, no speaker operand. With `g_ev_notext` (`0x80036374`, *purpose unknown*) set it is shown only if `f == 0` |
-| `0F` | **XA** | 4 | `0x8002F588` | 115 | `u8 msg @4, u8 speaker @6`: voice only |
+| `0F` | **XA** | 4 | `0x8002F588` | 115 | `u8 msg @4, u8 speaker @6`: voice only; plays even after ○, does not wait for a clip, opens no text (§ Voice-only entries) |
 | `10` | **FLAG** | 3 | `0x8002F5E4` | 806 | `s16 flag @2, s16 v @4`: `flag_set(flag, v)` |
 | `11` | DISP | 2 | `0x8002F630` | 212 | `u8 slot`: remove the actor (`g_actors[slot] = 0`) |
 | `12` | ANM | 3 | `0x8002F660` | 8,985 | actor animation |
 | `13` `14` | BGANM, LOOK | 2, 5 | `0x8002F700`, `0x8002F78C` | 98, 1,582 | background animation; turn / look-at |
 | `15` | **END** | 1 | `0x8002F82C` | 677 | one frame later returns −1. `ev_run` then performs the pending `MAP` change (`0x80017A5C`) or, after `MOVIE`, switches game mode (`0x80011A98(14)`) |
 | `16` `17` | AWT, BWT | 2, 3 | `0x8002F8B4`, `0x8002F90C` | 178, 28 | wait for animation / BGM |
-| `18` | **XWT** | 1 | `0x8002F97C` | 2,578 | wait until the voice has ended **and** the dialogue is dismissed (`g_dialog.flags & 3 == 0`); this is the "wait for text" |
+| `18` | **XWT** | 1 | `0x8002F97C` | 2,578 | wait until the voice has ended; then, only when ○ has turned auto-advance off and the clip was an `XAMSG`'s (`0x80036344`), also until the dialogue is dismissed (`g_dialog.flags & 3 == 0`). This is the "wait for text" |
 | `19` | DIXA | 1 | `0x8002FA78` | 945 | stop the voice (`xa_stop` `0x8002B518`) |
 | `1A` | WIN | 2 | `0x8002FAC0` | 2,656 | `s16`: 1 open / 0 close the dialogue window (6-frame animation); 101/100 the same under `g_ev_notext` |
 | `1B` | WAT | 2 | `0x8002FD24` | 5,972 | `s16 frames`: wait |
@@ -246,6 +246,50 @@ Checked against `disc/image.img`: the XA subheader at both `start` and `end` car
 file and channel for all 2,163 distinct keys. The stream is 16-way interleaved with file
 numbers 2 and 3 alternating by region. A reinserter copies keys verbatim; nothing in a key
 depends on text.
+
+## Voice-only entries (`VO-02`)
+
+A voice-only entry is a key with a null text offset; **115 logical entries, 446 copies —
+every null-text entry on the disc, each named by an `XA` and nothing else** (`boku.sites`
+`Walk.voice_only`, gated by `tests/test_real_voice_only.py`). How `XA` differs from `XAMSG`,
+measured in the handlers:
+
+| | `XAMSG` `0x8002F458` | `XA` `0x8002F588` |
+|---|---|---|
+| a clip already playing (`0x800359D8 & 5`) | yields until it stops | does not wait |
+| `voice_start(msg, force)` `0x8002CF14` | `force = 0`: silent once ○ has cleared `g_voice_active` | `force = 1`: always plays |
+| `0x80036344` (*"the clip carries text"*) | 1 | 0 (`XWT` also clears it) |
+| text | `msg_open(msg)` unless `g_ev_notext` | none |
+
+With `0x80036344` = 0, ○ during the clip does nothing (the pad test at `0x8002D488…`), and
+`XWT` waits for the clip alone, never for text. Nothing in a script takes text down after an
+`XA`: a voiced line leaves the screen because its script follows it with `XWT` and `WIN 0`,
+while `E0184`'s `XA` is followed by 60 ticks of animation.
+
+So a subtitle needs two hooks, both in `asm/voice.asm` (its header is the design): the `XA`
+handler opens the entry's text when the offset is not null — which no stock entry is, so
+the stock game is unchanged — and raises the band; once a tick, the subtitle comes down when
+the status word clears, and its page timers are counted while ○ has turned auto-advance off.
+The reinserter fills the null entry in every copy (`boku.reinsert`, `Walk.voice_only`); a
+`(voice only)` row in a day file that carries English is the source
+([translation/days/README.md](../translation/days/README.md)). Its page timers come from
+the clip (`boku.voice.clip_ticks`): one sector of the clip's own channel is 3.2 ticks.
+
+**Measured on PCSX-Redux, `E0184.2`** (the flop onto the futon, reached hands-off by day
+1's arrival sequence at vsync ~12,370): the clip is 39 own sectors = 124.8 ticks, and the
+status word stayed busy 136 ticks (273 vsyncs) from the `XA` tick; the ~11 between is the
+seek, which `boku.voice.SEEK_TICKS` adds to the first page. With a two-page fixture
+the text opened the `XA` tick with the band up, turned the page on its derived timer and
+came down with the band the vsync the status word cleared (`tests/test_real_voice_subtitle.py`;
+the stock executable opens nothing — page 0 throughout). **Beetle PSX**, the same image and
+`tools/libretro/boot-to-dialogue.press`, shot every 30 frames: page 1 up by frame 14,440,
+page 2 by 14,620, both gone with the band by 14,710.
+
+**What is not an event entry.** The voice-over at bedtime on day 1 is `XCH.34`
+([voice-only.md](voice-only.md)), played by `movie_queue_play` itself: after the queue, when the byte at `0x800237E5` is `0x0B`,
+`0x800192A4` plays it — on day 1 only — and waits for it over the cleared screen
+(`0x8002E568`, a `VSync` loop) before switching to mode `0x0F`. No event runs, so these hooks
+never see it; it belongs with the endings' clips (`ENDOTI` plays `g_xa_clips` by index too).
 
 ## Speakers
 

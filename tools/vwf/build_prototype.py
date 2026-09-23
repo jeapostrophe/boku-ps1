@@ -1439,6 +1439,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         "font": args.font or "the game's own Latin cells plus placeholder-glyphs.txt",
         "cells_redrawn": len(redrawn),
         "map_work_area_end": layout.map_work_area_end,
+        # boku.build.EditSet.voice_subtitles: a (voice only) row's English is drawn only by
+        # asm/voice.asm's hooks, so the build refuses it for an executable without them.
+        "voice_subtitles": "voice_sub_open" in symbols,
         "table": {
             "ram": f"0x{symbols['vwf_advance']:08X}",
             "ids": len(table),

@@ -50,7 +50,7 @@ from boku.archive import (
 from boku.arrays import ArrayError, SelectTables
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
-from boku.events import EventError
+from boku.events import VOICE_KEY_SIZE, EventError
 from boku.glyphs import GlyphTable, TextError
 from boku.importer import ImportRefused, check_out_dir, sha1_of
 from boku.layout import (
@@ -64,6 +64,7 @@ from boku.layout import (
     lay_out_array,
     lay_out_message,
     lay_out_select,
+    lay_out_subtitle,
     original_marks,
     speaker_label,
 )
@@ -84,7 +85,14 @@ from boku.texture_text import TextureTextError
 from boku.texture_text import build_edits as build_texture_edits
 from boku.textures import TextureError
 from boku.tim import TimError
-from boku.translation import SampleScenes, TranslationError, TranslationSource, select_fields
+from boku.translation import (
+    SampleScenes,
+    TranslationEntry,
+    TranslationError,
+    TranslationSource,
+    select_fields,
+)
+from boku.voice import clip_ticks
 
 DEFAULT_IMAGE = Path("disc/image.img")
 BUILD_ROOT = Path("build")
@@ -461,6 +469,12 @@ class EditSet:
             )
         return value
 
+    @property
+    def voice_subtitles(self) -> bool:
+        """Whether the executable carries `asm/voice.asm`, without which nothing draws a
+        `(voice only)` row's English (`tools/vwf/build_prototype.py` records it)."""
+        return self.document.get("voice_subtitles") is True
+
 
 def load_edit_set(path: Path) -> EditSet:
     """Read an `edits.json`, refusing anything this build could not apply safely.
@@ -596,16 +610,23 @@ def lay_out(
     *,
     indent_continuations: bool = False,
     label: bool = True,
+    voice_subtitles: bool = False,
 ) -> list[LineResult]:
     """Turn every entry of a translation into words, collecting the lints it failed.
 
     Nothing is shortened and nothing is dropped silently: a line that does not fit comes
     back with its numbers and the caller decides (README § "Who this is for").
+
+    `voice_subtitles` says the executable this build installs carries `asm/voice.asm`;
+    without it a `(voice only)` row's English is refused, because nothing would draw it.
     """
     selects = SelectTables(archive)
     table = GlyphTable.load() if label else None
     out: list[LineResult] = []
     for entry in translation:
+        if entry.voice_only:
+            out.append(_lay_out_voice_only(archive, walk, entry, encoder, box, voice_subtitles))
+            continue
         sites = walk.by_line.get(entry.line_id)
         if not sites:
             out.append(
@@ -710,6 +731,39 @@ def lay_out(
     return out
 
 
+def _lay_out_voice_only(
+    archive: Archive,
+    walk: Walk,
+    entry: TranslationEntry,
+    encoder: Encoder,
+    box: BoxSpec,
+    hooked: bool,
+) -> LineResult:
+    """A `(voice only)` row's English as a subtitle for its clip (`VO-02`)."""
+
+    def refused(why: str) -> LineResult:
+        where = f" ({entry.origin})" if entry.origin else ""
+        return LineResult(entry.line_id, None, (f"{entry.line_id}{where}: {why}",))
+
+    if not hooked:
+        return refused(
+            "a subtitle for a voice-only clip is drawn only by asm/voice.asm, and this build "
+            "installs no executable patch at the XA handler (build with --vwf)"
+        )
+    if entry.line_id in walk.by_line:
+        return refused(
+            "is listed '(voice only)' but has text on the disc; give it its speaker instead"
+        )
+    slots = walk.voice_only.get(entry.line_id)
+    if not slots:
+        return refused("no voice-only entry (an XA clip with no text) has this id")
+    keys = {archive.boku[s.absolute : s.absolute + VOICE_KEY_SIZE] for s in slots}
+    if len(keys) != 1:
+        return refused(f"its {len(slots)} copies carry {len(keys)} different voice keys")
+    laid = lay_out_subtitle(entry.line_id, entry.pages, clip_ticks(keys.pop()), encoder, box)
+    return LineResult(entry.line_id, laid, laid.problems)
+
+
 # --- the whole build ------------------------------------------------------------------------------
 
 
@@ -758,6 +812,7 @@ def build(
     dry_run: bool = False,
     name: str = DEFAULT_BUILD_NAME,
     work_area_end: int = MAP_WORK_AREA_END,
+    voice_subtitles: bool = False,
 ) -> BuildResult:
     """Read an import and a translation, and write a patched image (`PIPE-04`).
 
@@ -795,6 +850,7 @@ def build(
             box,
             indent_continuations=indent_continuations,
             label=label,
+            voice_subtitles=voice_subtitles,
         )
         problems = [p for line in lines for p in line.problems]
         if problems and not skip_unfitted:
@@ -1066,6 +1122,7 @@ def main_build(
             dry_run=dry_run,
             name=name,
             work_area_end=(edit_set.work_area_end if edit_set is not None else MAP_WORK_AREA_END),
+            voice_subtitles=edit_set is not None and edit_set.voice_subtitles,
         )
     except (
         ArchiveError,
