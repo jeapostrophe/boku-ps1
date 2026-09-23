@@ -1187,3 +1187,23 @@ E2652.0	Fat	With Super Balls, there's the kind with lots of colors mixed in, rig
 
 # --- E2653: A18 -- the secret base
 E2653.0	Specs	Guri and Gura, the mice who are best friends... // was the blue one Guri?
+
+# --- E4064: G01 -- living room (the dinner quiz's answer; each day's menu)
+E4064.0	Aunt	Correct, Boku-kun! You did it!
+E4064.1	(voice only)
+E4064.2	Aunt	Exactly right! Congratulations!
+E4064.3	(voice only)
+E4064.4	Aunt	Too bad, that was wrong.
+E4064.5	Aunt	Ta-daaa, wrong! // By the way, the fridge has the ingredients for breakfast in it too, so watch out for that.
+E4064.6	Aunt	Wrong, I'm afraid. // Summer vacation will be over soon, so do your best to get it right, Boku-kun.
+E4064.7	Aunt	Tonight's dinner was... // Hamburg steak, simmered vegetables, and deep-fried river shrimp, Auntie-style.
+E4064.8	Aunt	Tonight's dinner was... // tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
+E4064.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I pulled it all together as Chinese.
+E4064.10	Aunt	Tonight's dinner was... // sashimi, simmered hijiki and tempura. I put together a purely Japanese spread.
+E4064.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu. Every one of them is Auntie's favorite.
+E4064.12	Aunt	Tonight's dinner was... // omurice with cheese papillote, fried tofu braised with greens and so on. I tried combining them.
+E4064.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I pulled it all together to Shirabe's taste.
+E4064.14	Aunt	Tonight's dinner was... // cabbage rolls, grilled eggplant, and an open omelette on top. I pulled it all together to Moe's taste.
+E4064.15	Aunt	Tonight's dinner was... // curry rice with marinated horse mackerel, salad, edamame and so on. I worked hard on it.
+E4064.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad. Italian style, by main force.
+E4064.17	Aunt	Tonight's dinner was... // the deluxe nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
