@@ -336,8 +336,14 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
       code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, three
       lines, wrapped by the build), summer-memories labels 0–5. Widest English per surface (2026-09-23):
-      insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Still to
-      measure: kite names and the cage HUD, fishing and sumo boxes. Original row — for every box geometry the game uses:
+      insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Widened and proven on Beetle
+      (2026-09-23): help .0/.1/.3/.5/.8, config .4, the quiz-rate popup. **[MINE: product]**
+      two look choices: descriptions/captions need 4–5 lines where the box holds 3 — options
+      a (retail pen, 13 px, five lines fill the white), b (x 167, 132 px wide, fewest lines;
+      recommended), c (12 px pitch), shot in `work/lane/desc-options/`; and the surfaces
+      bounded by their panel textures — memory-card .5 (287 px of 283), extras .1, item
+      names .0/.1/.3 (136–144 px in 115) — two-line message, condensed glyphs or scrolling.
+      Still to measure: kite names and the cage HUD, fishing and sumo boxes. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
       minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
@@ -542,7 +548,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       specimen label, dead code): code labels are placed by rewriting their immediates, the
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
-      uncle's daily 18:00 call), seen in English on Beetle. build-days: 971 lines laid out,
+      uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
+      screen — a new array item. build-days: 971 lines laid out,
       108 refused. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
