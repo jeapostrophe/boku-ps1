@@ -22,7 +22,9 @@ What it checks, and where each rule comes from
 * **`page-count`** -- a voiced message's page turns are a frame countdown matched to the
   clip (`research/text-format.md`, `0x8002`), so the count is fixed. An unvoiced line's
   is not, and a difference there is a `page-count-unvoiced` warning, not an error.
-* **`unencodable`** -- a character the chosen encoder draws no cell for.
+* **`unencodable`** -- a character the chosen encoder draws no cell for. An array item
+  may also use the sheet's own glyphs, `{G:n}` or a character the sheet draws
+  (`boku.layout.sheet_cells`).
 * **`page-lines` / `page-width`** -- the page measured in pixels through
   `boku.layout`, in the box `TXT-07` measured on the running prototype. The engine has no
   wrap logic and clips at the screen edge silently, so this is the real gate
@@ -96,6 +98,7 @@ from boku.layout import (
     DIALOGUE_BAND,
     MENU_IS_SEL,
     SELECT_ROW,
+    SHEET_CELL_PROBLEMS,
     BoxSpec,
     CellMapEncoder,
     Encoder,
@@ -637,7 +640,7 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
             check = "array-lines"
         elif "drawn as a group" in problem:
             check, severity = "array-group", WARNING
-        elif "draws no cell" in problem:
+        elif any(said in problem for said in SHEET_CELL_PROBLEMS):
             check = "unencodable"
         elif "no English was given" in problem:
             check = "array-empty"

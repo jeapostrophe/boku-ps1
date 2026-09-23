@@ -419,6 +419,22 @@ def test_an_array_item_that_grows_is_an_error(store, tmp_path):
     assert f"holds {size}" in finding.message
 
 
+def test_an_array_glyph_token_the_font_redrew_is_unencodable_not_a_byte_problem(store, tmp_path):
+    """`{G:n}` passes the sheet's own cell through; a cell the cell map took for a letter
+    no longer draws that glyph, and the finding says so under the check that means it."""
+    encoder = CellMapEncoder({"I": (700, 4), "t": (701, 4), "e": (702, 6), "m": (703, 9)})
+    rows = [row for row in GOOD if row[0] != ARRAY]
+    path = write_translation(tmp_path / "day99.txt", [*rows, (ARRAY, "Boku", "{G:700}")])
+    parsed, _ = load_rows(translation_paths([path]))
+    findings = [
+        finding
+        for finding in lint_rows(store, parsed, Options(encoder=encoder, label=False))
+        if finding.line_id == ARRAY
+    ]
+    assert checks(findings) == ["unencodable"]
+    assert "cell 700 draws 'I'" in findings[0].message
+
+
 def test_an_array_item_wider_than_its_measured_box_is_an_error(store, tmp_path):
     """`PLAN TXT-07`: the byte limit is not the only one once a surface's box is measured
     (`research/data/text-boxes.tsv`). The box is the one the build lays the item out in."""

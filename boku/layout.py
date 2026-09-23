@@ -38,16 +38,20 @@ every word (`research/vwf-prototype.md`).
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
+from functools import cache
 from pathlib import Path
 from typing import NamedTuple, Protocol
+from unicodedata import category
 
 from boku.glyphs import (
     END_WORD,
     NEWLINE_WORD,
     PAD_WORD,
     PAGE_WORD,
+    SHEET_SLOTS,
     GlyphTable,
     unencodable_by,
     words_of,
@@ -189,6 +193,91 @@ def _cell(encoder: Encoder, character: str) -> int:
 def measure(encoder: Encoder, run: str) -> int:
     """Pixel width of one run of text, which is the sum of its advances."""
     return sum(encoder.advance(character) for character in run)
+
+
+# --- the sheet's own glyphs, in an array item ------------------------------------------------
+
+GLYPH_TOKEN = re.compile(r"\{G:(\d+)\}")
+"""`{G:n}`: one cell of the game's own sheet, by id (`boku.glyphs`' token)."""
+
+
+@cache
+def _sheet() -> GlyphTable:
+    return GlyphTable.load()
+
+
+SHEET_CELL_PROBLEMS = ("draws no cell", "not the sheet's own glyph", "names no cell")
+"""What each of `sheet_cells`' problems says, so a lint files them all as `unencodable`."""
+
+
+class SheetCells(NamedTuple):
+    """An array item's text as cells, the pixels they step, and what could not be drawn."""
+
+    cells: tuple[int, ...]
+    width: int
+    problems: tuple[str, ...]
+
+
+def sheet_cells(encoder: Encoder, text: str, pitch: int = 0) -> SheetCells:
+    """`text` in `encoder`'s cells, falling back to the game's own sheet for the rest.
+
+    The menus draw the sheet's button glyphs, arrows and rules beside the English, so an
+    item may name one as `{G:n}`, or write a symbol the sheet draws and the English font
+    does not (○ × ↓) -- a symbol only: a kana or kanji is Japanese left untranslated.
+    Either is that cell, stepped at the surface's stock `pitch` -- what the walkers advance
+    a cell that is not English (`asm/walkers.asm`, `vwf_lookup_at`). A cell the cell map
+    has redrawn as an English letter no longer draws the sheet's glyph, so naming it is a
+    problem, not a passthrough.
+    """  # noqa: RUF002
+    stock = pitch or getattr(encoder, "fixed_advance", STOCK_ADVANCE)
+    redrawn = (
+        {cell: character for character, (cell, _) in encoder.cells.items()}
+        if isinstance(encoder, CellMapEncoder)
+        else {}
+    )
+    cells: list[int] = []
+    width = 0
+    missing: list[str] = []
+    problems: list[str] = []
+
+    def own(cell: int) -> None:
+        nonlocal width
+        if cell in redrawn:
+            problems.append(
+                f"cell {cell} draws {redrawn[cell]!r} in the {encoder.name}, not the sheet's "
+                f"own glyph"
+            )
+        cells.append(cell)
+        width += stock
+
+    position = 0
+    for match in (*GLYPH_TOKEN.finditer(text), None):
+        for character in text[position : match.start() if match else len(text)]:
+            cell = encoder.glyph(character)
+            if cell is not None:
+                cells.append(cell)
+                width += encoder.advance(character)
+            elif character in _sheet().from_character and category(character)[0] == "S":
+                own(_sheet().from_character[character])
+            else:
+                if character not in missing:
+                    missing.append(character)
+                cells.append(PAD_WORD)
+                width += encoder.advance(character)
+        if match:
+            cell = int(match.group(1))
+            if cell < SHEET_SLOTS:
+                own(cell)
+            else:
+                problems.append(
+                    f"{match.group(0)} names no cell; the sheet holds ids 0-{SHEET_SLOTS - 1}"
+                )
+                cells.append(PAD_WORD)
+                width += stock
+            position = match.end()
+    if missing:
+        problems.insert(0, f"the {encoder.name} draws no cell for {''.join(missing)!r}")
+    return SheetCells(tuple(cells), width, tuple(problems))
 
 
 # --- the box ---------------------------------------------------------------------------------
@@ -527,11 +616,12 @@ def lay_out_array(
             f"{line_id}: no English was given for this array item; writing it empty would "
             f"blank an item the game still draws"
         )
-    missing = unencodable(encoder, text)
-    if missing:
-        problems.append(f"{line_id}: the {encoder.name} draws no cell for {''.join(missing)!r}")
     lines = wrap(encoder, text, box) if wraps else [text]
-    widths = tuple(measure(encoder, line) for line in lines)
+    pitch = box.pitch if box is not None else 0
+    laid_lines = [sheet_cells(encoder, line, pitch) for line in lines]
+    for drawn in dict.fromkeys(p for laid in laid_lines for p in laid.problems):
+        problems.append(f"{line_id}: {drawn}")
+    widths = tuple(laid.width for laid in laid_lines)
     if box is not None and len(lines) > box.lines:
         problems.append(
             f"{line_id}: {text!r} takes {len(lines)} lines and {box.name} holds {box.lines}"
@@ -543,10 +633,10 @@ def lay_out_array(
                 f"{width - box.width} over"
             )
     cells: list[int] = []
-    for number, line in enumerate(lines):
+    for number, laid in enumerate(laid_lines):
         if number:
             cells.append(NEWLINE_WORD)
-        cells += [_cell(encoder, character) for character in line]
+        cells += laid.cells
     new = (*cells, words[-1])
     if 2 * len(new) > size:
         problems.append(

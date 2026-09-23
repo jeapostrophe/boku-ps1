@@ -40,6 +40,9 @@ PAGE_WORD = 0x8002
 PAD_WORD = 0x0000
 """The blank cell, glyph 0 — what a rewritten site is filled out with after its `END`."""
 
+SHEET_SLOTS = 1512
+"""Cells on the one font sheet, ids 0-1511 (`research/font.md`): 21 x 4 x 18."""
+
 _TOKEN_RE = re.compile(r"\{(END|NL|PAGE:\d+|G:\d+|C:[0-9A-F]{4})\}")
 
 

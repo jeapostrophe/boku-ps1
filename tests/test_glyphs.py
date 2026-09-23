@@ -9,7 +9,16 @@ from __future__ import annotations
 
 import pytest
 
-from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, GlyphTable, TextError, words_of
+from boku.glyphs import (
+    END_WORD,
+    GLYPH_TSV,
+    NEWLINE_WORD,
+    PAGE_WORD,
+    SHEET_SLOTS,
+    GlyphTable,
+    TextError,
+    words_of,
+)
 from tests import synth_archive as synth
 
 
@@ -90,6 +99,12 @@ def test_a_character_with_no_cell_is_named_rather_than_substituted():
 @pytest.fixture(scope="module")
 def sheet() -> GlyphTable:
     return GlyphTable.load()
+
+
+def test_the_committed_table_has_one_row_per_slot_of_the_sheet():
+    """`SHEET_SLOTS` is what a `{G:n}` token is bounded by; the table is its measurement."""
+    rows = GLYPH_TSV.read_text(encoding="utf-8").splitlines()[1:]
+    assert [int(row.split("\t")[0]) for row in rows] == list(range(SHEET_SLOTS))
 
 
 def test_the_committed_sheet_draws_letters_digits_and_the_space(sheet: GlyphTable):

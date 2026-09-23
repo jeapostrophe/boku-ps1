@@ -16,7 +16,15 @@ from pathlib import Path
 
 import pytest
 
-from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, PAGE_WORD, GlyphTable, words_of
+from boku.glyphs import (
+    END_WORD,
+    NEWLINE_WORD,
+    PAD_WORD,
+    PAGE_WORD,
+    SHEET_SLOTS,
+    GlyphTable,
+    words_of,
+)
 from boku.layout import (
     ANSWER_PAIR,
     DIALOGUE_BAND,
@@ -370,6 +378,76 @@ def test_an_item_whose_box_holds_lines_is_wrapped_to_it():
         "exe@80046398.0", "abc abc abc abc abc", original, encoder, len(original), box
     )
     assert any("3 lines" in problem for problem in three.problems), three.problems
+
+
+def _sheet_id(description: str) -> int:
+    """A cell of `research/data/glyph-table.tsv` by its `character` column."""
+    table = GlyphTable.load()
+    (found,) = [i for i, drawn in table.characters.items() if drawn == description]
+    return found
+
+
+def test_a_glyph_token_in_an_array_item_is_the_sheet_s_own_cell_at_the_surface_pitch():
+    """The controls help draws the game's button glyphs and dashed rule (`{G:n}` in
+    `arrays.txt`); the token is one cell, not eight characters, and a cell that is not
+    English steps the walker's stock pitch (`asm/walkers.asm`, `vwf_lookup_at`)."""
+    rule = _sheet_id("[----]")
+    original = raw(0x100, NEWLINE_WORD)
+    panel = BoxSpec(width=12, lines=1, pitch=12, name="the help box")
+    laid = lay_out_array("exe@80029B20.10", f"{{G:{rule}}}", original, cell_encoder(), 4, panel)
+    assert laid.fits, laid.problems
+    assert laid.words == (rule, NEWLINE_WORD)
+    assert laid.widths == ((12,),)
+    over = lay_out_array(
+        "exe@80029B20.10",
+        f"{{G:{rule}}}" * 2,
+        raw(0x100, 0x100, NEWLINE_WORD),
+        cell_encoder(),
+        6,
+        panel,
+    )
+    twice = f"{{G:{rule}}}" * 2
+    assert over.problems == (
+        f"exe@80029B20.10: {twice!r} is 24 px and the help box holds 12, 12 over",
+    )
+
+
+def test_a_sheet_character_the_font_lacks_is_drawn_with_the_sheet_s_own_cell():
+    """○ is a cell of the game's own sheet; the English font has none, and needs none."""
+    circle = GlyphTable.load().from_character["○"]
+    laid = lay_out_array("exe@80029B20.13", "○", raw(0x100, NEWLINE_WORD), cell_encoder(), 4)
+    assert laid.fits, laid.problems
+    assert laid.words == (circle, NEWLINE_WORD)
+
+
+def test_a_glyph_token_naming_a_cell_the_english_font_redrew_is_refused():
+    """The cell map owns id 302 for 'a', so `{G:302}` would draw an 'a', not the glyph."""
+    laid = lay_out_array("exe@80029B20.16", "{G:302}", raw(0x100, NEWLINE_WORD), cell_encoder(), 4)
+    assert laid.problems == (
+        "exe@80029B20.16: cell 302 draws 'a' in the cell map, not the sheet's own glyph",
+    )
+
+
+def test_japanese_left_in_an_array_item_is_not_passed_through_as_the_sheet_s_glyphs():
+    """The passthrough is for the sheet's symbols; a kana is Japanese left untranslated."""
+    kana = next(c for c in GlyphTable.load().from_character if "぀" <= c <= "ヿ")
+    laid = lay_out_array("exe@80029B20.13", kana, raw(0x100, NEWLINE_WORD), cell_encoder(), 4)
+    assert laid.problems == (f"exe@80029B20.13: the cell map draws no cell for {kana!r}",)
+
+
+@pytest.mark.parametrize("past", [0, 0x8000, 0x10000])
+def test_a_glyph_token_past_the_sheet_is_refused(past):
+    """An id with no cell on the sheet draws garbage, and one past 16 bits cannot be packed."""
+    token = f"{{G:{SHEET_SLOTS + past}}}"
+    laid = lay_out_array("exe@80029B20.16", token, raw(0x100, NEWLINE_WORD), cell_encoder(), 4)
+    assert laid.problems == (
+        f"exe@80029B20.16: {token} names no cell; the sheet holds ids 0-{SHEET_SLOTS - 1}",
+    )
+
+
+def test_a_character_neither_the_font_nor_the_sheet_draws_is_still_unencodable():
+    laid = lay_out_array("exe@80029B20.13", "☃", raw(0x100, NEWLINE_WORD), cell_encoder(), 4)
+    assert laid.problems == ("exe@80029B20.13: the cell map draws no cell for '☃'",)
 
 
 def test_an_array_group_drawn_whole_is_left_alone_rather_than_divided_by_guesswork():

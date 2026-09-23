@@ -38,7 +38,9 @@ are `./make.sh mockup`'s.
   included — romanise a word you need to quote (*satoyama*, *daikichi*).
 * **The menus, books and screens** (`arrays.txt`) use the same rows. A line nobody speaks
   carries `(unlabelled)`; a menu is a `[SEL]` row; `# --- exe@8003D2E0: …` opens a list the
-  way `# --- E0121` opens an event.
+  way `# --- E0121` opens an event. A game glyph the English sits beside — a button, the
+  dashed rule — is written `{G:n}` (its id in `research/data/glyph-table.tsv`) or as the
+  character the sheet draws (○ × ↓); either is that one cell of the game's own sheet.
 * **The card screens' two answers** (`title@7A78.0`, the Japanese "hai" and "iie" side by
   side) are one row written `Yes | No`: the first answer, ` | `, the second. The build places
   the second where the Japanese one began and tells the drawer where the first ends; the two
