@@ -22,7 +22,7 @@ E0502.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0502.2	Aunt	Yu-chan, you're going to the meeting in Sagi-no-sato tonight, aren't you?
 E0502.3	Uncle	Yeah! Something about getting firefly larvae to breed in the creeks outside Tsukiyono too, // by being a bit more careful about how we use pesticides... that seems to be what the meeting is for. // I'll have dinner, and then go.
 E0502.4	Boku	What are firefly larvae?
-E0502.5	Uncle	Ah, there are kinds of firefly that spend their time as larvae in the river. // They eat the snails in the river and grow big. // Oh, that's right. Uncle's going to be out tonight, // but it's dangerous, so you mustn't go to Firefly Creek.
+E0502.5	Uncle	Ah, there are kinds of firefly that spend their time as larvae in the river. // They eat the snails in the river and grow big. // Oh, that's right. Uncle's going to be out tonight, but... // it's dangerous, so you mustn't go to Firefly Creek.
 E0502.6	Boku	Yeah, I understand, Uncle.
 E0502.7	Narrator	That was the one and only chance to go to Firefly Creek at night.
 # NOTE E0502.0-.1: the same fixed phrase as E0010.0-.1 (glossary § 3); the chorus carries no label
