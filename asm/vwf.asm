@@ -180,6 +180,8 @@ vwf_select_box:
     jr      ra
     nop
 
+.include "labels.asm"
+
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build
 .endarea

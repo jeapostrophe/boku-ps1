@@ -41,6 +41,9 @@ What it checks, and where each rule comes from
 * **`not-placeable`** -- *a warning*: a label assembled from instruction immediates whose
   English needs more glyphs than the function draws (`boku.code_text`): one character per
   drawn glyph is placed by rewriting the immediates, more is a change to its layout.
+* **`date-label`** -- the two date labels (`boku.code_text.DATE_LABELS`) are redrawn around
+  their English (`asm/labels.asm`) and must mark where the code draws its numbers (each
+  entry's `places` and `example`).
 * **`save-title`** -- the memory-card title (`title@sjis:188`) must mark where the code puts
   the slot and the day (`{slot}`, `{day}`), encode as full-width Shift-JIS, and fit the
   card's 64-byte field at slot 15, day 31.
@@ -98,7 +101,12 @@ from boku import REPO_ROOT, clip_subs, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
 from boku.arrays import byte_limit
 from boku.boxes import TextBox, box_for
-from boku.code_text import lay_out_code_label, lay_out_save_title
+from boku.code_text import (
+    DATE_LABELS,
+    lay_out_code_label,
+    lay_out_date_label,
+    lay_out_save_title,
+)
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import (
@@ -556,6 +564,15 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
             f"{row.line_id} is written as a SELECT but the store has it as a message",
         )
         return
+    if row.line_id in DATE_LABELS:
+        laid = lay_out_date_label(row.line_id, " ".join(row.entry.pages), context.options.encoder)
+        for problem in laid.problems:
+            detail = problem.split(": ", 1)[-1]
+            unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
+            context.say(row, "unencodable" if unencodable_cell else "date-label", ERROR, detail)
+        if not laid.problems:
+            context.array_words[row.line_id] = laid.words  # placed like an array
+        return
     if record["kind"] == "code-label":
         text = " ".join(row.entry.pages)
         laid = lay_out_code_label(row.line_id, record["runs"], text, context.options.encoder)
@@ -1009,14 +1026,14 @@ def _array_room(disc_dir: Path, encoder_kind: str, cells: Path | None, options: 
     from boku.build import BuildRefused, lay_out, load_edit_set, move_arrays
     from boku.sites import SiteError, load
 
-    def regions():
+    def edit_set():
         path = cells or DEFAULT_CELLS
         if encoder_kind == "cellmap" and path.is_file():
             try:
-                return load_edit_set(path).array_regions
+                return load_edit_set(path)
             except (BuildRefused, OSError, ValueError, KeyError):
                 pass  # the cell map is not an edit set: measure in the dead regions alone
-        return DEAD_REGIONS
+        return None
 
     def room(words, blocks):
         try:
@@ -1035,7 +1052,14 @@ def _array_room(disc_dir: Path, encoder_kind: str, cells: Path | None, options: 
                 select_row=options.select_row,
             )
             words |= {line.line_id: line.laid_out.words for line in laid if line.written}
-        _, refused = move_arrays(archive, words, regions(), skip_unfitted=True)
+        installed = edit_set()
+        _, refused = move_arrays(
+            archive,
+            words,
+            installed.array_regions if installed else DEAD_REGIONS,
+            skip_unfitted=True,
+            routines=installed.label_routines if installed else None,
+        )
         if not refused:
             return None
         return [(line, reasons[0]) for line, reasons in refused.items()]

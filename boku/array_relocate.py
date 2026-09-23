@@ -35,7 +35,7 @@ from boku.arrays import (
     relocatable,
     walk_all,
 )
-from boku.code_text import split_title_blob
+from boku.code_text import DATE_LABELS, date_label_hook, drawer_of, split_title_blob
 from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
 from boku.pointers import LuiPair, PointerError, repoint, scan
@@ -149,12 +149,28 @@ def _interior(pair: LuiPair, pair_image: str, spans: Spans) -> list[str]:
     ]
 
 
+def _padded(archive: Archive, region: Region) -> Region:
+    """`region` out to the next `ALIGN` boundary when the bytes up to it are zero: the
+    0x0000 pad the linker put between two arrays belongs to neither, and a vacated span
+    that swallows it meets its neighbour's."""
+    end = -(-region.end // ALIGN) * ALIGN
+    if any(archive.exe_bytes(region.end, end - region.end)):
+        return region
+    return Region(region.start, end, region.name)
+
+
 def _allocate(
     wanted: list[tuple[str, int]], regions: Sequence[Region]
 ) -> tuple[dict[str, int], int] | tuple[str, str]:
     """Largest first, each into the smallest run it fits (4-aligned); on running out,
-    `(prefix, why)` for the array that did not fit."""
-    free = [(r.start, r.end) for r in regions]
+    `(prefix, why)` for the array that did not fit. Runs that touch are one run
+    (`_padded` has already given a vacated span its alignment pad)."""
+    free: list[tuple[int, int]] = []
+    for start, end in sorted((r.start, r.end) for r in regions if r.end > r.start):
+        if free and start <= free[-1][1]:
+            free[-1] = (free[-1][0], max(end, free[-1][1]))
+        else:
+            free.append((start, end))
     placed: dict[str, int] = {}
     for prefix, size in sorted(wanted, key=lambda item: (-item[1], item[0])):
         best = None
@@ -213,6 +229,8 @@ class _Unit:
     table: tuple[tuple[int, int], ...] = ()
     """A unit reached through a pointer table in `BOKU.BIN` instead of `lui` pairs:
     `(offset of the table word, offset in the blob it must point at)` per word."""
+    hook: Callable[[int], list[ByteEdit]] | None = None
+    """For a unit its reader is pointed at by a patch: the edits, given where it landed."""
 
 
 def _array_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterator[_Unit]:
@@ -294,11 +312,32 @@ def _title_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterat
     )
 
 
+def _date_units(
+    archive: Archive, words: Mapping[str, Sequence[int]], routines: Mapping[str, int]
+) -> Iterator[_Unit]:
+    """A translated date label (`boku.code_text.DATE_LABELS`): its segments written anywhere
+    resident, and its drawer's entry hooked to the edit set's routine with `t0` at them.
+    The unit's "old" address is the drawer's, which is what the hook replaces."""
+    for line_id, label in DATE_LABELS.items():
+        if line_id not in words:
+            continue
+        image, drawer = drawer_of(line_id)
+        routine = routines.get(label.routine)
+        hook = None
+        if routine is not None:
+            hook = lambda at, line_id=line_id, routine=routine: [  # noqa: E731
+                date_label_hook(archive, line_id, at, routine)
+            ]
+        blob = words_to_bytes(words[line_id])
+        yield _Unit(line_id, image, drawer, drawer, blob, (line_id,), (line_id,), hook=hook)
+
+
 def plan_arrays(
     archive: Archive,
     words: Mapping[str, Sequence[int]],
     regions: Sequence[Region] = DEAD_REGIONS,
     scanned: Callable[[], Scanned] | None = None,
+    routines: Mapping[str, int] | None = None,
 ) -> ArrayPlan:
     """Move every relocatable array, and every resident event block, one of whose items
     `words` grows past its bytes.
@@ -311,19 +350,32 @@ def plan_arrays(
             *_array_units(archive, words),
             *_block_units(archive, words),
             *_title_units(archive, words),
+            *_date_units(archive, words, routines or {}),
         )
     }
     if not units:
         return ArrayPlan((), (), frozenset(), sum(r.size for r in regions))
 
+    unhooked = [p for p, u in units.items() if p in DATE_LABELS and u.hook is None]
+    if unhooked:
+        raise ArrayRoomRefused(
+            f"{', '.join(unhooked)}: the English date label is drawn by the renderer patch's "
+            f"routine (asm/labels.asm), and this build installs no edit set that has it",
+            unhooked,
+        )
+
     def refusal(why: str, prefixes: Sequence[str]) -> ArrayRoomRefused:
         return ArrayRoomRefused(why, [line for prefix in prefixes for line in units[prefix].grown])
 
-    spans = {prefix: (u.image, u.start, u.end) for prefix, u in units.items() if not u.table}
-    vacated = [
-        Region(u.start, u.end, f"{prefix}'s old bytes")
+    spans = {
+        prefix: (u.image, u.start, u.end)
         for prefix, u in units.items()
-        if u.image == "exe"
+        if not u.table and u.hook is None
+    }
+    vacated = [
+        _padded(archive, Region(u.start, u.end, f"{prefix}'s old bytes"))
+        for prefix, u in units.items()
+        if u.image == "exe" and u.end > u.start
     ]
     allocated = _allocate([(p, len(u.blob)) for p, u in units.items()], [*regions, *vacated])
     if isinstance(allocated[0], str):
@@ -343,6 +395,9 @@ def plan_arrays(
         for m in moved
     ]
     new_start = {m.prefix: m.new for m in moved}
+    for prefix, unit in units.items():
+        if unit.hook is not None:
+            edits += unit.hook(new_start[prefix])
     for prefix, unit in units.items():
         for offset, at in unit.table:
             edits.append(

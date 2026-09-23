@@ -13,6 +13,7 @@ from boku.array_relocate import (
     _allocate,
     _block_units,
     _interior,
+    _padded,
     plan_arrays,
 )
 from boku.arrays import relocatable, walk_all
@@ -30,6 +31,36 @@ def test_the_largest_array_goes_first_into_the_smallest_run_that_holds_it():
     assert left == (0x100 - 0xF0) + (0x40 - 0x30)
 
 
+def test_touching_runs_are_one_run():
+    """Two neighbours that both move leave one run: an array longer than either fits there
+    (the captions, 1,138 bytes, once the date routines had grown the island's code)."""
+    regions = [Region(0x1000, 0x1034, "first"), Region(0x1034, 0x1080, "second")]
+    placed, left = _allocate([("big", 0x78)], regions)
+    assert placed == {"big": 0x1000}
+    assert left == 0x80 - 0x78
+
+
+def test_runs_apart_stay_apart():
+    regions = [Region(0x1000, 0x1032, "first"), Region(0x1034, 0x1080, "second")]
+    assert _allocate([("big", 0x78)], regions)[0] == "big"
+
+
+class _Exe:
+    def __init__(self, data: dict[int, bytes]) -> None:
+        self.data = data
+
+    def exe_bytes(self, ram: int, n: int) -> bytes:
+        return b"".join(self.data.get(ram + i, b"\0") for i in range(n))
+
+
+def test_a_vacated_span_takes_its_alignment_pad_only_when_the_pad_is_zero():
+    """A walk ends where the reader stops; the two bytes to the next 4-aligned address are
+    the linker's pad when they are zero, and something else's when they are not."""
+    region = Region(0x1000, 0x1032, "an array")
+    assert _padded(_Exe({}), region).end == 0x1034
+    assert _padded(_Exe({0x1033: b"\x01"}), region).end == 0x1032
+
+
 def test_a_placement_is_aligned_and_the_alignment_is_charged():
     placed, _ = _allocate([("a", 4), ("b", 2)], [Region(0x1002, 0x100C, "odd")])
     assert all(at % ALIGN == 0 for at in placed.values())
@@ -42,16 +73,17 @@ def test_running_out_names_the_array_and_the_numbers():
 
 
 def test_an_array_with_no_room_gives_up_only_the_items_that_grew(archive):
-    """Narrowest: one item one cell too long, and no region at all -- not even its own
-    vacated bytes can hold a larger copy of itself. The item beside it fits its own bytes
-    and is written in place, as before arrays could move."""
+    """Narrowest: one item two cells too long -- one more than the array's alignment pad
+    could absorb -- and no region at all, so not even its own vacated bytes hold a larger
+    copy of it. The item beside it fits its own bytes and is written in place, as before
+    arrays could move."""
     walked = next(
         w for w in walk_all(archive) if w.array.line_id_prefix == "exe@80046214"
     )  # item names
     assert relocatable(walked.array)
     (s0, e0), (s1, e1) = walked.strings[:2]
     words = {
-        walked.line_ids[0]: (0x100,) * ((e0 - s0) // 2) + (0x8000,),  # one cell too long
+        walked.line_ids[0]: (0x100,) * ((e0 - s0) // 2 + 1) + (0x8000,),  # two cells over
         walked.line_ids[1]: (0x100,) * ((e1 - s1) // 2 - 1) + (0x8000,),  # fits
     }
     with pytest.raises(ArrayRoomRefused) as refused:
@@ -137,7 +169,7 @@ def test_the_lint_s_room_check_lays_out_a_resident_block_s_rows_too(disc_dir, mo
 
     offered: dict = {}
 
-    def recording(archive, words, regions, skip_unfitted):
+    def recording(archive, words, regions, skip_unfitted, routines=None):
         offered.update(words)
         return None, {}
 

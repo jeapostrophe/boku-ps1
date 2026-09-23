@@ -49,7 +49,8 @@ class _Archive:
     def __init__(self, words: dict[int, int]) -> None:
         self.words = words
 
-    def exe_bytes(self, ram: int, n: int) -> bytes:
+    def image_bytes(self, image: str, ram: int, n: int) -> bytes:
+        assert image == "exe"
         return self.words[ram].to_bytes(4, "little")
 
 

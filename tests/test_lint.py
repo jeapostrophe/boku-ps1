@@ -786,3 +786,17 @@ def test_arrays_that_move_are_held_to_the_room_the_build_would_find(tmp_path):
     assert asked and item in asked[0], "the laid-out words were not offered to the room check"
     room = only(findings, "array-room")
     assert (room.line_id, room.message) == (item, "no room")
+
+
+def test_a_date_label_must_mark_where_its_numbers_go(tmp_path):
+    """`exe@code:80037544` is redrawn around its English (`asm/labels.asm`): the row says
+    where the month and the day are drawn, and a row that does not is an error, not a
+    not-placeable warning -- the drawer can hold any English."""
+    synth = SynthStore.new(tmp_path)
+    label = synth.code_label("exe@code:80037544")["id"]
+    store = load_store(synth.write())
+    good = [(label, "(unlabelled)", "Date caught {month}/{day}")]
+    assert run(store, tmp_path, good, label=False) == []
+    bad = run(store, tmp_path, [(label, "(unlabelled)", "Date caught")], label=False)
+    assert checks(bad) == ["date-label"]
+    assert bad[0].severity == ERROR

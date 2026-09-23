@@ -58,6 +58,9 @@ class Machine:
     ram: bytearray = field(default_factory=lambda: bytearray(RAM_SIZE))
     regs: list[int] = field(default_factory=lambda: [0] * 32)
     draws: list[tuple[int, int, int]] = field(default_factory=list)
+    stubs: dict[int, list[tuple[int, ...]]] = field(default_factory=dict)
+    """Functions not run but recorded like `glyph_draw`: address -> the calls made to it,
+    each `(a0, a1, a2, a3, [sp+16], [sp+20])` -- the o32 fifth and sixth arguments."""
     hi: int = 0
     lo: int = 0
     _written: int | None = None
@@ -108,10 +111,19 @@ class Machine:
         pc, next_pc = function, function + 4
         pending: tuple[int, int] | None = None
         for _ in range(limit):
-            if pc in (STOP, GLYPH_DRAW) and pending is not None:
+            if (pc in (STOP, GLYPH_DRAW) or pc in self.stubs) and pending is not None:
                 self.regs[pending[0]], pending = pending[1], None
             if pc == STOP:
                 return self.regs[2]
+            if pc in self.stubs:
+                sp = self.regs[29]
+                self.stubs[pc].append(
+                    (*self.regs[4:8], self.read(sp + 16, 4), self.read(sp + 20, 4))
+                )
+                for number in CLOBBERED:
+                    self.regs[number] = POISON
+                pc, next_pc = self.regs[31], self.regs[31] + 4
+                continue
             if pc == GLYPH_DRAW:
                 self.draws.append((_s32(self.regs[4]), _s32(self.regs[5]), _s32(self.regs[6])))
                 for number in CLOBBERED:
@@ -176,6 +188,12 @@ class Machine:
                 a, b = (_s32(r[rs]), _s32(r[rt])) if funct == 0x18 else (r[rs], r[rt])
                 product = (a * b) & 0xFFFFFFFFFFFFFFFF
                 self.hi, self.lo = product >> 32, product & 0xFFFFFFFF
+            elif funct in (0x1A, 0x1B):
+                a, b = (_s32(r[rs]), _s32(r[rt])) if funct == 0x1A else (r[rs], r[rt])
+                if b == 0:
+                    raise MipsError(f"0x{pc:08X} divides by zero; the result is not modelled")
+                quotient = abs(a) // abs(b) * (1 if (a < 0) == (b < 0) else -1)
+                self.lo, self.hi = quotient & 0xFFFFFFFF, (a - quotient * b) & 0xFFFFFFFF
             elif funct in (0x20, 0x21):
                 set_(rd, r[rs] + r[rt])
             elif funct in (0x22, 0x23):

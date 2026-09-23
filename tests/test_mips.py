@@ -66,3 +66,20 @@ def test_an_unaligned_word_moves_through_lwl_lwr_swl_swr():
     m.call(CODE, DATA + 1, DATA + 9)
     assert m.regs[8] == int.from_bytes(bytes(range(0x11, 0x15)), "little")
     assert bytes(m.ram[DATA - 0x80000000 + 9 : DATA - 0x80000000 + 13]) == bytes(range(0x11, 0x15))
+
+
+@pytest.mark.parametrize(
+    ("funct", "a", "b", "quotient", "remainder"),
+    [(0x1B, 31, 10, 3, 1), (0x1A, -7, 2, -3, -1), (0x1A, 7, -2, -3, 1)],
+)
+def test_div_and_divu_leave_the_quotient_in_lo_and_the_remainder_in_hi(
+    funct, a, b, quotient, remainder
+):
+    """Truncation toward zero, as the R3000 does (`asm/labels.asm` splits a day in two)."""
+    m = Machine()
+    # div(u) a0,a1; mflo v0; mfhi v1; jr ra; nop
+    m.load(
+        CODE, struct.pack("<5I", (4 << 21) | (5 << 16) | funct, 0x00001012, 0x00001810, JR_RA, NOP)
+    )
+    m.call(CODE, a & 0xFFFFFFFF, b & 0xFFFFFFFF)
+    assert (m.regs[2], m.regs[3]) == (quotient & 0xFFFFFFFF, remainder & 0xFFFFFFFF)

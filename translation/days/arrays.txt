@@ -396,7 +396,7 @@ title@7A78.0	(unlabelled)	Yes | No
 zukan@32E8	[SEL]	Write in your diary and go to sleep? | Yes | No
 
 # --- exe@code:80037544: caught, month, day
-exe@code:80037544	(unlabelled)	Date caught
+exe@code:80037544	(unlabelled)	Date caught {month}/{day}
 
 # --- exe@code:80037698: specimen made, month, day (no caller found)
 exe@code:80037698	(unlabelled)	Date mounted
@@ -406,7 +406,7 @@ exe@code:800377F8	(unlabelled)	W L
 # NOTE exe@code:800377F8: the glossary's W / L (§ 4b), two cells drawn by the code.
 
 # --- title@code:8007BB60: 8, month, day
-title@code:8007BB60	(unlabelled)	August /
+title@code:8007BB60	(unlabelled)	August {day}
 
 # --- title@code:8007C8EC: the ) after a slot number
 title@code:8007C8EC	(unlabelled)	) / )

@@ -21,13 +21,41 @@ overwrite (`script_store.PLACED_BY_CODE`):
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from unicodedata import normalize
 
-from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, OVERLAY_LOAD_ADDRESS, Archive
-from boku.arrays import SAVE_TITLE_BYTES, CodeLabel
-from boku.glyphs import PAD_WORD
+from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, Archive
+from boku.arrays import CODE_LABEL_MARK, SAVE_TITLE_BYTES, CodeLabel
+from boku.glyphs import END_WORD, PAD_WORD
 from boku.layout import Encoder, LaidOut, _sheet, sheet_cells
 from boku.reinsert import ByteEdit
+
+
+@dataclass(frozen=True)
+class DateLabel:
+    routine: str
+    """Its drawer's replacement in `asm/labels.asm`, by its symbol in the edit set."""
+    places: tuple[str, ...]
+    """Where the row puts the numbers the drawer computes, in the order they are drawn."""
+    example: str
+    """The row as it is written, for a refusal to show."""
+
+
+DATE_LABELS: dict[str, DateLabel] = {
+    "exe@code:80037544": DateLabel(
+        "vwf_caught_label", ("{month}", "{day}"), "Date caught {month}/{day}"
+    ),
+    "title@code:8007BB60": DateLabel("vwf_save_date_label", ("{day}",), "August {day}"),
+}
+"""The labels whose English the code cannot hold glyph for glyph -- a date, with numbers the
+drawer computes between its words. `asm/labels.asm` redraws each through the advance table
+and places the numbers after the measured text."""
+
+LABEL_PITCH = 12
+"""What `asm/labels.asm` steps a cell that is not English (`vwf_lookup_at LABEL_PITCH`)."""
+
+HOOK_WORDS = 3
+"""`lui t0, hi(text)` / `j routine` / `addiu t0, t0, lo(text)` over the drawer's entry."""
 
 LABEL_FIELD = " / "
 """Between the runs of a code label -- where the function draws a computed digit."""
@@ -84,23 +112,16 @@ def code_label_edits(archive: Archive, label: CodeLabel, cells: Sequence[int]) -
     """Every `addiu a0, zero, <id>` of the label, its immediate replaced by its glyph's cell."""
     edits = []
     for (ram, _), draw in zip(label.sites, label.draws, strict=True):
-        if label.image == "exe":
-            file, offset = EXE_NAME, ram - EXE_LOAD_BIAS
-            old = archive.exe_bytes(ram, 4)
-        else:
-            member = archive.member(f"{label.image.upper()}.OVL")
-            file, offset = ARCHIVE_NAME, member.offset + ram - OVERLAY_LOAD_ADDRESS
-            old = archive.image_bytes(label.image, ram, 4)
-        word = int.from_bytes(old, "little")
+        word = int.from_bytes(archive.image_bytes(label.image, ram, 4), "little")
         new = (word & 0xFFFF0000) | cells[draw]
         if new != word:
             edits.append(
-                ByteEdit(
-                    file=file,
-                    offset=offset,
-                    old=old,
-                    new=new.to_bytes(4, "little"),
-                    reason=f"{label.line_id} 0x{ram:08X}: glyph {cells[draw]} (PLAN PIPE-07)",
+                _code_edit(
+                    archive,
+                    label.image,
+                    ram,
+                    new.to_bytes(4, "little"),
+                    f"{label.line_id} 0x{ram:08X}: glyph {cells[draw]} (PLAN PIPE-07)",
                 )
             )
     return edits
@@ -171,3 +192,59 @@ def split_title_blob(blob: bytes) -> list[int]:
     second = blob.index(b"\0", first) + 1
     blob.index(b"\0", second)  # the third part is terminated too, or this is not a title
     return [0, first, second]
+
+
+def lay_out_date_label(line_id: str, text: str, encoder: Encoder) -> LaidOut:
+    """A date label's segments -- the text between its numbers -- as cells, each ended by
+    `0x8000`, which is what `asm/labels.asm`'s `vwf_label_cells` walks."""
+    label = DATE_LABELS[line_id]
+    problems: list[str] = []
+    segments = [text]
+    for place in label.places:
+        head, found, tail = segments[-1].partition(place)
+        if not found:
+            problems.append(
+                f"{line_id}: the row marks where the code draws its numbers with "
+                f"{' and then '.join(label.places)}, e.g. {label.example!r}"
+            )
+            break
+        segments[-1:] = [head, tail]
+    cells: list[int] = []
+    width = 0
+    for segment in segments:
+        laid = sheet_cells(encoder, segment, LABEL_PITCH)
+        problems += [f"{line_id}: {p}" for p in laid.problems]
+        cells += [*laid.cells, END_WORD]
+        width += laid.width
+    return LaidOut(line_id, tuple(cells), (tuple(segments),), ((width,),), tuple(problems))
+
+
+def date_label_hook(archive: Archive, line_id: str, text: int, routine: int) -> ByteEdit:
+    """The three words over the drawer's entry that hand it to `routine` with `t0 = text`.
+
+    The retail drawer's first three instructions are replaced, never run: the jump leaves
+    before its frame is made, and `t0` is a temporary no caller keeps."""
+    image, ram = drawer_of(line_id)
+    words = (
+        0x3C080000 | ((text + 0x8000) >> 16) & 0xFFFF,  # lui t0, hi(text)
+        0x08000000 | (routine >> 2) & 0x03FFFFFF,  # j routine
+        0x25080000 | text & 0xFFFF,  # addiu t0, t0, lo(text)
+    )
+    new = b"".join(word.to_bytes(4, "little") for word in words)
+    return _code_edit(archive, image, ram, new, f"{line_id}: into {routine:#010x} (PLAN PIPE-07)")
+
+
+def drawer_of(line_id: str) -> tuple[str, int]:
+    """`(image, RAM)` of the function a code label's id names."""
+    image, function = line_id.split(CODE_LABEL_MARK)
+    return image, int(function, 16)
+
+
+def _code_edit(archive: Archive, image: str, ram: int, new: bytes, reason: str) -> ByteEdit:
+    """`new` over the code at `ram` in the executable or an overlay, expecting what is there."""
+    old = archive.image_bytes(image, ram, len(new))
+    if image == "exe":
+        return ByteEdit(EXE_NAME, ram - EXE_LOAD_BIAS, old, new, reason)
+    return ByteEdit(
+        ARCHIVE_NAME, archive.overlay_offset(f"{image.upper()}.OVL", ram), old, new, reason
+    )

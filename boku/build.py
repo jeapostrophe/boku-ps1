@@ -69,7 +69,13 @@ from boku.arrays import (
     read_code_labels,
 )
 from boku.boxes import box_for
-from boku.code_text import code_label_edits, lay_out_code_label, lay_out_save_title
+from boku.code_text import (
+    DATE_LABELS,
+    code_label_edits,
+    lay_out_code_label,
+    lay_out_date_label,
+    lay_out_save_title,
+)
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
 from boku.events import VOICE_KEY_SIZE, EventError
@@ -515,6 +521,18 @@ class EditSet:
         return (*DEAD_REGIONS, PC_HOST_DATA, Region(free, end, "the renderer island's tail"))
 
     @property
+    def label_routines(self) -> dict[str, int]:
+        """The date labels' routines this renderer assembled (`asm/labels.asm`), by symbol,
+        read out of the island's record; empty for an edit set without them."""
+        gap = self.document.get("gap")
+        symbols = gap.get("symbols", {}) if isinstance(gap, dict) else {}
+        return {
+            symbol: int(symbols[symbol], 16)
+            for symbol in (label.routine for label in DATE_LABELS.values())
+            if symbol in symbols
+        }
+
+    @property
     def select_row(self) -> BoxSpec:
         """The select row the renderer in these edits draws (`boku.layout.select_row_of`)."""
         return select_row_of(self.document)
@@ -699,6 +717,10 @@ def lay_out(
             continue
         if CODE_LABEL_MARK in entry.line_id and not labels:
             labels = {label.line_id: label for label in read_code_labels(archive)}
+        if entry.line_id in DATE_LABELS:
+            laid = lay_out_date_label(entry.line_id, " ".join(entry.pages), encoder)
+            out.append(LineResult(entry.line_id, laid, laid.problems))
+            continue
         if entry.line_id in labels:
             laid = lay_out_code_label(
                 entry.line_id, labels[entry.line_id].runs, " ".join(entry.pages), encoder
@@ -925,6 +947,7 @@ def build(
     voice_subtitles: bool = False,
     select_row: BoxSpec = SELECT_ROW,
     array_regions: Sequence[Region] = DEAD_REGIONS,
+    label_routines: Mapping[str, int] | None = None,
 ) -> BuildResult:
     """Read an import and a translation, and write a patched image (`PIPE-04`).
 
@@ -975,7 +998,7 @@ def build(
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
         labels = {label.line_id for label in read_code_labels(archive)}  # code_label_patches'
-        moved, refused = move_arrays(archive, words, array_regions, skip_unfitted)
+        moved, refused = move_arrays(archive, words, array_regions, skip_unfitted, label_routines)
         binary_patches = [*binary_patches, *moved.edits]
         the_plan, still = _plan_what_fits(
             archive,
@@ -1041,7 +1064,7 @@ def code_label_patches(archive: Archive, lines: Sequence[LineResult]) -> list[By
     return [
         edit
         for label in read_code_labels(archive)
-        if label.line_id in written
+        if label.line_id in written and label.line_id not in DATE_LABELS
         for edit in code_label_edits(archive, label, written[label.line_id].words)
     ]
 
@@ -1077,6 +1100,7 @@ def move_arrays(
     words: dict[str, tuple[int, ...]],
     regions: Sequence[Region],
     skip_unfitted: bool,
+    routines: Mapping[str, int] | None = None,
 ) -> tuple[ArrayPlan, dict[str, tuple[str, ...]]]:
     """Move the grown arrays (`boku.array_relocate`), popping from `words` what cannot move.
 
@@ -1094,7 +1118,7 @@ def move_arrays(
 
     while True:
         try:
-            return plan_arrays(archive, words, regions, scanned), refused
+            return plan_arrays(archive, words, regions, scanned, routines), refused
         except ArrayRoomRefused as error:
             popped = [line for line in error.lines if words.pop(line, None) is not None]
             if not skip_unfitted or not popped:
@@ -1345,6 +1369,7 @@ def main_build(
             voice_subtitles=edit_set is not None and edit_set.voice_subtitles,
             select_row=(edit_set.select_row if edit_set is not None else SELECT_ROW),
             array_regions=(edit_set.array_regions if edit_set is not None else DEAD_REGIONS),
+            label_routines=(edit_set.label_routines if edit_set is not None else None),
         )
     except (
         ArchiveError,

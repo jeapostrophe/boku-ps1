@@ -132,6 +132,12 @@ composes sentences. What exists:
   | `file_rows_draw` (`TITLE`) | `0x5B0` ×4 sites | `）` after the slot number | `TITLE` |
   | `extras_numbers_draw` (`TITLE`) | `0x0F`, `0x37`, `0x35`, `0x28` (and `0x34`) | ／ 3 1 ％ | `TITLE` |
 
+  How they are placed (`boku.code_text`): a label with at most one English character per
+  drawn glyph by rewriting the immediates; the two dates (`caught_label_draw`,
+  `save_date_draw`) are hooked at their entry to routines in `asm/labels.asm` that draw the
+  English through the advance table and put the numbers after it -- seen on Beetle's load
+  screen as "1) August 4".
+
   `REC-04` had already marked 1209 (`0x4B9`) and 1456 (`0x5B0`) "used by code" in
   [`data/glyph-table.tsv`](data/glyph-table.tsv); this is where.
 * **Numbers in the HUD and menus are sprites, not glyphs**: `number_draw` `0x800400F8` and

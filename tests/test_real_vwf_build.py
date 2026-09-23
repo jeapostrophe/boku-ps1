@@ -45,7 +45,7 @@ from boku.build import (
     load_edit_set,
     verify_written_sectors,
 )
-from boku.code_text import lay_out_code_label
+from boku.code_text import DATE_LABELS, lay_out_code_label
 from boku.disc import DiscImage
 from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
@@ -421,6 +421,13 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
     elsewhere = 0
     for entry in moved:
         to = int(entry["to"], 16)
+        if entry["array"] in DATE_LABELS:  # hooked at its drawer's entry: lui t0 / j / addiu
+            image, function = entry["array"].split("@code:")
+            hook = built.image_bytes(image, int(function, 16), 12)
+            high = int.from_bytes(hook[0:4], "little") & 0xFFFF
+            low = int.from_bytes(hook[8:12], "little") & 0xFFFF
+            assert ((high << 16) + (low - 0x10000 if low & 0x8000 else low)) & 0xFFFFFFFF == to
+            continue
         if entry["array"] == SAVE_TITLE_LINE_ID:  # a pointer table, not a lui pair
             pointer = built.overlay_bytes("TITLE.OVL", SAVE_TITLE_PARTS_ADDR, 4)
             assert int.from_bytes(pointer, "little") == to, entry
@@ -447,7 +454,7 @@ def test_every_written_code_label_is_drawn_from_its_new_immediates(
     written = set(days_manifest["lines_written"])
     before = {label.line_id: label for label in read_code_labels(archive)}
     after = {label.line_id: label for label in read_code_labels(built)}
-    placed = [line for line in written if line in before]
+    placed = [line for line in written if line in before and line not in DATE_LABELS]
     assert placed, "no code label was written; nothing here would be checked"
     # A label whose English spells its own glyphs keeps them (`/31 %`, the paren), so not
     # every one changes -- but one that draws new letters must (`W L`).
