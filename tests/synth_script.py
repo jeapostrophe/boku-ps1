@@ -245,6 +245,48 @@ class SynthStore:
         self.lines.append(record)
         return record
 
+    def select_array(
+        self, line_id: str, lines: int = 3, cells: int = 3, purpose: str = "a synthetic menu"
+    ) -> dict:
+        """A code-file select (an **S** array): `lines` rows each ended by `{NL}`, opened by
+        `select_open_ptr` and so drawn as a select box. One id, as the extract gives it."""
+        columns = [filler(self.table, cells, skip=index) for index in range(lines)]
+        record = self.array_item(f"{line_id}.0", cells=cells)
+        text = "".join(f"{column}{{NL}}" for column in columns)
+        size = len(self.table.encode(text))
+        record.update(
+            id=line_id,
+            kind="array-S",
+            text=text,
+            glyphs=cells * lines,
+            layout={
+                "pages": [[cells] * lines + [0]],
+                "page_waits": [],
+                "columns": lines + 1,
+                "longest_column": cells,
+            },
+            array=line_id,
+            index=0,
+            purpose=purpose,
+        )
+        record["sites"][0]["size"] = record["capacity"]["bytes"] = size
+        return record
+
+    def code_label(self, line_id: str, cells: int = 4) -> dict:
+        """A label assembled from instruction immediates: no text site, no byte size."""
+        record = {
+            "id": line_id,
+            "kind": "code-label",
+            "text": filler(self.table, cells, skip=6),
+            "glyphs": cells,
+            "function": "0x80000000",
+            "purpose": "synth_label_draw: a synthetic label",
+            "sites": [],
+            "capacity": {"bytes": None, "note": "assembled from instruction immediates"},
+        }
+        self.lines.append(record)
+        return record
+
     # --- scenes --------------------------------------------------------------------------
 
     def scene(

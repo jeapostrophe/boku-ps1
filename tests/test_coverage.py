@@ -222,6 +222,24 @@ def test_an_array_id_is_not_event_and_names_its_surface(store, rows, tmp_path):
     assert "exe" in result.reason
 
 
+def test_an_array_line_with_english_is_classified_like_any_other(store, tmp_path):
+    """`translation/days/arrays.txt` gives the surfaces English (`TRN-09`); a line with a
+    row is then translated or refused by the manifest, not `not-event` for ever."""
+    rows = read_rows(write_translation(tmp_path / "arrays.txt", [(ARRAY, "(unlabelled)", "Kite")]))
+    result = by_id(coverage(store, rows, 1, UNCHECKED))[ARRAY]
+    assert result.scope == SURFACE
+    assert result.state == TRANSLATED
+
+
+def test_an_array_line_written_voice_only_is_missing_not_waiting(store, tmp_path):
+    """Every surface line has text on the disc; `(voice only)` for one is a mistake, and
+    it is named as one rather than hidden behind "no English yet"."""
+    rows = read_rows(write_translation(tmp_path / "arrays.txt", [(ARRAY, "(voice only)", "")]))
+    result = by_id(coverage(store, rows, 1, UNCHECKED))[ARRAY]
+    assert result.state == MISSING
+    assert "voice only" in result.reason
+
+
 def test_a_line_an_event_reaches_but_does_not_list_is_reported_under_that_event(tmp_path):
     """A scene's `lines` and its nodes' `line`s are not the same set. A node can name an
     id with text that `lines` leaves out; reading only `lines` drops it, and a line the

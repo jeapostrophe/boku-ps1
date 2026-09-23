@@ -35,6 +35,7 @@ from boku.layout import (
     StockEncoder,
     label_allowance,
     lay_out_message,
+    measure,
     original_marks,
     speaker_label,
 )
@@ -328,6 +329,45 @@ class OneSite:
 
     def raw(self, archive: object, site: object) -> bytes:
         return self.original
+
+
+@dataclass(frozen=True)
+class OneArraySite(OneSite):
+    """An array site: `lay_out` also reads its byte size."""
+
+    @property
+    def size(self) -> int:
+        return len(self.original)
+
+
+def test_a_code_file_menu_is_laid_out_as_its_rows_each_ending_the_line():
+    """`[SEL]` on an ARR-S site: every row ends with 0x8001 as the original's do, in the
+    original's bytes. It was refused as "not interchangeable" and left Japanese."""
+    table = GlyphTable.load()
+    cell = table.from_character["「"]
+    original = words_to_bytes([cell, cell, NEWLINE_WORD, cell, NEWLINE_WORD, cell, NEWLINE_WORD])
+    walk = OneArraySite(original, kind="ARR-S", line_id="exe@1")
+    entry = TranslationEntry(line_id="exe@1", speaker="[SEL]", options=("Go", "Y", "N"))
+    (result,) = lay_out(
+        NoArchive(), walk, [entry], StockEncoder.load(), BoxSpec(width=999, lines=3)
+    )
+    assert result.problems == ()
+    words = result.laid_out.words
+    assert [word for word in words if word & 0x8000] == [NEWLINE_WORD] * 3
+    assert 2 * len(words) <= len(original)
+
+
+def test_a_code_file_menu_row_wider_than_the_box_is_refused_as_the_lint_refuses_it():
+    """The build measured bytes only and wrote a row the lint called over-wide."""
+    table = GlyphTable.load()
+    cell = table.from_character["「"]
+    original = words_to_bytes([cell, cell, cell, NEWLINE_WORD])
+    walk = OneArraySite(original, kind="ARR-S", line_id="exe@1")
+    entry = TranslationEntry(line_id="exe@1", speaker="[SEL]", options=("Go",))
+    encoder = StockEncoder.load()
+    box = BoxSpec(width=measure(encoder, "Go") - 1, lines=3)
+    (result,) = lay_out(NoArchive(), walk, [entry], encoder, box)
+    assert any("cannot wrap" in problem for problem in result.problems)
 
 
 def dressed(original: bytes, speaker: str, label: bool = True):

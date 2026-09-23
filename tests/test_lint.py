@@ -422,6 +422,49 @@ def test_an_em_dash_warns_and_only_warns(store, tmp_path):
     assert lint_rows(store, parsed, Options(encoder=encoder, label=False)) == []
 
 
+MENU = "exe@80001000"
+LABEL = "exe@code:80002000"
+
+
+@pytest.fixture
+def surfaces(tmp_path: Path):
+    """A code-file menu of three rows and a code-immediate label."""
+    synth = SynthStore.new(tmp_path)
+    synth.select_array(MENU, lines=3, cells=6)
+    synth.code_label(LABEL)
+    return load_store(synth.write())
+
+
+def test_a_code_file_menu_is_a_sel_row_of_its_own_line_count(surfaces, tmp_path):
+    """An S array is opened by `select_open_ptr` and drawn as a select: its rows are the
+    `[SEL]` fields. The first lint read it as an array item drawn as a group and left it
+    Japanese; written as `[SEL]` it was an error. The count is the original's."""
+    assert run(surfaces, tmp_path, [(MENU, "[SEL]", "Go? | Yes | No")], label=False) == []
+    finding = only(run(surfaces, tmp_path, [(MENU, "[SEL]", "Yes | No")]), "select-options")
+    assert finding.severity == ERROR
+    assert "3" in finding.message
+
+
+def test_a_code_file_menu_that_outgrows_its_bytes_is_an_error(surfaces, tmp_path):
+    size = surfaces.lines[MENU]["capacity"]["bytes"]
+    long = "x" * (size // 2)
+    finding = only(run(surfaces, tmp_path, [(MENU, "[SEL]", f"{long} | a | b")]), "array-bytes")
+    assert finding.severity == ERROR
+    assert f"holds {size}" in finding.message
+
+
+def test_a_code_file_menu_written_as_a_plain_row_says_to_write_sel(surfaces, tmp_path):
+    finding = only(run(surfaces, tmp_path, [(MENU, "(unlabelled)", "Go? Yes No")]), "select-shape")
+    assert finding.severity == ERROR
+    assert "[SEL]" in finding.message
+
+
+def test_a_code_immediate_label_warns_that_the_build_cannot_place_it(surfaces, tmp_path):
+    findings = run(surfaces, tmp_path, [(LABEL, "(unlabelled)", "Caught")], label=False)
+    assert checks(findings) == ["not-placeable"]
+    assert findings[0].severity == WARNING
+
+
 def test_the_heuristic_is_silent_when_the_source_has_an_intensifier(tmp_path):
     """The same English, over a line whose Japanese carries one. No finding."""
     synth = SynthStore.new(tmp_path)

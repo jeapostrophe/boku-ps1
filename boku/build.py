@@ -55,6 +55,7 @@ from boku.glyphs import GlyphTable, TextError
 from boku.importer import ImportRefused, check_out_dir, sha1_of
 from boku.layout import (
     DIALOGUE_BAND,
+    MENU_IS_SEL,
     BoxSpec,
     CellMapEncoder,
     Encoder,
@@ -62,6 +63,7 @@ from boku.layout import (
     LayoutError,
     StockEncoder,
     lay_out_array,
+    lay_out_array_select,
     lay_out_message,
     lay_out_select,
     lay_out_subtitle,
@@ -701,6 +703,20 @@ def lay_out(
             )
             if problems:
                 laid = replace(laid, problems=laid.problems + problems)
+        elif kind == "ARR-S" and entry.is_select:
+            # A menu held in a code file, opened by `select_open_ptr`: a select's rows.
+            laid = lay_out_array_select(
+                entry.line_id, entry.options, original, encoder, sites[0].size, box
+            )
+        elif kind == "ARR-S":
+            out.append(
+                LineResult(
+                    entry.line_id,
+                    None,
+                    (f"{entry.line_id} is {MENU_IS_SEL}",),
+                )
+            )
+            continue
         elif kind.startswith("ARR"):
             if entry.is_select:
                 out.append(

@@ -34,7 +34,11 @@ are `./make.sh mockup`'s.
 * **`#` lines are not script.** `# --- E0121: …` opens an event and says where it happens;
   `# NOTE E0121.3: …` is a translator's note on a rendering (a pun, a choice a reviewer should
   know about); `# UNSURE E0121.3: …` flags a line you are not sure of, so that the reviewer
-  looks there first.
+  looks there first. A note is English too: no Japanese anywhere in the file, notes
+  included — romanise a word you need to quote (*satoyama*, *daikichi*).
+* **The menus, books and screens** (`arrays.txt`) use the same rows. A line nobody speaks
+  carries `(unlabelled)`; a menu is a `[SEL]` row; `# --- exe@8003D2E0: …` opens a list the
+  way `# --- E0121` opens an event.
 * **Nothing is shortened to fit.** Translate the whole of what is said.
 
 ## The files
@@ -55,6 +59,7 @@ finalized once he has seen it in the game, formatted and displayed correctly. `P
 | file | events | status |
 |---|---|---|
 | [day01.txt](day01.txt) | `E0103`–`E0190` (27 events, 85 lines), `E0001` | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20) |
+| `arrays.txt` | the lines outside every event — memory-card and save messages, the title and config screens, the controls help, item, kite, fish and insect names and descriptions, captions, the insect book, bug sumo, the kite and diary menus (308 lines on 42 surfaces: 34 arrays, six labels spelled out in code, the save title and one message the program holds; `research/text-outside-events.md`); keyed by the extract's `<file>@<offset>.<item>` ids | PLAN `TRN-09`: not yet written. `./make.sh packet --arrays` makes its packet; the build places a line only where its English fits the array's own bytes (most will not until the fixed-pitch surfaces are rebuilt, PLAN `TXT-05`), and `boku lint` says which |
 | [shared.txt](shared.txt) | 76 day-independent events (158 rows: 89 text, 36 menus, 33 voice-only): every one day 1 can reach, the nearest outdoors, those days 2–7 handed the day files, and the nine `boku coverage` found no day file had asked for (Ken-bo's fur, the sisters' room, the far waters, the beach, Saori's camp) | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20); the extension verified against the scene data and `EVVER.BIN` the same day; the coverage nine translated and reviewed against the Japanese the same day |
 
 ## shared.txt

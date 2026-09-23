@@ -39,7 +39,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import NamedTuple, Protocol
 
@@ -461,10 +461,11 @@ def lay_out_array(
     (`research/text-format.md` § "Text arrays in code files"). Growth means relocating the
     array and patching the `lui`/`addiu` pairs that reach it, which is not this unit's.
 
-    Only an item with a single trailing control word is laid out. A group drawn whole (an
-    **S** array: a select or a line list inside the executable) is several lines in one
-    site, and how English is divided between them is a decision nobody has made — so it is
-    reported rather than guessed at.
+    Only an item with a single trailing control word is laid out. An item with a line
+    break inside it, or a raw row with no control word at all, is drawn by a fixed-pitch
+    surface whose width nobody has measured (`PLAN TXT-05`), so where English breaks is not
+    known yet -- it is reported rather than guessed at. A code-file menu (an **S** array)
+    is not this function's: it is a `[SEL]` row, `lay_out_array_select`.
 
     There is no pixel lint here: the 20 fixed-pitch surfaces these arrays feed have not
     been measured (`PLAN TXT-07`), so the only limit that is known is the byte length.
@@ -505,6 +506,45 @@ def lay_out_array(
         pages=((text,),),
         widths=((measure(encoder, text),),),
         problems=tuple(problems),
+    )
+
+
+MENU_IS_SEL = "a menu held in the program; it is written as a [SEL] row, one field per line"
+"""What the lint and the build say of a code-file menu written as a plain row."""
+
+
+def menu_lines(original: bytes) -> int:
+    """How many lines a select's words draw: one `0x8001` ends each."""
+    return words_of(original).count(NEWLINE_WORD)
+
+
+def lay_out_array_select(
+    line_id: str,
+    lines: Sequence[str],
+    original: bytes,
+    encoder: Encoder,
+    size: int,
+    box: BoxSpec = DIALOGUE_BAND,
+) -> LaidOut:
+    """A select held in a code file (an **S** array): `lay_out_select`, in its own bytes.
+
+    `select_open_ptr` opens it like an event select, so its lines are the original's
+    (`menu_lines`, which is `g_select_lines`' count) and are measured like any select's
+    (`research/text-outside-events.md` § "What changed against `REC-03`'s array table").
+    Like every array item it has no slack, so growth is refused.
+    """
+    laid = lay_out_select(line_id, lines, original, (menu_lines(original), 0), encoder, box)
+    need = 2 * len(laid.words)
+    if need <= size:
+        return laid
+    return replace(
+        laid,
+        problems=(
+            *laid.problems,
+            f"{line_id}: {' | '.join(lines)!r} needs {need} bytes and the array item holds "
+            f"{size}, {need - size} over. An array has no slack; relocating it and "
+            f"repointing the lui/addiu pairs that reach it is not this unit's (PLAN PIPE-03)",
+        ),
     )
 
 

@@ -139,6 +139,17 @@ class Store:
                     owner.setdefault(node["line"], scene["event"])
         return owner
 
+    @cached_property
+    def surfaces(self) -> dict[str, tuple[str, ...]]:
+        """Every `<file>@<offset>` line no event claims, by the surface it sits on (the
+        array's own id, or the line's for a one-line surface), in the store's order."""
+        grouped: dict[str, list[str]] = {}
+        for line_id, record in self.lines.items():
+            if "@" in line_id and line_id not in self.event_of_line:
+                key = record.get("array") or re.sub(r"\.\d+$", "", line_id)
+                grouped.setdefault(key, []).append(line_id)
+        return {key: tuple(ids) for key, ids in grouped.items()}
+
 
 def load_store(script_dir: Path) -> Store:
     """Read the whole store. Raises `StoreMissing` when the import has not been run."""
@@ -189,6 +200,17 @@ def pages_fixed_by_voice(record: dict) -> bool:
 
 def is_array(record: dict) -> bool:
     return record["kind"].startswith("array-")
+
+
+def is_array_select(record: dict) -> bool:
+    """A menu held in a code file (an **S** array), which `select_open_ptr` opens like an
+    event select (`research/text-outside-events.md`)."""
+    return record["kind"] == "array-S"
+
+
+PLACED_BY_CODE = frozenset({"code-label", "sjis-title"})
+"""Kinds with no text site: a label assembled from instruction immediates, and the
+memory-card title in Shift-JIS. Translating one is a code patch, not a data rewrite."""
 
 
 def original_bytes(record: dict, table: GlyphTable) -> bytes:

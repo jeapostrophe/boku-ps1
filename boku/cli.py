@@ -541,7 +541,7 @@ def build_parser() -> argparse.ArgumentParser:
                 "For every line an in-game day can reach: translated (English exists and "
                 "the build wrote it), refused (English exists and the image did not get "
                 "it -- the manifest says why), missing (nobody was asked for it), or "
-                "not-event (a menu, book or title-screen line no day file covers). The "
+                "not-event (a menu, book or title-screen line arrays.txt has no English for). The "
                 "day files answer 'is what we wrote correct?'; this answers 'that line "
                 "was still in Japanese -- why?'"
             ),

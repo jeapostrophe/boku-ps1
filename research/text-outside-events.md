@@ -207,7 +207,8 @@ are all `GFX-06`'s ([textures-plan.md](textures-plan.md) § "The 26 encyclopedia
 
 ## Line ids for these surfaces
 
-`<file>@<original offset>.<item>` as proposed in text-format.md, with `<file>` ∈ `exe` (offset =
+Their English is `translation/days/arrays.txt` (PLAN `TRN-09`; format in that directory's
+README). `<file>@<original offset>.<item>` as proposed in text-format.md, with `<file>` ∈ `exe` (offset =
 RAM address), `hhon`, `musi`, `tako`, `zukan`, `title` (offset = file offset); the TSV's
 `line_id_prefix` column is the normative list. For a raw table the item is the row. A select is
 one id. Two surfaces need a scheme the proposal lacks: immediates (`exe@code:80037544`,

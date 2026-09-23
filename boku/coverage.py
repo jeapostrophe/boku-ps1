@@ -18,10 +18,12 @@ Japanese -- why?* Every line in a day's reach gets one of four states:
   records why), or lists it under neither, which is the same outcome and says so.
 * **`missing`** -- no row for the id, or a row that says `(voice only)` while the disc
   holds text for it. Nobody was ever asked to translate it.
-* **`not-event`** -- an `<file>@<offset>.<item>` id: the menus, the diary, the insect and
-  kite books, the title screen. These belong to no event, the day files carry event ids
-  only, and the report names the surface each one sits on. No such line becomes
-  `translated` until the menu and overlay surfaces are built (`PLAN TXT-05`).
+* **`not-event`** -- an `<file>@<offset>.<item>` id with no English yet: the menus, the
+  insect and kite books, the title screen. These belong to no event and are translated in
+  `translation/days/arrays.txt` (`PLAN TRN-09`); the report names the surface each one
+  sits on. Once a row gives one English it is `translated` or `refused` like any other
+  line -- and most are refused until the menu and overlay surfaces are built
+  (`PLAN TXT-05`), since an array item has no bytes to grow into.
 
 Which days reach which events is `boku.script_store.scene_plays_on`'s answer, the same one
 `scenes_of_day` gives `boku.packets`, so a day's coverage and a day's translator packets
@@ -330,6 +332,7 @@ def coverage(store: Store, rows: Sequence[Row], day: int, manifest: Manifest) ->
         surface = surface_of(line_id)
         row = by_id.get(line_id)
         english = f" (English at {_origin(row)})" if row and row.has_english else ""
+        state = NOT_EVENT
         if surface == NO_EVENT:
             reason = (
                 f"an event id no scene in the store claims: the extract wrote the record "
@@ -338,17 +341,21 @@ def coverage(store: Store, rows: Sequence[Row], day: int, manifest: Manifest) ->
             )
             scope_reason = "claimed by no scene: reported on every day rather than lost"
         else:
-            reason = (
-                f"an array, overlay or code-immediate line on the `{surface}` surface; "
-                f"it belongs to no event, and the day files carry event ids only{english}"
-            )
             scope_reason = f"`{surface}`: reachable on any day, from a menu or a book"
+            if row is not None:
+                state, reason = _classify(line_id, row, manifest)
+            else:
+                reason = (
+                    f"an array, overlay or code-immediate line on the `{surface}` surface; "
+                    f"it belongs to no event and translation/days/arrays.txt has no English "
+                    f"for it"
+                )
         out.append(
             LineCoverage(
                 scope=SURFACE,
                 group=surface,
                 line_id=line_id,
-                state=NOT_EVENT,
+                state=state,
                 reason=reason,
                 scope_reason=scope_reason,
                 speaker=_speaker(record),
@@ -381,7 +388,7 @@ SCOPE_HEADINGS = {
         "condition -- each row says which"
     ),
     ANY_DAY: "day-independent events -- no day in the data (translation/days/shared.txt)",
-    SURFACE: "non-event surfaces -- menus, books, the title screen (no day file covers these)",
+    SURFACE: "non-event surfaces -- menus, books, the title screen (translation/days/arrays.txt)",
 }
 
 

@@ -1,23 +1,27 @@
 """`PLAN TRN-08` -- the translator packet: a system part once, then one part per event.
 
-A unit of translation is a day (or `shared.txt`, or any day file), and the translator is
-one agent directed through it by a parent (Jay, 2026-09-21: agent shape (b)). So a packet
-is a directory:
+A unit of translation is a day (or `shared.txt`, or any day file, or -- `PLAN TRN-09` --
+the menus, books and screens outside every event), and the translator is one agent
+directed through it by a parent (Jay, 2026-09-21: agent shape (b)). So a packet is a
+directory:
 
 * `system.md` -- given **once**: the day-file format (`translation/days/README.md`
   § Format, quoted whole), the style guide's rulings, the glossary rows whose Japanese
   term occurs anywhere in the unit, and the story bible's summary of the day with its line
   citations taken out.
-* `<EVENT>.md` -- one per event, given **one at a time** in play order: where and who, the
-  branches if the scene has any, the neighbouring scenes' English as it stands, and the
-  event's lines **in the day-file shape** with the Japanese in the English column and only
-  the page breaks marked. The translator's answer is that block with the Japanese replaced,
-  and `boku save-event` writes it into the day file -- the parent does the saving.
-* `order.txt` -- the event ids, in the order the parts are to be given.
+* one part per event (`E0121.md`) or surface (`exe@8003D2E0.md`; `part_file` turns a
+  key's `:` into `_`), given **one at a time** in `order.txt`'s order: where and who (or
+  what the surface is), the branches if the scene has any, the neighbouring scenes'
+  English as it stands, and the lines **in the day-file shape** with the Japanese in the
+  English column and only the page breaks marked. The translator's answer is that block
+  with the Japanese replaced, and `boku save-event` writes it into the day file -- the
+  parent does the saving, placing a new block by `order.txt` (`--order`).
+* `order.txt` -- the event ids or surface keys, in the order the parts are to be given.
 
     ./make.sh packet --day 8
     ./make.sh packet --like translation/days/day01.txt
-    ./make.sh save-event E0121 --answer answer.txt
+    ./make.sh packet --arrays
+    ./make.sh save-event E0121 --answer answer.txt --order work/packets/day01/order.txt
 
 What a translator is **not** handed (Jay's list, `TRN-08`): capacities, byte and copy
 counts, pixel widths, frame timers, column splits, lint output, PLAN citations. A
@@ -39,6 +43,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections import Counter
 from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
@@ -50,12 +55,15 @@ from boku.archive import DEFAULT_DISC_DIR
 from boku.events import LABEL_NAMES
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
-from boku.layout import Marks, original_marks, speaker_label
+from boku.layout import Marks, menu_lines, original_marks, speaker_label
 from boku.lint import Row, load_rows, parse_file, parse_text, translation_paths
 from boku.script_store import (
+    PLACED_BY_CODE,
     Japanese,
     Store,
     StoreMissing,
+    is_array,
+    is_array_select,
     iter_play_order,
     load_store,
     ordered_scenes,
@@ -77,6 +85,29 @@ FORMAT_SECTION = "Format"
 
 SYSTEM_NAME = "system.md"
 ORDER_NAME = "order.txt"
+ARRAYS_NAME = "arrays.txt"
+"""The day file the surfaces' English lives in (`translation/days/README.md`)."""
+
+SURFACE_KINDS = {
+    "array-E": "one entry of a list the code picks by number",
+    "array-L": "one line of a list the code draws line by line",
+    "array-R": "a fixed row of characters the code draws cell by cell",
+    "array-S": "a choice menu held in the program: the question first, then the choices",
+    "array-S1": "one word of a menu",
+    "code-label": "a label the program spells out in its own code; ` / ` separates pieces "
+    "drawn in different places",
+    "sjis-title": "the title of the save on the memory card, as the console's card screen shows it",
+    "XAMSG": "a spoken message the program holds itself, outside every event",
+}
+"""What each kind of non-event line is, in the translator's terms (the extract's kinds,
+`research/text-outside-events.md`)."""
+
+_DRAW_FUNCTION = re.compile(r"^\w+_draw: ")
+_CAPACITY = re.compile(
+    r",?\s*\d+\s*(?:(?!digit)[a-z]+\s+)?(?:[x+]\s*\d+\s*)*(?:glyphs|cells)(?:\s*\([^)]*\))?"
+)
+"""A glyph or cell count in an extract's purpose note: the lint's to hold, not the
+translator's to see (`TRN-08`)."""
 
 EVENT_HEADER = "# --- "
 """What opens an event's block in a day file (`translation/days/README.md` § Format)."""
@@ -619,8 +650,13 @@ class PacketBuilder:
             return f"{line_id}\t{SampleScenes.VOICE_ONLY}"
         japanese = self.store.japanese[line_id]
         shape = select_shape(record)
+        if shape is None and is_array_select(record):
+            shape = (menu_lines(original_bytes(record, self.table)), 0)
         if shape is not None:
             return f"{line_id}\t{SampleScenes.SELECT}\t{select_text(japanese, shape)}"
+        if is_array(record) or record["kind"] in PLACED_BY_CODE:
+            text = japanese_text(japanese, Marks("", "", labelled=False))
+            return f"{line_id}\t(unlabelled)\t{text}"
         marks = original_marks(original_bytes(record, self.table), self.table)
         speaker = japanese_speaker(record, japanese, marks)
         return f"{line_id}\t{speaker}\t{japanese_text(japanese, marks)}"
@@ -636,8 +672,58 @@ class PacketBuilder:
         """`# --- E0121: G03 -- kitchen (...)`, the line that opens the event's block."""
         return f"{EVENT_HEADER}{scene['event']}: {self.places(scene) or 'place unknown'}"
 
+    def block(self, header: str, line_ids: Iterable[str]) -> list[str]:
+        """A part's answer block: its header, then one row per line."""
+        return [header, *(self.row(line_id) for line_id in line_ids)]
+
     def template(self, scene: dict) -> list[str]:
-        return [self.header(scene), *(self.row(line_id) for line_id in scene_line_ids(scene))]
+        return self.block(self.header(scene), scene_line_ids(scene))
+
+    def surface_header(self, surface: Surface) -> str:
+        """`# --- exe@8003D2E0: insect names`, the line that opens a surface's block."""
+        return f"{EVENT_HEADER}{surface.key}: {self.describe(surface)}"
+
+    def describe(self, surface: Surface) -> str:
+        """What the surface is, in the extract's words less its glyph and cell counts."""
+        record = self.store.lines[surface.line_ids[0]]
+        purpose = record.get("purpose") or SURFACE_KINDS.get(record["kind"], "")
+        purpose = _CAPACITY.sub("", _DRAW_FUNCTION.sub("", purpose))
+        return re.sub(r"\s+([,;])", r"\1", purpose).strip(" ,") or surface.key
+
+    def surface_part(self, surface: Surface, position: int, total: int) -> str:
+        """One surface as the translator is handed it: what it is, then its block."""
+        kind = self.store.lines[surface.line_ids[0]]["kind"]
+        block = self.block(self.surface_header(surface), surface.line_ids)
+        out = [
+            f"# {surface.key} -- surface {position} of {total}",
+            "",
+            f"* **What it is**: {self.describe(surface)}",
+            f"* **How it is drawn**: {SURFACE_KINDS.get(kind, kind)}",
+        ]
+        if any(mark in row for row in block[1:] for mark in "「」『』"):
+            out.append(
+                "* The brackets in these lines are part of the text, not speech marks the "
+                "program adds: keep them."
+            )
+        if any("{G:" in self.store.lines[i]["text"] for i in surface.line_ids):
+            out.append(
+                "* `{G:n}` is a picture the game draws inside the text (a button, an icon); "
+                "keep it where the meaning puts it."
+            )
+        out += [
+            "",
+            "## Your answer",
+            "",
+            "This block, with the Japanese replaced by English.",
+            "",
+            "```text",
+            *block,
+            "```",
+            "",
+        ]
+        if self.for_review:
+            out += self._current(surface.line_ids)
+        return "\n".join(out).rstrip() + "\n"
 
     def clips(self, scene: dict) -> list[str]:
         """`E0121.0 0121_00` for each voiced line: which recording each line is."""
@@ -649,19 +735,20 @@ class PacketBuilder:
 
     # --- the system part ------------------------------------------------------------------
 
-    def system_part(self, title: str, day: int | None, scenes: Sequence[dict]) -> str:
+    def system_part(self, unit: Unit) -> str:
+        title, day = unit.title, unit.day
+        noun = "event" if unit.scenes else "surface"
         out = [
             f"# Translating {title}",
             "",
             f"You are translating {title} of *Boku no Natsuyasumi* (PlayStation, 2000) from "
-            f"Japanese into English, one event at a time, in the order the game plays them: "
-            f"{len(scenes)} event(s). This part is the policy, given once; each event then "
-            f"comes as its own message. For each event, answer with its block -- the lines "
-            f"under **Your answer** -- with the Japanese replaced by English and the speaker "
-            f"column in English, in the day-file format below, and nothing else. The Japanese "
-            f"speaker labels become the English labels of the glossary and style guide § 9. "
-            f"Your answers to earlier events stay in view: keep a voice, a recurring phrase "
-            f"and a name the same across them.",
+            f"Japanese into English, one {noun} at a time: {len(unit.keys)} {noun}(s). This "
+            f"part is the policy, given once; each {noun} then comes as its own message. For "
+            f"each, answer with its block -- the lines under **Your answer** -- with the "
+            f"Japanese replaced by English and the speaker column in English, in the "
+            f"day-file format below, and nothing else. The Japanese speaker labels become "
+            f"the English labels of the glossary and style guide § 9. Your earlier answers "
+            f"stay in view: keep a voice, a recurring phrase and a name the same across them.",
             "",
             "## The day-file format",
             "",
@@ -676,8 +763,7 @@ class PacketBuilder:
             out += [f"### {heading}", "", without_plan_citations(text), ""]
         source = "\n".join(
             self.store.japanese[line_id].plain()
-            for scene in scenes
-            for line_id in scene_line_ids(scene)
+            for line_id in unit.line_ids
             if line_id in self.store.japanese
         )
         rows = self.policy.glossary_for(source)
@@ -685,7 +771,8 @@ class PacketBuilder:
             out += [
                 "## The glossary",
                 "",
-                "Every row of `translation/glossary.md` whose Japanese occurs in these events. "
+                f"Every row of `translation/glossary.md` whose Japanese occurs in these "
+                f"{noun}s. "
                 "These renderings are settled; use them.",
                 "",
             ]
@@ -740,7 +827,7 @@ class PacketBuilder:
             "",
         ]
         if self.for_review:
-            out += self._current(scene)
+            out += self._current(scene_line_ids(scene))
         return "\n".join(out).rstrip() + "\n"
 
     def _where(self, scene: dict) -> list[str]:
@@ -895,9 +982,9 @@ class PacketBuilder:
                 out += ["Not translated yet.", ""]
         return out
 
-    def _current(self, scene: dict) -> list[str]:
+    def _current(self, line_ids: Iterable[str]) -> list[str]:
         """`--for-review`: the English as it stands, with its notes, for the reviewer."""
-        rows = [row for line_id in scene_line_ids(scene) for row in self.english.get(line_id, [])]
+        rows = [row for line_id in line_ids for row in self.english.get(line_id, [])]
         if not rows:
             return ["## The English as it stands", "", "None written yet.", ""]
         out = ["## The English as it stands", "", "```text"]
@@ -907,7 +994,17 @@ class PacketBuilder:
         return [*out, "```", ""]
 
 
-# --- a unit: the scenes one directed translator is given ------------------------------------------
+# --- a unit: what one directed translator is given ------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Surface:
+    """One screen or list outside the events (`PLAN TRN-09`): an array, a menu held in a code
+    file, a label assembled in code -- every line the store holds under one key."""
+
+    key: str
+    """The array's own id (`exe@8003D2E0`), or the line's for a one-line surface."""
+    line_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -915,10 +1012,22 @@ class Unit:
     """What one run of the translator covers, and what to call it."""
 
     name: str
-    """The directory under `work/packets/`: `day08`, `shared`, `events`."""
+    """The directory under `work/packets/`: `day08`, `shared`, `events`, `arrays`."""
     title: str
     day: int | None
     scenes: tuple[dict, ...]
+    surfaces: tuple[Surface, ...] = ()
+
+    @property
+    def keys(self) -> list[str]:
+        """The parts in the order they are given: events, then surfaces."""
+        return [scene["event"] for scene in self.scenes] + [s.key for s in self.surfaces]
+
+    @property
+    def line_ids(self) -> list[str]:
+        return [i for scene in self.scenes for i in scene_line_ids(scene)] + [
+            i for surface in self.surfaces for i in surface.line_ids
+        ]
 
 
 _DAY_FILE = re.compile(r"day(\d+)$")
@@ -927,6 +1036,24 @@ _DAY_FILE = re.compile(r"day(\d+)$")
 def has_text(scene: dict) -> bool:
     """Does the scene carry any line id at all? One with none has nothing to translate."""
     return bool(scene_line_ids(scene))
+
+
+def part_of(store: Store, line_id: str) -> str:
+    """The event a line belongs to, or the surface a non-event line sits on."""
+    if line_id in store.event_of_line:
+        return store.event_of_line[line_id]
+    key = next((key for key, ids in store.surfaces.items() if line_id in ids), None)
+    return key or line_id.split(".", 1)[0]
+
+
+def surfaces_of(store: Store) -> list[Surface]:
+    """Every line no event claims, grouped by surface (`Store.surfaces`)."""
+    return [Surface(key, ids) for key, ids in store.surfaces.items()]
+
+
+def unit_of_surfaces(store: Store) -> Unit:
+    """`TRN-09`: the menus, books, labels and screens -- `translation/days/arrays.txt`."""
+    return Unit("arrays", "the menus, books and screens", None, (), tuple(surfaces_of(store)))
 
 
 def unit_of_day(store: Store, day: int) -> Unit:
@@ -943,24 +1070,25 @@ def unit_of_day(store: Store, day: int) -> Unit:
 
 
 def unit_like(store: Store, path: Path) -> Unit:
-    """Exactly the events a translation file holds, in that file's order.
+    """Exactly the events (or surfaces) a translation file holds, in that file's order.
 
     What a re-translation needs: `--like translation/days/day01.txt` is day 1 as the held
     draft scoped it, `E0001` and all, so the new draft and the old compare line for line.
     """
     path = Path(path)
     rows, _ = parse_file(path)
+    keys = dict.fromkeys(part_of(store, row.line_id) for row in rows)
     by_event = store.scenes_by_event
-    events = [
-        event
-        for event in dict.fromkeys(row.line_id.split(".", 1)[0] for row in rows)
-        if event in by_event
-    ]
     match = _DAY_FILE.fullmatch(path.stem)
     day = int(match.group(1)) if match else None
-    title = f"day {day}" if day is not None else f"the events of {path.name}"
-    scenes = tuple(by_event[event] for event in events if has_text(by_event[event]))
-    return Unit(path.stem, title, day, scenes)
+    title = f"day {day}" if day is not None else f"the lines of {path.name}"
+    return Unit(
+        path.stem,
+        title,
+        day,
+        tuple(by_event[key] for key in keys if key in by_event and has_text(by_event[key])),
+        tuple(Surface(key, store.surfaces[key]) for key in keys if key in store.surfaces),
+    )
 
 
 def unit_of_events(store: Store, events: Sequence[str]) -> Unit:
@@ -971,9 +1099,9 @@ def unit_of_events(store: Store, events: Sequence[str]) -> Unit:
 
 
 def write_unit(builder: PacketBuilder, unit: Unit, out_dir: Path) -> list[Path]:
-    """`system.md`, one `<EVENT>.md` per scene, and `order.txt`. Deterministic.
+    """`system.md`, one `<KEY>.md` per event or surface, and `order.txt`. Deterministic.
 
-    The directory is emptied of earlier parts first, so a stale event from another run is
+    The directory is emptied of earlier parts first, so a stale part from another run is
     never mistaken for part of this one.
     """
     out_dir = Path(out_dir)
@@ -982,18 +1110,34 @@ def write_unit(builder: PacketBuilder, unit: Unit, out_dir: Path) -> list[Path]:
         stale.unlink()
     written: list[Path] = []
     system = out_dir / SYSTEM_NAME
-    system.write_text(builder.system_part(unit.title, unit.day, unit.scenes), encoding="utf-8")
+    system.write_text(builder.system_part(unit), encoding="utf-8")
     written.append(system)
-    total = len(unit.scenes)
+    total = len(unit.keys)
     events = frozenset(scene["event"] for scene in unit.scenes)
-    for position, scene in enumerate(unit.scenes, start=1):
-        path = out_dir / f"{scene['event']}.md"
-        path.write_text(builder.event_part(scene, position, total, events), encoding="utf-8")
+    parts = [
+        *(
+            builder.event_part(scene, position, total, events)
+            for position, scene in enumerate(unit.scenes, start=1)
+        ),
+        *(
+            builder.surface_part(surface, position, total)
+            for position, surface in enumerate(unit.surfaces, start=len(unit.scenes) + 1)
+        ),
+    ]
+    for key, part in zip(unit.keys, parts, strict=True):
+        path = out_dir / part_file(key)
+        path.write_text(part, encoding="utf-8")
         written.append(path)
     order = out_dir / ORDER_NAME
-    order.write_text("".join(f"{scene['event']}\n" for scene in unit.scenes), encoding="utf-8")
+    order.write_text("".join(f"{key}\n" for key in unit.keys), encoding="utf-8")
     written.append(order)
     return written
+
+
+def part_file(key: str) -> str:
+    """A part's file name: its key, with the `:` of `exe@code:80037544` made `_` -- a colon
+    is an alternate data stream on NTFS and a `/` in the macOS Finder."""
+    return f"{key.replace(':', '_')}.md"
 
 
 def untranslated_reachable(builder: PacketBuilder, day: int) -> list[str]:
@@ -1011,7 +1155,7 @@ def untranslated_reachable(builder: PacketBuilder, day: int) -> list[str]:
 # --- saving a translator's answer -----------------------------------------------------------------
 
 _FENCE = re.compile(r"^```[\w-]*\s*$")
-_EVENT_ID = re.compile(r"\bE\d{4}\b")
+_PART_ID = re.compile(r"\bE\d{4}\b|\b[a-z]+@[\w:]+")
 _JAPANESE = re.compile("[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]")
 """Kana, kanji, CJK punctuation and the full-width forms: a row still holding any is a
 row the translator did not finish."""
@@ -1032,12 +1176,22 @@ def answer_lines(answer: str) -> list[str]:
     return lines
 
 
-def check_answer(scene: dict, lines: Sequence[str], where: Path) -> list[str]:
-    """Why this answer cannot be saved as the event's block, or nothing.
+def part_line_ids(store: Store, key: str) -> list[str]:
+    """The line ids an event or a surface is, in the order its packet part lists them."""
+    scene = store.scenes_by_event.get(key)
+    if scene is not None:
+        return scene_line_ids(scene)
+    if key not in store.surfaces:
+        raise PacketRefused(f"no event or surface in the store is called {key}")
+    return list(store.surfaces[key])
+
+
+def check_answer(key: str, expected: Sequence[str], lines: Sequence[str], where: Path) -> list[str]:
+    """Why this answer cannot be saved as the part's block, or nothing.
 
     Only what the file itself cannot hold is refused here: an id missing, extra or given
-    twice, a row still in Japanese, a speaker that is not a label. Fit, page counts and
-    menus are `boku lint`'s, run over the file afterwards.
+    twice, a row or note still in Japanese, a speaker that is not a label. Fit, page counts
+    and menus are `boku lint`'s, run over the file afterwards.
     """
     rows, findings = parse_text("\n".join(lines), where)
     problems = [finding.message for finding in findings]
@@ -1046,15 +1200,14 @@ def check_answer(scene: dict, lines: Sequence[str], where: Path) -> list[str]:
         for line in lines
         if line.lstrip().startswith("#") and _JAPANESE.search(line)
     ]
-    expected = scene_line_ids(scene)
-    given = [row.line_id for row in rows]
+    given = Counter(row.line_id for row in rows)
     missing = [line_id for line_id in expected if line_id not in given]
     extra = [line_id for line_id in given if line_id not in expected]
-    twice = sorted({line_id for line_id in given if given.count(line_id) > 1})
+    twice = sorted(line_id for line_id, count in given.items() if count > 1)
     if missing:
         problems.append(f"no row for {', '.join(missing)}")
     if extra:
-        problems.append(f"{', '.join(extra)} is not a line of {scene['event']}")
+        problems.append(f"{', '.join(extra)} is not a line of {key}")
     if twice:
         problems.append(f"{', '.join(twice)} given more than once")
     special = {SampleScenes.SELECT, SampleScenes.VOICE_ONLY}
@@ -1074,7 +1227,7 @@ def check_answer(scene: dict, lines: Sequence[str], where: Path) -> list[str]:
 
 @dataclass(frozen=True)
 class DayFile:
-    """A day file cut at its event headers: the preamble, then one block per `# --- ` line.
+    """A day file cut at its part headers: the preamble, then one block per `# --- ` line.
 
     Every line is kept as it was, blank ones included, so `text()` of a file read and not
     changed is the file byte for byte: a save rewrites its own block and nothing else, and
@@ -1101,8 +1254,9 @@ class DayFile:
 
     @staticmethod
     def events_of(block: Sequence[str]) -> list[str]:
-        """The events a block's header names (`# --- E0173 / E0174: ...` names two)."""
-        return _EVENT_ID.findall(block[0].split(":", 1)[0])
+        """The events or surfaces a block's header names (`# --- E0173 / E0174: ...` names
+        two; `# --- exe@code:80037544: ...` one)."""
+        return _PART_ID.findall(block[0][len(EVENT_HEADER) :].split(": ", 1)[0])
 
     def text(self) -> str:
         lines = [*self.preamble, *(line for block in self.blocks for line in block)]
@@ -1118,31 +1272,58 @@ def _event_rows(text: str, where: Path, ids: set[str]) -> list[str]:
     return sorted({row.line_id for row in rows if row.line_id in ids})
 
 
-def save_event(store: Store, event: str, answer: str, into: Path, title: str = "") -> str:
-    """Write a translator's answer for `event` into a day file, as that event's block.
+def play_order(store: Store) -> list[str]:
+    """Every event in the project's order, then every surface: where a part goes in a file
+    when no unit order is given."""
+    return [scene["event"] for scene in ordered_scenes(store)] + list(store.surfaces)
 
-    The block replaces the one whose header names this event, or is appended: the parent
-    saves in `order.txt`'s order, which is the unit's play order, so appending keeps it --
-    and a day file ordered by hand (day 1's afternoon relay before its morning-less id
-    order) keeps its order, which no sort key reproduces. Nothing else in the file changes.
+
+def _insert_at(blocks: Sequence[Sequence[str]], key: str, order: Sequence[str]) -> int:
+    """Where a new block for `key` goes: after the last block of a part `order` puts before
+    it, else before the first block of a part it puts after, else at the end. A block of a
+    part `order` does not name keeps its place and decides nothing."""
+    rank = {part: index for index, part in enumerate(order)}
+    mine = rank.get(key)
+    if mine is None:
+        return len(blocks)
+    ranks = [next((rank[e] for e in DayFile.events_of(b) if e in rank), None) for b in blocks]
+    before = [i for i, r in enumerate(ranks) if r is not None and r < mine]
+    if before:
+        return before[-1] + 1
+    after = [i for i, r in enumerate(ranks) if r is not None and r > mine]
+    return after[0] if after else len(blocks)
+
+
+def save_event(
+    store: Store,
+    event: str,
+    answer: str,
+    into: Path,
+    title: str = "",
+    order: Sequence[str] | None = None,
+) -> str:
+    """Write a translator's answer for an event or surface into a day file, as its block.
+
+    The block replaces the one whose header names this part, or goes in at the part's place
+    in `order` -- the unit's `order.txt`, else `play_order` -- so a part refused and saved
+    later lands where it belongs, and blocks of parts the order does not know keep theirs.
+    Nothing else in the file changes.
 
     Refused, with the file untouched: an answer `check_answer` rejects; a block whose
-    header names this event beside others, or that holds another event's rows (both are
-    hand-merged blocks, and replacing one would delete the other event's English -- split
-    it first); rows of this event outside a block of its own; and rows of this event in
+    header names this part beside others, or that holds another part's rows (both are
+    hand-merged blocks, and replacing one would delete the other's English -- split it
+    first); rows of this part outside a block of its own; and rows of this part in
     another translation file beside this one, which would translate it twice.
     """
-    scene = store.scenes_by_event.get(event)
-    if scene is None:
-        raise PacketRefused(f"no scene in the store for {event}")
+    expected = part_line_ids(store, event)
     into = Path(into)
     lines = answer_lines(answer)
-    problems = check_answer(scene, lines, into)
+    problems = check_answer(event, expected, lines, into)
     if problems:
         raise PacketRefused(f"{event}: not saved -- " + "; ".join(problems))
-    if not lines or not lines[0].startswith(f"{EVENT_HEADER}{event}"):
+    if not lines or not lines[0].startswith(EVENT_HEADER) or event not in DayFile.events_of(lines):
         lines = [f"{EVENT_HEADER}{event}", *lines]
-    ids = set(scene_line_ids(scene))
+    ids = set(expected)
     for sibling in sorted(into.parent.glob("*.txt")):
         if sibling.resolve() == into.resolve():
             continue
@@ -1157,12 +1338,12 @@ def save_event(store: Store, event: str, answer: str, into: Path, title: str = "
     mine = [i for i, block in enumerate(blocks) if event in DayFile.events_of(block)]
     for index in mine:
         rows, _ = parse_text("\n".join(blocks[index]), into)
-        others = sorted({row.line_id.split(".", 1)[0] for row in rows} - {event})
+        others = sorted({part_of(store, row.line_id) for row in rows} - {event})
         if DayFile.events_of(blocks[index]) != [event] or others:
             raise PacketRefused(
                 f"{into.name}: the block of {event} also holds "
-                f"{', '.join(others) or 'another event in its header'}; split it so each "
-                f"event has its own `{EVENT_HEADER}` header, then save again"
+                f"{', '.join(others) or 'another part in its header'}; split it so each "
+                f"has its own `{EVENT_HEADER}` header, then save again"
             )
     if mine:
         keep = _trailing_blanks(blocks[mine[0]])
@@ -1177,10 +1358,13 @@ def save_event(store: Store, event: str, answer: str, into: Path, title: str = "
                 f"{into.name} already holds {', '.join(stray)} outside a block of {event}'s "
                 f"own; move them under a `{EVENT_HEADER}{event}` header first"
             )
-        before = blocks[-1] if blocks else day_file.preamble
-        if before and before[-1].strip():
+        at = _insert_at(blocks, event, order if order is not None else play_order(store))
+        above = blocks[at - 1] if at else day_file.preamble
+        if above and above[-1].strip():
             lines = ["", *lines]
-        blocks.append(tuple(lines))
+        if at < len(blocks):
+            lines = [*lines, ""]
+        blocks.insert(at, tuple(lines))
     preamble = day_file.preamble or (f"# {title or into.stem} (translation/days/README.md)",)
     into.parent.mkdir(parents=True, exist_ok=True)
     into.write_text(DayFile(preamble, tuple(blocks)).text(), encoding="utf-8")
@@ -1188,17 +1372,22 @@ def save_event(store: Store, event: str, answer: str, into: Path, title: str = "
     return f"save-event: {event} {verb} in {into} ({len(ids)} line(s))"
 
 
-def default_day_file(store: Store, scene: dict, directory: Path = DAYS_DIR) -> Path:
-    """Where an event's English goes when no `--into` is given: the file that already holds
-    it, else its dated day's file, else `shared.txt`. A day file may hold a day-independent
-    event its day hands over to (`day01.txt` holds `E0001`), so the convention alone would
-    send a re-save of one to `shared.txt` and translate it twice."""
-    ids = set(scene_line_ids(scene))
-    for path in sorted(Path(directory).glob("*.txt")):
+def default_day_file(store: Store, key: str, directory: Path = DAYS_DIR) -> Path:
+    """Where a part's English goes when no `--into` is given: the file that already holds
+    it; else an event's dated day's file, `shared.txt` for one with no day, and
+    `arrays.txt` for a surface. A day file may hold a day-independent event its day hands
+    over to (`day01.txt` holds `E0001`), so the convention alone would send a re-save of
+    one to `shared.txt` and translate it twice."""
+    directory = Path(directory)
+    ids = set(part_line_ids(store, key))
+    for path in sorted(directory.glob("*.txt")):
         if _event_rows(path.read_text(encoding="utf-8"), path, ids):
             return path
+    scene = store.scenes_by_event.get(key)
+    if scene is None:
+        return directory / ARRAYS_NAME
     day = scene_dated_day(scene)
-    return Path(directory) / (f"day{day:02d}.txt" if day is not None else "shared.txt")
+    return directory / (f"day{day:02d}.txt" if day is not None else "shared.txt")
 
 
 # --- the command line -----------------------------------------------------------------------------
@@ -1212,10 +1401,12 @@ def main_packet(
     for_review: bool,
     translations: Sequence[Path],
     like: Path | None = None,
+    arrays: bool = False,
 ) -> int:
-    if sum((day is not None, bool(events), like is not None)) != 1:
+    if sum((day is not None, bool(events), like is not None, arrays)) != 1:
         print(
-            "packet: give exactly one of --day N, --events E0103 [E0104 ...] or --like FILE",
+            "packet: give exactly one of --day N, --events E0103 [E0104 ...], --like FILE "
+            "or --arrays",
             file=sys.stderr,
         )
         return 2
@@ -1226,20 +1417,22 @@ def main_packet(
             unit = unit_of_day(store, day)
         elif like is not None:
             unit = unit_like(store, like)
+        elif arrays:
+            unit = unit_of_surfaces(store)
         else:
             unit = unit_of_events(store, events)
     except (PacketRefused, StoreMissing, OSError) as error:
         print(f"packet: {error}", file=sys.stderr)
         return 2
-    if not unit.scenes:
-        print(f"packet: {unit.title} has no event with text in the store", file=sys.stderr)
+    if not unit.keys:
+        print(f"packet: {unit.title} has nothing with text in the store", file=sys.stderr)
         return 2
     builder = PacketBuilder.build(store, Policy.load(), translations or [DAYS_DIR], for_review)
     where = out_dir / (unit.name + ("-review" if for_review else ""))
     written = write_unit(builder, unit, where)
     total = sum(path.stat().st_size for path in written)
     print(
-        f"packet: {len(unit.scenes)} event(s) of {unit.title}, {len(written)} file(s), "
+        f"packet: {len(unit.keys)} part(s) of {unit.title}, {len(written)} file(s), "
         f"{total / 1024:.0f} KiB, in {where}" + (" (for review)" if for_review else "")
     )
     if day is not None:
@@ -1254,16 +1447,19 @@ def main_packet(
 
 
 def main_save_event(
-    event: str, answer: Path | None, into: Path | None, disc_dir: Path, title: str
+    event: str,
+    answer: Path | None,
+    into: Path | None,
+    disc_dir: Path,
+    title: str,
+    order: Path | None = None,
 ) -> int:
     try:
         store = load_store(Path(disc_dir) / SCRIPT_DIR_NAME)
-        scene = store.scenes_by_event.get(event)
-        if scene is None:
-            raise PacketRefused(f"no scene in the store for {event}")
         text = Path(answer).read_text(encoding="utf-8") if answer else sys.stdin.read()
-        target = into or default_day_file(store, scene)
-        print(save_event(store, event, text, target, title))
+        target = into or default_day_file(store, event)
+        keys = Path(order).read_text(encoding="utf-8").split() if order else None
+        print(save_event(store, event, text, target, title, keys))
     except (PacketRefused, StoreMissing, OSError) as error:
         print(f"save-event: {error}", file=sys.stderr)
         return 1
@@ -1287,6 +1483,14 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         default=(),
         metavar="EVENT",
         help="these events instead, in play order, e.g. E0650 E0651",
+    )
+    select.add_argument(
+        "--arrays",
+        action="store_true",
+        help=(
+            "every line outside the events -- menus, books, labels, screens -- one part "
+            "per surface, for translation/days/arrays.txt (PLAN TRN-09)"
+        ),
     )
     select.add_argument(
         "--like",
@@ -1341,13 +1545,27 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
             args.for_review,
             args.translations,
             args.like,
+            args.arrays,
         )
     )
     return parser
 
 
 def add_save_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument("event", metavar="EVENT", help="the event the answer is for, e.g. E0121")
+    parser.add_argument(
+        "event",
+        metavar="PART",
+        help="the event or surface the answer is for, e.g. E0121 or exe@8003D2E0",
+    )
+    parser.add_argument(
+        "--order",
+        type=Path,
+        metavar="FILE",
+        help=(
+            "the packet's order.txt: a new part goes in at its place in it (default: the "
+            "project's play order, events then surfaces)"
+        ),
+    )
     parser.add_argument(
         "--answer",
         type=Path,
@@ -1359,8 +1577,9 @@ def add_save_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
         type=Path,
         metavar="FILE",
         help=(
-            "the day file to write it into (default: translation/days/dayNN.txt for an event "
-            "the data dates, shared.txt for one it does not)"
+            "the day file to write it into (default: the file that already holds it, else "
+            "translation/days/dayNN.txt for an event the data dates, shared.txt for one it "
+            "does not, arrays.txt for a surface)"
         ),
     )
     parser.add_argument(
@@ -1376,6 +1595,8 @@ def add_save_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentPars
         help=f"the import whose script store is read (default: {DEFAULT_DISC_DIR}/)",
     )
     parser.set_defaults(
-        run=lambda args: main_save_event(args.event, args.answer, args.into, args.disc, args.title)
+        run=lambda args: main_save_event(
+            args.event, args.answer, args.into, args.disc, args.title, args.order
+        )
     )
     return parser

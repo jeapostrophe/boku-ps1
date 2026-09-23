@@ -65,10 +65,12 @@ usage: ./make.sh <verb> [arguments]
                                 system.md (format, style guide, glossary, the day) given
                                 once, one <EVENT>.md per event in order.txt's order, each
                                 the event's lines in the day-file shape with the Japanese
-                                where the English goes. Never tracked
+                                where the English goes; --arrays does the same per menu,
+                                book and screen for translation/days/arrays.txt. Never tracked
                                 (./make.sh packet --help for the switches)
-  save-event EVENT [arguments]  write a translator's answer for one event into its day
-                                file, replacing its block or placing it in play order
+  save-event PART [arguments]   write a translator's answer for one event or surface into
+                                its day file, replacing its block or placing it at its
+                                place in the packet's order.txt (--order)
                                 (./make.sh save-event --help for the switches)
   mockup [arguments]            draw every page of the translation files with the font
                                 sheet's glyphs at the dialogue band's geometry, one PNG
@@ -85,7 +87,7 @@ usage: ./make.sh <verb> [arguments]
                                 the build did with it -- translated, refused (English
                                 exists, the image did not get it), missing (never given to
                                 a translator) or not-event (a menu, book or title-screen
-                                line no day file covers)
+                                line arrays.txt has no English for yet)
                                 (./make.sh coverage --help for the switches)
   save --base B --out CARD [..] write one memory-card save from parameters: the morning it
                                 wakes on, the stars that pick the ending, any flag or saved

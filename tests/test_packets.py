@@ -21,6 +21,7 @@ from boku import REPO_ROOT
 from boku.layout import Marks
 from boku.lint import load_rows, parse_file, translation_paths
 from boku.packets import (
+    ARRAYS_NAME,
     DAYS_DIR,
     EVENT_HEADER,
     ORDER_NAME,
@@ -42,11 +43,13 @@ from boku.packets import (
     parse_glossary,
     parse_places,
     parse_rulings,
+    part_file,
     save_event,
     scene_line_ids,
     table_rows,
     unit_like,
     unit_of_day,
+    unit_of_surfaces,
     untranslated_reachable,
     without_line_citations,
     without_plan_citations,
@@ -119,7 +122,7 @@ def template_rows(part: str) -> list[str]:
 
 def test_the_system_part_carries_the_format_the_rulings_the_glossary_and_the_day(store, builder):
     """Jay's four (`TRN-08`), each checked by a fact read out of its own home."""
-    system = builder.system_part("day 1", 1, store.scenes)
+    system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
     readme = (DAYS_DIR / "README.md").read_text(encoding="utf-8")
     first_bullet = format_section(readme).splitlines()[0]
     assert first_bullet in system, "the day-file format is not the README's § Format"
@@ -136,7 +139,9 @@ def test_the_system_part_carries_the_glossary_rows_of_the_unit_s_japanese(store)
     wanted, unwanted = policy.glossary[0], policy.glossary[-1]
     assert not set(wanted.terms) & set(unwanted.terms)
     store.japanese[VOICED] = Japanese(pages=((tuple(wanted.terms[0]),),))
-    system = PacketBuilder.build(store, policy, [], False).system_part("day 1", 1, store.scenes)
+    system = PacketBuilder.build(store, policy, [], False).system_part(
+        Unit("day01", "day 1", 1, tuple(store.scenes))
+    )
     assert wanted.markdown() in system
     assert unwanted.markdown() not in system
 
@@ -153,7 +158,7 @@ def test_the_format_section_stops_at_its_own_section():
 
 def test_nothing_on_jay_s_drop_list_reaches_the_translator(store, builder):
     """Capacities, pixels, frame timers, column splits, lint and PLAN citations stay out."""
-    parts = [builder.system_part("day 1", 1, store.scenes)]
+    parts = [builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))]
     parts += [builder.event_part(scene, 1, 1) for scene in store.scenes]
     text = "\n".join(parts)
     for dropped in (
@@ -366,21 +371,39 @@ def test_an_answer_saves_as_the_event_s_block_and_the_lint_reads_it(store, build
     assert [row.line_id for row in rows] == scene_line_ids(scene)
 
 
-def test_saving_again_replaces_the_block_in_place_and_a_new_event_is_appended(
-    store, builder, tmp_path
-):
-    """Saved in the order given -- E9002 first, against the ids' order -- and re-saving
-    E9002 leaves it where it was: the file keeps the order the parent saved in."""
+def test_an_event_saved_late_goes_in_at_its_place_in_the_order(store, builder, tmp_path):
+    """The day-3 run: an event refused, then saved after the ones behind it, was appended
+    at the end and the file had to be rebuilt by hand. It goes in where the order puts it
+    -- the unit's `order.txt` when given, else the project's play order -- and a re-save
+    stays where it is."""
     into = tmp_path / "day01.txt"
-    first, second = event(store, "E9002"), event(store, "E9001")
-    save_event(store, "E9002", answer_for(builder, first), into)
-    save_event(store, "E9001", answer_for(builder, second), into)
-    save_event(store, "E9002", answer_for(builder, first).replace("Words.", "Again."), into)
+    first, second = event(store, "E9001"), event(store, "E9002")
+    save_event(store, "E9002", answer_for(builder, second), into)
+    save_event(store, "E9001", answer_for(builder, first), into)
+    save_event(store, "E9002", answer_for(builder, second).replace("Words.", "Again."), into)
     blocks = DayFile.read(into).blocks
-    assert [DayFile.events_of(block) for block in blocks] == [["E9002"], ["E9001"]]
+    assert [DayFile.events_of(block) for block in blocks] == [["E9001"], ["E9002"]]
     rows, _ = parse_file(into)
     assert [row.line_id for row in rows].count(NEXT) == 1
     assert "Again." in into.read_text(encoding="utf-8")
+
+
+def test_the_unit_s_order_wins_over_the_project_s(store, builder, tmp_path):
+    """`--like` keeps a hand-ordered day file's order, which no sort key reproduces."""
+    into = tmp_path / "day01.txt"
+    order = ["E9002", "E9001"]
+    save_event(store, "E9001", answer_for(builder, event(store, "E9001")), into, order=order)
+    save_event(store, "E9002", answer_for(builder, event(store, "E9002")), into, order=order)
+    blocks = DayFile.read(into).blocks
+    assert [DayFile.events_of(block) for block in blocks] == [["E9002"], ["E9001"]]
+
+
+def test_the_format_says_notes_hold_no_japanese_either():
+    """save-event refuses a note with Japanese in it; the translator is told before, not
+    after (the day-3 run)."""
+    section = format_section((DAYS_DIR / "README.md").read_text(encoding="utf-8"))
+    note = next(line for line in section.split("* ") if "Japanese" in line and "note" in line)
+    assert "romanis" in note
 
 
 @pytest.mark.parametrize(
@@ -433,11 +456,10 @@ def test_an_event_another_file_beside_it_translates_is_refused(store, builder, t
 
 def test_the_default_file_is_the_one_that_already_holds_the_event(store, tmp_path):
     """E0001 is day-independent and lives in day01.txt: the convention alone says shared."""
-    scene = event(store, "E9002")
-    scene["when"]["day"] = None
-    assert default_day_file(store, scene, tmp_path) == tmp_path / "shared.txt"
+    event(store, "E9002")["when"]["day"] = None
+    assert default_day_file(store, "E9002", tmp_path) == tmp_path / "shared.txt"
     write_translation(tmp_path / "day01.txt", [(NEXT, "Boku", "Three.")])
-    assert default_day_file(store, scene, tmp_path) == tmp_path / "day01.txt"
+    assert default_day_file(store, "E9002", tmp_path) == tmp_path / "day01.txt"
 
 
 def test_a_save_changes_its_own_block_and_nothing_else(store, builder, tmp_path):
@@ -471,6 +493,88 @@ def test_a_note_in_japanese_is_refused(store, builder, tmp_path):
 def test_answer_lines_takes_the_fenced_block():
     answer = "prose\n```text\n\nE1.0\tBoku\tHi.\n```\nmore prose\n"
     assert answer_lines(answer) == ["E1.0\tBoku\tHi."]
+
+
+# --- the arrays, menus and overlays: TRN-09 ---------------------------------------------------
+
+ITEM = "exe@80000000"
+MENU = "exe@80001000"
+LABEL = "exe@code:80002000"
+
+
+@pytest.fixture
+def surfaces(tmp_path: Path):
+    """Two items of one array, a code-file menu, a code-immediate label -- and one event,
+    which the array unit must leave out."""
+    synth = SynthStore.new(tmp_path)
+    synth.array_item(f"{ITEM}.0")["purpose"] = "kite names, 4 x 3 glyphs, drawn vertically"
+    synth.array_item(f"{ITEM}.1")
+    synth.select_array(MENU, lines=3)
+    synth.code_label(LABEL)
+    synth.message(VOICED, [[4]], voiced=False)
+    synth.scene("E9001", [VOICED])
+    return load_store(synth.write())
+
+
+def test_the_array_unit_is_every_non_event_line_by_surface(surfaces):
+    unit = unit_of_surfaces(surfaces)
+    assert [surface.key for surface in unit.surfaces] == [ITEM, MENU, LABEL]
+    assert unit.surfaces[0].line_ids == (f"{ITEM}.0", f"{ITEM}.1")
+    assert unit.scenes == ()
+
+
+def test_a_surface_part_is_its_lines_in_the_day_file_shape(surfaces):
+    builder = PacketBuilder.build(surfaces, Policy.load(), [], False)
+    unit = unit_of_surfaces(surfaces)
+    item, menu, _ = unit.surfaces
+    rows = template_rows(builder.surface_part(item, 1, 3))
+    assert rows[0].startswith(f"{EVENT_HEADER}{ITEM}")
+    assert [row.split("\t")[:2] for row in rows[1:]] == [
+        [f"{ITEM}.0", "(unlabelled)"],
+        [f"{ITEM}.1", "(unlabelled)"],
+    ]
+    _, speaker, text = template_rows(builder.surface_part(menu, 2, 3))[1].split("\t")
+    assert speaker == SampleScenes.SELECT
+    assert len(text.split(SampleScenes.OPTION)) == 3
+
+
+def test_a_part_s_file_name_holds_no_colon(surfaces, tmp_path):
+    """`exe@code:80037544.md` is an alternate data stream on NTFS; order.txt keeps the key."""
+    builder = PacketBuilder.build(surfaces, Policy.load(), [], False)
+    unit = unit_of_surfaces(surfaces)
+    written = write_unit(builder, unit, tmp_path / "arrays")
+    assert all(":" not in path.name for path in written)
+    assert LABEL in (tmp_path / "arrays" / ORDER_NAME).read_text(encoding="utf-8").split()
+    assert (tmp_path / "arrays" / part_file(LABEL)).is_file()
+
+
+def test_an_event_id_no_scene_claims_is_not_a_surface(tmp_path):
+    synth = SynthStore.new(tmp_path)
+    synth.message("E7777.0", [[4]], voiced=False)
+    synth.array_item(f"{ITEM}.0")
+    orphaned = load_store(synth.write())
+    assert [surface.key for surface in unit_of_surfaces(orphaned).surfaces] == [ITEM]
+
+
+def test_a_surface_s_capacity_is_not_in_its_description(surfaces):
+    """The purpose column carries glyph and cell counts; those are the lint's, not the
+    translator's (`TRN-08`'s rule, kept for the arrays)."""
+    builder = PacketBuilder.build(surfaces, Policy.load(), [], False)
+    part = builder.surface_part(unit_of_surfaces(surfaces).surfaces[0], 1, 3)
+    assert "kite names" in part
+    assert re.search(r"\d+\s*(x\s*\d+\s*)?(glyphs|cells)", part) is None
+
+
+def test_a_surface_answer_saves_into_the_arrays_file(surfaces, tmp_path):
+    builder = PacketBuilder.build(surfaces, Policy.load(), [], False)
+    surface = unit_of_surfaces(surfaces).surfaces[1]
+    answer = "\n".join(builder.block(builder.surface_header(surface), surface.line_ids))
+    answer = re.sub(r"\t\[SEL\]\t.*", "\t[SEL]\tRelease it? | Yes | No", answer)
+    assert default_day_file(surfaces, MENU, tmp_path) == tmp_path / ARRAYS_NAME
+    into = tmp_path / ARRAYS_NAME
+    save_event(surfaces, MENU, answer, into)
+    rows, _ = parse_file(into)
+    assert [(row.line_id, row.text) for row in rows] == [(MENU, "Release it? | Yes | No")]
 
 
 # --- the destination a packet may never be written to ---------------------------------------------

@@ -29,7 +29,12 @@ What it checks, and where each rule comes from
   (`research/vwf-prototype.md`).
 * **`select-width`** -- a select line cannot wrap; a second line would be a second option.
 * **`array-bytes`** -- a code-file array item has no slack: the next symbol starts where
-  it ends, so growth is refused by the reinserter (`boku/layout.py`, `PLAN PIPE-03`).
+  it ends, so growth is refused by the reinserter (`boku/layout.py`, `PLAN PIPE-03`). A
+  menu held in a code file (an **S** array) is written as a `[SEL]` row and checked like a
+  select -- its line count is the original's -- and for its bytes like an array.
+* **`not-placeable`** -- *a warning*: a label assembled from instruction immediates or the
+  memory-card title (`script_store.PLACED_BY_CODE`). It has English but no text site, so
+  the build cannot place it until a code patch does (`PLAN TXT-05`).
 * **`additive-word`** -- *a heuristic, and a warning only.* The pilot's recurring defect
   was English the Japanese does not have -- adverbs and intensifiers added for rhythm
   (`translation/days/README.md` § "Lessons from the pilot"). It fires when an English
@@ -76,6 +81,7 @@ from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import (
     DIALOGUE_BAND,
+    MENU_IS_SEL,
     BoxSpec,
     CellMapEncoder,
     Encoder,
@@ -84,6 +90,7 @@ from boku.layout import (
     StockEncoder,
     label_allowance,
     lay_out_array,
+    lay_out_array_select,
     lay_out_subtitle,
     measure,
     original_marks,
@@ -92,9 +99,11 @@ from boku.layout import (
     wrap,
 )
 from boku.script_store import (
+    PLACED_BY_CODE,
     Store,
     StoreMissing,
     is_array,
+    is_array_select,
     load_store,
     original_bytes,
     page_count,
@@ -470,12 +479,27 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
     if shape is not None:
         _check_select(context, row, record, shape)
         return
+    if is_array_select(record):
+        if row.is_select:
+            _check_array_select(context, row, record)
+        else:
+            context.say(row, "select-shape", ERROR, f"{row.line_id} is {MENU_IS_SEL}")
+        return
     if row.is_select:
         context.say(
             row,
             "select-shape",
             ERROR,
             f"{row.line_id} is written as a SELECT but the store has it as a message",
+        )
+        return
+    if record["kind"] in PLACED_BY_CODE:
+        context.say(
+            row,
+            "not-placeable",
+            WARNING,
+            f"a {record['kind']} has no text site; the build cannot place this English "
+            f"until a code patch does (PLAN TXT-05)",
         )
         return
     if is_array(record):
@@ -526,6 +550,27 @@ def _check_select(context: _Context, row: Row, record: dict, shape: tuple[int, i
                 f"line {index}: {pixels} px in {width}, {pixels - width} over; "
                 f"a select line cannot wrap",
             )
+
+
+def _check_array_select(context: _Context, row: Row, record: dict) -> None:
+    """A code-file menu, through the same `lay_out_array_select` the build uses."""
+    laid = lay_out_array_select(
+        row.line_id,
+        row.entry.options,
+        original_bytes(record, context.table),
+        context.options.encoder,
+        record["capacity"]["bytes"],
+        context.options.box,
+    )
+    for problem in laid.problems:
+        check = "array-bytes"
+        if "draws no cell" in problem:
+            check = "unencodable"
+        elif "g_select_lines" in problem:
+            check = "select-options"
+        elif "cannot wrap" in problem:
+            check = "select-width"
+        context.say(row, check, ERROR, problem.split(": ", 1)[-1])
 
 
 def _check_array(context: _Context, row: Row, record: dict) -> None:
