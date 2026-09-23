@@ -13,10 +13,10 @@ true, committed, and deleted at the next triage. A row is a lead, not a spec: re
 claims against the disc and `HEAD` before working it. No time estimates — sections are ordered
 by dependency, and the project's pace is set by top-tier model throughput (Opus 5.5 since 2026-09-22, `CLAUDE.md` § Model tiers), which Jay has accepted.
 
-**Classes and ids spent so far:** `ENV-01`–`ENV-06` environment · `RSH-01`–`RSH-02` research ·
-`REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-07`
-pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-04`
-movies · `VO-01`–`VO-04` voice-over · `REL-01`–`REL-03` release.
+**Classes and ids spent so far:** `ENV-01`–`ENV-08` environment · `RSH-01`–`RSH-02` research ·
+`REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-11` text renderer · `PIPE-01`–`PIPE-07`
+pipeline · `TRN-01`–`TRN-10` translation · `GFX-01`–`GFX-10` textures · `FMV-01`–`FMV-05`
+movies · `VO-01`–`VO-07` voice-over · `REL-01`–`REL-03` release.
 
 **Dependency order.** `ENV` → `REC` and `TXT` (parallel; `TXT-04` is the project's go/no-go
 trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all of it and comes first.
@@ -94,6 +94,18 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       flag-gated scenes take `--flag`. Closed as *no*: branch-point saves with a real
       playthrough's flags — reopen when a lane cannot reach a scene with `--flag`.
 
+- [ ] **[ENV-07]** **Saves Jay can load** (Jay, 2026-09-23): the generated corpus as
+      DuckStation-ready cards with obvious names and the simplest documented way to load one
+      (his own card is never touched); every day's morning, a card just before the ending for
+      each ending band (to judge the ending and the ~1,180-frame lead `FMV-04` measured), and a
+      finished-game card so Summer Memories opens (the finished-file marker, decoded).
+      Harmed: Jay, who replays the game to reach a scene.
+- [ ] **[ENV-08]** **Boku's cage and bug sumo, decoded** (Jay, 2026-09-23: "worth it to me"):
+      the cage record at `0x80045A10` and the insect box at `0x80046F28` decoded from the
+      overlays' code, `boku save` placing chosen bugs with maxed stats; a card that enters a
+      bout, one set up for the praying-mantis fight that unlocks the shortcut, and the
+      shortcut unlocked — which reaches the well (`VO-05`) and the sumo surfaces (`VO-06`,
+      `TXT-05` 25/26). Harmed: every lane and Jay, who cannot reach sumo or the shortcut.
 ## Recon — where every piece of Japanese lives
 
 - [x] **[REC-01]** **`BOKU.BIN`'s directory.** DONE 2026-09-20: `research/boku-bin.md` +
@@ -353,6 +365,18 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       gets its own advance — that is `TXT-05`'s surface list. Output is data the translation lints and the
       translation agents both consume. Harmed: the player, by text that overflows; the
       translators, by limits discovered after the fact.
+- [ ] **[TXT-10]** **The hand cursor points at nothing on button screens** (Jay's playtest,
+      2026-09-23, Settings and Load): the hand points sideways at empty space above the stone
+      Back button. Lead: `TXT-05` round 2 turned the shared hand texture a quarter turn for
+      SELECT rows, so every screen where the retail hand pointed down now points sideways.
+      Fix so SELECT rows get the turned hand and every other screen the retail one; check every
+      screen that draws it. Harmed: the player, at the first menu.
+- [ ] **[TXT-11]** **Japanese left on the title and save flow** (Jay's playtest, 2026-09-23):
+      Summer Memories with no finished file shows the untranslated "no file has finished this
+      game"; sweep every title / load / save screen for Japanese still drawn and why (texture,
+      refused, uncovered) and fix the text-side ones. Also: DuckStation's window title shows
+      the Japanese name — find where DuckStation takes it from and whether anything short of
+      changing the serial can change it. Harmed: the player, before play starts.
 
 ## Pipeline
 
@@ -553,6 +577,17 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       screen — a new array item. build-days: 971 lines laid out,
       108 refused. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
+- [ ] **[TRN-10]** **The maximal translation process, then the redo** (Jay, 2026-09-23): a
+      translator is one Claude session given EVERYTHING — the whole story bible, glossary, style
+      guide and checklist — then fed event after event with its setting (no voice-clip
+      references), possibly the whole game in play order in one session (measured estimate:
+      ~30k tokens of system text + ~175k of event parts, well inside 1M) with revision passes
+      over earlier days once later ones are done. Jay's rulings of 2026-09-23 go in first
+      (Megane → "Specs"; yowamushi → "scaredy-cat"; quotation marks around a named word
+      allowed; gokurosama without the dash). Then days 1–7, `shared.txt` and `arrays.txt` are
+      re-translated through it, reviewed, and judged against what is committed. Whether the
+      same session continues through day 31 is `TRN-04`'s call (Jay's). Harmed: the player,
+      reading a translation made without the full context.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
       through the workflow, not hand-patched around it. Harmed: the player.
@@ -604,7 +639,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       area, keep the photo/kite panel, re-rule under the header, reflow the vertical body to
       horizontal (the diary's answer applies). Every field is pixels (`GFX-05`). Text:
       species name (glossary § 4a), family, size, food, body; kite name, difficulty, how to
-      build. **Blocked on the small-type ruling (`GFX-07`, [MINE: product])** —
+      build. **The small type is RULED (Bean, `GFX-07`, 2026-09-23)** —
       measured 2026-09-23: a faithful insect description needs ~20 lines at 12 px and a spread
       holds 12 (kite pages: ~130 characters of room for 190–265); nothing is shortened. An
       English draft of all 17 pages is in `work/gfx06/`, ready once the type is ruled. Harmed: the player who opens the book.
@@ -627,9 +662,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       speech-balloon action buttons and stone back buttons (`SUB`, `M_S01100`, `M_S02000`,
       `MZ00`, `MZ02`, `SAMP`, `TZICON`, `T_CONFIG`'s modoru, and `PK_WAL`/`TK_WAL`, which
       hold only such buttons), and the attendance card `PK_ITM 0x6c` (~65 px beside the
-      picture, ~6 px footer type) — where the 12 px glyphs cannot fit: **[MINE: product]** (a) a ~5 px pixel
-      font of our own, (b) redraw as art (`GFX-08`), (c) widen the sprites in the drawing code
-      where the texture has room; recommended (a)+(c).
+      picture, ~6 px footer type) — where the 12 px glyphs cannot fit — RULED 2026-09-23 (Jay, from
+      `work/smalltype/DECIDE.md`): balloons widened to take the game's own glyphs (our 7 px
+      "Bean" face where an atlas has no room), the attendance card in our 5 px "Sprout", the
+      stone Back buttons bigger and bold; clear a flat label's whole area before setting type,
+      and on textured stone clear only the ink.
 - [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
       to the original CLUT and committed as new pixels: three book covers consistently across
       their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
@@ -647,6 +684,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `tests/test_real_texture_text_beetle.py`; `research/texture-recipes.md` § `M_C15`. (The
       30 images that stay Japanese by the charter need no row —
       `research/textures-plan.md` lists them.)
+- [ ] **[GFX-10]** **The ending's credits strip in English** (Jay, 2026-09-23: "ultra" if it
+      needs no video re-encode): each `OTI0n` pack's 276×33 production/copyright strip is a
+      still texture shown over the epilogue, so it takes the same painted-type recipe as the
+      other textures (it was ruled N in `research/textures-plan.md`; Jay reverses that).
+      Harmed: the player, at the last screen.
 
 ## Movies
 
@@ -704,12 +746,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [ ] **[FMV-02]** **Translate the movies' narration.** DONE for the narration 2026-09-22:
       `translation/movies.txt` — `M27` 16 cues, `M28` 1, `M60` 2, `M120` 2, `M260` 4, from the
       `VO-01` timed transcripts (`work/voice/reviewed/`), reviewed against the Japanese; lint
-      clean; the doubtful words are `VO-05`'s. Left: **[MINE: product]** whether the two songs
-      (the `M27` opening theme, the `M28` credits song) get sing-along subtitles — the lyrics
-      are translated and sit commented out under `# SONG`, so a yes is removing the prefix
-      (recommended: yes) — and a yes also needs a per-cue position in the cue file
-      (`[MINE: contract]`), since all ten `M28` song segments fall on the credits scrolling
-      through the subtitle rows. Harmed: the player.
+      clean; the doubtful words are `VO-05`'s. Songs RULED yes (Jay, 2026-09-23). Left: enable the
+      `# SONG` rows and add an optional per-cue position to the cue file, since all ten `M28`
+      song segments fall on the credits scrolling through the subtitle rows. Harmed: the player.
 - [ ] **[FMV-03]** **Finalize the movies one by one.** The list is
       `research/data/movies.tsv` — one row per `MOVIE` id (27; 25 files), generated by
       `./make.sh movies` (2026-09-22), which also decodes every movie with its narration into
@@ -721,6 +760,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       is `work/movie-review/index.html` (`research/movies.md` § 10); for Jay at review: four
       `M27` cues (1221, 1332, 1629, 1672) read at 17.8–21.3 characters a second with every
       boundary at its limit — accept, or the wording changes. Harmed: the player.
+- [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
+      2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
+      but that review reached the movie through a poked movie table. Reproduce the real
+      new-game path, find why no cue draws, and gate on that path. Harmed: the player, at the
+      opening that frames the game.
 
 ## Voice-over — speech with no text on the disc, outside the movies
 
@@ -777,6 +821,10 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       is mode 7's own, so the text needs another home there. Left: that home; a bout, which
       needs a correct beetle record in Boku's cage (`0x80045A10`); a proof on both
       emulators. Harmed: the player, who hears the boys' taunts and reads nothing.
+- [ ] **[VO-07]** **No subtitle on the day-1 bedtime voice-over in real play** (Jay's playtest,
+      2026-09-23): `XCH.34` has English in `translation/clips.txt` and `VO-03` proved the hook
+      with fixture English reached by pokes; in play after the diary no subtitle shows.
+      Reproduce by playing to bedtime, fix, gate on the real path. Harmed: the player.
 - [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
       translated like a day file — the `(voice only)` rows gain English in place, and the
       epilogues get their own file keyed by ending and time — reviewed against the
