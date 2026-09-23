@@ -74,7 +74,7 @@ E0650.4	Guts	Let me introduce you. This is Boku-chan.
 E0650.5	Boku	Nice to meet you...
 E0650.6	Guts	This one's Mammoth Fatso.
 E0650.7	Fat	Shut up!
-E0650.8	Guts	He's called Fat. Say hi.
+E0650.8	Guts	He's called Fat. Get along with him, okay?
 E0650.9	Boku	What does that mean?
 E0650.10	Fat	See, there was this foreign girl who came to help out on a farm in Sagi-no-sato, // and she gazed at yours truly, all dreamy, her eyes all shining, and said:
 E0650.11	Guts, Fat, Specs	Ohhh! Fat!

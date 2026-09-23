@@ -172,23 +172,6 @@ E0434.0	Moe	Ehehe... // Shaved ice is great, it's so low in calories.
 E0434.1	Moe	I'd like to make this my staple food.
 
 
-# NOTES — the day
-# * Register. Shirabe carries the day: third-person "Shirabe" (E0401.0, E0444.2, E0445.14);
-#   the Japanese has "watashi" only twice, when she plays the lady (E0471.2) and when she
-#   threatens him (E0443.4, "from me"); prim, over-grown-up diction ("a lady", "special
-#   permission", "hopeless person", "how dismal");
-#   her coinages stay as sounds (Bayoyooon, nihihi, kyahaha). Boku: short, literal, deadpan
-#   ("Ohh. So you don't know."). The aunt: quick and warm, "Auntie" in Boku's mouth, "all right?"
-#   for her endings. The uncle: teacherly (E0412), "Uncle" of himself (E0410.1, E0406.5). The
-#   narrator: full sentences, no contractions, past tense.
-# * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
-#   original's. The longest pages (E0412.0 p6, E0441.0 p1, E0445.4 p1) are under 100 characters
-#   — no page reaches the fourth line of the dialogue band; no OVERFLOW on day 4.
-# * Duplicates. E0402.0 = E0404.0 = E0010.0 and E0402.1 = E0404.1 = E0010.1 (shared.txt);
-#   E0401.6 = E0009.1's stretched form; E0446.0 ≈ E0441.2 (see the note).
-# * Not lines. E0472 (no text). E5033 / E5034 (Moe, 12:00-15:00 on day 4 with the corn in,
-#   G01 / G03) are talk targets with no text on the disc.
-
 # --- E0441: G06 -- TV room
 E0441.0	Shirabe	Shirabe was waiting, meaning to show you all sorts of things, // and you went off somewhere halfway through. You really are ungrateful!
 E0441.1	Shirabe	Honestly, what are you thinking...

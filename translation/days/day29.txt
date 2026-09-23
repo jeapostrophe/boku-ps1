@@ -116,7 +116,7 @@ E2906.2	Boku	Bye, Dad.
 # --- E2907: G06, G17, H06, H24 -- a brother
 E2907.0	Boku	It's a boy, they said...
 E2907.1	(unlabelled)	Yay! Congratulations!
-E2907.2	Moe	Congratulations! Onii-chan!
+E2907.2	Moe	Congratulations, Onii-chan!
 E2907.3	Boku	Yeah!
 # NOTE E2907.2: Moe calls him by the word that was her dead brother's only name (style guide § 2).
 

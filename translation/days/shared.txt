@@ -1188,7 +1188,7 @@ E2652.0	Fat	With Super Balls, there's the kind with lots of colors mixed in, rig
 # --- E2653: A18 -- the secret base
 E2653.0	Specs	Guri and Gura, the mice who are best friends... // was the blue one Guri?
 
-# --- E4064: G01 -- living room (the dinner quiz's answer; each day's menu)
+# --- E4064: H13 -- behind the workshop, day 27 (the dinner quiz's answer; each day's menu)
 E4064.0	Aunt	Correct, Boku-kun! You did it!
 E4064.1	(voice only)
 E4064.2	Aunt	Exactly right! Congratulations!

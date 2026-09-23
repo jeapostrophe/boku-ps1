@@ -3,7 +3,7 @@
 E1505.0	(voice only)
 
 # --- E1501: G02 -- breakfast
-E1501.0	Aunt	Boku-kun, today everyone at Auntie's house // is going to visit the grave of this house's Onii-chan, // so could you look after the house by yourself?
+E1501.0	Aunt	Boku-kun, today everyone at Auntie's house // is going to visit the grave of the Onii-chan of this house, // so could you look after the house by yourself?
 E1501.1	Boku	Yeah, I'll be fine by myself.
 E1501.2	Shirabe	Don't you go getting up to mischief.
 E1501.3	Aunt	My, Shirabe, really.

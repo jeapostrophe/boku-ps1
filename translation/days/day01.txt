@@ -80,7 +80,7 @@ E0114.1	Uncle	There's a bug-collecting kit in this house.
 E0114.2	Boku	Huh! Really?
 E0114.3	Uncle	Mm-hm. Uncle will give it to you as a present.
 E0114.4	Boku	Yay! All right!
-E0114.5	Uncle	But it's a hand-me-down from Uncle's own child. // Is that all right?
+E0114.5	Uncle	But it's a hand-me-down from Uncle's child. // Is that all right?
 E0114.6	Boku	Yeah, that's fine! Show me, show me!
 E0114.7	Uncle	Then I'll bring it to you after dinner. // ...You are to wait for it in eager anticipation!
 E0114.8	Boku	Okay. Thanks, Uncle.
