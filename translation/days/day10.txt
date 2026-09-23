@@ -1,0 +1,39 @@
+# day10 (translation/days/README.md)
+# --- E1021: G03 -- kitchen
+E1021.0	Aunt	Oh... the mirin's running low. // Well, maybe tomorrow.
+
+# --- E1020: H08 -- the yard
+E1020.0	Aunt	Moe-chan said "Boku-kun unbanned!", you know. // Hm-hm... I wonder what that's about. // If you're curious, why not go and look in her room?
+E1020.1	Aunt	Soy sauce... ginger... sugar... // ...and what shall I do for the fish?
+E1020.2	Aunt	There's a nice breeze blowing again today.
+
+# --- E1012: G01 -- living room
+E1012.0	Uncle	Kaoru, beer!
+E1012.1	Aunt	If you clean the gas stove, I might think about it.
+E1012.2	Uncle	All right, by the power of my mind, beer, come here...
+E1012.3	Uncle	Phew... now I'm even thirstier.
+
+# --- E1013: G01 -- living room
+E1013.0	Uncle	Kaoru, get me a beer.
+E1013.1	Uncle	Kaoru, come on.
+E1013.2	Aunt	If I get it for you, how much will you give me?
+E1013.3	Uncle	That does it. Now I won't go and get it myself, out of sheer stubbornness.
+E1013.4	Aunt	That's no trouble to anyone.
+E1013.5	Uncle	"No trouble to anyone"... but I'm the one in trouble here!
+
+# --- E1031: G15 -- the sisters' room
+E1031.0	Moe	Ehehe... right now, Onee-chan is // passionately writing something very, very important.
+E1031.1	Moe	Tomorrow... I wonder if the weather will be clear?
+
+# --- E1040: H09 -- garden corner where Shirabe watches ants
+E1040.0	Boku	What school-lunch dish do you like? Mine's deep-fried whale!
+E1040.1	Shirabe	Shirabe's is... harusame salad and curry stew!
+E1040.2	Shirabe	Whale is tough, you know. // Sometimes I'm still chewing it after lunch break is over...
+
+# --- E1041: G06 -- TV room
+E1041.0	Boku	What kinds of bread do you get at school lunch?
+E1041.1	Shirabe	Umm, there's koppe-chan, sometimes there's sliced bread...
+E1041.2	Boku	Only with the sliced bread do you get margarine or jam?
+E1041.3	Shirabe	That's right... // And sometimes... once or twice a month, there's fried bread!
+E1041.4	Shirabe	When there's fried bread, I'm sooo happy!
+# NOTE E1041.1: the koppe roll, the plain school-lunch bun, with Shirabe's affectionate -chan.

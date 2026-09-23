@@ -117,23 +117,11 @@ E4014.0	(voice only)
 E4041.0	(voice only)
 E4041.1	(voice only)
 
-# --- E1006: Ken-bo at his kennel (H06), talked to, while flag 45 is set and flag 49 is not — the
-#     giant-fish chain (bible § 8): after the dinner E0904 (day09.txt; flag 44, day > 8) where the
-#     uncle says a fly big enough needs "Ken-bo's fur", and until the fur is taken (flag 49; the
-#     item "Ken-bo's Fur", glossary § 4e). Boku apologises, the dog answers (voice only), the yank,
-#     the dog again (voice only). Not on day 30, not at 19:00 on day 11, and not from 19:00 on
-#     day 29 once its cutscene sequencer (flag 251) has run — the multi-map evenings (bible § 8).
+# --- E1006: H06 -- Ken-bo's kennel (a tuft of fur for the fly)
 E1006.0	Boku	Sorry...
 E1006.1	(voice only)
 E1006.2	Boku	Hup!
 E1006.3	(voice only)
-# NOTE E1006.0: "gomen ne..." to the dog, before the pull — the plain apology, no name added.
-# NOTE E1006.2: "ei!" is the effort cry of the pull, not a word; "Hup!" is the nearest English
-#   grunt (style guide § 7; glossary § 8 has "heave-ho" for the slower yoisho, and this is the
-#   quick one). "There!" and "Yah!" were the alternatives — the first says more than a grunt,
-#   the second reads as a shout at the dog (reviewer, 2026-09-20). The disc's speaker operand on
-#   this line is slot 1 with the label BOKU; the label is what the renderer draws, and the line
-#   is his.
 
 # --- The garden animals (H09, H10): talk targets 13-15 and E1605's actor 12, all voice only.
 #     E1605 carries a day-16 id, but its condition is day > 0 and it sits in every H10 variant and
@@ -619,3 +607,42 @@ E0904.8	Boku	What kind of material is good?
 E0904.9	Uncle	Hmm... for example, our doggy... // something like Ken-bo's fur, or a bird's feather that's a bit stiff...
 E0904.10	Boku	Oh, that's easy.
 E0904.11	Uncle	Is it? Well then, good luck...
+
+# --- E1008: B10 -- the hill (the satellite)
+E1008.0	Narrator	...a satellite, flying quietly on, as if gliding.
+E1008.1	Narrator	I gazed at its cold, metallic gleam, never once blinking...
+# NOTE E1008.0: the narrator's sentence begins in movie M120 and ends here (bible § 4, day 10;
+#   translation/movies.txt, M120).
+
+# --- E1050: A17 -- approach to the secret base
+E1050.0	Fat	Anyway, they say it's a yamame as ridiculously huge as a monster...
+E1050.1	Guts	Hmph, that's got to be a lie.
+E1050.2	Specs	Somebody was dreaming. I bet that's it!
+
+# --- E1005: H05 -- the morning-glory trellis; I01 -- close-up
+E1005.0	Boku	Oh, Auntie! They bloomed! They bloomed!
+E1005.1	Aunt	My, you did it, Boku-kun!
+E1005.2	Aunt	What lovely pale purple flowers! // Boku-kun, good boy, good boy!
+E1005.3	Aunt	Well then, I'll take a photo of them later.
+
+# --- E1010: H26 -- the workshop
+E1010.0	Boku	Uncle, I found some material for the fly.
+E1010.1	Uncle	Let's see.
+E1010.2	Uncle	Huh? This is... what was it again? // Oh well. It's a bit too soft, but I'll do my best to make one. // I think it'll be done in about two days, // so come back and get it then, please.
+
+# --- E1007: G15 -- the sisters' room; I20 -- close-up
+E1007.0	Narrator	It was a half-finished pressed-flower piece, a very lovely thing, made with dainty yellow flowers.
+
+# --- E1051: A18 -- the secret base
+E1051.0	Guts	I hear in the city they've got things called swimming schools? // You should just learn to swim on your own in the river nearby...
+
+# --- E1052: A18 -- the secret base
+E1052.0	Fat	Hey, what does Moe-san usually eat?
+E1052.1	Boku	...Normal stuff, like rice.
+E1052.2	Fat	What else?
+E1052.3	Boku	What else, I wonder?
+E1052.4	Fat	Hey, you're not planning on hiding something from yours truly, are you?
+E1052.5	Boku	I'm not hiding anythiiing.
+
+# --- E1053: A18 -- the secret base
+E1053.0	Specs	The real problem is the African turtle in Doctor Dolittle. // How many tens of thousands of years old is it, anyway?
