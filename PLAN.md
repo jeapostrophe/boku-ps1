@@ -94,14 +94,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       flag-gated scenes take `--flag`. Closed as *no*: branch-point saves with a real
       playthrough's flags — reopen when a lane cannot reach a scene with `--flag`.
 
-- [ ] **[ENV-07]** **Saves Jay can load** (Jay, 2026-09-23): the generated corpus as
-      DuckStation-ready cards with obvious names and the simplest documented way to load one
-      (his own card is never touched); every day's morning, a card just before the ending for
-      each ending band (to judge the ending and the ~1,180-frame lead `FMV-04` measured), and a
-      finished-game card so Summer Memories opens (the finished-file marker, decoded). All of it a
-      `./make.sh` verb working from a contributor's own import — other translators will want the
-      saves too (Jay).
-      Harmed: Jay, who replays the game to reach a scene.
+- [x] **[ENV-07]** **Saves any contributor can play from.** DONE 2026-09-23:
+      `./make.sh duckstation-cards` → `work/saves/duckstation/`: the mornings of August 2–31 on
+      two cards, the five ending bands on August 31 (PLAYTIME shows the stars), five finished
+      games; `boku save --finished`. The finished marker is decoded — the summary day is 31 or
+      more (`0x8007B65C`) — which opens Summer Memories; a New Game from such a card is a
+      second playthrough (`0x80025914`, `E0404`/`E1503`). August 31 has no evening: from its
+      morning the day chains into the ending movie (~9,500 frames of ○). The DuckStation
+      per-game shared-card route is in `research/save-format.md` and README (from source, not
+      run). Proven on Beetle.
 - [ ] **[ENV-08]** **Boku's cage and bug sumo, decoded** (Jay, 2026-09-23: "worth it to me"):
       the cage record at `0x80045A10` and the insect box at `0x80046F28` decoded from the
       overlays' code, `boku save` placing chosen bugs with maxed stats; a card that enters a
@@ -264,9 +265,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       after Jay played it on DuckStation):** the band sat partly below the rows DuckStation
       shows — the game programs all 240 rows but the emulator's default crop stops near row
       232 — so it moved to Y=191 with the next-page marker (two sprites, two sites) moving
-      with it; `「『` got a left bearing and `」』` were tightened; the choice cursor is the
-      game's own hand turned a quarter turn at build time (nothing tracked) so it points at
-      the row; `H06001` (day 15 morning) loaded with child 6 past the old bound; the aunt's
+      with it; `「『` got a left bearing and `」』` were tightened; the choice cursor was the
+      game's hand turned a quarter turn at build time (replaced by the game's own
+      right-pointing hand, `TXT-10`); `H06001` (day 15 morning) loaded with child 6 past the old bound; the aunt's
       evening lines drawn from a relocated EV member on Beetle. The card-check and settings
       screens Jay saw in Japanese are `TITLE.OVL` renderer text with no translation rows —
       the array/overlay half of `TRN-04` (308 lines on six surfaces, `boku coverage` lists
@@ -355,7 +356,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       two look choices: descriptions/captions need 4–5 lines where the box holds 3 — options
       a (retail pen, 13 px, five lines fill the white), b (x 167, 132 px wide, fewest lines;
       recommended), c (12 px pitch), shot in `work/lane/desc-options/`; and the surfaces
-      bounded by their panel textures — memory-card .5 (287 px of 283), extras .1, item
+      bounded by their panel textures — extras .1 (memory-card .5 reworded to fit, `TXT-11`), item
       names .0/.1/.3 (136–144 px in 115) — two-line message, condensed glyphs or scrolling.
       Still to measure: kite names and the cage HUD, fishing and sumo boxes. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
@@ -367,18 +368,19 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       gets its own advance — that is `TXT-05`'s surface list. Output is data the translation lints and the
       translation agents both consume. Harmed: the player, by text that overflows; the
       translators, by limits discovered after the fact.
-- [ ] **[TXT-10]** **The hand cursor points at nothing on button screens** (Jay's playtest,
-      2026-09-23, Settings and Load): the hand points sideways at empty space above the stone
-      Back button. Lead: `TXT-05` round 2 turned the shared hand texture a quarter turn for
-      SELECT rows, so every screen where the retail hand pointed down now points sideways.
-      Fix so SELECT rows get the turned hand and every other screen the retail one; check every
-      screen that draws it. Harmed: the player, at the first menu.
-- [ ] **[TXT-11]** **Japanese left on the title and save flow** (Jay's playtest, 2026-09-23):
-      Summer Memories with no finished file shows the untranslated "no file has finished this
-      game"; sweep every title / load / save screen for Japanese still drawn and why (texture,
-      refused, uncovered) and fix the text-side ones. Also: DuckStation's window title shows
-      the Japanese name — find where DuckStation takes it from and whether anything short of
-      changing the serial can change it. Harmed: the player, before play starts.
+- [x] **[TXT-10]** **The hand cursor on button screens.** DONE 2026-09-23: the select passes
+      `a3 = 1` to the hand drawer `0x80042B64` (`asm/select.asm`, `SEL_CURSOR_SIDE`), which
+      draws the game's own right-pointing hand (ONMEM sprite 0); the build no longer edits the
+      shared sprite table or sheet, so every other screen draws the retail hand. Proven on
+      Beetle: the `E0112.1` Yes/No, the settings and load Back buttons pointing down as
+      retail.
+- [x] **[TXT-11]** **Japanese left on the title and save flow.** DONE 2026-09-23:
+      `exe@8003D5F0.5` reworded to fit its 265-px box ("There is no file that has finished
+      this game."), English on Beetle; the title, load and new-game screens swept on Beetle —
+      the only text-side Japanese left is extras `exe@8003DA00.1` (`TXT-07`'s panel-bound
+      question); the rest is textures (`GFX-07`). DuckStation's window title comes from its
+      own database by serial (the localized name, on by default); the per-user overrides are in
+      `research/tooling-setup.md`.
 
 ## Pipeline
 
@@ -579,19 +581,17 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       screen — a new array item. build-days: 971 lines laid out,
       108 refused. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
-- [ ] **[TRN-10]** **The maximal translation process, then the redo** (Jay, 2026-09-23): a
-      translator is one Claude session given EVERYTHING — the whole story bible, glossary, style
-      guide and checklist — then fed event after event with its setting (no voice-clip
-      references), possibly the whole game in play order in one session (measured estimate:
-      ~30k tokens of system text + ~175k of event parts, well inside 1M) with revision passes
-      over earlier days once later ones are done. Jay's rulings of 2026-09-23 go in first
-      (Megane → "Specs"; yowamushi → "scaredy-cat"; quotation marks around a named word
-      allowed; gokurosama without the dash). Then days 1–7, `shared.txt` and `arrays.txt` are
-      re-translated through it, reviewed, and judged against what is committed. Jay, 2026-09-23: "let's just keep
-      going and do the whole thing this way. It may require a few more tries, but it is worth
-      the experiment" — the session continues through day 31, and its result fills `TRN-04`'s
-      table. Harmed: the player,
-      reading a translation made without the full context.
+- [ ] **[TRN-10]** **The maximal translation run, then the redo** (Jay, 2026-09-23). The
+      process is built: `./make.sh packet --game` gives one session `system.md` (the format,
+      then the bible, style guide, glossary and checklist, each whole; ~29k tokens), then 599
+      parts in play order (~186k tokens; English answers ~77k more); `order.txt` names the file
+      each part saves into; `translation/README.md` § "Translating the whole game" is how to
+      drive it. Jay's rulings of 2026-09-23 are applied (Specs, scaredy-cat, quotes around a
+      named word, gokurosama without a dash; QUESTIONS Q4/Q7/Q12). Left: run the session
+      through day 31 with a revision pass ("let's just keep going and do the whole thing this
+      way" — Jay), re-translating days 1–7, `shared.txt` and `arrays.txt` (tag the tree first);
+      review against the Japanese; judge against what is committed; fill `TRN-04`'s table.
+      Harmed: the player, reading a translation made without the full context.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
       through the workflow, not hand-patched around it. Harmed: the player.
