@@ -1144,3 +1144,32 @@ E2452.0	Fat	Menko? What's that? // Around here we call them patchi. // The littl
 
 # --- E2453: A18 -- the secret base
 E2453.0	Specs	In The Eight Dog Chronicles, I can name all the jewels, // but I'm never sure of the order...
+
+# --- E2505: D16 -- the summit of Mt. Teppen
+E2505.0	Boku	Wooow...
+E2505.1	Narrator	At the very top of Mt. Teppen, for some reason, this view, which I had won with a little effort... // carefully, carefully, gently, gently... // I resolved to take in thoroughly, from one end to the other...
+E2505.2	Narrator	Beyond, where my eye grazed the treetops of the nearer forest... // there was, first, my uncle's house and the persimmon tree in its garden, // shimmering faintly in the summer sunlight... // and farther on, where the ridge of the mountains grew somewhat gentler, // I could see the red tile roofs of the houses of Sagi-no-sato...
+E2505.3	Narrator	And to the west of the hill, as if held in the arms of the surrounding forest, // ran a single expressway, stretching straight ahead... // and far off, where that road pointed, the August sea, brimming with life, lay glittering...
+# NOTE E2505.1: teppen means "the very top"; the narrator's "at the very top of Mt. Teppen" plays on
+#   it (glossary § 2).
+
+# --- E2506: D16 -- the summit cairn
+E2506.0	Narrator	It had been built by climbers, each stone laid carefully, one by one.
+
+# --- E2504: G02 -- dinner ("I'm glad I came")
+E2504.0	Boku	Hey, today I // went all the way to the top of that mountain with the two antennas.
+E2504.1	Uncle	Huh? You went all the way up Mt. Teppen... The view from there is the best, isn't it?
+E2504.2	Boku	Yeah.
+E2504.3	Aunt	We climbed up there too, soon after we came here. // When I saw the view from that summit... // ah... I thought, from the bottom of my heart, that I was glad we'd moved here.
+E2504.4	Boku	I...
+E2504.5	Aunt	Hm? What is it?
+E2504.6	Narrator	I did not want to go home yet... // For some reason, those words were the ones I simply could not say.
+E2504.7	Boku	...I'm glad I came here, too.
+E2504.8	Aunt	Hm-hm-hm...... thank you. // I'm happy you like it here, Boku-kun.
+E2504.9	Shirabe	Before anyone noticed, you've turned into one of our family's kids.
+E2504.10	Boku	Then am I Shirabe's Onii-chan too?
+E2504.11	Shirabe	No way!
+E2504.12	Aunt	Come on, let's hurry up and say gochisosama.
+E2504.13	Uncle	Gochisosama deshita.
+E2504.14	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+# NOTE E2504.10: "Onii-chan" as a name, the name the dead son had (style guide § 2).

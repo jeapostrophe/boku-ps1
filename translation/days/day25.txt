@@ -1,0 +1,120 @@
+# day25 (translation/days/README.md)
+# --- E2560: D07 -- Saori's camp
+E2560.0	Boku	Lady, what do your friends call you?
+E2560.1	Saori	They say I strut around like I own the place.
+E2560.2	Boku	...Not that. What do they call you?
+E2560.3	Saori	Then, "the masterless samurai who broke out of island exile."
+E2560.4	Boku	Hey, draw me something.
+E2560.5	Saori	No way...
+E2560.6	Boku	Why?
+E2560.7	Saori	I... forgot my brush.
+
+# --- E2502: G02 -- after breakfast
+E2502.0	Uncle	Gochisosama deshita.
+E2502.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2502.2	Aunt	Come to think of it, it's been one sunny day after another lately...
+E2502.3	Uncle	That's right... how many days has it been since it last rained, I wonder?
+
+# --- E2507: G02 -- dining room; I13 -- close-up (no rain all month)
+E2507.0	Uncle	Huh? Boku-kun, has it rained since you came here?
+E2507.1	Boku	...I don't think it has.
+E2507.2	Uncle	I see... // This summer, somehow, it's been one clear day after another, with thunderheads that burn themselves into your eyes...
+E2507.3	Aunt	That's right.
+E2507.4	Uncle	When I'm a bit older and I've turned into an old man, // it's the kind of summer I'll suddenly remember, at some little trigger... // a summer that stays with you, more than words can say...
+E2507.5	Moe	But now that it's ending, it went by in a flash, didn't it?
+E2507.6	Aunt	...Yes, it did.
+E2507.7	Uncle	Well then, I suppose I'll go and get the kiln ready...
+
+# --- E2520: H17 -- the woodshed
+E2520.0	Aunt	Uncle says he's going to work hard and fire the kiln starting today. // Apparently if you don't go and watch at the right times, // you might miss the interesting parts, // so you go and watch lots of times too, Boku-kun...
+E2520.1	Aunt	Still, there really has been so little rain this summer.
+E2520.2	Aunt	I hope Grandma's house in Shikoku isn't suffering from a water shortage.
+
+# --- E2510: H26 -- the workshop
+E2510.0	Uncle	I've finished getting the kiln ready. // I'll light it in the evening, so come and watch, Boku-kun.
+E2510.1	Boku	Okay, I can't wait.
+
+# --- E2514: H15 -- the climbing kiln (the firing begins)
+E2514.0	Uncle	Boku-kun, you came, just like you promised. // Now, I'll light the fire in the kiln's firebox.
+E2514.1	Uncle	This kiln... // is built, as you can see, as if it's climbing the slope, so it's called a climbing kiln. // With the kiln this shape, when you burn a fire at the bottom, the heat rises by itself toward the top of the slope, // so you can bring the temperature inside up past a thousand degrees very efficiently. // That's why it's a hooot job, and not one I'm too keen on in midsummer.
+E2514.2	Boku	What happens after this?
+E2514.3	Uncle	First, for a while, I feed in lots of firewood every thirty or forty minutes. // Then, from around dawn, I gradually speed that up, and...
+E2514.4	Boku	So you're up all night.
+E2514.5	Uncle	Ahaha, well, of course. // And after that, around early tomorrow afternoon, when the inside reaches the target of 1,200 degrees, // I work hard to hold it there for about two hours...
+E2514.6	Boku	Uh-huh, uh-huh.
+E2514.7	Uncle	and around evening I seal up this firebox and put the fire out.
+E2514.8	Boku	And then it's done?
+E2514.9	Uncle	Yep! // But I have to wait for it to cool down on its own before opening the kiln, // so you'll have to wait till the evening of the day after tomorrow to meet what's been fired.
+E2514.10	Boku	Whew... that's a long wait.
+E2514.11	Uncle	I'm getting hungry already.
+
+# --- E2515: H15 -- the climbing kiln, at night (the tanka)
+E2515.0	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it.
+E2515.1	Uncle	Tomorrow, around the time the sun comes up, // I'll need even more firewood than now, // so I'd better work hard and split it tonight...
+E2515.2	Boku	Hey, what does that poem just now mean?
+E2515.3	Uncle	Something like, "Once night falls, you really can feel the autumn now"... // that sort of thing.
+E2515.4	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it.
+E2515.5	Boku	.........
+# NOTE E2515.0: the uncle's tanka, 5-7-5-7-7 in classical grammar, as five short lines, literal
+#   (style guide § 10). "My child" can be read as the pots in the kiln, which is how he passes it
+#   off (.3); it is his dead son. Repeated at E2712.0.
+
+# --- E2530: G16 -- Moe's bed
+E2530.0	Moe	Hey, it's a strange story, but... // that story about the vice-principal hiding a treasure in the mountains around here... // Onee-chan just can't stop wondering about it...
+E2530.1	Moe	Where on earth could it be hidden? // There's no place in the mountains around here that looks like "treasure hidden here"...
+E2530.2	Moe	I was studying until morning...
+E2530.3	Moe	So I'd like to lie down a little longer.
+E2530.4	Moe	Oh, what's this?
+E2530.5	Boku	This... ana-ana-bobon.
+E2530.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+E2530.7	Boku	So it is a book from outer space.
+E2530.8	Moe	Dummy, this is English. En-glish!
+E2530.9	Boku	Onee-chan, can you understand English?
+E2530.10	Moe	Of course I can't. It's the class of the teacher I hate most.
+E2530.11	Moe	I'll try reading the letter a little.
+E2530.12	Boku	Yeah, let me hear it, let me hear it!
+E2530.13	(voice only)
+E2530.14	Moe	...The letter was in English too, I'm afraid.
+E2530.15	Boku	Aww, man...
+E2530.16	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
+E2530.17	Boku	...Onee-chan, are you doing that on purpose?
+E2530.18	Moe	Huh? What? Whaaat? What do you mean?
+E2530.19	Moe	I'll have that letter translated by dinner.
+E2530.20	Boku	Can you?
+E2530.21	Moe	Oh, be quiet! // When I think someone's secret is packed in here, my heart pounds with excitement... // and somehow my own misery feels lighter.
+
+# --- E2532: G17 -- the veranda (moratorium)
+E2532.0	Moe	Somehow it's been a sad summer...
+E2532.1	Boku	...?
+E2532.2	Moe	Sigh... // Maybe it's because it was fun that it feels sad when it ends.
+E2532.3	Boku	Isn't there next year?
+E2532.4	Moe	Next year is next year. This summer is only this year... // Oh, I see! So tha-at's why I wanted to stay a middle-schooler forever... // to stay just the way I am this summer... // Ahh... grown-ups call this a "moratorium"...
+E2532.5	Boku	It's all chinpun-kanpun to me...
+E2532.6	Moe	Ahaha... that sounds like a panda's name.
+E2532.7	Moe	Wow... a moratorium, huh...
+E2532.8	Boku	Sounds like a planetarium.
+E2532.9	Boku	Hey, I picked up something strange, deep in the cave.
+E2532.10	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
+E2532.11	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2532.12	Boku	But whose is it?
+E2532.13	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
+E2532.14	Moe	From tomorrow...
+E2532.15	Boku	What?
+E2532.16	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+# NOTE E2532.4-.8: "moratorium" was the 1970s word for postponed adulthood; moratorium and
+#   planetarium are both loanwords in the Japanese (style guide § 8 kind 2). Chinpun-kanpun,
+#   gibberish, sounds like the names of the pandas Kang Kang and Lan Lan, at Ueno Zoo from 1972
+#   (kind 3, the word showing).
+
+# --- E2540: H10 -- garden corner where Shirabe watches ants
+E2540.0	Shirabe	Dad seems to be actually working today, for once.
+E2540.1	Shirabe	In winter, they bake sweet potatoes in the climbing kiln while they're at it.
+E2540.2	Shirabe	Hey, the person in the letter Onee-chan read, what happened to him after that?
+E2540.3	Boku	Nobody knows, she says.
+E2540.4	Shirabe	He sounds kind of dashing, doesn't he?
+E2540.5	Boku	You think so? But he'd be an old man by now.
+E2540.6	Shirabe	Where there's love, a difference in age doesn't matter.
+
+# --- E2541: G06 -- TV room
+E2541.0	Shirabe	Tonight Dad's stuck by the kiln all night long...
+E2541.1	Shirabe	So tonight I won't have to fight over the channel.
