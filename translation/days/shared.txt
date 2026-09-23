@@ -799,3 +799,50 @@ E1754.8	Boku	Secret?
 E1754.9	Fat	Yep! Go through here and you're at Dragon God Pond or Mt. Teppen in no time.
 E1754.10	Guts	Anyway, try pressing the button.
 E1754.11	Boku	Huh, where on earth is this...
+
+# --- E1805: H05 -- the morning-glory trellis; I03 -- close-up
+E1805.0	Boku	Auntieee, Auntieee! // It looks like the morning glories have kind of withered.
+E1805.1	Aunt	Oh, so they have... I suppose their time was up. // I think we'll get lots and lots of healthy morning-glory seeds from them now. // Boku-kun... thank you for your hard work.
+
+# --- E1861: B13 -- Saori's camera trap (the first meeting)
+E1861.0	Woman	Hey. Good work.
+E1861.1	Boku	Who are you?
+E1861.2	Woman	Give your own name first, Boy Number One.
+E1861.3	Boku	I'm Boku.
+E1861.4	Woman	Huh? You're you? Then from today, you're Boku-kun.
+E1861.5	Boku	I told you, that's right.
+E1861.6	Woman	Weird kid.
+E1861.7	Boku	Look who's talking.
+E1861.8	Woman	This device, see, has a sensor here...
+E1861.9	Boku	I haven't asked anything yet!
+E1861.10	Woman	You were going to anyway, right?
+E1861.11	Boku	Then I won't.
+E1861.12	Woman	I'll smack you.
+E1861.13	Boku	Don't.
+E1861.14	Woman	This sensor detects anything that passes through here, // and the flash goes off and the shutter clicks.
+E1861.15	(voice only)
+E1861.16	Boku	What are you taking pictures of?
+E1861.17	Woman	Wolves.
+E1861.18	Boku	Huh?
+E1861.19	Woman	The Japanese wolf... Well, you probably don't know what that is anyway.
+E1861.20	Boku	Are you the Wolf Girl?
+E1861.21	Woman	Huh?
+E1861.22	Boku	And they said the Bath Lady, too...
+E1861.23	Woman	Gahaha... Who on earth are you?
+E1861.24	Boku	A human.
+E1861.25	Woman	Ahh, a brat's life-size jokes kind of throw me off.
+E1861.26	Woman	I'm Saori. I'm a student at a university in Sendai. My major is natural science...
+E1861.27	Boku	I'm Boku! I'm a grade-schooler at a school in the city, and my teacher is Nakajima-sensei!
+E1861.28	Saori	What's that supposed to be?
+E1861.29	Saori	And there's a mic here, and when it picks up a sound, it starts recording.
+E1861.30	(voice only)
+E1861.31	(voice only)
+E1861.32	(voice only)
+E1861.33	Saori	Like that.
+E1861.34	Saori	Come to my tent tomorrow. // I've got loads of interesting books.
+# NOTE E1861.3-.5: "Boku wa Boku" is both "I'm Boku" and "I'm me"; she takes the second, and he
+#   insists he meant the first (style guide § 1). The same construction returns at .27.
+
+# --- E1850: A18 -- the secret base
+E1850.0	Specs	Hey, they say the yo-yo champion has come as far as the next town!
+E1850.1	Fat	Champion? Oh, you mean yours truly.

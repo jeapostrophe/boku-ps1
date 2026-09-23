@@ -1,0 +1,80 @@
+# day18 (translation/days/README.md)
+# --- E1821: G03 -- kitchen
+E1821.0	Aunt	I hope it turns out well...
+E1821.1	Boku	What are you talking about?
+E1821.2	Aunt	Hm-hm... a maiden's love story.
+E1821.3	Aunt	Somehow it's making even me feel wistful.
+E1821.4	Boku	Moe-neechan seems kind of down.
+E1821.5	Aunt	Hm-hm, I see. So that's how it went... // But every girl has times like that.
+E1821.6	Boku	You too, Auntie?
+E1821.7	Aunt	Yes, that's right.
+E1821.8	Boku	Women sure are deluxe.
+E1821.9	Aunt	...Don't you mean delicate?
+E1821.10	Boku	...That.
+E1821.11	Aunt	Leave Onee-chan be today, all right?
+# NOTE E1821.8-.9: deluxe for delicate, two English loanwords in the Japanese too (style guide
+#   § 8 kind 2); they come back swapped on day 22 (E2203).
+
+# --- E1802: G02 -- after breakfast (the letter comes)
+E1802.0	Uncle	Gochisosama deshita.
+E1802.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1802.2	(unlabelled)	Maaail!
+E1802.3	Aunt	Comiiing!
+E1802.4	Moe	Wh-wh-whoa!
+E1802.5	Moe	I'll go get it!
+E1802.6	Aunt	An important, important letter...
+
+# --- E1820: H06 -- garden off the veranda (the same talk as E1821)
+E1820.0	Aunt	I hope it turns out well...
+E1820.1	Boku	What are you talking about?
+E1820.2	Aunt	Hm-hm... a maiden's love story.
+E1820.3	Aunt	Somehow it's making even me feel wistful.
+E1820.4	Boku	Moe-neechan seems kind of down.
+E1820.5	Aunt	Hm-hm, I see. So that's how it went... // But every girl has times like that.
+E1820.6	Boku	You too, Auntie?
+E1820.7	Aunt	Yes, that's right.
+E1820.8	Boku	Women sure are deluxe.
+E1820.9	Aunt	...Don't you mean delicate?
+E1820.10	Boku	...That.
+E1820.11	Aunt	Leave Onee-chan be today, all right?
+
+# --- E1812: G01 -- living room
+E1812.0	Uncle	Something I heard at the barber's today: // our watermelons are getting a name for themselves down in the village as pretty good.
+E1812.1	Uncle	Especially among the children, it seems. // They're for our own use, so they shouldn't be on sale anywhere...
+
+# --- E1803: G02 -- dinner
+E1803.0	Moe	...Sigh... I'm not hungry.
+E1803.1	Boku	What's wrong?
+E1803.2	Shirabe	Stuuupid.
+E1803.3	Uncle	Well then, itadakimasu!
+E1803.4	Shirabe, Moe, Boku, Aunt	Itadakimasu!
+
+# --- E1830: G16 -- Moe's bed
+E1830.0	Boku	Onee-chan, what's wrong?
+E1830.1	Moe	......
+E1830.2	Boku	Does something hurt?
+E1830.3	Moe	Sorry, right now I...
+E1830.4	Boku	What's wrong?
+E1830.5	Moe	...Nngh.
+E1830.6	Moe	Leave me alone...
+
+# --- E1831: G16 -- Moe's bed
+E1831.0	Moe	I don't feel like doing anything anymore... // I wonder if I'll just go on like this, not eating, and die...
+E1831.1	Moe	I'm such an idiot.
+
+# --- E1840: H09 -- garden corner where Shirabe watches ants
+E1840.0	Shirabe	Somehow I have a feeling there'll be a rain of blood today. A blood ame.
+E1840.1	Boku	A blood ame? Blood candy?
+E1840.2	Shirabe	Yes. I have a bad feeling about it.
+E1840.3	Shirabe	Some great big misfortune is coming to somebody!
+# NOTE E1840.0-.1: ame is both rain and candy, a homophone (style guide § 8 kind 3): translated
+#   literally, with the Japanese word showing.
+
+# --- E1841: G06 -- TV room
+E1841.0	Shirabe	You don't understand a maiden's heart at all, do you?
+E1841.1	Boku	...I'm a kid.
+E1841.2	Shirabe	You're the typical type who has trouble with women.
+
+# --- E1804: G02 -- after dinner
+E1804.0	Uncle	Gochisosama deshita.
+E1804.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
