@@ -265,9 +265,11 @@ ANCHORS: dict[str, tuple[str, int]] = {
 }
 """One `lui` per array whose address pair the walk reads the array's start from -- the
 reader's own pointer, so an image a build relocated an array in is walked where the game
-will look (`boku.pointers`, `PLAN PIPE-07`). On the import each resolves to the catalogue's
-own address, and every reference `boku.pointers.scan` finds is checked against the list on
-the real disc (`tests/test_real_pointers.py`)."""
+will look (`boku.pointers`, `PLAN PIPE-07`). A raw (`R`) array never moves, so `locate`
+takes the catalogue's address for it and its anchor only feeds the pointer checks. On the
+import each resolves to the catalogue's own address, and every reference
+`boku.pointers.scan` finds is checked against the list on the real disc
+(`tests/test_real_pointers.py`)."""
 
 COUNTED_CELLS: dict[str, range] = {"exe@80029AFC.0": range(1, 4)}
 """Items whose cells the program overwrites before drawing: `ant_msg_open` (0x80032030)
@@ -287,7 +289,8 @@ def relocatable(array: ArrayDef) -> bool:
 def byte_limit(line_id: str, size: int) -> int | None:
     """What an array item's English is held to: its own `size` bytes, or `None` when a
     grown array moves whole and only the free space limits it (`boku.array_relocate`).
-    The build and the lint both ask here, so they refuse the same items."""
+    The build and the lint both ask here, so they refuse the same items. A banner's items
+    (`boku.code_text.BANNERS`) are laid out elsewhere and never ask."""
     array = array_of(line_id)
     return None if array is not None and relocatable(array) else size
 
@@ -330,7 +333,9 @@ class ArrayWalk:
 def locate(archive: Archive, array: ArrayDef) -> tuple[str, int]:
     """`(image, RAM)` where the reader will find `array`: its anchor pair, read."""
     anchor = ANCHORS.get(array.line_id_prefix)
-    if anchor is None:
+    if anchor is None or not relocatable(array):
+        # A raw array never moves; a banner's English is elsewhere, reached by a hook that
+        # may cover the anchor itself (boku.code_text.BANNERS).
         return array.image, array.ram
     image, lui = anchor
     ram = resolve_at(lambda at, n: archive.image_bytes(image, at, n), lui)

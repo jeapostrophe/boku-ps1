@@ -45,7 +45,8 @@ address	image	name	kind	note
 800377f8	exe	count_label_draw	function	"n wins m losses": immediates 0x26A / 0x4B9, x shifts by digit count
 800379ec	exe	sysmsg_draw	function	(u16 *arr, line, x, y, vertical): 12 px; vertical != 0 steps y instead. Returns glyph count
 80037ba8	exe	sysmsg_line_draw	function	(line, x, y, vertical, no_tpage): remaps 4 line ids, draws from g_sysmsg_text
-8003a7a4	exe	mc_slot_labels_draw	function	3 single glyphs stacked at x=0x9A, 28 px apart
+8003a7a4	exe	fortune_draw	function	the fortune result: 3 single glyphs stacked at x=0x9A, 28 px apart
+8003a6a8	exe	fortune_panel_draw	function	the fortune's panel, rect at 0x8003DA90
 8003c5ec	exe	sys_title_draw	function	line n of 0x8003DA4C at (0x88|0x82, 0x48), horizontal 12 px
 8003fea4	exe	cage_hud_draw	function	insect name, then icons placed at x + count*12
 800400f8	exe	number_draw	function	sprite digits (not font glyphs)
@@ -96,7 +97,8 @@ address	image	name	kind	note
 800803d8	TITLE	title_line5_draw	function	line 5 of 0x8003DA00 at (0x72, 0x50)
 80080484	TITLE	title_stats_draw	function	digits and immediates
 80080680	TITLE	title_lines_draw	function	lines of 0x8003DA00
-8007c684	TAKO	tako_slot_labels_draw	function	4 single glyphs stacked at x=0x9A
+8007c684	TAKO	tako_crash_draw	function	the crash banner: 4 single glyphs stacked at x=0x9A
+8007c5b0	TAKO	tako_panel_draw	function	the crash banner's panel, rect from four addiu v0 literals
 8007c604	MUSI	musi_label_draw	function	glyph row from 0x80079D50 at y=0x9C
 8007edb0	MUSI	musi_grid_labels_draw	function
 80084f64	MUSI	musi_move_name_draw	function	line n of MUSI +0x2C at (0x8C, 0xA0|0xB4)

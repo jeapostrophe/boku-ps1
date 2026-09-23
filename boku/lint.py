@@ -32,9 +32,10 @@ What it checks, and where each rule comes from
 * **`select-width`** -- a select line cannot wrap; a second line would be a second option.
   Measured against the row the renderer draws (`renderer_for`), not the band.
 * **`array-bytes`** -- a code-file array item has no slack, and one that cannot move (a raw
-  row, `boku.arrays.byte_limit`) is held to its own bytes. A menu held in a code file (an
-  **S** array) is written as a `[SEL]` row and checked like a select -- its line count is
-  the original's -- and for its bytes like an array.
+  row, `boku.arrays.byte_limit`) is held to its own bytes -- except a banner's, which is
+  written elsewhere whole and held to its box (`boku.code_text.BANNERS`). A menu held in a
+  code file (an **S** array) is written as a `[SEL]` row and checked like a select -- its
+  line count is the original's -- and for its bytes like an array.
 * **`array-room`** -- a grown array moves whole (`boku.array_relocate`), so what limits it
   is the free space: the build's own allocation, over this import and the edit set's
   regions, and a refusal names the array's laid-out lines.
@@ -105,6 +106,8 @@ from boku.arrays import byte_limit
 from boku.boxes import TextBox, box_for, box_spec_for
 from boku.code_text import (
     DATE_LABELS,
+    banner_of,
+    lay_out_banner,
     lay_out_code_label,
     lay_out_date_label,
     lay_out_save_title,
@@ -572,6 +575,20 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
             detail = problem.split(": ", 1)[-1]
             unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
             context.say(row, "unencodable" if unencodable_cell else "date-label", ERROR, detail)
+        if not laid.problems:
+            context.array_words[row.line_id] = laid.words  # placed like an array
+        return
+    if banner_of(row.line_id) is not None:
+        laid = lay_out_banner(
+            row.line_id,
+            " ".join(row.entry.pages),
+            context.options.encoder,
+            box_spec_for(row.line_id, context.options.boxes),
+        )
+        for problem in laid.problems:
+            detail = problem.split(": ", 1)[-1]
+            unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
+            context.say(row, "unencodable" if unencodable_cell else "array-width", ERROR, detail)
         if not laid.problems:
             context.array_words[row.line_id] = laid.words  # placed like an array
         return

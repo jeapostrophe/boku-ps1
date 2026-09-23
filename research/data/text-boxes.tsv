@@ -41,3 +41,5 @@ exe@80046314.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED
 exe@80046334.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
 title@7A78.0	112	299	12	1	18 the card screens' two answers (TITLE)	the card panel's inner edge, as the messages'; the second answer starts at 0xAC (boku.layout.ANSWER_PAIR)
 exe@8003DA00.5	114	248	12	1	20 summer-memories quiz rate (TITLE)	the quiz-rate popup's tile, x 112..248 (asm/title.asm); the label shares it with the day count and the percentage below
+exe@80036750.*	108	212	12	1	10 fortune banner	the banner panel (boku.code_text BANNERS) less 8 px a side, centred as the line is
+tako@440.*	108	212	12	1	22 kite crash banner (TAKO)	the banner panel (boku.code_text BANNERS) less 8 px a side, centred as the line is

@@ -731,6 +731,29 @@ re-derives every pen from the game's bytes):
 Not measured, so held to their bytes alone: kite names, fishing, the fish names, insect
 names and the `HHON`/`MUSI` surfaces.
 
+### The banners
+
+Two raw arrays are drawn a glyph per row down the middle of a tall panel: the fortune
+(`exe@80036750`, four results of three cells, `fortune_draw`) and the kite crash (`tako@440`,
+four cells, `tako_crash_draw`). English does not stack, so in English each is one line
+centred on the retail column in a panel made wide and centred where the retail one was
+(`boku.code_text.BANNERS` holds the geometry). `boku build` hooks the drawer's entry to
+`asm/banners.asm` (as the date labels are hooked) only when the array is translated, writes
+the items — each ended by `0x8000`, an untranslated one as its retail cells — anywhere
+resident with the line's centre and y in front, and widens the panel in the same edits
+(`fortune_panel_draw` reads its rect from `0x8003DA90`; `tako_panel_draw` builds it from four
+`addiu v0,zero,n`). The
+fortune routine still counts the three draws and leaves the count at `0x8003DD1D`, as the
+retail drawer does. `tests/test_real_banners.py` runs both hooked drawers on the days
+build; the box is `research/data/text-boxes.tsv`'s.
+
+Proven with the real English by forcing each screen (`tools/vwf/shoot-menus.sh`, Beetle):
+the crash by setting TAKO's state (`0x8003DE10`) to 2 while the kite flies, "Crashed!"
+centred in the wide panel; the fortune — its event (`E0443`, map `A11`, `PROG 0`) was not
+reached — by a trampoline that draws it every field frame, "Great Luck!" centred in the
+panel. The same trampoline on Redux, from a breakpoint,
+drew "Great Luck!" and "Terrible Luck!" in the `A11` shrine.
+
 ### Screens behind a save (2026-09-23)
 
 Reached on both emulators with generated cards (`./make.sh saves`,
@@ -775,7 +798,7 @@ specification.
 | 7 | `date_label_draw_b` | unreferenced | — | **C** | table |
 | 8 | EXE `count_label_draw` `0x800377F8` | none: `0x26A`, `0x4B9` at offsets chosen by digit count | — | **C** | table |
 | 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with the contract change, installed** (`asm/walkers.asm`): both passes add the glyph's width to `s2`, so the return value is pixels, and the five consumers take it — the cage HUD and HHON's label (`move v1,v0`), MUSI's stat line, and MUSI's two right-aligned names at `SUMO_FIELD − width` (the `sllv … s5` block: `s5` is 1, set at `0x8007D7C8`, so both were 12 × (8 − n); the count comes from drawing the name off screen at x 0x258 first). The down pass (`a3` ≠ 0) is left stock: no call in any image uses it | tested |
-| 10 | EXE `mc_slot_labels_draw` `0x8003A7A4` — really the fortune result (`大吉！` …), three glyphs stacked vertically at x `0x9A` | rows, not a pen | — | **C** | table |
+| 10 | EXE `fortune_draw` `0x8003A7A4` (the fortune result, three glyphs stacked vertically at x `0x9A` in a tall panel) | rows, not a pen | — | **banner**: hooked at its entry to `asm/banners.asm`'s `vwf_fortune_banner`, one centred line in a wide panel (§ "The banners") | **proven** (forced) |
 | 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |
 | 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
 | 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | **proven** (descriptions) |
@@ -788,7 +811,7 @@ specification.
 | 20a | `TITLE 0x800803D8` (extras label 5) | `0x80080468` in a branch delay slot; hook at `0x8008045C addiu s0,s0,2` | `s1` · `-2(s0)` | **A** | **proven** (forced) |
 | 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | **proven** |
 | 21 | `TITLE 0x80080484` (extras numbers `／ 3 1 ％`) | none | — | **C** | table |
-| 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **C** | table |
+| 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **banner**: `vwf_crash_banner`, as row 10 | **proven** (forced) |
 | 23 | `MUSI 0x8007C604` (button hint, 7 glyphs, bound `slti 7`) | x recomputed from the index: `0x8007C700 sll a1,a1,2` + `addiu a1,a1,0x78` | index | **B**: the glyph count is a code constant; hooking means recomputing x as a prefix sum | table |
 | 24 | `MUSI 0x8007EDB0` (strength labels, 3 rows × 3 cells) | x from the index at 16 px (`0x8007EE1C`) and 12 px (`0x8007EE78`), bounds `slti 2`/`3` | index | **B**: the row stride and bounds fix the cell count, so a translation rewrites the array and the bounds anyway | table |
 | 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |

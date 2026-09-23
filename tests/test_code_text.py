@@ -5,11 +5,13 @@ from __future__ import annotations
 import pytest
 
 from boku.arrays import SAVE_TITLE_BYTES, SAVE_TITLE_LINE_ID, CodeLabel
+from boku.boxes import box_spec_for
 from boku.code_text import (
     DAY,
     SLOT,
     code_label_edits,
     full_width,
+    lay_out_banner,
     lay_out_code_label,
     lay_out_save_title,
     save_title_parts,
@@ -139,3 +141,17 @@ def test_ascii_strict_shift_jis_has_no_full_width_code_for_still_titles(typed):
     """U+FF0D, U+FF5E and U+FF02 exist only in cp932; the card's BIOS draws the JIS forms."""
     parts = save_title_parts(f"Boku{typed}{SLOT}{DAY}")
     assert not isinstance(parts, str), parts
+
+
+def test_a_banner_item_is_its_cells_ended_by_0x8000_and_held_to_its_box():
+    box = box_spec_for("tako@440.0")
+    fits = lay_out_banner("tako@440.0", "WaL", CELLS, box)
+    assert fits.words == (700, 702, 701, 0x8000) and not fits.problems
+    w = CELLS.cells["W"][1]
+    n = box.width // w + 1
+    wide = lay_out_banner("tako@440.0", "W" * n, CELLS, box)
+    assert wide.problems and wide.problems[0].endswith(f"{w * n - box.width} over")
+
+
+def test_a_banner_item_with_no_english_is_refused():
+    assert lay_out_banner("tako@440.0", "", CELLS, None).problems

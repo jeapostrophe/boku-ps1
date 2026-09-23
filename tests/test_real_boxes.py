@@ -19,6 +19,7 @@ import pytest
 from boku import REPO_ROOT
 from boku.archive import Archive
 from boku.boxes import EVERY_ITEM, box_for, load_boxes
+from boku.code_text import BANNERS, LABEL_PITCH
 from boku.extract import SCRIPT_DIR_NAME
 from boku.layout import ANSWER_PAIR
 from boku.script_store import load_store
@@ -189,6 +190,7 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         **dict.fromkeys(FISH, step(0x800438B8)),  # fish_msg_draw -> text_draw_h
         "exe@8003DA00": step(0x80080790, "TITLE.OVL"),  # extras_draw
         "title@7A78": step(0x8007D050, "TITLE.OVL"),  # the answers' drawer
+        **dict.fromkeys(BANNERS, LABEL_PITCH),  # asm/banners.asm steps as the labels do
     }
     help_line = step(0x80035490)  # help_line_draw: lines 19, 20
     # Letter-spaced lines add a second addiu after the step: config line 1, extras 0 and 3.

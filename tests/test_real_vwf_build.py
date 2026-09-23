@@ -45,7 +45,7 @@ from boku.build import (
     load_edit_set,
     verify_written_sectors,
 )
-from boku.code_text import DATE_LABELS, lay_out_code_label
+from boku.code_text import BANNERS, DATE_LABELS, drawer_of, lay_out_code_label
 from boku.disc import DiscImage
 from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
@@ -421,9 +421,11 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
     elsewhere = 0
     for entry in moved:
         to = int(entry["to"], 16)
-        if entry["array"] in DATE_LABELS:  # hooked at its drawer's entry: lui t0 / j / addiu
-            image, function = entry["array"].split("@code:")
-            hook = built.image_bytes(image, int(function, 16), 12)
+        if entry["array"] in DATE_LABELS or entry["array"] in BANNERS:
+            # hooked at its drawer's entry: lui t0 / j / addiu
+            banner = BANNERS.get(entry["array"])
+            image, function = banner.drawer if banner else drawer_of(entry["array"])
+            hook = built.image_bytes(image, function, 12)
             high = int.from_bytes(hook[0:4], "little") & 0xFFFF
             low = int.from_bytes(hook[8:12], "little") & 0xFFFF
             assert ((high << 16) + (low - 0x10000 if low & 0x8000 else low)) & 0xFFFFFFFF == to

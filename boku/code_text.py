@@ -20,14 +20,15 @@ overwrite (`script_store.PLACED_BY_CODE`):
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import struct
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from unicodedata import normalize
 
 from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, Archive
-from boku.arrays import CODE_LABEL_MARK, SAVE_TITLE_BYTES, CodeLabel
-from boku.glyphs import END_WORD, PAD_WORD
-from boku.layout import Encoder, LaidOut, _sheet, sheet_cells
+from boku.arrays import CODE_LABEL_MARK, SAVE_TITLE_BYTES, CodeLabel, array_of
+from boku.glyphs import END_WORD, PAD_WORD, words_to_bytes
+from boku.layout import BoxSpec, Encoder, LaidOut, _sheet, sheet_cells
 from boku.reinsert import ByteEdit
 
 
@@ -220,18 +221,25 @@ def lay_out_date_label(line_id: str, text: str, encoder: Encoder) -> LaidOut:
 
 
 def date_label_hook(archive: Archive, line_id: str, text: int, routine: int) -> ByteEdit:
-    """The three words over the drawer's entry that hand it to `routine` with `t0 = text`.
+    """`drawer_hook` over a date label's drawer."""
+    image, ram = drawer_of(line_id)
+    return drawer_hook(archive, image, ram, text, routine, line_id)
+
+
+def drawer_hook(
+    archive: Archive, image: str, ram: int, text: int, routine: int, what: str
+) -> ByteEdit:
+    """The three words over a drawer's entry that hand it to `routine` with `t0 = text`.
 
     The retail drawer's first three instructions are replaced, never run: the jump leaves
     before its frame is made, and `t0` is a temporary no caller keeps."""
-    image, ram = drawer_of(line_id)
     words = (
         0x3C080000 | ((text + 0x8000) >> 16) & 0xFFFF,  # lui t0, hi(text)
         0x08000000 | (routine >> 2) & 0x03FFFFFF,  # j routine
         0x25080000 | text & 0xFFFF,  # addiu t0, t0, lo(text)
     )
     new = b"".join(word.to_bytes(4, "little") for word in words)
-    return _code_edit(archive, image, ram, new, f"{line_id}: into {routine:#010x} (PLAN PIPE-07)")
+    return _code_edit(archive, image, ram, new, f"{what}: into {routine:#010x} (PLAN PIPE-07)")
 
 
 def drawer_of(line_id: str) -> tuple[str, int]:
@@ -248,3 +256,121 @@ def _code_edit(archive: Archive, image: str, ram: int, new: bytes, reason: str) 
     return ByteEdit(
         ARCHIVE_NAME, archive.overlay_offset(f"{image.upper()}.OVL", ram), old, new, reason
     )
+
+
+# --- the two banners ------------------------------------------------------------------------
+
+BANNER_PANEL_X = 100
+BANNER_PANEL_W = 120
+BANNER_PANEL_H = 36
+"""Both banners' panel once it holds one horizontal line: x 100..220, so centred on the
+retail column (glyphs at x 154, `LABEL_PITCH` wide), and 36 tall, centred where the retail
+panel was. The line is centred on `BANNER_CENTRE`, which the text hands `asm/banners.asm`."""
+
+BANNER_CENTRE = BANNER_PANEL_X + BANNER_PANEL_W // 2
+
+
+@dataclass(frozen=True)
+class Banner:
+    """A raw array its drawer stacks vertically in a tall panel (`asm/banners.asm`). In
+    English its items become cells ended by `0x8000`, drawn by `routine` as one centred line,
+    and the panel is made wide: at `rect`, the retail `(x, y, w, h)` as four halfwords, or
+    at `literals`, as four `addiu v0,zero,n` words."""
+
+    routine: str
+    drawer: tuple[str, int]
+    retail: tuple[int, int, int, int]
+    rect: tuple[str, int] | None = None
+    literals: tuple[str, tuple[int, int, int, int]] | None = None
+
+    @property
+    def panel(self) -> tuple[int, int, int, int]:
+        """The wide panel, centred on the retail one's middle row."""
+        _, y, _, h = self.retail
+        return BANNER_PANEL_X, y + (h - BANNER_PANEL_H) // 2, BANNER_PANEL_W, BANNER_PANEL_H
+
+    @property
+    def y(self) -> int:
+        """The line's y: centred in the panel."""
+        _, top, _, h = self.panel
+        return top + (h - LABEL_PITCH) // 2
+
+    def panel_edits(self) -> list[tuple[str, int, bytes]]:
+        """`(image, RAM, new bytes)` over the retail rect."""
+        if self.rect is not None:
+            return [(*self.rect, struct.pack("<4h", *self.panel))]
+        image, rams = self.literals
+        return [
+            (image, ram, (0x24020000 | value).to_bytes(4, "little"))
+            for ram, value in zip(rams, self.panel, strict=True)
+        ]
+
+
+BANNERS: dict[str, Banner] = {
+    "exe@80036750": Banner(  # fortune_panel_draw 0x8003A6A8 reads the rect at 0x8003DA90
+        "vwf_fortune_banner", ("exe", 0x8003A7A4), (125, 26, 70, 108), rect=("exe", 0x8003DA90)
+    ),
+    "tako@440": Banner(  # tako_panel_draw 0x8007C5B0 builds it from four literals
+        "vwf_crash_banner",
+        ("tako", 0x8007C684),
+        (125, 66, 70, 108),
+        literals=("tako", (0x8007C610, 0x8007C618, 0x8007C620, 0x8007C628)),
+    ),
+}
+"""The fortune (`fortune_draw`, four results) and the kite crash (`tako_crash_draw`)."""
+
+
+def banner_of(line_id: str) -> Banner | None:
+    return BANNERS.get(line_id.split(".", 1)[0])
+
+
+def is_laid_out_banner(words: Sequence[int]) -> bool:
+    """Words `lay_out_banner` made (ended by `0x8000`), not an item's retail cells."""
+    return tuple(words[-1:]) == (END_WORD,)
+
+
+def lay_out_banner(line_id: str, text: str, encoder: Encoder, box: BoxSpec | None) -> LaidOut:
+    """A banner item as cells ended by `0x8000`, no wider than its measured `box`."""
+    laid = sheet_cells(encoder, text, LABEL_PITCH)
+    problems = [f"{line_id}: {p}" for p in laid.problems]
+    if not text:
+        problems.append(
+            f"{line_id}: no English was given for this array item; writing it empty would "
+            f"blank an item the game still draws"
+        )
+    if box is not None and laid.width > box.width:
+        problems.append(
+            f"{line_id}: {text!r} is {laid.width} px and {box.name} holds {box.width}, "
+            f"{laid.width - box.width} over"
+        )
+    return LaidOut(line_id, (*laid.cells, END_WORD), ((text,),), ((laid.width,),), tuple(problems))
+
+
+def banner_blob(archive: Archive, prefix: str, words: Mapping[str, Sequence[int]]) -> bytes:
+    """What the hook points `t0` at: the line's centre x and y, then every item -- its
+    English, or the retail cells of one left untranslated (or handed in as those cells) --
+    each ended by `0x8000`."""
+    array = array_of(prefix)
+    rows, cells = array.spec
+    out = struct.pack("<2h", BANNER_CENTRE, BANNERS[prefix].y)
+    for row in range(rows):
+        new = words.get(f"{prefix}.{row}")
+        if new is not None and is_laid_out_banner(new):
+            out += words_to_bytes(new)
+        else:
+            out += archive.image_bytes(array.image, array.ram + 2 * cells * row, 2 * cells)
+            out += words_to_bytes([END_WORD])
+    return out
+
+
+def banner_edits(archive: Archive, prefix: str, text: int, routine: int) -> list[ByteEdit]:
+    """The hook over the banner's drawer and the wide panel."""
+    banner = BANNERS[prefix]
+    image, ram = banner.drawer
+    return [
+        drawer_hook(archive, image, ram, text, routine, prefix),
+        *(
+            _code_edit(archive, im, at, new, f"{prefix}: the banner's panel (PLAN TXT-05)")
+            for im, at, new in banner.panel_edits()
+        ),
+    ]

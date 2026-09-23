@@ -181,6 +181,7 @@ vwf_select_box:
     nop
 
 .include "labels.asm"
+.include "banners.asm"
 
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build

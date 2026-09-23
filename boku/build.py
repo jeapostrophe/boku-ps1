@@ -70,8 +70,11 @@ from boku.arrays import (
 )
 from boku.boxes import box_for, box_spec_for
 from boku.code_text import (
+    BANNERS,
     DATE_LABELS,
+    banner_of,
     code_label_edits,
+    lay_out_banner,
     lay_out_code_label,
     lay_out_date_label,
     lay_out_save_title,
@@ -522,13 +525,17 @@ class EditSet:
 
     @property
     def label_routines(self) -> dict[str, int]:
-        """The date labels' routines this renderer assembled (`asm/labels.asm`), by symbol,
-        read out of the island's record; empty for an edit set without them."""
+        """The routines this renderer assembled for the date labels (`asm/labels.asm`) and
+        the banners (`asm/banners.asm`), by symbol, read out of the island's record; empty
+        for an edit set without them."""
         gap = self.document.get("gap")
         symbols = gap.get("symbols", {}) if isinstance(gap, dict) else {}
         return {
             symbol: int(symbols[symbol], 16)
-            for symbol in (label.routine for label in DATE_LABELS.values())
+            for symbol in (
+                *(label.routine for label in DATE_LABELS.values()),
+                *(banner.routine for banner in BANNERS.values()),
+            )
             if symbol in symbols
         }
 
@@ -753,6 +760,11 @@ def lay_out(
                     (),
                 )
             )
+            continue
+        if banner_of(entry.line_id) is not None:
+            text = " ".join(entry.pages)
+            laid = lay_out_banner(entry.line_id, text, encoder, box_spec_for(entry.line_id))
+            out.append(LineResult(entry.line_id, laid, laid.problems))
             continue
         kind = sites[0].kind.split("+")[0]
         if kind.startswith("SEL"):

@@ -35,7 +35,16 @@ from boku.arrays import (
     relocatable,
     walk_all,
 )
-from boku.code_text import DATE_LABELS, date_label_hook, drawer_of, split_title_blob
+from boku.code_text import (
+    BANNERS,
+    DATE_LABELS,
+    banner_blob,
+    banner_edits,
+    date_label_hook,
+    drawer_of,
+    is_laid_out_banner,
+    split_title_blob,
+)
 from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
 from boku.pointers import LuiPair, PointerError, repoint, scan
@@ -332,6 +341,27 @@ def _date_units(
         yield _Unit(line_id, image, drawer, drawer, blob, (line_id,), (line_id,), hook=hook)
 
 
+def _banner_units(
+    archive: Archive, words: Mapping[str, Sequence[int]], routines: Mapping[str, int]
+) -> Iterator[_Unit]:
+    """A translated banner (`boku.code_text.BANNERS`): all its items written anywhere
+    resident, its drawer hooked to the edit set's routine with `t0` at them, and its panel
+    widened. The unit's "old" address is the drawer's, which is what the hook replaces."""
+    for prefix, banner in BANNERS.items():
+        lines = tuple(line for line in words if line.split(".", 1)[0] == prefix)
+        if not any(is_laid_out_banner(words[line]) for line in lines):
+            continue  # only its retail cells were handed in: the retail drawer draws them
+        image, drawer = banner.drawer
+        routine = routines.get(banner.routine)
+        hook = None
+        if routine is not None:
+            hook = lambda at, prefix=prefix, routine=routine: banner_edits(  # noqa: E731
+                archive, prefix, at, routine
+            )
+        blob = banner_blob(archive, prefix, words)
+        yield _Unit(prefix, image, drawer, drawer, blob, lines, lines, hook=hook)
+
+
 def plan_arrays(
     archive: Archive,
     words: Mapping[str, Sequence[int]],
@@ -351,18 +381,20 @@ def plan_arrays(
             *_block_units(archive, words),
             *_title_units(archive, words),
             *_date_units(archive, words, routines or {}),
+            *_banner_units(archive, words, routines or {}),
         )
     }
     if not units:
         return ArrayPlan((), (), frozenset(), sum(r.size for r in regions))
 
-    unhooked = [p for p, u in units.items() if p in DATE_LABELS and u.hook is None]
-    if unhooked:
-        raise ArrayRoomRefused(
-            f"{', '.join(unhooked)}: the English date label is drawn by the renderer patch's "
-            f"routine (asm/labels.asm), and this build installs no edit set that has it",
-            unhooked,
-        )
+    for kinds, what in ((DATE_LABELS, "date label"), (BANNERS, "banner")):
+        unhooked = [p for p, u in units.items() if p in kinds and u.hook is None]
+        if unhooked:
+            raise ArrayRoomRefused(
+                f"{', '.join(unhooked)}: the English {what} is drawn by a routine of the "
+                f"renderer patch, and this build installs no edit set that has it",
+                [line for p in unhooked for line in units[p].grown],
+            )
 
     def refusal(why: str, prefixes: Sequence[str]) -> ArrayRoomRefused:
         return ArrayRoomRefused(why, [line for prefix in prefixes for line in units[prefix].grown])

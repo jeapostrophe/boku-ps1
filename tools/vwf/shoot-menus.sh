@@ -74,6 +74,23 @@ beetle insects --state-in "$work/roam/free.state" --frames 1520 \
     --poke "3:800237E5=$previous" --poke 3:800237E0=0A --poke 3:800237E4=0A \
     --poke 3:80024728=01000000 --poke "3:800258E0=$arena" \
     --press 300:DOWN --shot 380:hub-page --poke 600:80080600=11000000 --shot 1500:grid
+# The two banners (research/vwf-prototype.md § "The banners"). The kite crash: TAKO (mode 6)
+# forced as above, the kite let fly, then TAKO's state 0x8003DE10 set to 2, the crash.
+kite=$(uv run python -c "
+import struct, sys
+ram = open(sys.argv[1], 'rb').read()
+u32 = lambda a: struct.unpack_from('<I', ram, a - 0x80000000)[0]
+print(struct.pack('<I', u32(u32(0x800236BC + 16 * 6 + 12))).hex())" "$work/roam/free.ram")
+beetle crash --state-in "$work/roam/free.state" --frames 1110 \
+    --poke "3:800237E5=$previous" --poke 3:800237E0=06 --poke 3:800237E4=06 \
+    --poke 3:80024728=01000000 --poke "3:800258E0=$kite" \
+    --press 400:CIRCLE --press 700:CIRCLE --poke 1000:8003DE10=02000000 --shot 1100:crash
+# The fortune, whose event was not reached: a trampoline poked into level C (empty in free
+# roam) calls fortune_panel_draw 0x8003A6A8, the glyph layer (1) and fortune_draw 0x8003A7A4,
+# then 0x800202BC, whose call at 0x800133B0 is pointed at it; the three draws are 2, 2, 2.
+beetle fortune --state-in "$work/roam/free.state" --frames 200 --poke 5:8003E052=020202 \
+    --poke 5:801FC000=F8FFBD270400BFAFAAE9000C000000002BAF000C01000424E9E9000C000000000400BF8F0800BD27AF80000800000000 \
+    --poke 10:800133B0=00F0070C --shot 190:fortune
 fi
 
 if [ "${ONLY:-redux}" = redux ]; then
