@@ -477,21 +477,18 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
       committed scene by scene. Harmed: the player.
-- [ ] **[TRN-08]** **The packet, redone to Jay's spec — the comparison.** The engineering is
-      DONE (2026-09-22): `boku packet` writes `system.md` once plus one part per event in the
-      day-file shape (Jay's drop list enforced by test), `boku save-event` saves a directed
-      translator's answers, `parse_rulings` returns every style-guide section, `boku lint`
-      warns `em-dash`, and `./make.sh mockup` draws every page with the sheet's glyphs at the
-      band geometry. **Comparison run DONE 2026-09-22** (`~/.claude/session-notes/boku-ps1/
-      2026-09-22-trn08-comparison.md`): days 1–7 + `shared.txt` re-translated blind through
-      the packet, reviewed against the Japanese and judged per line against the held draft —
-      816 rows: 270 identical, 433 old won, 62 new won, 51 combined; the merge is committed,
-      lints with 0 errors and draws 0 red mock-up lines. The judges traced most of the new
-      draft's losses to one packet defect: `system.md` carried only the glossary rows whose
-      Japanese the unit matched, not the whole glossary the spec names (Jay, 2026-09-22) —
-      being fixed with the translators' other packet findings. Left: after that fix, one day
-      re-translated through the corrected packet and judged the same way, so the packet is
-      judged on its spec rather than on the defect. Harmed: the translator and Jay.
+- [x] **[TRN-08]** **The packet, redone to Jay's spec, and the comparison.** DONE 2026-09-22
+      (`~/.claude/session-notes/boku-ps1/2026-09-22-trn08-comparison.md`): `boku packet`
+      writes `system.md` once — the day-file format, the whole style guide, the whole
+      glossary, `translation/checklist.md`, the day's summary — plus one part per event in the
+      day-file shape (Jay's drop list enforced by test); `boku save-event --order` saves a
+      directed translator's answers; `./make.sh mockup` draws every page with the sheet's
+      glyphs at the band geometry. Days 1–7 + `shared.txt` were re-translated blind and merged
+      per line with the held draft (816 rows: 270 identical, 433 old won, 62 new, 51
+      combined); the first run's packet filtered the glossary, and a fair re-run of day 5
+      through the fixed packet cut the draft's defects from 32 to 13 and won 1 line of 75
+      against the reviewed file — the packet makes a cleaner first draft, review still earns
+      its place. The translators' remaining packet findings were fixed in the same stretch.
 - [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the engineering is DONE
       (2026-09-22): `./make.sh packet --arrays` (42 surfaces: 34 arrays, 6 code labels, the
       save title, one code-held message), English in `translation/days/arrays.txt`, code-file
