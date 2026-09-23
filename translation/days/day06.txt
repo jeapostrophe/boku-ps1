@@ -4,7 +4,9 @@
 # 7:00 and sending Boku to G02, the dining room, where E0006 fires; E0007 follows at 8:00) is in
 # shared.txt. Format: translation/days/README.md. Policies: style-guide.md (all rulings settled
 # 2026-09-20), glossary.md, bible.md § 4 (day 6). E0650 is the reviewed sample
-# samples/kids-E0650.txt, reused word for word. Reviewed against the Japanese 2026-09-20.
+# samples/kids-E0650.txt, now diverging from it on six lines (see the E0650 header). Reviewed
+# against the Japanese 2026-09-20; merged line by line with the blind retranslation (PLAN TRN-08)
+# on 2026-09-22: work/retranslate/report/day06.md.
 #
 # Morning: E0605 (Shirabe wakes him — only if he went to Firefly Creek on the 5th, flag 26; there
 # is no calisthenics that day), then E0006 / E0007 (shared.txt). Free time from 8: E0620 (the aunt, the washing line),
@@ -19,7 +21,7 @@
 #     the futon; .0-.2 in G14, then .3-.4 in G13, then G02 at 7:00. No radio calisthenics today.
 E0605.0	Shirabe	Boo!
 E0605.1	Boku	Whoa!
-E0605.2	Shirabe	It's breakfast.
+E0605.2	Shirabe	It's breakfast time.
 E0605.3	Boku	Yeah... Huh? What about calisthenics?
 E0605.4	Shirabe	Sleepyhead!
 # NOTE E0605.0: "wa!" is the glossary's "Boo!" (§ 8) — she is startling him awake.
@@ -37,13 +39,13 @@ E0620.3	Aunt	Boku-kun, you're not hiding something from Auntie, are you?
 E0620.4	Boku	Huh? I don't think I'm hiding anything...
 E0620.5	Aunt	Is that sooo... // Last night, you went to Firefly Creek, didn't you.
 E0620.6	Boku	I'm sorry, but... // But how did you know?
-E0620.7	Aunt	Hm-hm... Just now, when I went to change your sheets, Boku-kun, // a visitor came out of your futon. // Auntie got a fright and flailed about, but somehow I managed to catch it.
+E0620.7	Aunt	Hm-hm... Just now, when I went to change your sheets, Boku-kun, // a visitor came out of your futon. // Auntie got a fright and flailed about, but somehow she managed to catch it.
 E0620.8	Boku	A firefly? A firefly came out?
 E0620.9	Aunt	But your bug cage looked full, so... // Auntie went to the creek and let it go.
 E0620.10	Boku	Ehhh... no way.
-E0620.11	Aunt	But the firefly got to be with Boku-kun until morning, too... // so I'd think it had fun, wouldn't you...
+E0620.11	Aunt	But the firefly got to be with Boku-kun until morning, // so maybe it had fun too...
 E0620.12	Aunt	Who knows? I wonder... // Look inside your own bug cage and check.
-E0620.13	Boku	Whoa — Auntie, thank you!
+E0620.13	Boku	Whoa... Auntie, thank you!
 E0620.14	Aunt	But a firefly, when you see it in the daytime, is just a longhorn beetle, isn't it.
 # NOTE E0620.0: "dassō" is a jailbreak, a soldier deserting — her joke about the night the warden
 #   was away; "make a break for it" is the same joke. E0620.7: "a visitor" is hers.
@@ -52,6 +54,7 @@ E0620.14	Aunt	But a firefly, when you see it in the daytime, is just a longhorn 
 # NOTE E0620.11, page 2: "-n ja nai no kana" is a soft affirmative — she is consoling him, not
 #   doubting the firefly's night. E0620.13: the "ee~" here is delighted surprise (he has just
 #   learned the firefly is in his cage), not the dismay of .10, so the two are spelled apart.
+# NOTE E0620.7, page 3: "obachan" is the subject of both verbs, so "she", not "I".
 
 # --- E0606: the television room (G06), examined, before 18:00. Voice only.
 E0606.0	(voice only)
@@ -84,10 +87,11 @@ E0614.1	Uncle	Ahh, a hot day like this is just when I want to eat cold watermelo
 
 # --- E0650: the secret base under the expressway (A18), before 18:00, the first visit after Guts
 #     has let Boku in (flag 25 == 2). Forced. Translated and reviewed in samples/kids-E0650.txt;
-#     reused here verbatim, notes and all.
+#     reused with notes, except .1 ("the city", glossary § 2), .2, .10, .13, .17 (the retranslation's,
+#     closer to the Japanese) and .11 (no quotation marks, style guide § 9).
 E0650.0	Megane	Here he comes, here he comes...
-E0650.1	Fat	I can smell it. The rotten wind of the big city.
-E0650.2	Guts	Hey, beansprout. Did you eat all your breakfast like a good boy?
+E0650.1	Fat	I can smell it. The rotten wind of the city.
+E0650.2	Guts	Beansprout, did you eat a proper breakfast before you came?
 E0650.3	(voice only)
 E0650.4	Guts	Let me introduce you. This is Boku-chan.
 E0650.5	Boku	Nice to meet you...
@@ -95,14 +99,14 @@ E0650.6	Guts	This one here is Mammoth Fatso.
 E0650.7	Fat	Shut up!
 E0650.8	Guts	We call him Fat. Be nice to him.
 E0650.9	Boku	What does that mean?
-E0650.10	Fat	Well, see, there was this foreign lady who came to help on a farm down in Sagi-no-sato... // and she gazed at yours truly, all dreamy, her eyes brimming over, and this is what she said:
-E0650.11	Guts, Fat, Megane	"Ohh! FAT!"
+E0650.10	Fat	See, there was this foreign lady who came to help out on a farm in Sagi-no-sato, // and she gazed at yours truly all dreamy, with misty eyes, and said this:
+E0650.11	Guts, Fat, Megane	Ohh! FAT!
 E0650.12	(voice only)
-E0650.13	Boku	...So, what does it mean?
+E0650.13	Boku	So what does it mean?
 E0650.14	Guts	And this is Megane. This guy is smaaart.
 E0650.15	Megane	Hi there, Boku-kun. You have beautiful eyes, you know.
 E0650.16	Boku	...Huh?
-E0650.17	Guts	He's kind of a weird one, but... // pick on him and you'll answer to me. Got that?
+E0650.17	Guts	He's kind of a weirdo, but... // you pick on him, and you answer to me.
 E0650.18	Boku	I would never do that!
 # NOTE E0650.11: the Japanese follows the English word with a parenthesised gloss for the player;
 #   dropped, because it would gloss a word into itself (style guide § 16, Q10.6) — the one cut the
@@ -111,22 +115,22 @@ E0650.18	Boku	I would never do that!
 
 # --- E0651 / E0652 / E0653: the base (A18), before 18:00, talking to Guts, Fat and Megane. Each
 #     has a first talk and a repeat (.4-.10, .10; E0653 has one line only).
-E0651.0	Guts	That secret — you didn't tell your uncle, right?
+E0651.0	Guts	You didn't tell your uncle about that secret, right?
 E0651.1	Boku	...Of course not.
 E0651.2	Guts	If you break your promise...
 E0651.3	Guts, Fat, Megane	The penalty: a hundred wrist slaps!
 E0651.4	Guts	What grade are you in?
 E0651.5	Boku	Third grade.
-E0651.6	Guts	Ohhh, that's all? I'm in fifth.
+E0651.6	Guts	Ohh, is that all? I'm in fifth.
 E0651.7	Fat	Yours truly is in fourth.
 E0651.8	Megane	Everyone's bigger than me. I'm still in second grade.
 E0651.9	Boku	Same as Shirabe?
-E0651.10	Megane	That's right, that's right — she's horrid! Horrid! // Because she's made picking on me her daily routine, you know. // Truly horrid! Horrid!
+E0651.10	Megane	That's right, that's right. She's horrid! Horrid! // Because she's made picking on me her daily routine, you know. // Truly horrid! Horrid!
 # NOTE E0651.3: "shippe" is the two-finger slap on the wrist that seals a boys' bet; Guts named
 #   the price on day 5 (E0551.12, "a hundred wrist slaps"), and the two lines use the same words.
 #   No label on the disc; speaker group 15, all three at once.
 # NOTE E0651.6: "nandā" is deflation — he has just heard "third grade" and pulls rank — not
-#   surprise; day 5 renders the same word "Ohhh, that." (E0551.24).
+#   surprise; day 5 renders the same word "Ohh, is that all?" (E0551.24), and so does this line.
 # NOTE E0651.10: "yana yatsu" — "a hateful one" — four times; "horrid" is the bookish second-grader's
 #   word for it (style guide § 5).
 
@@ -138,15 +142,15 @@ E0652.4	Fat	So that's it... that place, huh.
 E0652.5	Boku	What's the matter?
 E0652.6	Megane	Fat likes the middle-schooler at that house, you know.
 E0652.7	Boku	Huh? Moe-neechan?
-E0652.8	Fat	Why, you—! // Want me to shove my hand in your mouth and turn you inside out?!
-E0652.9	Guts	Now, now — easy, easy.
-E0652.10	Fat	Moe-san really is lovely, isn't she. // Lucky you, getting to live in that house with her... // Hey — how about we swap places on the sly, just for one day?
+E0652.8	Fat	Why, you...! // Want me to shove my hand in your mouth and turn you inside out?!
+E0652.9	Guts	Now, now, easy, easy.
+E0652.10	Fat	Moe-san really is lovely, isn't she. // Lucky you, getting to live in that house with her... // Hey, how about we swap places on the sly, just for one day?
 # NOTE E0652.2: "Sorano-san's place" is the glossary's (§ 1). E0652.10: "issho ni" has no object in
 #   the Japanese; English needs one, and it can only be Moe.
 
 E0653.0	Megane	Boku-kun, are you the kind of person who reads lots of books and things?
 E0653.1	Boku	Yeah, I love them.
-E0653.2	Megane	Good... I've been at a loss, you see — the kids around me and I don't have the same things to talk about.
+E0653.2	Megane	Good... I've been at a loss, you see, because the kids around me and I don't have the same things to talk about.
 E0653.3	Guts, Fat	That makes us sound like idiots!
 # NOTE E0653.2: "you see" renders the explanatory "-n da" in Megane's register (style guide § 5);
 #   nothing else is added — "awanakute" is "don't match", not "never".
@@ -158,7 +162,7 @@ E0653.3	Guts, Fat	That makes us sound like idiots!
 #     then the view (MOVIE 18, or the close-up I35), then .1-.2 back on the hill. Sets flag 33: the
 #     kites are offered from the next day.
 E0607.0	Boku	Yaaawn.
-E0607.1	Narrator	The view from the top of the hill was, somehow, not so much one for a deep breath // as one that suited a big yawn — a truly leisurely thing.
+E0607.1	Narrator	The view from the top of the hill was somehow less suited to a deep breath // than to a big yawn; it was a truly unhurried scene.
 E0607.2	Boku	Yaaawn.
 # NOTE E0607.1: one sentence across its two pages, as the Japanese is (style guide § 6); page 1
 #   is the deep breath, page 2 the yawn and the verdict. E0607.0 = E0607.2, identical source.
@@ -174,9 +178,9 @@ E0609.0	Boku	I wonder if this cracked, gata-pon tree is a sawtooth oak?
 
 # --- E0612: the living room (G01), from 16:00, talking to the uncle. .0 if Boku did not find him
 #     in the field, .1 if he did (flag 27); .2 on a repeat.
-E0612.0	Uncle	Aww, that was exhausting... // Today, Uncle stood watch in the watermelon field all day long. // But thanks to that, the day's damage was zero.
+E0612.0	Uncle	Aww, that was exhausting... // Today, Uncle stood watch in the watermelon field all day long. // But I'm pleased to report that today's losses came to zero.
 E0612.1	Uncle	Today's watch really wore me out... // But on a day like this, of all days, the watermelon thief doesn't show up...
-E0612.2	Uncle	Wellll... but standing guard over the field — one day of that, and I quiiit. // Because it's hard work, that's why. No, really...
+E0612.2	Uncle	Wellll... but standing guard over the field, one day of that and I quiiit. // Because it's hard work, that's why. No, really...
 # NOTE E0612.0, page 3: "honjitsu no higai wa zero" is the mock-official report voice (style guide
 #   § 5) — a watchman filing his log. E0612.2: "ya~meta" → "I quiiit" (§ 7).
 
@@ -187,8 +191,8 @@ E0604.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0604.2	Boku	Uncle, what do rhinoceros beetles eat?
 E0604.3	Uncle	Hmmm, let's see... For a start, I'd say they like anything, as long as it's sweet.
 E0604.4	Boku	Sweet things? Do they like candy too?
-E0604.5	Aunt	Ahaha — however much they like sweet things, // cream puffs and waffles would be a waste, wouldn't they? // Sugar water, say, or the sweet juice left after eating a watermelon — // we'd paint that on the sawtooth oaks and the honey locusts, and go to look in the morning or evening.
-E0604.6	Boku	Hmm, sugar water, huh... // Hey, what kind of tree is a sawtooth oak?
+E0604.5	Aunt	Ahaha, however much they like sweet things, // cream puffs and waffles would be a waste, wouldn't they? // Sugar water, say, or the sweet juice left after eating a watermelon... // we'd paint that on the sawtooth oaks and the honey locusts, and go to look in the morning or evening.
+E0604.6	Boku	Hmmm, sugar water, huh... // Hey, what kind of tree is a sawtooth oak?
 E0604.7	Uncle	It's a big, thick tree with a pattern of huge cracks over its surface, so... // I think you'll know it right away when you see it.
 E0604.8	Boku	Ohh, I see.
 # NOTE E0604.0-.1: word for word E0010.0-.1 (shared.txt); no label on .1, speaker group 12.
@@ -205,7 +209,7 @@ E0604.8	Boku	Ohh, I see.
 E0641.0	Shirabe	Watching the ants the whole day through, you see, I realized something...
 E0641.1	Boku	What? What did you realize?
 E0641.2	Shirabe	One gets bored.
-E0641.3	Shirabe	Fun ones, like the ants in Tom and Jerry... // Aren't there any somewhere, I wonder...
+E0641.3	Shirabe	Fun ants, like the ones in Tom and Jerry... // I wonder if there are any around somewhere.
 # NOTE E0641.2: "akiru ne" — two words, and the whole joke of the day's ant-watching; "One gets
 #   bored" is Shirabe's lady-of-the-house diction (style guide § 5), not padding.
 

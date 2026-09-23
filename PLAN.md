@@ -468,9 +468,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
       | unit | state | note |
       |---|---|---|
-      | `day01.txt` | first draft, held | old packet; Jay's 2026-09-21 comments applied (rural, the Sorano house, bug-collecting) |
-      | `day02.txt`–`day07.txt` | first draft, held | old packet; Jay's comments on days 3 and 5 applied (cafeteria, harusame, Great Luck) |
-      | `shared.txt` (76 events) | first draft, held | old packet; includes the coverage nine |
+      | `day01.txt`–`day07.txt` | reviewed | first draft merged per line with a blind re-translation through the `TRN-08` packet, both reviewed against the Japanese (2026-09-22); Jay's comments kept |
+      | `shared.txt` (76 events) | reviewed | the same merge; includes the coverage nine |
       | days 8–31 + their day-independent events | undrafted | 24 day files; run in batches Jay sizes |
       | arrays / menus / overlays (308 lines) | undrafted | `TRN-09` |
       | diary entries (94), encyclopedia spreads, textures | undrafted | `GFX-04`, `GFX-06`; new text with no line ids |
@@ -483,10 +482,16 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       day-file shape (Jay's drop list enforced by test), `boku save-event` saves a directed
       translator's answers, `parse_rulings` returns every style-guide section, `boku lint`
       warns `em-dash`, and `./make.sh mockup` draws every page with the sheet's glyphs at the
-      band geometry (the *rendered* state's check). Left: re-translate days 1–7 and
-      `shared.txt` through it and compare against the held first draft (tag
-      `first-draft-2026-09-21`); the better line wins per line before `TRN-04`'s table
-      restarts from *drafted*. Harmed: the translator and Jay.
+      band geometry. **Comparison run DONE 2026-09-22** (`~/.claude/session-notes/boku-ps1/
+      2026-09-22-trn08-comparison.md`): days 1–7 + `shared.txt` re-translated blind through
+      the packet, reviewed against the Japanese and judged per line against the held draft —
+      816 rows: 270 identical, 433 old won, 62 new won, 51 combined; the merge is committed,
+      lints with 0 errors and draws 0 red mock-up lines. The judges traced most of the new
+      draft's losses to one packet defect: `system.md` carried only the glossary rows whose
+      Japanese the unit matched, not the whole glossary the spec names (Jay, 2026-09-22) —
+      being fixed with the translators' other packet findings. Left: after that fix, one day
+      re-translated through the corrected packet and judged the same way, so the packet is
+      judged on its spec rather than on the defect. Harmed: the translator and Jay.
 - [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the first thing every player sees:
       the memory-card and save/load messages (32), the title and config labels, the controls
       help, item names and descriptions, the 57 insect names, photo captions, kite names

@@ -14,21 +14,24 @@ E0171.0	Father	My son will be in your care for the summer vacation.
 E0171.1	Father	This is his first time somewhere this rural, with so much nature still left, so... // he seems a little taken aback, but... everyone, please look after him.
 E0171.2	Father	All right. Introduce yourself.
 E0171.3	Boku	Hello. I'm Boku.
-# NOTE E0171.1: satoyama → "village hills" on this, its first use (glossary § 7, Q10.8).
+# NOTE E0171.1: satoyama → "somewhere this rural" (Jay, 2026-09-21), overriding the "village hills"
+#   of glossary § 7 / Q10.8 for this line.
 
 # --- E0172: close-up (I32), no text.
 # --- E0173 / E0174: Boku's rehearsed greeting (H01, then H03). Both events carry the same line
 #     and the same voice clip; the game cuts camera in the middle of it. Identical on purpose.
 E0173.0	Boku	My mom's tummy has gotten big, so... // starting today, for one month, until summer vacation is over, I'll be in your care.
 E0174.0	Boku	My mom's tummy has gotten big, so... // starting today, for one month, until summer vacation is over, I'll be in your care.
-E0174.1	Uncle	Nice to meet you, Boku-kun. That was a long trip — you did well.
+E0174.1	Uncle	Nice to meet you, Boku-kun. That was a long trip. You did well.
 # NOTE E0173.0: the same set phrase his father used in E0171.0 — the boy is reciting what he was
 #   taught to say, and "I'll be in your care" is kept as the same words for that reason.
+# NOTE E0174.1: the glossary's gokurōsama rendering (§ 3) with a full stop where its row has an em
+#   dash: the Japanese has a comma after "nagatabi" (style guide § 18).
 
 # --- E0175: close-up of the uncle (I31).
 E0175.0	Uncle	This is the Sorano house, and I'm your Uncle Yusaku. // From today, think of this place as your own home, and please play as much as you like.
 # --- E0176: back to the line-up (H02).
-E0176.0	Uncle	Now then — Onee-chan, you first.
+E0176.0	Uncle	Now then, Onee-chan, you first.
 # NOTE E0176.0: the parents call Moe "Onee-chan"; used as a name it stays (style guide § 2).
 
 # --- E0177: close-up of the sisters (I31).
@@ -46,15 +49,15 @@ E0179.0	Shirabe	I'm Shirabe. It's written "poem" and read "Shirabe".
 E0179.1	Shirabe	Our dad's cool, isn't he? // He's a ce-ra-mi-cist. He makes plates and rice bowls.
 
 # --- E0180: the narrator, on the father (H01).
-E0180.0	Narrator	There stood my father, who was, if anything, a rather unimpressive man...
+E0180.0	Narrator	Standing there was my father, a man who was, if anything, unimpressive...
 
 # --- E0181 / E0182: the aunt (H03, then close-up I31), then MOVIE 26 — up the stairs.
 E0181.0	Aunt	Do you remember Auntie? // I've changed your diapers before, you know.
-E0182.0	Aunt	I'm your dad's younger sister — Auntie Kaoru. We'll get along fine, all right?
+E0182.0	Aunt	I'm your dad's younger sister, Auntie Kaoru. We'll get along fine, all right?
 
 # --- E0183 / E0184 / E0185: Boku's room upstairs (G13 door side, G14 the futon).
 E0183.0	Aunt	You use this room however you like.
-E0184.0	Aunt	Today I gave your futon so much sun that it surrendered, so... // it's soft and fluffy — full marks for comfort. // You'll sleep soundly in the smell of sunshine.
+E0184.0	Aunt	Today I gave your futon so much sun that it surrendered, so... // it's soft and fluffy, full marks for comfort. // You'll sleep soundly in the smell of sunshine.
 E0184.1	Boku	Yeah. Thank you, Auntie.
 E0184.2	(voice only)
 E0184.3	Boku	Auntie's an amazing person! // This is just like... a futon explosion!
@@ -72,12 +75,12 @@ E0112.0	Uncle	Boku-kun, is this your first time living in a house with a veranda
 E0112.1	[SEL]	Yes | No
 E0112.2	Uncle	In this house, wherever you are, a cool and pleasant breeze comes in, doesn't it... // So we do have an electric fan, just in case, but we've hardly ever used it.
 E0112.3	Boku	Huh. I see.
-E0112.4	Uncle	Yeah. The old houses were all like this, you know. // Once all the ground around a house is buried under concrete... // I suppose it just can't work this way anymore...
+E0112.4	Uncle	Yeah. The old houses were all like this, you know. // Once all the ground around a house is buried under concrete... // I suppose it can't work this way anymore...
 E0112.5	Uncle	The ceiling's nice and high, isn't it?
 # NOTE E0112.1: both answers lead to the same line (.2); only the uncle's animation differs.
 
 # --- E0114: the foot of the stairs (G07), the first time Boku comes through. Forced.
-E0114.0	Uncle	Boku-kun... // What are you going to do for your research project this summer vacation?
+E0114.0	Uncle	Boku-kun... // What are you planning to do for your summer research project this vacation?
 E0114.1	Uncle	This house has a bug-collecting kit, you know.
 E0114.2	Boku	Huh! Really?!
 E0114.3	Uncle	Yeah. I'll give it to you as a present, Boku-kun.
@@ -103,7 +106,7 @@ E0121.2	Aunt	Oh dear.
 E0121.3	Boku	It was Dad who packed the bag, so...
 E0121.4	Aunt	I see... // Well, you're a boy, so I suppose it doesn't much matter.
 E0121.5	Aunt	I wonder if Onii-chan's old clothes would fit you?
-E0121.6	Boku	Huh? Who's Onii-chan?
+E0121.6	Boku	Huh? Onii-chan?
 E0121.7	Aunt	...Hm-hm. We'll run that experiment one of these days.
 # NOTE E0121.5-.7: the first mention of the dead son. She lets the name slip, he asks, and she
 #   changes the subject with a joke; "Onii-chan" stays as a name (style guide § 2) so that the
@@ -134,7 +137,7 @@ E0001.0	Narrator	Far away, I could see the village of Sagi-no-sato at the foot o
 E0190.0	Uncle	Right! Playtime for today is over. // Dinner is all reaaady!
 
 # --- E0103: dinner (G02), 18:00. Boku does not know the words yet.
-E0103.0	Uncle	Well then — itadakimasu!
+E0103.0	Uncle	Well then, itadakimasu!
 E0103.1	Shirabe, Moe, Aunt	Itadakimasu!
 E0103.2	Boku	...kimasu.
 # --- E0104: after dinner, 19:00.
@@ -164,11 +167,11 @@ E0107.2	Narrator	And inside the box, just as my uncle had promised, was a bug-co
 # --- E0113: the living room (G01), 19:00 onward. .0 if the desk has not been visited yet;
 #     .1-.5 the first evening talk; .6-.7 on a repeat.
 E0113.0	Uncle	Hurry up to your room upstairs... // and go take a look at the present on the desk.
-E0113.1	Uncle	So, did you like the bug-collecting kit? // I think that's everything that was in the set... // but the box seems to have gone missing, so... // Come to think of it, that plastic model... it's one Kaoru built, a while back.
+E0113.1	Uncle	Did you like the bug-collecting kit? // I think that's everything that was in the set... // but the box seems to have gone missing, so... // Come to think of it, that plastic model... it's one Kaoru built, a while back.
 E0113.2	Boku	Auntie, you build plastic models? Even though you're a girl?
-E0113.3	Aunt	Oh my, is that strange? // Auntie likes making things — anything at all, you know.
-E0113.4	Boku	Hey, what happened to the finished one?
-E0113.5	Uncle	It's on display by the window in Uncle's workshop. // Boku-kun, you should come and see it — tomorrow, say.
+E0113.3	Aunt	Oh my, is that strange? // Auntie likes making things, anything at all, you know.
+E0113.4	Boku	Hey, where's the finished one?
+E0113.5	Uncle	It's on display by the window of Uncle's workshop. // Boku-kun, you should come see it, tomorrow maybe.
 E0113.6	Uncle	Kaoru, could you bring me a beer...?
 E0113.7	Aunt	Let's each do our own things ourselves, shall we?
 # NOTE E0113.2: translated at the strength it has (style guide § 12, which cites this line).
@@ -177,13 +180,13 @@ E0113.7	Aunt	Let's each do our own things ourselves, shall we?
 #   for (§ 2). She does not fetch it; she never does (bible § 3).
 
 # --- E0122: the living room (G01), 19:00 onward, talking to the aunt. Once.
-E0122.0	Aunt	If you get thirsty, there's barley tea and milk in the fridge — you can help yourself, all right? // They're both homemade, so they're in the same kind of bottle. // Oh, and the milk sometimes has little white lumps in it, // but those just come from boiling it in a pan to sterilize it, so don't mind them.
+E0122.0	Aunt	If you get thirsty, there's barley tea or milk in the fridge, so just help yourself. // They're both homemade, so they're in the same kind of container. // Also, the milk sometimes has little white lumps in it, // but those form when I boil it in a pot to sterilize it, so don't worry about them.
 
 # --- E0141: the television room (G06), 19:00 onward, Shirabe in front of the set.
 E0141.0	Boku	...What do you like on TV?
 E0141.1	Shirabe	Huh? Ummm...
 E0141.2	Shirabe	The kind of thing girls would like...
-E0141.3	Shirabe	The sketches on television are sometimes so cruel, and so funny, aren't they...
+E0141.3	Shirabe	Comedy sketches on TV are sometimes cruel, and amusing, aren't they...
 # NOTE E0141.3: Shirabe at eight, playing a lady (style guide § 5): the prim diction is the
 #   register, not a translation of any one word.
 

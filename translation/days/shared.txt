@@ -53,7 +53,7 @@ E0022.0	[SEL]	What will you read? | Field Guide to Rare Insects | The Fun Encycl
 #     native quiz (PROG 15) shows row day+1 of .2-.31, so day 1 is .2, and the answer is curry
 #     rice (g_dinner_answer[0]). The result reaches E4028.
 E0221.0	Aunt	Boku-kun! What do you think we're having for dinner tonight?
-E0221.1	Aunt	Well then — look forward to tonight's dinner, all right?
+E0221.1	Aunt	Well then, look forward to tonight's dinner, all right?
 E0221.2	[SEL]	Curry rice | Chicken katsu | Salmon meuniere
 E0221.3	[SEL]	Hayashi rice | Hamburg steak | Diced steak
 E0221.4	[SEL]	Stir-fried meat and vegetables | Chicken karaage | Tonkatsu
@@ -85,7 +85,7 @@ E0221.29	[SEL]	Cabbage rolls | Stuffed green peppers | Hayashi rice
 E0221.30	[SEL]	Curry rice | Ginger pork | Korokke
 E0221.31	[SEL]	Chicken karaage | Sea bass meuniere | Jingisukan
 # NOTE E0221.2-.31: every dish is glossary § 5's rendering, capitalised as a menu row (as the
-#   shaved-ice menu is in samples/family-E0404-E0406.txt). "Meuniere" and "saute" drop their
+#   shaved-ice menu is at E0404.6, day04.txt). "Meuniere" and "saute" drop their
 #   accents in game text for the same reason the long vowels drop their macrons (style guide § 3):
 #   the font has plain letters only. The rows carry trailing pad words on the disc (bible § 8
 #   item 6) — not text, not translated.
@@ -109,7 +109,7 @@ E8004.0	(unlabelled)	A cupboard with rippled glass... Everyone's rice bowls and 
 E8051.0	(unlabelled)	From the right: flour, sugar, salt.
 
 # --- The dining room, examined (G02).
-E8000.0	(unlabelled)	Cool to the touch — a heater in the middle of summer.
+E8000.0	(unlabelled)	A heater in the middle of summer, cool to the touch.
 E8001.0	(unlabelled)	A calendar, notices from school, the school-lunch menu and things like that are pinned up.
 E8002.0	(unlabelled)	A washing machine... and soap powder that smells like flowers.
 E8050.0	(unlabelled)	There's a white gas stove, polished until it shines.
@@ -122,7 +122,7 @@ E8005.0	(unlabelled)	A shiny mirror... Check carefully for cavities!
 
 # --- The foot of the stairs (G07) and the hall (G08), examined.
 E8006.0	(unlabelled)	A pretty potted plant is on display.
-E8007.0	(unlabelled)	Dry branches arranged in a big urn.
+E8007.0	(unlabelled)	Dry branches are arranged in a big vase.
 E8009.0	(unlabelled)	A white baseball cap. Whose could it be?
 # NOTE E8009.0: the dead son's cap (bible § 3). The Japanese only wonders; so does the English.
 
@@ -134,7 +134,7 @@ E8011.0	(unlabelled)	On the family altar, a little rice and some sweets have bee
 
 # --- Boku's room, examined (G13 the door side; G14 the desk, window, futon). E4027 opens the
 #     insect kit or the diary, once the kit has been received (flag 3).
-E8012.0	(unlabelled)	Third-grade textbooks, set out together with some manga.
+E8012.0	(unlabelled)	Third-grade textbooks are here, along with some comic books.
 E8013.0	(unlabelled)	Found a crumpled-up test paper. It says "Sorano Shirabe" on it.
 E4046.0	(voice only)
 E4027.0	[SEL]	Which will you look at? | Bug-collecting kit | Picture diary
@@ -150,7 +150,7 @@ E0835.1	(unlabelled)	It's locked.
 # --- E8014: the sisters' room (G15), examined; no condition of its own, in every G15 variant and
 #     slot, but E0835 keeps the door locked until E0830 unbans him on day 8 (day08.txt), so first
 #     read that day. The object is Shirabe's: Moe, at fifteen, is past carrying one.
-E8014.0	(unlabelled)	A red school backpack with stickers stuck all over it is sitting here.
+E8014.0	(unlabelled)	There's a red school backpack with stickers stuck all over it.
 # NOTE E8014.0: "school backpack" for randoseru, the stiff leather satchel every Japanese
 #   schoolchild carries, red for a girl in 1975. English has a natural word for the job (style
 #   guide § 0, test 4) and § 15 keeps only its listed words in Japanese — randoseru is not on
@@ -170,8 +170,9 @@ E4052.4	(voice only)
 E4052.5	(voice only)
 E4052.6	(voice only)
 E4052.7	(voice only)
-E8052.0	(unlabelled)	Its big mouth wide open — oink.
-# NOTE E8052.0: the object is not named. The leading guess is the ceramic pig that holds a
+E8052.0	(unlabelled)	Its big mouth wide open... oink.
+# NOTE E8052.0: "akete buu" is one phrase, so the ellipsis is a beat mid-sentence and "oink" is
+#   lower-case (style guide § 9); no em dash (§ 18). The object is not named. The leading guess is the ceramic pig that holds a
 #   mosquito coil (a 1975 farmhouse television room in August; a big open mouth; and "buu" is the
 #   pig's noise in Japanese), so the sound is rendered as the English pig noise (style guide § 7).
 #   The electric fan of E0112.2 and a piggy bank are the weaker guesses. Check in play; if it is
@@ -231,8 +232,8 @@ E8020.0	(unlabelled)	A big bucket with "Secret Glaze..." written on it.
 #     clear) the first touch topples it, silently (flag 7); the second gets .0. With him there —
 #     from day 2, when he is at work — .1 if it is still standing, .2 if it has fallen.
 E0003.0	Boku	......
-E0003.1	Uncle	Ah — that's dangerous, so don't touch it. // That shelf is badly made; it seems to be a little wobbly. // I've repaired it again and again, and yet... whyyy does it fall over, I wonder?
-E0003.2	Uncle	That thing... it seems to have come down somehow during the night... // It should have been a bit sturdier than that, though.
+E0003.1	Uncle	Ah, that's dangerous, so don't touch it. // That shelf is badly built. It seems to wobble a little. // I've fixed it again and again, but whyyy does it keep falling down?
+E0003.2	Uncle	Looks like it somehow fell down during the night... // It's supposed to be a bit sturdier than that, though.
 # NOTE E0003.1, page 3: the uncle's stretched "na~nde" is a stretched "whyyy" (style guide § 7).
 #   He says "I" here — no "Uncle" in the Japanese either; he is talking about his own carpentry.
 
@@ -249,10 +250,11 @@ E8054.0	(unlabelled)	Earth-colored plates and rice bowls are sunbathing, looking
 
 # --- The climbing kiln (H15), examined: .0 cold, .1 (and E8066, the lit-kiln map) firing.
 E8055.0	(unlabelled)	It looks somehow like a whale that has come up onto land.
-E8055.1	(unlabelled)	The climbing kiln has turned bright red — it's angry.
-E8066.0	(unlabelled)	The climbing kiln has turned bright red — it's angry.
+E8055.1	(unlabelled)	The climbing kiln has turned bright red. It's angry.
+E8066.0	(unlabelled)	The climbing kiln has turned bright red. It's angry.
 # NOTE E8055.0-.1: Boku gives the whale and the kiln a "-san" apiece; English children do not,
-#   and nothing is lost. E8066.0 = E8055.1, identical source, identical English (bible § 8 item 4).
+#   and nothing is lost ("Mr. Climbing Kiln" was the 2026-09-22 retranslation's rendering, not
+#   taken: it would need "Mrs. Whale" in .0 too). No em dash (style guide § 18): a full stop. E8066.0 = E8055.1, identical source, identical English (bible § 8 item 4).
 
 # --- E4054: the water near the house (H24), examined before Boku has the rod (flag 10): the first
 #     touch is MOVIE 22, a drink; the second, .0.
@@ -278,7 +280,7 @@ E4020.0	Boku	Cold...
 # --- E8057 / E8058: the tool store and the little graves (A07), examined; in all four A07
 #     variants (01 is days 26-27 after the sun shower), any day the outdoors is walkable (header).
 E8057.0	(unlabelled)	Hoes, spades and fertilizer are set out. Which house's storehouse could this be, I wonder?
-E8058.0	(unlabelled)	Lots of little graves. Somehow they look like chess pieces.
+E8058.0	(unlabelled)	Lots of little graves. They look kind of like chess pieces.
 # NOTE E8057.0: "monooki" is a storehouse or tool store, not the Soranos' shed ("naya", glossary
 #   § 2 — E8015.0); "which house's" keeps the child's question of whose it is.
 # NOTE E8058.0: the graves are the small stones of a family plot; "chess pieces" is the Japanese.
@@ -287,7 +289,7 @@ E8058.0	(unlabelled)	Lots of little graves. Somehow they look like chess pieces.
 #     On day 4 Shirabe's tour (E0443, day04.txt) fires on arrival, and the same spot is E4017 once
 #     the tour is done or from day 5 (flag 19 > 0 or day > 4). Any of those three days the outdoors
 #     is walkable (header).
-E8056.0	(unlabelled)	On the offerings, jet-black little ants — lots of them!
+E8056.0	(unlabelled)	The offerings are covered in jet-black little ants!
 # NOTE E8056.0: "arinko-tachi" → "little ants" (glossary § 4); "ippai!" → "lots of them!", the
 #   same word as E8058.0's "Lots of" — not doubled.
 
@@ -306,7 +308,7 @@ E4039.0	Boku	......
 #     (day02.txt), these are not — any day the outdoors is walkable (header).
 E8021.0	(unlabelled)	There are two moldy school-lunch bread rolls inside.
 E8022.0	(unlabelled)	Found a Spider Man Rider card! But it's soaked through and falling to pieces.
-E8023.0	(unlabelled)	There's a sandal inside — just the one.
+E8023.0	(unlabelled)	There's just one sandal in here.
 E8024.0	(unlabelled)	Found a crumpled-up test paper.
 E8025.0	(unlabelled)	There's a hammer with no head inside.
 # NOTE E8021.0 / .23 / .25: "haitte iru" — is in it — the container is whatever Boku is looking
@@ -383,7 +385,7 @@ E8065.0	(unlabelled)	Found only a little leftover coffee in the bottom of the po
 #     on day 2) stands before the generic one in its map's placement table, as at dinner (E0009),
 #     so these fire on the mornings with no day event of their own — day 6 (day06.txt) is the first
 #     the day files met them.
-E0006.0	Uncle	Well then — itadakimaasu!
+E0006.0	Uncle	Well then, itadakimaasu!
 E0006.1	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 E0007.0	Uncle	Gochisosama deshita.
 E0007.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
@@ -399,13 +401,13 @@ E0007.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 #     (G02106: E2303, E2003, E0009) — the only order that lets days 8, 15 and 29 fall through to
 #     E0009 while day 1 gets its "...kimasu" joke (E0103 / E0104, day01.txt). First reached on day 2
 #     (G02106 has no day-2 opener). The words are the same fixed phrases (glossary § 3).
-E0009.0	Uncle	Well then — itadakimasu!
+E0009.0	Uncle	Well then, itadakimasu!
 E0009.1	Shirabe, Moe, Boku, Aunt	Itadakimasu!
 E0010.0	Uncle	Gochisosama deshita.
 E0010.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 # NOTE E0009.1 / E0010.1: no label on the disc; the speaker operand is the group Shirabe + Moe +
 #   Boku + Aunt (slot 12 — day 1's chorus, slot 13, leaves Boku out because he is behind).
-#   E0009.0 is word for word E0103.0.
+#   E0009.0 is word for word E0103.0 (day01.txt, whose em dash § 18 now also removes).
 
 # --- E4028: the living room (G01), 19:00 onward, talking to the aunt: tonight's menu first, then
 #     the quiz result. E4028.json's play order is PROG 16 — the menu, .7-.17, picked natively by day
@@ -416,31 +418,34 @@ E4028.0	Aunt	Boku-kun, correct! You did it!
 E4028.1	(voice only)
 E4028.2	Aunt	Exactly right! Congratulations!
 E4028.3	(voice only)
-E4028.4	Aunt	Too bad — you got it wrong.
-E4028.5	Aunt	Ta-daaa — wrong! // And by the way, the fridge has the makings of breakfast in it too, so be a little careful, all right?
+E4028.4	Aunt	Too bad, you got it wrong.
+E4028.5	Aunt	Ta-daaa, wrong! // Please note, the fridge has breakfast ingredients in it too, so be a little careful, all right?
 E4028.6	Aunt	You got it wrong. // Summer vacation is nearly over, Boku-kun, so let's try hard and get one right, all right?
 E4028.7	Aunt	Tonight's dinner was... // Hamburg steak and simmered vegetables, and then river shrimp karaage, Auntie-style.
-E4028.8	Aunt	Tonight's dinner was... // Tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
-E4028.9	Aunt	Tonight's dinner was... // Spring rolls, happosai, soup and a tofu salad — I tried putting together a Chinese meal.
-E4028.10	Aunt	Tonight's dinner was... // Sashimi, simmered hijiki and tempura — I tried a purely Japanese spread.
-E4028.11	Aunt	Tonight's dinner was... // Sea bass meuniere, bang bang chicken, simmered tofu pouches and chilled tofu — eeevery one of them Auntie's favorites.
-E4028.12	Aunt	Tonight's dinner was... // Omurice, cheese en papillote, thick fried tofu braised with greens, and so on — I tried combining things.
-E4028.13	Aunt	Tonight's dinner was... // Fried rice, Chinese soup, sweet-and-sour pork, shumai, and so on and so on — put together to Shirabe's taste.
-E4028.14	Aunt	Tonight's dinner was... // Cabbage rolls and grilled eggplant, with an open omelette thrown in — put together to Moe's taste.
-E4028.15	Aunt	Tonight's dinner was... // Curry rice, marinated horse mackerel, salad and edamame, and so on and so on — I worked hard on it.
-E4028.16	Aunt	Tonight's dinner was... // Spaghetti, chilled eggplant, grilled fried tofu, soup and salad — Italian-style, by main force.
+E4028.8	Aunt	Tonight's dinner was... // tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
+E4028.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I tried putting together a Chinese meal.
+E4028.10	Aunt	Tonight's dinner was... // sashimi, simmered hijiki and tempura. I tried a purely Japanese spread.
+E4028.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, simmered tofu pouches and chilled tofu, aaall of them Auntie's favorites.
+E4028.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried combining things.
+E4028.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai, and so on and so on, put together to Shirabe's taste.
+E4028.14	Aunt	Tonight's dinner was... // cabbage rolls and grilled eggplant, with an open omelette thrown in, put together to Moe's taste.
+E4028.15	Aunt	Tonight's dinner was... // curry rice, marinated horse mackerel, salad and edamame, and so on and so on. I worked hard on it.
+E4028.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad, forced into being Italian-style.
 E4028.17	Aunt	Tonight's dinner was... // I went and had the top-grade nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
 # NOTE E4028.0 / .2 / .4-.6: the glossary's "Correct!" / "Exactly right!" / "Wrong" (§ 3), in her
 #   sentences. .5, "ja~n" → "Ta-daaa" (style guide § 7); the fridge is E4029.
 # NOTE E4028.7-.17, page 1: the Japanese page is the topic alone ("As for tonight's dinner...")
 #   and the dishes are page 2 — the English keeps that split, so the list is on screen while she
-#   lists it (style guide § 13). "Tonight's dinner was..." carries the sentence across the break.
-# NOTE E4028.11: "zen~bu" → "eeevery one". Bang bang chicken (bang bang ji) is the dish's English
+#   lists it (style guide § 13). "Tonight's dinner was..." carries the sentence across the break, so
+#   page 2 continues it in lower case. Where she adds "-te mimashita" (.9, .10, .12) the "I tried"
+#   is a second sentence after a full stop, not an em dash (style guide § 18).
+# NOTE E4028.11: "zen~bu" → "aaall of them" — the first draft's longer "eeevery one of them"
+#   ran page 2 to four lines (lint page-lines). Bang bang chicken (bang bang ji) is the dish's English
 #   name; "simmered tofu pouches" describes kinchaku-ni (fried-tofu purses).
 # NOTE E4028.12: "ni" between the dishes is her list-joiner, as in .15 and .16 — omurice and the
 #   cheese en papillote are two dishes, not one.
-# NOTE E4028.16: "goin ni" — by main force — is her own joke about her Italian dinner; rendered
-#   with those words and nothing added.
+# NOTE E4028.16: "goin ni" — by main force — is her own joke about her Italian dinner: "forced
+#   into being Italian-style".
 # NOTE E4028.17: the shop is Osho ("king") Sushi and the set is the Hisha ("rook") Set — a shogi
 #   joke (bible § 6, style guide § 8 kind 3). The glossary fixes "the Rook Set from Osho Sushi"
 #   (§ 1); the king is in the shop's name, where the player hears it.
@@ -463,9 +468,9 @@ E8029.1	(unlabelled)	It's locked.
 #     the way to the Yukino River. .2 repeats .1 until Boku says yes; once he has heard the rule
 #     (flag 254) later nights skip the question.
 E0002.0	Uncle	Heyyy, Boku-kun. Boku-kun, honestly...
-E0002.1	Uncle	At this hour, no entry beyond this point. // When it gets dark and you can't see your feet, you'll go splash into the Yukino River. // That's the rule at Uncle's house. // ...Is that understood?
+E0002.1	Uncle	No entry beyond this point at this hour. // When it gets dark and you can't see your feet, you'll go splash into the Yukino River. // That's the rule at Uncle's house. // ...Is that understood?
 E0002.2	[SEL]	Yes | No | Tell me one more time?
-E0002.3	Uncle	Gooood! What a sensible boy — well done!
+E0002.3	Uncle	Gooood! What a sensible boy. Well done!
 # NOTE E0002.0: "Boku-kun tara..." is the exasperated vocative "-tara"; "honestly..." is that
 #   exasperation and nothing more — no clause the Japanese lacks.
 # NOTE E0002.1: the mock-official desu/masu of a rule (style guide § 5, which quotes page 1) and,
