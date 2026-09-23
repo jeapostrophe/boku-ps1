@@ -757,3 +757,45 @@ E1604.0	Uncle	Gochisosama deshita.
 E1604.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E1604.2	Aunt	Here, Boku-kun, this is for you.
 E1604.3	Boku	Oh, the photo's ready. Thanks, Auntie.
+
+# --- E1707: D11 -- Mt. Teppen trailhead sign
+E1707.0	Narrator	The sign... // "For your safety, please begin your climb by 11 a.m." // ...that was what was written on it.
+
+# --- E1761: B13 -- Saori's camera trap
+E1761.0	(voice only)
+E1761.1	Narrator	All of a sudden, a most peculiar contraption had appeared...
+
+# --- E1762: B13 -- Saori's camera trap
+E1762.0	Boku	What could it be, I wonder?
+
+# --- E1763: B13 -- Saori's camera trap
+E1763.0	Narrator	A dead chicken was hanging there.
+
+# --- E1706: D06 -- the air-raid shelter (the book)
+E1706.0	Narrator	The book was written in queer characters that I could not read at all.
+E1706.1	Boku	It's kind of weird... ana-ana-bobon...
+E1706.2	Narrator	As before, the book was written in hopelessly unreadable, outlandish characters.
+E1706.3	Boku	Yep, this is definitely ana-ana-bobon...
+E1706.4	Narrator	Incidentally, this word has no meaning whatsoever.
+# NOTE E1706.1: ana-ana-bobon, Boku's own nonsense word, kept as a sound; also the item's name
+#   (glossary § 3).
+
+# --- E1750: A18 -- the secret base (the secret weapon)
+E1750.0	Guts	Heh-heh-heh-heh, my secret weapon finally makes its entrance! // If you want to fight it, choose a King match in bug sumo!
+
+# --- E1751: A18 -- the secret base
+E1751.0	Guts	Boku-chan, I accept you as one of us for real.
+
+# --- E1754: A18 -- the secret base; A07 -- mouth of the shortcut; E02 -- its far end
+E1754.0	Guts	No way! How did I lose?!
+E1754.1	Fat	Guess cheating's no good after all...
+E1754.2	Specs	But Gacchan, Boku-kun has gotten really strong!
+E1754.3	Guts	Yeah, he has...
+E1754.4	Guts	Come with me a sec. I'll show you something good.
+E1754.5	Guts	Boku-chan, here's something good. Try pressing the ○ button here!
+E1754.6	Boku	Huh? What happens?
+E1754.7	Guts	Heh... welcome to the secret shortcut nobody knows about but us!
+E1754.8	Boku	Secret?
+E1754.9	Fat	Yep! Go through here and you're at Dragon God Pond or Mt. Teppen in no time.
+E1754.10	Guts	Anyway, try pressing the button.
+E1754.11	Boku	Huh, where on earth is this...

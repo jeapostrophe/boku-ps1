@@ -1,0 +1,39 @@
+# day17 (translation/days/README.md)
+# --- E1720: H09 -- the garden corner
+E1720.0	Boku	What kind of person is the Wolf Girl?
+E1720.1	Aunt	Hmm, that girl, of all people, is hard to put in a word.
+E1720.2	Boku	Why?
+E1720.3	Aunt	Well... // she's a beautiful young woman who's like a well-brought-up young man.
+E1720.4	Boku	...A drag queen?
+E1720.5	Aunt	If I were a little younger, I'd like to do all sorts of things again too...
+# NOTE E1720.4: okama, rendered as style guide § 12 rules.
+
+# --- E1712: G01 -- living room
+E1712.0	Uncle	Maybe Uncle will take a walk over by the Wolf Girl's tent too.
+E1712.1	Uncle	I think I'll go to the barber's tomorrow.
+
+# --- E1710: H26 -- the workshop
+E1710.0	Uncle	This year the Wolf Girl seems to have pitched her tent near Dragon God Pond, left at the Jizo-sama, // so you should go and meet her.
+E1710.1	Boku	Hey, there's a kind of strange machine in the forest.
+E1710.2	Uncle	...A strange machine? // What sort of machine is it?
+E1710.3	Boku	It goes "Flash!" and lights up.
+E1710.4	Uncle	That certainly is a strange machine.
+
+# --- E1705: G06 -- TV room
+E1705.0	Boku	What could it be, I wonder?
+E1705.1	Moe	I'm making a pot holder.
+E1705.2	Shirabe	It's called patchin-work.
+E1705.3	Moe	Hm-hm, something like that.
+E1705.4	Shirabe	It's not a patch-up job, it's patchin-work.
+# NOTE E1705.2: patchin-work, Shirabe's "patchwork" (glossary § 3).
+
+# --- E1730: G15 -- the sisters' room
+E1730.0	Moe	Ahh, honestly, why isn't it coming at all?
+E1730.1	Boku	What isn't?
+E1730.2	Moe	......
+E1730.3	Moe	If the reply doesn't come by tomorrow, maybe I'll work up the nerve to call...
+
+# --- E1740: H09 -- garden corner where Shirabe watches ants
+E1740.0	Shirabe	Hey, do they have penny-candy shops where you live too?
+E1740.1	Boku	Well, sure, but why?
+E1740.2	Shirabe	This place... is so far out in the country that there's no penny-candy shop. // And me so sensitive to the latest trends, too.
