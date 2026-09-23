@@ -1,0 +1,22 @@
+# The small buttons drawn in textures (PLAN GFX-07): stone "Back" plaques and paper speech
+# balloons. Format: translation/textures/README.md; which texture each id is, where and how
+# it is drawn: boku/texture_buttons.py BUTTONS, research/texture-recipes.md § "Buttons".
+# A stone is one line, set bold in the game's glyphs. A balloon may break its English onto
+# lines with ` // `.
+
+# --- stone "Back" (もどる): settings, load/save, the album, the diary desk, the bug-sumo
+# desk, the kite record, the kite book, the bag, the specimen grid and box
+btn@T_CONFIG.back	Back
+btn@M_S01001.back	Back
+btn@T_MEMORY.back	Back
+btn@NIKKI_W.back	Back
+btn@M_S01100.back	Back
+btn@TK_WAL.back	Back
+btn@TZICON.back	Back
+btn@PK_WAL.back	Back
+btn@MZ00.back	Back
+btn@SAMP.back	Back
+
+# --- balloons. NIKKI_W.good_night: the diary desk's idle hint (おやすみ), widened 4 texels
+# for two lines in the game's glyphs.
+btn@NIKKI_W.good_night	Good // night

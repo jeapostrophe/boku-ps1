@@ -15,7 +15,9 @@ else the build refuses it rather than drawing the slashes. The id is
 `nikki@NIKKI_nnn`, `mzkan@…`, `tzkan@…` (`research/textures-plan.md` § "The new English text
 this creates"). An id may appear once across all the files.
 
-A string is set in the game's own glyphs, so it may only use characters the glyph sheet has:
+A string is set in the game's own glyphs unless its texture says otherwise (a button whose
+row in `boku/texture_buttons.py` names one of the pixel faces in `boku/faces/`, which also
+have `-`, `"` and `[ ]`; none does yet), so it may only use characters the glyph sheet has:
 letters, digits and `! # % & ' ( ) * + , . / : ; < = > ? @ _ |`. There is **no hyphen and no
 double quote** on the sheet, and the build refuses a string that uses one; the sheet's `(` `)`
 are vertical-writing forms that look wrong in a line. A string that does not fit its space is
@@ -28,6 +30,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 |---|---|---|
 | [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`), the album heading (`T_MEMORY`) | PLAN `GFX-07` |
 | [signs.txt](signs.txt) | the notice board on the path to the beach (`M_C15`) | PLAN `GFX-09` |
+| [buttons.txt](buttons.txt) | the stone "Back" buttons and the speech-balloon buttons (`btn@<member>.<key>`) | PLAN `GFX-07` |
 | [diary.txt](diary.txt) | the picture diary, one entry per page id (`nikki@NIKKI_nnn`); three so far | PLAN `GFX-04`, `TRN-04` |
 
 To change a string, edit it here and run `./make.sh textures check` (add `--out

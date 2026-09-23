@@ -279,13 +279,17 @@ question; it is noted here so the two sides do not both assume the other has it.
 
 ### **N** — 4, all census `maybe`, all *resolved as having no Japanese*
 
-* `M_S01001` — the only word on it is the Latin `PLAYTIME`; the row of marks above it is that
-  word's ~6 px anti-alias/shadow plane. Six pixels cannot hold one of this game's 12×12 glyphs.
+* `M_S01001` — `PLAYTIME` is Latin (the row of marks above it is that word's ~6 px
+  anti-alias/shadow plane), but the atlas also carries the load/save screen's stone "Back"
+  at (233, 105) — *corrected* 2026-09-23: it is a **P**, built with the other buttons
+  ([texture-recipes.md](texture-recipes.md) § "Buttons").
 * `TBG00`, `TBG01` — the kite-flying HUD: at CLUT 0 the atlas is kite thumbnails plus
   `1234567890`, `m`, `s`, `m/s`, a compass rose and a wind vane. All Latin and numerals.
-* `NIKKI_W` `0x005450` — the census's "oval tag carrying about three glyphs" is **two pencils
-  marked `H` and `HB`**. The sprite is a pull cord with a star, a wreath, a mushroom and those
-  pencils; no Japanese.
+* `NIKKI_W` `0x005450` — *corrected* 2026-09-23: its header says 8bpp 28×184, and read that
+  way it looks like a pull cord, a wreath, a mushroom and two pencils. The game draws it as
+  **4bpp 56×184**: the pull cord, the diary desk's おやすみ ("good night") balloon, its stone
+  "Back", and the pencils. A **P**, built with the other buttons
+  ([texture-recipes.md](texture-recipes.md) § "Buttons").
 
 ## The three singletons
 
@@ -340,8 +344,8 @@ tiles would be invisible to it twice over. **Audited, and there is none.**
   numerals are the only set of many identically-sized tiny TIMs on the disc. The other
   candidates for a hidden sheet were looked at and are not: `ONMEM.BIN` `0xBA00` is the hand
   cursor and gem sprites, `MZKAN.BIN` `0x48` is a 44×74 sprite set with three brush-lettered
-  plates (an **R** above, not a sheet), and `NIKKI_W`'s 28×184 sprite is a pull cord, a wreath,
-  a mushroom and two pencils.
+  plates (an **R** above, not a sheet), and `NIKKI_W`'s 28×184 sprite is the diary desk's
+  buttons drawn at 4bpp (§ **N** above).
 * **Every other run-time-drawn string already has a line id.** The glyph-drawing surfaces are
   enumerated in [text-renderer.md](text-renderer.md) and their sources in
   [text-outside-events.md](text-outside-events.md): 34 arrays, 301 strings, 4,492 glyphs, plus

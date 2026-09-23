@@ -188,8 +188,6 @@ def erase_type(
     return mask, ink_index
 
 
-LINE_PITCH = 13
-"""Rows from one 1x line's cell to the next's: the room a note takes under its value."""
 NOTE_GAP = 3
 """Rows (or, turned, columns) of air between stacked lines' ink."""
 
@@ -467,7 +465,7 @@ def config_screen(archive: Archive, inv: Inventory, face: Face, entries: Sequenc
         darkest = min((plates.at(p) for p in shadow_area), key=lambda i: luminance(palette[i]))
         inner = (cell[0], cell[1], cell[2] - SHADOW, cell[3] - SHADOW)
         note = VALUE_NOTES.get(key)
-        room = (0, 0, inner[2], inner[3] - (LINE_PITCH if note else 0))
+        room = (0, 0, inner[2], inner[3] - (face.pitch if note else 0))
         inks = [large(face, text[key], room)]
         if note:
             inks.append(ink_of(face, text[note]))
@@ -645,12 +643,21 @@ def _diary_page(pages: dict[str, Texture], entry: Entry, face: Face) -> list[Byt
 
 Family = Callable[[Archive, Inventory, Face, Sequence[Entry]], list[ByteEdit]]
 
+
+def buttons(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """The stone and balloon buttons (`boku.texture_buttons`, which builds on this module)."""
+    from boku import texture_buttons
+
+    return texture_buttons.buttons(archive, inv, face, entries)
+
+
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
     "tex@T_MEMORY": memory_album,
     "tex@M_C15": beach_notice,
     "nikki@": diary,
+    "btn@": buttons,
 }
 
 

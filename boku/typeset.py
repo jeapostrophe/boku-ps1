@@ -17,6 +17,8 @@ measured, not the engine's fixed 14 px pitch.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cache
+from pathlib import Path
 from typing import ClassVar
 
 from boku.glyphs import GlyphTable
@@ -48,11 +50,11 @@ class Glyph:
     width: int
     """Ink width. The advance is this plus one column of air."""
     rows: tuple[tuple[int, ...], ...]
-    """`CELL` rows, top of the cell first; each a tuple of x offsets."""
+    """The face's `cell` rows, top of the cell first; each a tuple of x offsets."""
 
 
 class Face:
-    """A 1-bit typeface set into a `CELL`-row line box: glyphs, advances, measurement.
+    """A 1-bit typeface set into a `cell`-row line box: glyphs, advances, measurement.
 
     The one space is U+0020 and `\\n` is `wrap`'s forced break. Any other whitespace -- a
     tab, a no-break or an ideographic space an IME slips in -- has no drawing and is
@@ -60,6 +62,10 @@ class Face:
 
     name: ClassVar[str] = "?"
     space: int = SPACE
+    cell: int = CELL
+    """Rows in a glyph's cell: the line box one line of this face is set in."""
+    pitch: int = CELL + 1
+    """Rows from one line's cell to the next's when lines are stacked."""
 
     def glyph(self, ch: str) -> Glyph | None:
         raise NotImplementedError
@@ -150,6 +156,78 @@ class GameFace(Face):
         return self._cache[ch]
 
 
+FACES_DIR = Path(__file__).parent / "faces"
+"""The pixel faces drawn for this project, one `<slug>.txt` each (MIT, as the tools)."""
+
+
+class PixelFace(Face):
+    """A face of our own pixels, read from a face file: `name`, `cell`, `pitch` and `space`
+    header lines, then one block per glyph -- `== c` and the glyph's rows from the top of the
+    cell, `#` ink and `.` air. Rows past the last given are blank; the glyph's width is its
+    longest row, so a glyph carries its own side bearing. `#` lines before the header and
+    blank lines are notes. The typographic apostrophe is set with `'`."""
+
+    def __init__(self, name: str, cell: int, pitch: int, space: int, glyphs: dict[str, Glyph]):
+        self.name = name  # type: ignore[misc]
+        self.cell, self.pitch, self.space = cell, pitch, space
+        self._glyphs = glyphs
+
+    def glyph(self, ch: str) -> Glyph | None:
+        return self._glyphs.get("'" if ch == APOSTROPHE else ch)
+
+    @classmethod
+    def load(cls, path: Path) -> PixelFace:
+        header: dict[str, str] = {}
+        drawn: dict[str, list[str]] = {}
+        first_line: dict[str, int] = {}
+        current: str | None = None
+        name = Path(path).name
+        for number, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
+            at = f"{name}:{number}"
+            if line.startswith("== "):
+                current = line[3:]
+                if len(current) != 1:
+                    raise TypesetError(f"{at}: a glyph is one character, not {current!r}")
+                if current in drawn:
+                    raise TypesetError(f"{at}: {current!r} is drawn twice (first at line "
+                                       f"{first_line[current]})")  # fmt: skip
+                drawn[current], first_line[current] = [], number
+            elif not line.strip() or (current is None and line.startswith("#")):
+                continue
+            elif current is None:
+                key, _, value = line.partition(" ")
+                header[key] = value.strip()
+            else:
+                if set(line) - {"#", "."}:
+                    raise TypesetError(f"{at}: a glyph row is only '#' and '.', not {line!r}")
+                drawn[current].append(line)
+        missing = [k for k in ("name", "cell", "pitch", "space") if k not in header]
+        if missing:
+            raise TypesetError(f"{name}: no {', '.join(missing)} header")
+        cell = int(header["cell"])
+        glyphs = {}
+        for ch, rows in drawn.items():
+            if not rows:
+                raise TypesetError(f"{name}:{first_line[ch]}: {ch!r} has no rows")
+            if len(rows) > cell:
+                raise TypesetError(
+                    f"{name}:{first_line[ch]}: {ch!r} is {len(rows)} rows, taller than its "
+                    f"cell of {cell}"
+                )
+            rows = rows + [""] * (cell - len(rows))
+            glyphs[ch] = Glyph(
+                width=max(len(r) for r in rows),
+                rows=tuple(tuple(x for x, c in enumerate(r) if c == "#") for r in rows),
+            )
+        return cls(header["name"], cell, int(header["pitch"]), int(header["space"]), glyphs)
+
+
+@cache
+def pixel_face(slug: str) -> PixelFace:
+    """The tracked face `boku/faces/<slug>.txt` (`bean`, `sprout`)."""
+    return PixelFace.load(FACES_DIR / f"{slug}.txt")
+
+
 def wrap(text: str, face: Face, width: int) -> list[str]:
     """Greedy word wrap at `width` pixels, in `face`'s own advances. `\\n` forces a break.
 
@@ -172,10 +250,13 @@ def wrap(text: str, face: Face, width: int) -> list[str]:
 
 __all__ = [
     "CELL",
+    "FACES_DIR",
     "FONT_SHEET_ID",
     "Face",
     "GameFace",
     "Glyph",
+    "PixelFace",
     "TypesetError",
+    "pixel_face",
     "wrap",
 ]

@@ -127,8 +127,9 @@ entry in plain gothic type, already set. The text is texture, not renderer outpu
 Two details pin the mechanism down:
 
 * Every page's date line reads "8月　日" — the month is drawn, **the day numeral is blank** — and
-  `\_DATA\NIKKI_W.BIN` holds exactly 31 numeral tiles of 14×10 8bpp (plus one unrelated 28×184
-  sprite strip). The renderer composites the day number onto an otherwise finished page; it draws
+  `\_DATA\NIKKI_W.BIN` holds exactly 31 numeral tiles of 14×10 8bpp (plus one unrelated sprite sheet, 28×184
+  8bpp by its header and drawn as 4bpp 56×184: the diary desk's buttons —
+  [texture-recipes.md](texture-recipes.md) § "Buttons"). The renderer composites the day number onto an otherwise finished page; it draws
   nothing else there.
 * `NIKKI_000` is an unused placeholder whose text columns are empty and whose picture area says,
   in effect, "this is a dummy picture" — so a page with no entry is a page with blank columns,

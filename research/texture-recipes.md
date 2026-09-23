@@ -130,7 +130,7 @@ of the slot to be exactly those strings — no Japanese left.
 requires every texel the build changed and left opaque to show its colour on screen exactly,
 the large value included.
 
-The back button (`もどる`, a stone) belongs with the other buttons, not here.
+The back button (`もどる`, a stone) is built with the other buttons (§ "Buttons").
 
 ## `T_MEMORY` — the "summer memories" album
 
@@ -193,14 +193,89 @@ applies each one that falls inside a rebuilt member to the rebuilt bytes, in the
 the same distance, and the build drops it from its own patches (`Plan.carried`). A patch into
 the text table itself, or into a bare `EV.BIN` block, is refused.
 
+## Buttons — stone "Back" plaques and speech balloons
+
+`boku/texture_buttons.py`; one row of `BUTTONS` per button, its English `btn@<member>.<key>` in
+`translation/textures/buttons.txt`. Measured 2026-09-23 on Beetle by pulling VRAM out of a
+save state (the `&GPURAM[0][0]` variable of a mednafen state is the 1 MB of VRAM) and finding
+each sprite's bytes in `BOKU.BIN`, and by walking the GPU draw list in RAM.
+
+**Trap: a TIM's header is not the depth the game draws it at.** `_DATA_NIKKI_W.BIN__005450`
+says 8bpp 28×184 and is drawn as 4bpp 56×184; `SUB`, `PK_WAL`, `TK_WAL`, `M_S01100`, `MZ02` and
+`SAMP` are 8bpp atlases with 4bpp sprites cut from the same bytes (their balloons; of their
+stones, `TK_WAL`'s and `M_S01100`'s), each drawn through a 16-entry slice of a 256-entry CLUT
+row. `boku.texture_paint.Canvas(drawn_4bpp=True)` edits such a texture a nibble at a time,
+low nibble on the left.
+
+**How a button is drawn.** Each screen has an atlas table of 12-byte entries
+`{u16 x_words, y, w_words, h, mode (0 = 4bpp, 0x80 = 8bpp), clut code}` (x relative to where
+the texture is uploaded; `w` in VRAM words, so 4 texels at 4bpp). `atlas_convert`
+(`0x8002A500`) turns the table into sprites in RAM at load; `0x80042ABC` → `sprite_draw`
+(`0x800428CC`) draws entry *n* at a position from a separate table. Nothing but the sprite
+reads the width — the hand cursor, selection ring and hit targets have their own tables — so
+a wider balloon is its pixels plus one halfword. The bug-sumo screen (`MUSI.OVL`) instead
+uses 22-byte records at `0x8007A538` (`u16 semi, s16 x, y, u8 u, v, u16 w, h, …`) drawn by
+`0x8007CDD0`.
+
+**Stones.** Every stone "Back" (もどる) on the disc is the same drawing (found by matching one
+against every atlas): the Japanese inked on the 33×13 box 6 right and 2 down of the stone's
+top-left opaque corner. Its last two rows are where the bottoms of the three glyphs meet the
+top of the lip; a box two rows shorter leaves them on the lip. Each stone's corner and CLUT
+are its row of `BUTTONS`; where it is drawn:
+
+| screen | texture | on screen |
+|---|---|---|
+| settings | `T_CONFIG` `0x14` | texture origin (176, 150) |
+| load / save | `M_S01001` `0x14` | texture origin (8, 0) |
+| memory album | `T_MEMORY` `0x14` | not seen (`T_MEMORY` above) |
+| diary desk | `NIKKI_W` `0x5450`, 4bpp | (256, 204) |
+| bug-sumo desk | `M_S01100` `0x14`, 4bpp | (254, 200) |
+| kite record | `TK_WAL`, 4bpp | (248, 190) |
+| kite book | `TZICON` | (256, 202) |
+| the bag | `PK_WAL` | (248, 190) |
+| specimen grid | `MZ00` `0x350` | (252, 192) |
+| specimen box | `SAMP` `0x14e48` | (240, 201) |
+
+The stone is textured, so the recipe changes **only the Japanese's own pixels** (Jay,
+2026-09-23: the mock-up's kite button banded because it repainted more): the ink (darker than
+`INK_DARK` through the CLUT) and the antialias touching it (darker than `SOFT`) -- but never a
+pixel within two of transparency, which is the stone's outline running into the box -- each
+refilled from the nearest clean stone pixel — a row away counting as two columns, so the lip keeps its
+bands, and one pixel at a time, never a run copied along the row. The English is the game's
+glyphs made bold (every stroke doubled one column right), in the ink entry the Japanese used,
+centred on where it was. `M_S02000` carries a stone too, but nothing loads that pack (no
+`file_load(148)` in the executable or any overlay), so it is not built.
+
+**Balloons.** A balloon is flat paper, so the recipe blanks the Japanese's whole rectangle
+(grown one pixel, inside the paper) to paper before setting the English — the type is the
+islands of non-paper inside the paper, which leaves the tail's shading alone. Lines break at
+` // `, `face.pitch` apart; every inked pixel must keep one pixel of paper between it and the
+outline, or the build refuses. Widening (`Widen`) repeats the centre column into texels that
+must be transparent and grows the atlas entry's `w_words`, checking the entry's bytes first.
+
+* **Diary desk, おやすみ** (`NIKKI_W`, 4bpp, CLUT 1 slice 1): the idle hint, drawn at screen
+  (40, 16) while byte `0x80047E50` is set — after 61 frames with no input. Atlas entry 6 is
+  the 12 bytes in front of the TIM (`{0, 64, 12, 40, 0, 0x41}`; the table's count, 7, is at
+  −0x58). *Good // night* needs 48 px of balloon; the art is x 4–47 of a 48-texel sprite, so
+  the recipe widens it 4 texels into the free x 48–51 and sets `w_words` 12 → 13.
+
+The other balloons (the desk `SUB`, the bag `PK_WAL`, the kite record `TK_WAL`, the kite book
+`TZICON`, bug sumo `M_S01100`, the insect box `MZ02` / `SAMP`) are `GFX-07`'s remaining work;
+their atlas tables are at `BOKU.BIN` `0x643CF2C` (`SUB`, count 24; the texture has a second
+copy, `SUB.TIM`, which the desk reloads), `0x6133814` (`PK_WAL`), `0x6562014` (`TK_WAL`),
+`0x665A814` (`TZICON`), `SAMP.BIN` +0x28 and +0x104 (`MZ02`'s copy and `SAMP`'s; `u` and `w` in
+halfwords), and `MUSI.OVL` `0x8007A538`.
+
+**Proof.** `tests/test_real_texture_buttons.py`: each stone's ink-dark pixels are exactly its
+English bold in the disc's glyphs, each balloon's type exactly its English lines, the widened
+entry grown; on Beetle (`./make.sh emu-test`) the settings, load (a generated day-5 card) and
+diary-desk screens show every opaque texel of each button's box in its rebuilt colour, and
+the stock image fails it.
+
 ## Measured while looking at the rest of `GFX-07`
 
 What remains of the row is listed in `PLAN.md` `GFX-07`; these are the facts it rests on.
 
-* The action and back buttons (`SUB`, `M_S01100`, `M_S02000`, `MZ00`, `MZ02`, `SAMP`,
-  `TZICON`, `PK_WAL`, `TK_WAL`, `T_MEMORY` child 0, `T_CONFIG`'s stone) are ovals about
-  20×35 px holding two lines of ~8 px Japanese; the game's 12 px glyphs do not fit English
-  there.
 * The attendance card (`PK_ITM` `0x6c`) has the same problem — see
   [textures-plan.md](textures-plan.md) § "The two item pictures".
 * `FS_WAL`, the fishing record: its labels sit beside numbers the game draws at run time over
