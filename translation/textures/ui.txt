@@ -1,0 +1,10 @@
+# UI plates and the title menu (PLAN GFX-07): the English the build typesets into textures.
+# Format: translation/textures/README.md. One row per string: string id, TAB, English.
+
+# --- T_TITLE: the four title-menu lines, top to bottom (the Japanese: start from the
+# beginning / continue from partway / summer-vacation memories / settings). Set in the
+# game's own glyphs with an outline; the game draws the drop shadow itself.
+tex@T_TITLE.0	New Game
+tex@T_TITLE.1	Continue
+tex@T_TITLE.2	Summer Memories
+tex@T_TITLE.3	Settings

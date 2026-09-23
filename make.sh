@@ -45,7 +45,8 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh build --help for the switches)
   build-days [arguments]        the whole thing: assemble the TXT-05 renderer into
                                 build/vwf/edits.json, then build the reviewed
-                                translation (days 1-7 + shared.txt) through it into
+                                translation (days 1-7 + shared.txt) and the English
+                                textures (translation/textures/) through it into
                                 build/days/ -- proportional English, every line laid
                                 out in the dialogue band's pixels, containers grown
                                 and members relocated where a line outgrew its
@@ -72,7 +73,8 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh coverage --help for the switches)
   test [pytest arguments]       run the test suite
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
-                                `test`): the movie-subtitle gate on PCSX-Redux
+                                `test`): the movie-subtitle gate on PCSX-Redux and
+                                the English title menu on Beetle PSX
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
@@ -170,7 +172,7 @@ cmd_build_days() {
     echo
     echo "== 2/2: building translation/days through it -> build/days/ =="
     uv run boku build --vwf "$font/edits.json" --translation translation/days \
-        --name days --out build/days --skip-unfitted "$@"
+        --textures translation/textures --name days --out build/days --skip-unfitted "$@"
     # A second .cue named by the revision, so the emulator's window title says what is
     # being played while builds and edits overlap (Jay, 2026-09-20). Same image.img.
     local id
@@ -242,7 +244,8 @@ case "$verb" in
         exec uv run pytest "$@"
         ;;
     emu-test)
-        BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py "$@"
+        BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
+            tests/test_real_title_menu_beetle.py "$@"
         ;;
     lint)
         uv run ruff check .

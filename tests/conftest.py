@@ -18,6 +18,7 @@ from boku.events import EventWorld
 from boku.importer import IMAGE_SIZE, SOURCE_ENV_VAR
 from boku.sites import Walk, walk
 from boku.text import SiteIndex
+from boku.textures import Inventory, inventory
 
 DISC_DIR = REPO_ROOT / "disc"
 
@@ -70,6 +71,12 @@ def disc_dir() -> Path:
 def archive(disc_dir: Path) -> Archive:
     """One `Archive` for the whole session; it holds 109 MB and is read-only."""
     return Archive(disc_dir)
+
+
+@pytest.fixture(scope="session")
+def texture_inventory(archive: Archive) -> Inventory:
+    """Every distinct TIM on the import, scanned once for the session."""
+    return inventory(archive)
 
 
 @pytest.fixture(scope="session")

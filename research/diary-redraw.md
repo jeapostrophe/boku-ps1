@@ -171,8 +171,8 @@ which sits high and wide, so `-` is left unmapped and reported rather than silen
 
 ## The two faces, looked at
 
-The game's glyphs are decoded from the one sheet on the disc (`ONMEM.BIN` child 2) using
-[font.md](font.md)'s formula — four interleaved 1bpp planes, `col = id % 21`, `plane =
+The game's glyphs are decoded from the one sheet on the disc (`ONMEM.BIN` child 2) by
+`boku/typeset.py`, shared with the other texture recipes, using [font.md](font.md)'s formula — four interleaved 1bpp planes, `col = id % 21`, `plane =
 (id / 21) % 4`, `row = id / 84` — and keyed through `research/data/glyph-table.tsv`. ASCII
 reaches it by the full-width offset `U+0021..U+007E → U+FF01..U+FF5E`, with one exception the
 offset gets wrong because the sheet draws the typographic character: the apostrophe is U+2019.

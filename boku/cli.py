@@ -272,6 +272,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     builder.add_argument(
+        "--textures",
+        type=Path,
+        metavar="DIR",
+        help=(
+            "a directory of texture strings (translation/textures/): each texture a "
+            "recipe exists for is typeset in English from your import and applied as "
+            "verified byte edits (boku.texture_text)"
+        ),
+    )
+    builder.add_argument(
         "--no-label",
         action="store_true",
         help=(
@@ -295,6 +305,7 @@ def build_parser() -> argparse.ArgumentParser:
             else tuple(w.edit() for w in patch_words(True, True)),
             args.vwf,
             not args.no_label,
+            args.textures,
         )
     )
 

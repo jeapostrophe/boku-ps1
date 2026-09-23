@@ -42,15 +42,13 @@ if str(REPO_ROOT) not in sys.path:
 
 from boku.archive import Archive  # noqa: E402
 from boku.textures import Texture, inventory, patches_for, to_png  # noqa: E402
-from boku.tim import Tim  # noqa: E402
+from boku.tim import Tim, luminance  # noqa: E402
+from boku.typeset import FONT_SHEET_ID, Face, GameFace, Glyph, wrap  # noqa: E402
 
 WORK_DIR = REPO_ROOT / "work/diary"
 BUILD_DIR = REPO_ROOT / "build/diary"
 DISC_DIR = REPO_ROOT / "disc"
-GLYPH_TSV = REPO_ROOT / "research/data/glyph-table.tsv"
 GALMURI_BDF = REPO_ROOT / "reference/fonts/galmuri/Galmuri9.bdf"
-FONT_SHEET_ID = "_DATA_ONMEM.BIN__004aa0"
-"""The one glyph sheet on the disc (`research/font.md`): `ONMEM.BIN` child 2."""
 
 PAGE_W, PAGE_H = 240, 192
 
@@ -158,10 +156,6 @@ def line_tops(panel: Panel = PANEL) -> list[int]:
 
 
 # --- measurement ------------------------------------------------------------------------------
-
-
-def luminance(colour: tuple[int, int, int, int]) -> int:
-    return (colour[0] * 299 + colour[1] * 587 + colour[2] * 114) // 1000
 
 
 @dataclass(frozen=True)
@@ -420,113 +414,6 @@ def measure_page(texture: Texture, panel: Panel = PANEL) -> PageMeasure:
 
 
 @dataclass(frozen=True)
-class Glyph:
-    """A 1-bit glyph as rows of set-pixel x offsets, already left-aligned."""
-
-    width: int
-    """Ink width. The advance is this plus one column of air."""
-    rows: tuple[tuple[int, ...], ...]
-    """`INK_ROWS` rows, top of the ink band first; each a tuple of x offsets."""
-
-
-class Face:
-    """A 1-bit typeface this script can set into a 12-row line box."""
-
-    name = "?"
-    space = 4
-
-    def glyph(self, ch: str) -> Glyph | None:
-        raise NotImplementedError
-
-    def advance(self, ch: str) -> int:
-        if ch == " ":
-            return self.space
-        g = self.glyph(ch)
-        return (g.width + 1) if g else 0
-
-    def missing(self, text: str) -> list[str]:
-        return sorted({c for c in text if not c.isspace() and self.glyph(c) is None})
-
-
-FULLWIDTH_OFFSET = 0xFEE0
-"""ASCII to its full-width twin, which is how Unicode lays the two ranges out and how the
-game's glyph table is keyed (`research/font.md`): U+0021..U+007E -> U+FF01..U+FF5E. Derived
-rather than typed out, so the table cannot drift from the range it claims to be."""
-
-FULLWIDTH = {
-    **{chr(c): chr(c + FULLWIDTH_OFFSET) for c in range(0x21, 0x7F)},
-    # One the offset gets wrong, because the sheet draws the typographic character rather
-    # than the full-width ASCII one: the apostrophe is U+2019.
-    #
-    # `-` is deliberately NOT mapped. The sheet's only dash is id 30, a full-width minus
-    # (U+2212), and `research/font-candidates.md` § 1 lists the hyphen among the cells that
-    # have to be drawn for English: "none of those can be reused". Leaving `-` unmapped makes
-    # `Face.missing` report it instead of setting a wide, centred, raised minus in its place.
-    # There is no straight or double quote on the sheet at all, and `(` `)` are its
-    # vertical-writing forms, which `research/font.md` warns are wrong in a horizontal line.
-    "'": "\u2019",
-}
-
-
-class GameFace(Face):
-    """The game's own 12x12 dialogue glyphs, decoded from `ONMEM.BIN`'s sheet.
-
-    The sheet is four interleaved 1bpp planes, not a 16-colour image: bit *k* of a 4-bit
-    pixel is plane *k*, and `id -> (col, plane, row)` is `research/font.md`'s formula. The
-    cells are proportional drawings with 1-5 px of left bearing, so a glyph is re-aligned to
-    its own ink here and given `ink + 1` of advance — which is the "re-aligned" variant
-    `research/font-candidates.md` measured, not the engine's fixed 14 px pitch.
-    """
-
-    name = "game"
-    space = 4
-
-    def __init__(self, sheet: Tim, table: dict[str, int]) -> None:
-        self._idx = sheet.indices()
-        self._w = sheet.width
-        self._table = table
-        self._cache: dict[str, Glyph | None] = {}
-
-    @classmethod
-    def load(cls, inv) -> GameFace:
-        sheet = inv.get(FONT_SHEET_ID).tim
-        table = {}
-        for line in GLYPH_TSV.read_text(encoding="utf-8").splitlines()[1:]:
-            cells = line.split("\t")
-            if len(cells) >= 2 and cells[1]:
-                table.setdefault(cells[1], int(cells[0]))
-        return cls(sheet, table)
-
-    def _cell(self, glyph_id: int) -> list[list[int]]:
-        col, plane, row = glyph_id % 21, (glyph_id // 21) % 4, glyph_id // 84
-        x0, y0 = col * 12, row * 12
-        return [
-            [(self._idx[(y0 + r) * self._w + x0 + c] >> plane) & 1 for c in range(12)]
-            for r in range(12)
-        ]
-
-    def glyph(self, ch: str) -> Glyph | None:
-        if ch in self._cache:
-            return self._cache[ch]
-        glyph_id = self._table.get(FULLWIDTH.get(ch, ch))
-        found = None
-        if glyph_id is not None:
-            bits = self._cell(glyph_id)
-            inked = [c for r in range(12) for c in range(12) if bits[r][c]]
-            if inked:
-                left, right = min(inked), max(inked)
-                found = Glyph(
-                    width=right - left + 1,
-                    rows=tuple(
-                        tuple(c - left for c in range(left, right + 1) if bits[r][c])
-                        for r in range(12)
-                    ),
-                )
-        self._cache[ch] = found
-        return found
-
-
-@dataclass(frozen=True)
 class BdfChar:
     """One BDF character: its bounding box, its advance and its rows of hex."""
 
@@ -639,31 +526,6 @@ def galmuri_face() -> BdfFace:
 
 
 # --- typesetting -------------------------------------------------------------------------
-
-
-def wrap(text: str, face: Face, width: int) -> list[str]:
-    """Greedy word wrap at `width` pixels, in `face`'s own advances."""
-    lines: list[str] = []
-    for paragraph in text.split("\n"):
-        words = paragraph.split()
-        if not words:
-            lines.append("")
-            continue
-        current = ""
-        for word in words:
-            trial = f"{current} {word}" if current else word
-            if current and measure_text(trial, face) > width:
-                lines.append(current)
-                current = word
-            else:
-                current = trial
-        lines.append(current)
-    return lines
-
-
-def measure_text(text: str, face: Face) -> int:
-    total = sum(face.advance(c) for c in text)
-    return max(0, total - 1)
 
 
 # --- the redraw --------------------------------------------------------------------------
@@ -818,7 +680,7 @@ def verb_measure(args) -> int:
 
 
 def faces(inv) -> dict[str, Face]:
-    return {"game": GameFace.load(inv), "galmuri": galmuri_face()}
+    return {"game": GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim), "galmuri": galmuri_face()}
 
 
 def render_one(texture: Texture, text: str, face: Face) -> Redraw:

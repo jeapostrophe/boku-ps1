@@ -64,6 +64,11 @@ def rgba_of_word(word: int) -> tuple[int, int, int, int]:
     return (r << 3 | r >> 2, g << 3 | g >> 2, b << 3 | b >> 2, 255)
 
 
+def luminance(colour: tuple[int, ...]) -> int:
+    """Rec. 601 luma of an RGB(A) colour, 0-255: which of two palette entries is paler."""
+    return (colour[0] * 299 + colour[1] * 587 + colour[2] * 114) // 1000
+
+
 def stp_of_word(word: int) -> int:
     """The semi-transparency bit, which RGBA has nowhere to put."""
     return (word >> 15) & 1

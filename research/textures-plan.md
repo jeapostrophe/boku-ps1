@@ -361,8 +361,9 @@ All of it is new: **not one texture string has a line id today**. The translatio
 (`translation/days/*.txt`) hold event dialogue keyed `E<dd>NN.<page>`; the UI/array strings that
 `TXT-05` uses live as `exe@<RAM>.<item>` fixtures in `tools/vwf/prototype-lines.tsv`. Texture
 strings need a third namespace, and `tex@<member>.<n>` (with `nikki@`, `mzkan@`, `tzkan@` for the
-three bulk families) fits the existing `<container>@<offset>.<item>` convention — proposing it
-here, not deciding it.
+three bulk families) fits the existing `<container>@<offset>.<item>` convention. The `tex@`
+ids are in use: `translation/textures/` holds them and `boku build --textures` typesets them
+([texture-recipes.md](texture-recipes.md)).
 
 | # | id space | what to translate | volume |
 |---|---|---|---:|

@@ -78,6 +78,10 @@ from boku.reinsert import (
 from boku.relocate import RelocationRefused, SectorEdit
 from boku.sites import SiteError, Walk, load
 from boku.staging import StagingRefused, staged
+from boku.texture_text import TextureTextError
+from boku.texture_text import build_edits as build_texture_edits
+from boku.textures import TextureError
+from boku.tim import TimError
 from boku.translation import SampleScenes, TranslationError, TranslationSource, select_fields
 
 DEFAULT_IMAGE = Path("disc/image.img")
@@ -946,8 +950,13 @@ def main_build(
     binary_patches: Sequence[ByteEdit] = (),
     vwf: Path | None = None,
     label: bool = True,
+    textures: Path | None = None,
 ) -> int:
     """`boku build`. Every refusal reaches the contributor as one sentence.
+
+    `textures` is a directory of texture strings (`translation/textures/`); each family is
+    typeset into its image from this import and applied as verified byte edits
+    (`boku.texture_text`).
 
     `vwf` is a `TXT-05` edit set. It brings both halves of that build — the executable,
     overlay and font-sheet bytes, and the character map those bytes were derived from —
@@ -963,6 +972,13 @@ def main_build(
         if edit_set is not None:
             binary_patches = [*binary_patches, *edit_set.edits]
         installed = edit_set.encoder if edit_set is not None else None
+        if textures is not None:
+            typeset = build_texture_edits(Archive(disc_dir), Path(textures))
+            binary_patches = [*binary_patches, *typeset.edits]
+            print(
+                f"boku build: textures {', '.join(typeset.families) or 'none'} typeset from "
+                f"{textures} ({len(typeset.edits)} byte edits)"
+            )
         if cell_map:
             chosen = CellMapEncoder.from_json(Path(cell_map))
             if installed is not None and chosen.cells != installed.cells:
@@ -1003,6 +1019,9 @@ def main_build(
         SiteError,
         StagingRefused,
         TextError,
+        TextureError,
+        TextureTextError,
+        TimError,
         TranslationError,
         OSError,
     ) as error:

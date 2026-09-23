@@ -760,10 +760,14 @@ class Archive:
         """`n` bytes of the executable at a RAM address."""
         return self.exe[ram - EXE_LOAD_BIAS : ram - EXE_LOAD_BIAS + n]
 
+    def overlay_offset(self, short_name: str, ram: int) -> int:
+        """Where in `BOKU.BIN` an overlay's byte at RAM address `ram` is stored."""
+        return self.member(short_name).offset + ram - OVERLAY_LOAD_ADDRESS
+
     def overlay_bytes(self, short_name: str, ram: int, n: int) -> bytes:
         """`n` bytes of an overlay at the RAM address it has once loaded."""
-        b = self.blob(self.member(short_name))
-        return b[ram - OVERLAY_LOAD_ADDRESS : ram - OVERLAY_LOAD_ADDRESS + n]
+        at = self.overlay_offset(short_name, ram)
+        return self.boku[at : at + n]
 
     def image_bytes(self, image: str, ram: int, n: int) -> bytes:
         """`n` bytes of `"exe"` or of an overlay named by its lowercase stem (`"hhon"`)."""
