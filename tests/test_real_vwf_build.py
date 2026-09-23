@@ -29,6 +29,7 @@ from pathlib import Path
 import pytest
 
 from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, Archive, overlay_read_end_of
+from boku.arrays import ARRAYS, locate
 from boku.build import (
     EditSet,
     check_before_writing,
@@ -387,3 +388,20 @@ def test_every_refused_line_says_which_member_and_by_how_much(days_manifest: dic
         assert any(character.isdigit() for character in problems[0]), (
             f"{line_id}: {problems[0]!r} carries no numbers"
         )
+
+
+def test_every_moved_array_is_found_where_its_readers_now_point(
+    days_read_back: tuple[Archive, Walk], days_manifest: dict
+):
+    """`PLAN PIPE-07`: a grown array is written somewhere new and its `lui` pairs rewritten.
+    The read-back walks each array from its anchor pair in the *built* code, so every
+    other read-back gate here sees a moved array where the game will, and this one says
+    they really moved -- not that the walk quietly read the old Japanese at the old address."""
+    built, _ = days_read_back
+    moved = days_manifest["arrays_moved"]
+    assert moved, "the build moved no array; nothing here would be checked"
+    catalogue = {array.line_id_prefix: array for array in ARRAYS}
+    for entry in moved:
+        array = catalogue[entry["array"]]
+        assert locate(built, array) == ("exe", int(entry["to"], 16)), entry
+        assert int(entry["to"], 16) != array.ram

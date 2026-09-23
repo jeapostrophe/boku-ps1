@@ -183,6 +183,8 @@ vwf_select_box:
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build
 .endarea
+.org PC_HOST_ISLAND_END
+vwf_island_end:                     ; the edit set records it: grown text arrays take the tail
 .endif
 
 .close

@@ -338,7 +338,7 @@ def _add_reader_arrays(archive: Archive, add) -> None:
     """One site per translatable string, as `research/text-outside-events.md` defines them."""
     for walked in walk_all(archive):
         array = walked.array
-        bias, member_offset, file_tag, file_name = _image_base(archive, array.image)
+        bias, member_offset, file_tag, file_name = _image_base(archive, walked.image)
         container = f"array@{array.file_offset:#x}"
         for i, (start, end) in enumerate(walked.strings):
             file_offset = start - bias

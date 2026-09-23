@@ -1521,7 +1521,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             "ids": len(table),
             "sha1": hashlib.sha1(table).hexdigest(),
         },
-        "gap": gap.record,
+        # boku.build.EditSet.array_regions: grown text arrays take [vwf_free, island_end).
+        "gap": gap.record | {"island_end": f"0x{symbols['vwf_island_end']:08X}"},
         "walker_island": walkers.record,
         "cells": {
             character: {"id": cells[character], "advance": font[character].advance}

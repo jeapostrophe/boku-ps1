@@ -49,7 +49,17 @@ from boku.archive import (
     Archive,
     ArchiveError,
 )
-from boku.arrays import ArrayError, SelectTables
+from boku.array_relocate import (
+    DEAD_REGIONS,
+    PC_HOST_DATA,
+    ArrayPlan,
+    ArrayRoomRefused,
+    Region,
+    Scanned,
+    plan_arrays,
+    scans,
+)
+from boku.arrays import ArrayError, SelectTables, byte_limit
 from boku.boxes import box_for
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
@@ -480,6 +490,22 @@ class EditSet:
         return CellMapEncoder.from_document(self.document, "the edit set")
 
     @property
+    def array_regions(self) -> tuple[Region, ...]:
+        """Where grown arrays may move with this renderer installed: `DEAD_REGIONS`, the
+        PC-host module's data (dead only because this patch clears `g_pc_host`), and the
+        island's tail from `vwf_free` to `island_end`, both recorded in `gap` by the build
+        that assembled the island (research/text-renderer.md § 6). An edit set without
+        the island adds nothing."""
+        gap = self.document.get("gap")
+        if not isinstance(gap, dict) or "island_end" not in gap:
+            return DEAD_REGIONS
+        free = int(gap["symbols"]["vwf_advance"], 16) + int(gap["bytes"])
+        end = int(gap["island_end"], 16)
+        if free > end:
+            raise BuildRefused(f"the edit set's gap ends at 0x{free:08X}, past its island's end")
+        return (*DEAD_REGIONS, PC_HOST_DATA, Region(free, end, "the renderer island's tail"))
+
+    @property
     def select_row(self) -> BoxSpec:
         """The select row the renderer in these edits draws (`boku.layout.select_row_of`)."""
         return select_row_of(self.document)
@@ -732,7 +758,12 @@ def lay_out(
         elif kind == "ARR-S" and entry.is_select:
             # A menu held in a code file, opened by `select_open_ptr`: a select's rows.
             laid = lay_out_array_select(
-                entry.line_id, entry.options, original, encoder, sites[0].size, select_row
+                entry.line_id,
+                entry.options,
+                original,
+                encoder,
+                byte_limit(entry.line_id, sites[0].size),
+                select_row,
             )
         elif kind == "ARR-S":
             out.append(
@@ -770,7 +801,7 @@ def lay_out(
                 " ".join(entry.pages),
                 original,
                 encoder,
-                sites[0].size,
+                byte_limit(entry.line_id, sites[0].size),
                 measured.spec if measured else None,
             )
         else:
@@ -840,6 +871,8 @@ class BuildResult:
     translation: str
     binary_patches: tuple[ByteEdit, ...]
     sector_patches: tuple[SectorEdit, ...] = ()
+    arrays: ArrayPlan | None = None
+    """The code-file arrays this build moved whole (`boku.array_relocate`)."""
 
     @property
     def refused_lines(self) -> list[LineResult]:
@@ -869,6 +902,7 @@ def build(
     work_area_end: int = MAP_WORK_AREA_END,
     voice_subtitles: bool = False,
     select_row: BoxSpec = SELECT_ROW,
+    array_regions: Sequence[Region] = DEAD_REGIONS,
 ) -> BuildResult:
     """Read an import and a translation, and write a patched image (`PIPE-04`).
 
@@ -887,6 +921,7 @@ def build(
     encoder = encoder or StockEncoder.load()
     lines: list[LineResult] = []
     the_plan: Plan | None = None
+    moved: ArrayPlan | None = None
     edits = list(binary_patches)
     archive: Archive | None = None
 
@@ -917,9 +952,18 @@ def build(
                 f"and leave the rest in Japanese, or give the text more room."
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
-        the_plan, refused = _plan_what_fits(
-            archive, walk, words, in_place, skip_unfitted, work_area_end, binary_patches
+        moved, refused = move_arrays(archive, words, array_regions, skip_unfitted)
+        binary_patches = [*binary_patches, *moved.edits]
+        the_plan, still = _plan_what_fits(
+            archive,
+            walk,
+            {k: v for k, v in words.items() if k not in moved.lines},
+            in_place,
+            skip_unfitted,
+            work_area_end,
+            binary_patches,
         )
+        refused |= still
         carried = set(the_plan.carried)  # already inside a rebuilt member (reinsert.plan)
         binary_patches = [p for p in binary_patches if p not in carried]
         edits = list(binary_patches)
@@ -950,6 +994,7 @@ def build(
         translation=getattr(translation, "name", "none") if translation else "none",
         binary_patches=tuple(binary_patches),
         sector_patches=tuple(sector_patches),
+        arrays=moved,
     )
     if dry_run:
         check_before_writing(source, out_dir, edits, what=name, sectors=sectors)
@@ -989,6 +1034,37 @@ def answer_pair_patches(archive: Archive, lines: Sequence[LineResult]) -> list[B
         )
         for ram, word in answer_pair_code(laid).items()
     ]
+
+
+def move_arrays(
+    archive: Archive,
+    words: dict[str, tuple[int, ...]],
+    regions: Sequence[Region],
+    skip_unfitted: bool,
+) -> tuple[ArrayPlan, dict[str, tuple[str, ...]]]:
+    """Move the grown arrays (`boku.array_relocate`), popping from `words` what cannot move.
+
+    With `skip_unfitted`, an array that does not fit leaves the items that grew in
+    Japanese -- its other items fit their own bytes and go in place -- and the rest are
+    placed again, so every refusal is found, not only the first. The lint runs this too.
+    """
+    refused: dict[str, tuple[str, ...]] = {}
+    memo: list[Scanned] = []
+
+    def scanned() -> Scanned:
+        if not memo:
+            memo.append(scans(archive))
+        return memo[0]
+
+    while True:
+        try:
+            return plan_arrays(archive, words, regions, scanned), refused
+        except ArrayRoomRefused as error:
+            popped = [line for line in error.lines if words.pop(line, None) is not None]
+            if not skip_unfitted or not popped:
+                raise
+            for line in popped:
+                refused[line] = (str(error),)
 
 
 def _plan_what_fits(
@@ -1071,6 +1147,10 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
                 result.plan.relocations if result.plan else (), key=lambda p: p.member
             )
         ],
+        "arrays_moved": [
+            {"array": m.prefix, "from": f"0x{m.old:08X}", "to": f"0x{m.new:08X}", "bytes": m.size}
+            for m in (result.arrays.moved if result.arrays else ())
+        ],
         "rebased_containers": (
             {str(k): v for k, v in sorted(result.plan.layout.bases.items())} if result.plan else {}
         ),
@@ -1146,6 +1226,10 @@ def format_summary(result: BuildResult) -> str:
                 f"    arena: {result.plan.layout.free_after} of "
                 f"{result.plan.layout.free_before} sectors left"
             )
+    if result.arrays and result.arrays.moved:
+        for m in result.arrays.moved:
+            out.append(f"    {m.prefix}: moved to 0x{m.new:08X}, {m.size} bytes")
+        out.append(f"    array room: {result.arrays.free_left} bytes left")
     if result.written:
         out.append(f"  {len(result.written.sectors)} sectors changed; {result.written.manifest}")
         if result.written.unchanged:
@@ -1224,10 +1308,12 @@ def main_build(
             work_area_end=(edit_set.work_area_end if edit_set is not None else MAP_WORK_AREA_END),
             voice_subtitles=edit_set is not None and edit_set.voice_subtitles,
             select_row=(edit_set.select_row if edit_set is not None else SELECT_ROW),
+            array_regions=(edit_set.array_regions if edit_set is not None else DEAD_REGIONS),
         )
     except (
         ArchiveError,
         ArrayError,
+        ArrayRoomRefused,
         BuildRefused,
         DiscError,
         EventError,

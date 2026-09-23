@@ -229,10 +229,12 @@ p10 368, median 1,246, p90 1,784, max 2,044; 10 members have < 64 (`M_A10101` 16
 24, `M_G12201` 24, `M_A18102` 32, `M_I30000` 32, …). Text is 260,064 bytes in maps, 84,050 in
 `EV`, 10,224 in arrays.
 
-Arrays in code files have **no slack**: an array is followed by the next symbol. Growth means
-relocating the array and patching the `lui`/`addiu` pair(s) in the table above; **L** and
-**E** arrays must keep their item count and order (code holds the indices); the ant message
-must keep three digit cells where the code writes them, or the code changes too.
+Arrays in code files have **no slack**: an array is followed by the next symbol. A grown
+array moves whole and its `lui`/`addiu` pairs are rewritten (`boku.array_relocate`; the pairs,
+and why they are the only references, are [text-outside-events.md](text-outside-events.md)
+§ "How the code reaches an array"); **L** and **E** arrays must keep their item count and
+order (code holds the indices); the ant message must keep three digit cells where the code
+writes them, or the code changes too.
 
 ## Glyph ids in use
 

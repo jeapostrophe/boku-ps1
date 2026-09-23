@@ -743,3 +743,29 @@ def test_a_subtitle_given_twice_is_an_error(store, tmp_path):
     rows, _ = load_rows(translation_paths([first, second]))
     findings = lint_rows(store, rows, Options(encoder=StockEncoder.load(), label=False))
     assert only(findings, "translated-twice").file == "shared99.txt"
+
+
+def test_arrays_that_move_are_held_to_the_room_the_build_would_find(tmp_path):
+    """A relocatable array's item is no longer held to its own bytes, so the lint asks the
+    same question the build does -- does every grown array fit the free space -- through
+    `Options.array_room`, and a refusal names the lines left in Japanese."""
+    item = "exe@80046214.0"  # item names: a catalogue array with an anchor
+    synth = SynthStore.new(tmp_path)
+    synth.array_item(item, cells=4)
+    store = load_store(synth.write())
+    path = write_translation(
+        tmp_path / "day99.txt", [(item, "Boku", "M" * 8)]
+    )  # past 4 cells, inside the box
+    parsed, _ = load_rows(translation_paths([path]))
+    asked: list[dict] = []
+
+    def no_room(words):
+        asked.append(dict(words))
+        return [(item, "no room")]
+
+    options = Options(encoder=StockEncoder.load(), label=False, array_room=no_room)
+    findings = lint_rows(store, parsed, options)
+    assert "array-bytes" not in checks(findings), "a moving array is not held to its bytes"
+    assert asked and item in asked[0], "the laid-out words were not offered to the room check"
+    room = only(findings, "array-room")
+    assert (room.line_id, room.message) == (item, "no room")

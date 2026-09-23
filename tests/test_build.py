@@ -22,6 +22,7 @@ from boku.archive import (
     OVERLAY_LOAD_ADDRESS,
     overlay_read_end,
 )
+from boku.array_relocate import DEAD_REGIONS, PC_HOST_DATA, Region
 from boku.arrays import SELECT_LINES_ADDR
 from boku.boxes import box_for
 from boku.build import (
@@ -660,3 +661,16 @@ def test_a_renderer_patch_alone_is_checked_against_the_overlay_loads_too(
             binary_patches=[patch],
             dry_run=True,
         )
+
+
+def test_an_edit_set_offers_its_island_s_tail_and_the_pc_host_data_to_moved_arrays(tmp_path):
+    """The tail is `[vwf_free, island_end)` as the font build recorded them; the PC-host data
+    is dead only because this renderer clears `g_pc_host`, so a build without it never
+    gets that region."""
+    gap = {"symbols": {"vwf_advance": "0x8005CD44"}, "bytes": 956, "island_end": "0x8005DCF8"}
+    edit_set = load_edit_set(write_edit_set(tmp_path / "e.json", EXE_EDIT, gap=gap))
+    tail = Region(0x8005CD44 + 956, 0x8005DCF8, "the renderer island's tail")
+    assert edit_set.array_regions == (*DEAD_REGIONS, PC_HOST_DATA, tail)
+    older = load_edit_set(write_edit_set(tmp_path / "o.json", EXE_EDIT))
+    assert older.array_regions == DEAD_REGIONS
+    assert PC_HOST_DATA not in DEAD_REGIONS

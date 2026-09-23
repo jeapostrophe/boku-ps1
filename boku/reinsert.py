@@ -325,8 +325,8 @@ def _fill_in_place(site: Site, raw: bytes) -> bytes:
         raise ReinsertRefused(
             f"{site.line_id}: {len(raw)} bytes into a {site.size}-byte site, "
             f"{len(raw) - site.size} over. This site is written in place "
-            f"({site.container} {site.kind}), so nothing may grow here; relocating the "
-            f"array and repointing its lui/addiu pair is not this unit's (PLAN PIPE-03).",
+            f"({site.container} {site.kind}), so nothing may grow here; only a whole "
+            f"code-file array can move (boku.array_relocate).",
             [site.line_id],
         )
     filler = PAD_WORD.to_bytes(2, "little") * ((site.size - len(raw)) // 2)

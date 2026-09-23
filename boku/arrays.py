@@ -27,12 +27,12 @@ This module reproduces `research/data/text-arrays.tsv` byte for byte (`boku.rese
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass
 from itertools import pairwise
 
 from boku.archive import EXE_LOAD_BIAS, OVERLAY_LOAD_ADDRESS, Archive
 from boku.glyphs import END_WORD, NEWLINE_WORD, GlyphTable, words_of
+from boku.pointers import LOOKAHEAD, destination, resolve, words32
 
 OVL = OVERLAY_LOAD_ADDRESS
 
@@ -227,6 +227,71 @@ ARRAYS: tuple[ArrayDef, ...] = (
 )
 """Every array `research/text-outside-events.md` traced, in that note's table order."""
 
+ANCHORS: dict[str, tuple[str, int]] = {
+    "exe@80029AFC": ("exe", 0x8003203C),
+    "exe@80029B20": ("exe", 0x80035410),
+    "exe@80036750": ("exe", 0x8003A7D0),
+    "exe@8003D2E0": ("exe", 0x80037C74),
+    "exe@8003D5F0": ("title", 0x8007CC00),
+    "exe@8003D9BC": ("title", 0x8007FAE4),
+    "exe@8003DA00": ("title", 0x800803E4),
+    "exe@8003DA4C": ("exe", 0x8003C608),
+    "exe@80046158": ("exe", 0x8003F1CC),
+    "exe@80046178": ("exe", 0x8003F0A0),
+    "exe@800461BC": ("exe", 0x8003F01C),
+    "exe@800461CC": ("exe", 0x80042054),
+    "exe@80046214": ("exe", 0x8004174C),
+    "exe@800462C8": ("exe", 0x80043EF0),
+    "exe@800462E4": ("exe", 0x80043F08),
+    "exe@80046314": ("exe", 0x80043F1C),
+    "exe@80046334": ("exe", 0x80043F2C),
+    "exe@80046364": ("exe", 0x80043F60),
+    "exe@8004636C": ("exe", 0x80043F88),
+    "exe@8004637C": ("exe", 0x80043FB8),
+    "exe@80046384": ("exe", 0x80043FCC),
+    "exe@80046390": ("exe", 0x80043FE0),
+    "exe@80046398": ("exe", 0x800417E0),
+    "exe@80046614": ("exe", 0x80041834),
+    "hhon@5328": ("hhon", 0x8007B478),
+    "hhon@6874": ("hhon", 0x8007D22C),
+    "zukan@32E8": ("zukan", 0x8007B06C),
+    "tako@4": ("tako", 0x8007F53C),
+    "tako@440": ("tako", 0x8007C688),
+    "musi@4": ("musi", 0x8007EEEC),
+    "musi@2C": ("musi", 0x80084FA8),
+    "musi@348": ("musi", 0x8007C6E0),
+    "musi@358": ("musi", 0x8007EDD8),
+    "title@7A78": ("title", 0x8007CFF8),
+}
+"""One `lui` per array whose address pair the walk reads the array's start from -- the
+reader's own pointer, so an image a build relocated an array in is walked where the game
+will look (`boku.pointers`, `PLAN PIPE-07`). On the import each resolves to the catalogue's
+own address, and every reference `boku.pointers.scan` finds is checked against the list on
+the real disc (`tests/test_real_pointers.py`)."""
+
+RELOCATABLE_SHAPES = frozenset({"E", "L", "S", "S1"})
+"""Arrays a build may move whole: their items are found by walking control words from
+the start, so only the start's address pairs change. A raw (`R`) row's cell count is its
+reader's loop bound, so it never grows and never moves."""
+
+
+def relocatable(array: ArrayDef) -> bool:
+    return array.shape in RELOCATABLE_SHAPES and array.line_id_prefix in ANCHORS
+
+
+def byte_limit(line_id: str, size: int) -> int | None:
+    """What an array item's English is held to: its own `size` bytes, or `None` when a
+    grown array moves whole and only the free space limits it (`boku.array_relocate`).
+    The build and the lint both ask here, so they refuse the same items."""
+    array = array_of(line_id)
+    return None if array is not None and relocatable(array) else size
+
+
+def array_of(line_id: str) -> ArrayDef | None:
+    """The catalogue entry a line id (`exe@80046214.3`, `zukan@32E8`) belongs to."""
+    prefix = line_id.split(".", 1)[0]
+    return next((a for a in ARRAYS if a.line_id_prefix == prefix), None)
+
 
 @dataclass(frozen=True)
 class ArrayWalk:
@@ -243,6 +308,10 @@ class ArrayWalk:
     the two numbers measure the same bytes and had the same name until `PIPE-01`'s review."""
     strings: tuple[tuple[int, int], ...]
     """`(start, end)` RAM spans of the translatable units — a select is one span."""
+    image: str
+    """Where the walk found it: `array.image`, or `"exe"` for an array a build moved there."""
+    start: int
+    """RAM address it starts at: `array.ram`, unless a build moved it."""
 
     @property
     def line_ids(self) -> tuple[str, ...]:
@@ -253,6 +322,16 @@ class ArrayWalk:
         return tuple(f"{prefix}.{i}" for i in range(len(self.strings)))
 
 
+def locate(archive: Archive, array: ArrayDef) -> tuple[str, int]:
+    """`(image, RAM)` where the reader will find `array`: its anchor pair, read."""
+    anchor = ANCHORS.get(array.line_id_prefix)
+    if anchor is None:
+        return array.image, array.ram
+    image, lui = anchor
+    ram = resolve(archive.image_bytes(image, lui, 4 * (LOOKAHEAD + 1)), lui, lui)
+    return ("exe" if ram < OVL else array.image), ram
+
+
 def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:
     """Walk one array by its shape, and stop exactly where its reader would stop.
 
@@ -261,8 +340,10 @@ def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:
     array rather than an `IndexError` out of `struct`.
     """
 
+    image, start = locate(archive, array)
+
     def word(at: int) -> int:
-        raw = archive.image_bytes(array.image, at, 2)
+        raw = archive.image_bytes(image, at, 2)
         if len(raw) != 2:
             raise ArrayError(
                 f"{array.line_id_prefix}: the walk ran off the end of {array.file_name} "
@@ -272,7 +353,7 @@ def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:
 
     if array.shape == "R":
         rows, cells = array.spec
-        raw = archive.image_bytes(array.image, array.ram, 2 * rows * cells)
+        raw = archive.image_bytes(image, start, 2 * rows * cells)
         if len(raw) != 2 * rows * cells:
             raise ArrayError(
                 f"{array.line_id_prefix}: a {rows}x{cells} raw array does not fit in "
@@ -283,12 +364,12 @@ def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:
             raise ArrayError(f"{array.line_id_prefix}: a raw array holds a control word")
         return ArrayWalk(
             array,
-            array.ram + 2 * rows * cells,
+            start + 2 * rows * cells,
             rows,
             sum(1 for v in values if v),
-            tuple(
-                (array.ram + 2 * cells * r, array.ram + 2 * cells * (r + 1)) for r in range(rows)
-            ),
+            tuple((start + 2 * cells * r, start + 2 * cells * (r + 1)) for r in range(rows)),
+            image,
+            start,
         )
 
     if array.shape == "S":
@@ -298,7 +379,7 @@ def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:
     else:
         wanted = array.spec
 
-    p = array.ram
+    p = start
     glyphs = 0
     seen = 0
     starts = [p]
@@ -331,8 +412,8 @@ def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:
                 glyphs += 1
     # A select is one translatable unit however many lines it holds; everything else is
     # one unit per item, delimited by the starts collected above.
-    strings = ((array.ram, p),) if array.shape == "S" else tuple(pairwise(starts))
-    return ArrayWalk(array, p, wanted, glyphs, strings)
+    strings = ((start, p),) if array.shape == "S" else tuple(pairwise(starts))
+    return ArrayWalk(array, p, wanted, glyphs, strings, image, start)
 
 
 SELECT_BASE_ADDR = 0x80028F6C
@@ -445,13 +526,11 @@ GLYPH_DRAW_LAYER = 0x8002B9FC
 """`research/font.md`. Overlays call both at their executable addresses."""
 
 _OP_SPECIAL = 0x00
-_OP_REGIMM = 0x01
 _OP_J = 0x02
 _OP_JAL = 0x03
 _OP_ADDIU = 0x09
 _OP_ORI = 0x0D
 _REG_A0 = 4
-_REG_RA = 31
 _JR_RA = 0x03E00008
 _FUNCTION_WORD_LIMIT = 512
 """A safety net: no label drawer is anywhere near this long, and an unterminated scan
@@ -495,42 +574,6 @@ CODE_LABELS: tuple[tuple[str, int, str], ...] = (
 from the instruction stream below, not copied out of the note."""
 
 
-def _words32(raw: bytes) -> Iterator[int]:
-    for i in range(0, len(raw) - 3, 4):
-        yield int.from_bytes(raw[i : i + 4], "little")
-
-
-def _destination(word: int) -> int | None:
-    """Which register an instruction writes, or `None` if it writes no general register.
-
-    Only enough of MIPS I to answer *"did this clobber `a0`?"*. Getting that wrong in the
-    permissive direction is what made two of the six labels grow a phantom character: a
-    literal left in `a0` by a computed store or somebody else's call was then read as the
-    argument of a `glyph_draw` dozens of instructions later.
-    """
-    op = word >> 26
-    if op == _OP_SPECIAL:
-        funct = word & 0x3F
-        if funct == 0x09:  # jalr
-            return _REG_RA
-        if funct in (0x08, 0x0C, 0x0D, 0x18, 0x19, 0x1A, 0x1B):  # jr, syscall, break, mult/div
-            return None
-        return (word >> 11) & 0x1F
-    if op == _OP_REGIMM:
-        return _REG_RA if (word >> 16) & 0x1F in (0x10, 0x11) else None  # bltzal, bgezal
-    if op == _OP_JAL:
-        return _REG_RA
-    if op in (_OP_J, 0x04, 0x05, 0x06, 0x07):  # j and the branches
-        return None
-    if 0x08 <= op <= 0x0F:  # addi(u), slti(u), andi, ori, xori, lui
-        return (word >> 16) & 0x1F
-    if 0x10 <= op <= 0x13:  # coprocessor: mfcz/cfcz write rt, mtcz/ctcz do not
-        return (word >> 16) & 0x1F if (word >> 21) & 0x1F in (0, 2) else None
-    if 0x20 <= op <= 0x26:  # the loads
-        return (word >> 16) & 0x1F
-    return None
-
-
 def _a0_literal(word: int) -> int | None:
     """The immediate of `addiu`/`ori a0, zero, imm`, which is a glyph id being passed."""
     rs, rt = (word >> 21) & 0x1F, (word >> 16) & 0x1F
@@ -569,7 +612,7 @@ def _draw_of(words: list[int], start: int, function: int) -> int | None:
         word = words[p]
         slot = words[p + 1] if p + 1 < len(words) else 0
         # The delay slot runs before the transfer, so a write to a0 there is not ours.
-        slot_takes_a0 = _a0_literal(slot) is not None or _destination(slot) == _REG_A0
+        slot_takes_a0 = _a0_literal(slot) is not None or destination(slot) == _REG_A0
         target = _jump_target(word, _OP_JAL)
         if target is not None or (word >> 26 == _OP_SPECIAL and word & 0x3F == 0x09):
             if target in (GLYPH_DRAW, GLYPH_DRAW_LAYER) and not slot_takes_a0:
@@ -581,7 +624,7 @@ def _draw_of(words: list[int], start: int, function: int) -> int | None:
                 return None
             p = (jumped - function) // 4
             continue
-        if word == _JR_RA or _a0_literal(word) is not None or _destination(word) == _REG_A0:
+        if word == _JR_RA or _a0_literal(word) is not None or destination(word) == _REG_A0:
             return None
         p += 1
     return None
@@ -598,7 +641,7 @@ def read_code_labels(archive: Archive) -> list[CodeLabel]:
     out = []
     for image, function, purpose in CODE_LABELS:
         raw = archive.image_bytes(image, function, 4 * _FUNCTION_WORD_LIMIT)
-        words = list(_words32(raw))
+        words = words32(raw)
         stop = len(words)
         for i, word in enumerate(words):
             if word == _JR_RA:

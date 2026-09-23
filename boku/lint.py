@@ -31,10 +31,13 @@ What it checks, and where each rule comes from
   (`research/vwf-prototype.md`).
 * **`select-width`** -- a select line cannot wrap; a second line would be a second option.
   Measured against the row the renderer draws (`renderer_for`), not the band.
-* **`array-bytes`** -- a code-file array item has no slack: the next symbol starts where
-  it ends, so growth is refused by the reinserter (`boku/layout.py`, `PLAN PIPE-03`). A
-  menu held in a code file (an **S** array) is written as a `[SEL]` row and checked like a
-  select -- its line count is the original's -- and for its bytes like an array.
+* **`array-bytes`** -- a code-file array item has no slack, and one that cannot move (a raw
+  row, `boku.arrays.byte_limit`) is held to its own bytes. A menu held in a code file (an
+  **S** array) is written as a `[SEL]` row and checked like a select -- its line count is
+  the original's -- and for its bytes like an array.
+* **`array-room`** -- a grown array moves whole (`boku.array_relocate`), so what limits it
+  is the free space: the build's own allocation, over this import and the edit set's
+  regions, and a refusal names the array's laid-out lines.
 * **`not-placeable`** -- *a warning*: a label assembled from instruction immediates or the
   memory-card title (`script_store.PLACED_BY_CODE`). It has English but no text site, so
   the build cannot place it until a code patch does (`PLAN TXT-05`).
@@ -84,12 +87,13 @@ import argparse
 import json
 import re
 import sys
-from collections.abc import Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from boku import REPO_ROOT, clip_subs, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
+from boku.arrays import byte_limit
 from boku.boxes import TextBox, box_for
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
@@ -434,6 +438,12 @@ class Options:
     """The non-dialogue boxes by line id; `None` reads `research/data/text-boxes.tsv`."""
     select_row: BoxSpec = SELECT_ROW
     """What one select option may take (`renderer_for`)."""
+    array_room: Callable[[Mapping[str, Sequence[int]]], Sequence[tuple[str, str]] | None] | None = (
+        None
+    )
+    """Given every array item's laid-out words, `None` when the grown arrays fit the free
+    space, else `(line id, why)` for every item it leaves in Japanese -- the build's own
+    `boku.build.move_arrays`, which `main_lint` passes when the import is here."""
 
 
 @dataclass
@@ -444,6 +454,8 @@ class _Context:
     options: Options
     table: GlyphTable
     findings: list[Finding] = field(default_factory=list)
+    array_words: dict[str, tuple[int, ...]] = field(default_factory=dict)
+    """Array items that laid out cleanly, for `Options.array_room`."""
 
     def say(self, row: Row, check: str, severity: str, message: str) -> None:
         self.findings.append(Finding(row.file, row.number, row.line_id, check, severity, message))
@@ -465,6 +477,10 @@ def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Findi
         if options.additive:
             _check_additive(context, row, record)
         _check_em_dash(context, row)
+    if options.array_room is not None and context.array_words:
+        by_id = {row.line_id: row for row in english}
+        for line_id, message in options.array_room(context.array_words) or ():
+            context.say(by_id[line_id], "array-room", ERROR, message)
     context.findings.extend(_check_loader_agreement(rows))
     return sorted(context.findings)
 
@@ -588,9 +604,11 @@ def _check_array_select(context: _Context, row: Row, record: dict) -> None:
         row.entry.options,
         original_bytes(record, context.table),
         context.options.encoder,
-        record["capacity"]["bytes"],
+        byte_limit(row.line_id, record["capacity"]["bytes"]),
         context.options.select_row,
     )
+    if not laid.problems:
+        context.array_words[row.line_id] = laid.words
     for problem in laid.problems:
         check = "array-bytes"
         if "draws no cell" in problem:
@@ -606,7 +624,7 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
     """Bytes and pixels, through the same `lay_out_array` and box the build uses."""
     encoder = context.options.encoder
     text = " ".join(row.entry.pages)
-    size = record["capacity"]["bytes"]
+    size = byte_limit(row.line_id, record["capacity"]["bytes"])
     if row.line_id == ANSWER_PAIR.line_id:
         original = original_bytes(record, context.table)
         panel = box_for(row.line_id, context.options.boxes)
@@ -631,6 +649,8 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
         size,
         box.spec if box else None,
     )
+    if not laid.problems:
+        context.array_words[row.line_id] = laid.words
     for problem in laid.problems:
         detail = problem.split(": ", 1)[-1]
         check = "array-bytes"
@@ -929,6 +949,7 @@ def main_lint(
     except (StoreMissing, LayoutError) as error:
         print(f"lint: {error}", file=sys.stderr)
         return 2
+    options = replace(options, array_room=_array_room(Path(disc_dir), encoder_kind, cells))
     rows, findings = load_rows(paths)
     findings = [*findings, *lint_rows(store, rows, options)]
     try:
@@ -951,6 +972,36 @@ def main_lint(
         print(line)
     print(summarise(findings))
     return 1 if any(finding.is_error for finding in findings) else 0
+
+
+def _array_room(disc_dir: Path, encoder_kind: str, cells: Path | None):
+    """`Options.array_room` over this import, in the regions the build would use: the
+    edit set's when the cell map is one, else the dead regions alone. It runs the build's
+    own `move_arrays`, so it finds every array the build would refuse. The archive is
+    opened only when some array grows; a missing import is no check (`None`)."""
+    from boku.array_relocate import DEAD_REGIONS
+    from boku.build import BuildRefused, load_edit_set, move_arrays
+
+    def regions():
+        path = cells or DEFAULT_CELLS
+        if encoder_kind == "cellmap" and path.is_file():
+            try:
+                return load_edit_set(path).array_regions
+            except (BuildRefused, OSError, ValueError, KeyError):
+                pass  # the cell map is not an edit set: measure in the dead regions alone
+        return DEAD_REGIONS
+
+    def room(words):
+        try:
+            archive = Archive(disc_dir)
+        except ArchiveError:
+            return None
+        _, refused = move_arrays(archive, dict(words), regions(), skip_unfitted=True)
+        if not refused:
+            return None
+        return [(line, reasons[0]) for line, reasons in refused.items()]
+
+    return room
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

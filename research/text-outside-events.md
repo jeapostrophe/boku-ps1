@@ -207,6 +207,27 @@ has two screens that read it:
 Neither screen shows a `MZKAN` page, so the spreads' species name, family, size, food and body
 are all `GFX-06`'s ([textures-plan.md](textures-plan.md) § "The 26 encyclopedia spreads").
 
+## How the code reaches an array
+
+**Only through `lui`/`addiu` pairs** -- no data word points at an array or into one, and no
+`$gp`-relative access reaches one (`gp` is `0x8007220C`). Every pair was found by
+`boku.pointers.scan`, which follows each `lui` along every path to its function's `jr`
+(a `lui` in a branch's delay slot is completed on both sides of the branch:
+`item_menu_draw` builds the descriptions' address at `0x800417F4`, `0x800417FC` *and*
+`0x80041818`), and `tests/test_real_pointers.py` holds it against an independent count and
+against every `addiu`/`ori` whose low half is an array start. Some pairs are indexed: the
+code `addu`s an item offset onto the high half and the low half sits in the load
+(`sys_title_draw` `0x8003C630`, the `TITLE` config and extras drawers, `MUSI`'s move
+names). `TITLE` reads three executable arrays (the memory-card, config and extras text) and
+`HHON` one (the cage's release select); nothing else crosses images.
+
+So a grown array can move anywhere resident: `boku.array_relocate` writes it, items back to
+back, into the regions [text-renderer.md](text-renderer.md) § 6 gives it and the spans the
+moved arrays leave, and rewrites every pair -- an overlay's own array included, since its
+reader's pair can point into the executable. `boku.arrays.ANCHORS` names one pair per array,
+which the walk reads the start from, so a built image is walked where its code looks.
+Not moved: the raw (`R`) rows, whose cell count is their reader's loop bound.
+
 ## Line ids for these surfaces
 
 Their English is `translation/days/arrays.txt` (PLAN `TRN-09`; format in that directory's

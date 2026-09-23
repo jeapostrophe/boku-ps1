@@ -573,7 +573,7 @@ def lay_out_array(
     text: str,
     original: bytes,
     encoder: Encoder,
-    size: int,
+    size: int | None,
     box: BoxSpec | None = None,
 ) -> LaidOut:
     """One item of a code-file array: the English, then the item's own terminator.
@@ -581,8 +581,9 @@ def lay_out_array(
     An array has **no slack** — the next symbol starts where it ends — and its neighbours
     are found by scanning past its control words, so an item is replaced at
     equal-or-smaller size and its terminator is carried straight over
-    (`research/text-format.md` § "Text arrays in code files"). Growth means relocating the
-    array and patching the `lui`/`addiu` pairs that reach it, which is not this unit's.
+    (`research/text-format.md` § "Text arrays in code files"). A grown array moves whole
+    instead (`boku.array_relocate`): the build passes `size=None` for one that can, and
+    the item's own bytes for one that cannot.
 
     `box` is the surface's measured frame (`boku.boxes`, `research/data/text-boxes.tsv`,
     `PLAN TXT-07`); an item whose surface has no measured box yet is held to its bytes
@@ -638,11 +639,11 @@ def lay_out_array(
             cells.append(NEWLINE_WORD)
         cells += laid.cells
     new = (*cells, words[-1])
-    if 2 * len(new) > size:
+    if size is not None and 2 * len(new) > size:
         problems.append(
             f"{line_id}: {text!r} needs {2 * len(new)} bytes and the array item holds "
-            f"{size}, {2 * len(new) - size} over. An array has no slack; relocating it and "
-            f"repointing the lui/addiu pairs that reach it is not this unit's (PLAN PIPE-03)"
+            f"{size}, {2 * len(new) - size} over. An array has no slack, and this one "
+            f"cannot move (boku.array_relocate)"
         )
     return LaidOut(
         line_id=line_id,
@@ -764,7 +765,7 @@ def lay_out_array_select(
     lines: Sequence[str],
     original: bytes,
     encoder: Encoder,
-    size: int,
+    size: int | None,
     row: BoxSpec = SELECT_ROW,
 ) -> LaidOut:
     """A select held in a code file (an **S** array): `lay_out_select`, in its own bytes.
@@ -772,19 +773,20 @@ def lay_out_array_select(
     `select_open_ptr` opens it like an event select, so its lines are the original's
     (`menu_lines`, which is `g_select_lines`' count) and are measured like any select's
     (`research/text-outside-events.md` § "What changed against `REC-03`'s array table").
-    Like every array item it has no slack, so growth is refused.
+    Like every array item it has no slack: `size` refuses growth, and `None` is a menu whose
+    array the build moves when it grows (`boku.array_relocate`).
     """
     laid = lay_out_select(line_id, lines, original, (menu_lines(original), 0), encoder, row)
     need = 2 * len(laid.words)
-    if need <= size:
+    if size is None or need <= size:
         return laid
     return replace(
         laid,
         problems=(
             *laid.problems,
             f"{line_id}: {' | '.join(lines)!r} needs {need} bytes and the array item holds "
-            f"{size}, {need - size} over. An array has no slack; relocating it and "
-            f"repointing the lui/addiu pairs that reach it is not this unit's (PLAN PIPE-03)",
+            f"{size}, {need - size} over. An array has no slack, and this one cannot move "
+            f"(boku.array_relocate)",
         ),
     )
 
