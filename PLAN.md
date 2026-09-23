@@ -266,7 +266,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       to their box by the build) proven on both emulators, reached with generated cards /
       pokes; the card screens' two answers (surface 18): the row is written `Yes | No` and the
       build rewrites the drawer's split and count in `TITLE.OVL`, proven on both emulators.
-      **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
+      **Left to do:** the insect box (the two `HHON.OVL` walkers): measured and reached on
+      both emulators; the row walkers are designed and parked (`research/vwf-prototype.md` §
+      "The HHON walkers") until the entries can grow (`PIPE-07`) and **[MINE: product]** a
+      layout that holds the English's 9–15 lines is chosen — the notebook page holds 8 rows
+      and the grid panel 12: a tighter row pitch (ink is 10 px; 10–11 px pitch), a second
+      page, or the grid panel on both screens; untranslated entries keep their columns; the remaining fixed-pitch
       surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
       the 23 computed-id `glyph_draw` sites (probably covered by the site index plus
       `code_glyph_ids` — needs a test that proves it); watching the stack under the four
@@ -519,7 +524,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       lane owns are `research/text-renderer.md` § 6), 24 `array-lines`, 12 `array-width`,
       74 `array-group` and 7 `not-placeable` warnings (lines drawn as groups; code labels and
       the save title with no text site); `unencodable` is 0 (`{G:n}` and ○ × ↓ draw the
-      sheet's own cells, `boku.layout.sheet_cells`). Done when the lint shows none of these errors and the build refuses no array line.
+      sheet's own cells, `boku.layout.sheet_cells`). The insect-book entries (`hhon@5328`, in `HHON.OVL`) need ~2.5× their bytes. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
