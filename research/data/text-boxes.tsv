@@ -1,32 +1,32 @@
 line_id	x	right	pitch	lines	surface	basis
-exe@80029B20.0	64	160	12	1	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
-exe@80029B20.1	64	160	12	1	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
-exe@80029B20.2	52	160	12	1	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
-exe@80029B20.3	64	160	12	1	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
+exe@80029B20.0	52	176	12	1	5 controls help (START)	asm/walkers.asm's pen; ends 4 px short of line 5 on its row (y 58)
+exe@80029B20.1	64	268	12	1	5 controls help (START)	alone on its row (y 86): the help box less the stock 20-px margin
+exe@80029B20.2	48	150	12	1	5 controls help (START)	asm/walkers.asm's pen; ends where pad type 2's L1 label starts on its row (y 100)
+exe@80029B20.3	64	268	12	1	5 controls help (START)	alone on its row (y 114): the help box less the stock 20-px margin
 exe@80029B20.4	172	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
-exe@80029B20.5	184	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
-exe@80029B20.6	184	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.5	180	268	12	1	5 controls help (START)	asm/walkers.asm's pen, under line 4's text after ': '; the help box less the stock 20-px margin
+exe@80029B20.6	180	268	12	1	5 controls help (START)	asm/walkers.asm's pen, under line 4's text after ': '; the help box less the stock 20-px margin
 exe@80029B20.7	172	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
-exe@80029B20.8	172	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.8	132	268	12	1	5 controls help (START)	asm/walkers.asm's pen, right of its row's button label (y 128); the help box less the stock 20-px margin
 exe@80029B20.9	202	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
 exe@80029B20.10	52	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
 exe@80029B20.11	52	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
 exe@80029B20.12	52	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
 exe@80029B20.13	160	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
 exe@80029B20.14	160	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
-exe@80029B20.15	136	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.15	96	132	12	1	5 controls help (START)	asm/walkers.asm's pen (y 128): ends where line 8 starts
 exe@80029B20.16	160	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
 exe@80029B20.17	160	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
-exe@80029B20.18	136	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.18	96	132	12	1	5 controls help (START)	asm/walkers.asm's pen (y 128): ends where line 8 starts
 exe@80029B20.19	150	172	10	1	5 controls help (START)	button label: ends where the right column starts (x 172)
 exe@80029B20.20	150	172	10	1	5 controls help (START)	button label: ends where the right column starts (x 172)
-exe@80029B20.21	148	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.21	108	132	12	1	5 controls help (START)	asm/walkers.asm's pen (y 128): ends where line 8 starts
 exe@8003D5F0.*	34	299	12	1	17 memory-card messages (TITLE)	the panel's inner edge; g_mc_msg's layouts other than 5-6 start at 34
 exe@8003D5F0.29	74	299	12	1	17 memory-card messages (TITLE)	g_mc_msg layouts 5-6 start at 74
 exe@8003D5F0.30	74	299	12	1	17 memory-card messages (TITLE)	g_mc_msg layouts 5-6 start at 74
 exe@8003D9BC.*	40	149	12	1	19 config labels (TITLE)	the left panel's frame
 exe@8003D9BC.1	40	149	16	1	19 config labels (TITLE)	the left panel's frame; the stock walker letter-spaces this line 16
-exe@8003D9BC.4	88	149	12	1	19 config labels (TITLE)	line 4 (the setting) starts at 88
+exe@8003D9BC.4	84	149	12	1	19 config labels (TITLE)	line 4 (the setting), asm/title.asm's pen; the left panel's frame
 exe@80046214.*	40	155	12	1	12 item names (bag)	the list panel's frame
 exe@8003DA00.0	40	149	16	1	20 summer-memories labels (TITLE)	the left panel's frame, as the config screen's; the stock walker letter-spaces this line 16
 exe@8003DA00.1	40	149	12	1	20 summer-memories labels (TITLE)	the left panel's frame, as the config screen's
@@ -40,4 +40,4 @@ exe@800462E4.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED
 exe@80046314.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
 exe@80046334.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
 title@7A78.0	112	299	12	1	18 the card screens' two answers (TITLE)	the card panel's inner edge, as the messages'; the second answer starts at 0xAC (boku.layout.ANSWER_PAIR)
-exe@8003DA00.5	114	224	12	1	20 summer-memories quiz rate (TITLE)	the quiz-rate popup, x 112..223 (the label shares it with the day count and the percentage below)
+exe@8003DA00.5	114	248	12	1	20 summer-memories quiz rate (TITLE)	the quiz-rate popup's tile, x 112..248 (asm/title.asm); the label shares it with the day count and the percentage below

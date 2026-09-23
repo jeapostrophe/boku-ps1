@@ -705,16 +705,19 @@ only for an **E** item (`boku.layout.holds`): `text_draw_h` breaks at `0x8001`, 
 wraps the English to the box by pixels; every other walker draws one line. `boku.boxes` reads it; `boku lint` (`array-width`, `array-lines`), `boku build` and this
 prototype's fixtures all refuse an item past it. Measured 2026-09-22 on Beetle screenshots of
 the stock disc (frame edges) and read off the code (pens — `tests/test_real_boxes.py`
-re-derives every pen from the disc's bytes):
+re-derives every pen from the game's bytes):
 
 * **Controls help** (START, surface 5): 22 rows. Pens from `g_help_pos` (`0x80029904`) and
-  `help_draw`'s literals. The screen is a diagram, not a box: the left column (lines 0–3)
-  ends at the button column (x 160), the right column and the two bottom lines at 268 (the
-  help box `g_select_rect[6]` = 32…288, less the 20-px margin the stock lines keep), and the
-  button labels (13–21) at the right column's x, 172.
+  `help_draw`'s literals. The screen is a diagram, not a box, so a line's room is its row:
+  each box ends at or before the next pen on the same row for every pad type, or at 268
+  (the help box `g_select_rect[6]` = 32…288, less the 20-px margin the retail lines keep)
+  where the row is its own. `asm/walkers.asm` moves five pens and two labels so the English
+  fits (each row's reason is its `basis`); `tests/test_real_boxes.py` checks the rows
+  against the built game.
 * **Memory-card messages** (surface 17): pen 34, or 74 for the two lines layouts 5–6 draw
   (`g_mc_msg`); the panel's inner edge is 299.
-* **Config labels** (surface 19): pen 40 (line 4 at 88); the left panel's frame at 149.
+* **Config labels** (surface 19): pen 40 (line 4 at 84, moved from 88 by `asm/title.asm` so
+  "(Vibration)" ends inside the frame); the left panel's frame at 149.
 * **Item names** (surface 12, the bag): pen 40; the list panel's frame at 155.
 * **Item descriptions** (surface 12, `text_draw_h`): pen (184, 126), **three lines** 16 px
   apart, the picture panel's inner edge at 301 (below the third line is the frame). The
@@ -722,7 +725,8 @@ re-derives every pen from the disc's bytes):
   each break. Photo captions use the same drawer and pen, so the same box — not shot.
 * **Summer-memories labels 0–4** (surface 20): pen 40 (`extras_draw`'s `addiu s1,zero,0x28`),
   the left panel's frame at 149, as the config screen's. **Label 5**, the quiz rate: pen 114
-  (walker 20a's `addiu s1,zero,0x72`) in its popup, x 112…223.
+  (walker 20a's `addiu s1,zero,0x72`) in its popup, a tile at TITLE `0x80081AC4` that
+  `asm/title.asm` widens to x 112…248.
 
 Not measured, so held to their bytes alone: kite names, fishing, the fish names, insect
 names and the `HHON`/`MUSI` surfaces.

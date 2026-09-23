@@ -20,6 +20,16 @@
 .endarea
 
 ; ---- surface 19: the config labels (EXE array 0x8003D9BC), walker 0x8007FA94 ----------
+; Line 4's pen (the setting under "Vibration"): research/data/text-boxes.tsv.
+.org 0x8007FB2C
+.area 4
+.if ORIGINAL
+    addiu   s0, zero, 0x58          ; stock: line 4 at x 88
+.else
+    addiu   s0, zero, 84
+.endif
+.endarea
+
 ; Pen s0 through v1; the id pointer is s1, stepped before the draw. Line 1 (s3 == 1) was
 ; letter-spaced 16 instead of 12 by the third word, which the proportional pen drops.
 .org 0x8007FBC4
@@ -57,6 +67,17 @@
     addiu   s1, s1, 0xC             ; stock: x += 12, in the delay slot of `beqz v0`
 .else
     nop
+.endif
+.endarea
+
+; The quiz-rate popup's tile (x, y, w, h), read only by quiz_popup_draw 0x80080484; its
+; width is label 5's box (research/data/text-boxes.tsv). The digits under it keep their pens.
+.org 0x80081AC8
+.area 2
+.if ORIGINAL
+    .halfword 112                   ; stock: w
+.else
+    .halfword 136
 .endif
 .endarea
 

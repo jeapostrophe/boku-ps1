@@ -7,7 +7,7 @@ item at, the column `right` where its frame begins, the walker's stock `pitch`, 
 broken into lines at all is `boku.layout.holds`. The rows were
 measured on screenshots of the stock game, or derived from the code's own literals where a
 row says so (`basis`), and `tests/test_real_boxes.py` checks every derived x against the
-bytes of the contributor's disc. Where each surface stands is
+game's bytes (the days build's, for a pen the renderer patch moves). Where each surface stands is
 `research/vwf-prototype.md` § "The fixed-pitch surfaces".
 
 A line id with no row belongs to a surface nobody has measured yet; `box_for` answers

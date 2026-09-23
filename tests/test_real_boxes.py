@@ -1,13 +1,16 @@
-"""`research/data/text-boxes.tsv` against the contributor's disc (`PLAN TXT-07`).
+"""`research/data/text-boxes.tsv` against the game's bytes (`PLAN TXT-07`).
 
 The table's pen positions and pitches were read off the code; this reads them off again,
-from the bytes, so a row copied wrong is a failure here rather than a translation refused
-by a box that is not where the game draws. The frame edges (`right`) are screenshot
-measurements and are checked only where the code also carries them (the help box).
+so a row copied wrong is a failure here rather than a translation refused by a box that is
+not where the game draws. Pens the renderer patch moves (the help screen, config line 4)
+are read from the days build (`days_built`), the rest from the contributor's disc. The
+frame edges (`right`) are screenshot measurements and are checked only where the code also
+carries them (the help box, the quiz-rate tile).
 """
 
 from __future__ import annotations
 
+import itertools
 import re
 import struct
 
@@ -47,34 +50,88 @@ def test_every_row_names_a_line_or_an_array_the_extract_knows(known_ids):
     assert set(load_boxes()) - known_ids == set()
 
 
-def test_the_help_screen_s_pens_are_g_help_pos_and_help_draw_s_literals(archive):
-    """Lines 0-12 sit at `g_help_pos` (0x80029904, a byte pair each); the pad-type button
-    labels 13-21 at `addiu a1,zero,x` literals in `help_draw`, one per call."""
-    table = {i: archive.exe_bytes(0x80029904 + 2 * i, 1)[0] for i in range(13)}
-    literal_sites = {
-        13: 0x80035708,
-        14: 0x80035718,
-        15: 0x8003572C,
-        19: 0x80035730,
-        20: 0x80035740,
-        21: 0x80035750,
-    }
-    for line, site in literal_sites.items():
-        found = word(archive, site)
-        assert found >> 16 == 0x2405, f"0x{site:08X} is not `addiu a1,zero,imm`"
-        table[line] = found & 0xFFFF
-    # Pad types 0 and 1 draw lines 13+3t .. 15+3t from the same three calls.
-    table |= {16: table[13], 17: table[14], 18: table[15]}
-    assert pens(HELP, range(22)) == table
+HELP_LABELS = {
+    # line: (x site, y site) of help_draw's `addiu a1/a2,zero,imm` pair; the pad type picks
+    # which three it draws (types 0 and 1 share the first three calls, +3 on the line).
+    13: (0x80035708, 0x80035710),
+    14: (0x80035718, 0x80035720),
+    15: (0x8003572C, 0x80035758),
+    19: (0x80035730, 0x80035738),
+    20: (0x80035740, 0x80035748),
+    21: (0x80035750, 0x80035758),
+}
+PAD_TYPES = ((13, 14, 15), (16, 17, 18), (19, 20, 21))
+
+
+def help_places(archive: Archive) -> dict[int, tuple[int, int]]:
+    """`{line: (x, y)}` as `help_draw` places the 22 help lines in `archive`'s executable:
+    lines 0-12 at `g_help_pos` (0x80029904, a byte pair each), the button labels at
+    literals."""
+    raw = archive.exe_bytes(0x80029904, 26)
+    places = {i: (raw[2 * i], raw[2 * i + 1]) for i in range(13)}
+    for line, (x_site, y_site) in HELP_LABELS.items():
+        x, y = word(archive, x_site), word(archive, y_site)
+        assert x >> 16 == 0x2405 and y >> 16 == 0x2406, "not addiu a1/a2,zero,imm"
+        places[line] = (x & 0xFFFF, y & 0xFFFF)
+    places |= {line + 3: places[line] for line in (13, 14, 15)}
+    return places
+
+
+def help_box(archive: Archive) -> tuple[int, int]:
+    """`(left, right)` of the help box, `g_select_rect[6]` (0x80028E44, (x, y, w, h) each)."""
+    x, _, w, _ = struct.unpack("<4h", archive.exe_bytes(0x80028E44 + 6 * 8, 8))
+    return x, x + w
+
+
+def test_the_help_screen_s_pens_are_where_the_built_game_draws_them(days_built):
+    places = help_places(days_built)
+    assert pens(HELP, range(22)) == {line: x for line, (x, _) in places.items()}
+
+
+def test_no_help_line_s_box_runs_into_the_next_thing_on_its_row(days_built):
+    """The screen is a diagram, so a line's room is its row: each box ends at or before the
+    next pen on the same row (for every pad type), and inside the help box."""
+    places = help_places(days_built)
+    left, right = help_box(days_built)
+    for line in range(22):
+        box = box_for(f"{HELP}.{line}")
+        assert left <= box.x and box.right <= right, f"{line} leaves the help box"
+    for labels in PAD_TYPES:
+        rows: dict[int, list[int]] = {}
+        for line in (*range(13), *labels):
+            rows.setdefault(places[line][1], []).append(line)
+        for y, lines in rows.items():
+            lines.sort(key=lambda line: places[line][0])
+            for first, then in itertools.pairwise(lines):
+                box = box_for(f"{HELP}.{first}")
+                assert box.right <= places[then][0], f"row {y}: {first} runs into {then}"
+
+
+def test_the_config_labels_pens_are_where_the_built_game_draws_them(days_built):
+    """`config_draw` starts line 4 (the setting under "Vibration") at `addiu s0,zero,x`
+    (TITLE 0x8007FB2C) and every other line at 0x8007FB14's."""
+    other, setting = (word(days_built, ram, "TITLE.OVL") for ram in (0x8007FB14, 0x8007FB2C))
+    assert other >> 16 == setting >> 16 == 0x2410, "not addiu s0,zero,x"
+    wanted = {i: (setting if i == 4 else other) & 0xFFFF for i in range(5)}
+    assert pens("exe@8003D9BC", range(5)) == wanted
+
+
+def test_the_quiz_rate_s_box_is_the_built_popup_s_rectangle(days_built):
+    """Label 5's popup is a tile at `(x, y, w, h)` (TITLE 0x80081AC4, read at 0x800804DC):
+    its box runs from the label's pen to the tile's right edge."""
+    x, _, w, _ = struct.unpack("<4h", days_built.overlay_bytes("TITLE.OVL", 0x80081AC4, 8))
+    assert box_for("exe@8003DA00.5").right == x + w
 
 
 def test_the_help_screen_s_right_column_ends_at_the_box_less_the_stock_margin(archive):
-    """Lines 4-12 (the right column and the two bottom lines) end where the help box
-    (`g_select_rect[6]`) ends less the margin the stock lines keep on the left."""
-    x, _, w, _ = struct.unpack("<4h", archive.exe_bytes(0x80028E44 + 6 * 8, 8))
-    margin = min(pens(HELP, range(13)).values()) - x
-    right = {i: box_for(f"{HELP}.{i}").right for i in range(4, 13)}
-    assert right == dict.fromkeys(range(4, 13), x + w - margin)
+    """Lines 4-12 (the right column and the two bottom lines), and lines 1 and 3, alone on
+    their rows, end where the help box (`g_select_rect[6]`) ends less the margin the retail
+    lines keep on the left."""
+    left, right = help_box(archive)
+    margin = min(x for x, _ in help_places(archive).values()) - left
+    lines = (1, 3, *range(4, 13))
+    ends = {i: box_for(f"{HELP}.{i}").right for i in lines}
+    assert ends == dict.fromkeys(lines, right - margin)
 
 
 def test_the_card_messages_pens_are_the_ones_g_mc_msg_chooses(archive):

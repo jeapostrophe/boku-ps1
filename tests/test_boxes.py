@@ -60,4 +60,4 @@ def test_a_box_of_several_lines_is_an_e_array_s():
 def test_the_tracked_table_reads():
     load_boxes.cache_clear()
     boxes = load_boxes()
-    assert box_for("exe@8003D9BC.4", boxes).x == 88
+    assert box_for("exe@8003D9BC.4", boxes).x == 84

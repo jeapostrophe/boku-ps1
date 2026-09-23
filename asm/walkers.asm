@@ -53,6 +53,43 @@
 .endif
 .endarea
 
+; The help screen's pens, moved so the English fits its row (the reasons are the rows of
+; research/data/text-boxes.tsv). g_help_pos 0x80029904 is an (x, y) byte pair per line
+; 0-12; the button labels' x are help_draw's `addiu a1,zero,x`.
+.macro help_pen, line, stock, moved
+    .org 0x80029904 + 2 * line
+    .area 1
+    .if ORIGINAL
+        .byte stock
+    .else
+        .byte moved
+    .endif
+    .endarea
+.endmacro
+help_pen 0, 64, 52
+help_pen 2, 52, 48
+help_pen 5, 184, 180
+help_pen 6, 184, 180
+help_pen 8, 172, 132
+
+.org 0x8003572C
+.area 4
+.if ORIGINAL
+    addiu   a1, zero, 0x88          ; stock: labels 15/18 at x 136, row 128
+.else
+    addiu   a1, zero, 96
+.endif
+.endarea
+
+.org 0x80035750
+.area 4
+.if ORIGINAL
+    addiu   a1, zero, 0x94          ; stock: label 21 (pad type 2) at x 148, row 128
+.else
+    addiu   a1, zero, 108
+.endif
+.endarea
+
 ; ---- surfaces 12-14: item names and descriptions, kite names, fishing ---------------------
 ; text_draw_line_h 0x800437F4 and text_draw_h 0x80043864. The x step sits in the loop
 ; branch's delay slot, so the jal takes the pointer step's place and the body steps the

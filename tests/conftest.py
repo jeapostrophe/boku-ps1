@@ -19,6 +19,7 @@ from boku.importer import IMAGE_SIZE, SOURCE_ENV_VAR
 from boku.sites import Walk, walk
 from boku.text import SiteIndex
 from boku.textures import Inventory, inventory
+from tests.test_real_reinsert import read_back
 
 DISC_DIR = REPO_ROOT / "disc"
 
@@ -121,3 +122,12 @@ def walk_rec03(archive: Archive) -> Walk:
 @pytest.fixture(scope="session")
 def event_world(archive: Archive) -> EventWorld:
     return EventWorld(archive)
+
+
+@pytest.fixture(scope="session")
+def days_built() -> Archive:
+    """The days build read back (`./make.sh build-days`): what the patched game holds."""
+    image = REPO_ROOT / "build" / "days" / "image.img"
+    if not image.is_file():
+        pytest.skip("no build/days: run `./make.sh build-days` first")
+    return read_back(image)[0]
