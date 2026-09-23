@@ -753,8 +753,8 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       Japanese, then checked in the game through `VO-02`/`VO-03`. **Done 2026-09-22** for the worded clips that have rows in
       the day files so far — `E0305.0`–`.4`, `E0606.0`, `E4052.2`–`.5`, reviewed against the
       transcripts, laid out by the build. Left: the other worded event clips as their days
-      are translated (`E0905`, `E1505`, `E1861.30`–`.32`, `E2305.0`), and the `XCH` clips
-      ; and `translation/clips.txt` (2026-09-23): the bedtime line `XCH.34`, the five
+      are translated (`E0905`, `E1505`, `E1861.30`–`.32`, `E2305.0`). **Done** too, in
+      `translation/clips.txt` (2026-09-23): the bedtime line `XCH.34`, the five
       epilogues `XCH.41`–`.45`, the 40 bug-sumo lines — reviewed; the sumo lines reach the
       screen with `VO-06`. Harmed: the player.
 
