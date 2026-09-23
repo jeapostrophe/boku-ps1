@@ -1,15 +1,17 @@
 # arrays (translation/days/README.md)
 # --- exe@80029920: a spoken message the program holds itself, outside every event
-exe@80029920.0	Uncle	Right! Playtime for today is over. // Dinner is all reaaady!
-# NOTE exe@80029920.0: word for word the uncle's 18:00 call E0190.0 (day01.txt); kept identical.
+exe@80029920.0	Uncle	All right! Playtime is over for today! // Dinner is reeeady!
+# NOTE exe@80029920.0: the same recording as the uncle's call E0190.0; the same English.
 
 # --- exe@80029AFC: ant-count message; code writes 3 digit glyphs into words 1-3
-exe@80029AFC.0	(unlabelled)	"000 ants died."
-# NOTE exe@80029AFC.0: the corner brackets are part of this text (the program shows it as a quotation); rendered as English double quotes. The three digits are overwritten by the code.
+exe@80029AFC.0	(unlabelled)	"000 ants perished."
+# NOTE exe@80029AFC.0: the corner brackets are part of this text, as English quotes; the code writes the
+#   three digits into the cells right after the opening bracket, so the number stays first
+#   (bible § 8, item 1).
 
 # --- exe@80029B20: controls help screen (3 pad types)
 exe@80029B20.0	(unlabelled)	Directional buttons
-exe@80029B20.1	(unlabelled)	Up: Move forward
+exe@80029B20.1	(unlabelled)	Up: Forward
 exe@80029B20.2	(unlabelled)	Left, Right: Turn
 exe@80029B20.3	(unlabelled)	Down: Turn around
 exe@80029B20.4	(unlabelled)	: Talk, Examine
@@ -31,7 +33,7 @@ exe@80029B20.19	(unlabelled)	L2
 exe@80029B20.20	(unlabelled)	L1
 exe@80029B20.21	(unlabelled)	{G:1474}{G:1475}
 # NOTE exe@80029B20.11-.12: one sentence over two drawn lines, split where the Japanese splits it.
-#   "Cancel voice" (.6) is the button that cuts a voiced line short.
+#   "Cancel voice" (.6) cuts a voiced line short.
 
 # --- exe@80036750: fortune result, drawn vertically
 exe@80036750.0	(unlabelled)	Terrible Luck!
@@ -97,30 +99,31 @@ exe@8003D2E0.53	(unlabelled)	Higurashi
 exe@8003D2E0.54	(unlabelled)	Min-min-zemi
 exe@8003D2E0.55	(unlabelled)	Tsukutsuku-boshi
 exe@8003D2E0.56	(unlabelled)	Mantis
+# NOTE exe@8003D2E0: the names of glossary § 4a.
 
 # --- exe@8003D5F0: memory-card and save/load messages
 exe@8003D5F0.0	(unlabelled)	Checking MEMORY CARD...
 exe@8003D5F0.1	(unlabelled)	No MEMORY CARD is inserted.
-exe@8003D5F0.2	(unlabelled)	Failed to access the MEMORY CARD.
-exe@8003D5F0.3	(unlabelled)	The MEMORY CARD has no free blocks.
+exe@8003D5F0.2	(unlabelled)	Could not access the MEMORY CARD.
+exe@8003D5F0.3	(unlabelled)	There are no free blocks on the MEMORY CARD.
 exe@8003D5F0.4	(unlabelled)	There is no file for this game.
-exe@8003D5F0.5	(unlabelled)	There is no file that has finished this game.
+exe@8003D5F0.5	(unlabelled)	There is no file of a finished game.
 exe@8003D5F0.6	(unlabelled)	Which file do you want to load?
 exe@8003D5F0.7	(unlabelled)	Which file do you want to save to?
-exe@8003D5F0.8	(unlabelled)	Is it all right to start the game as it is?
-exe@8003D5F0.9	(unlabelled)	Is this file all right?
-exe@8003D5F0.10	(unlabelled)	Is it all right to overwrite it?
-exe@8003D5F0.11	(unlabelled)	Reading data...
-exe@8003D5F0.12	(unlabelled)	Writing data...
+exe@8003D5F0.8	(unlabelled)	Start the game as it is?
+exe@8003D5F0.9	(unlabelled)	Is this file OK?
+exe@8003D5F0.10	(unlabelled)	Overwrite this file?
+exe@8003D5F0.11	(unlabelled)	Loading data...
+exe@8003D5F0.12	(unlabelled)	Saving data...
 exe@8003D5F0.13	(unlabelled)	(Do not remove the MEMORY CARD)
-exe@8003D5F0.14	(unlabelled)	Failed to read the data.
-exe@8003D5F0.15	(unlabelled)	Failed to write the data.
+exe@8003D5F0.14	(unlabelled)	Failed to load the data.
+exe@8003D5F0.15	(unlabelled)	Failed to save the data.
 exe@8003D5F0.16	(unlabelled)	Failed to format.
 exe@8003D5F0.17	(unlabelled)	The MEMORY CARD was removed.
 exe@8003D5F0.18	(unlabelled)	Load complete.
 exe@8003D5F0.19	(unlabelled)	Save complete.
 exe@8003D5F0.20	(unlabelled)	Format complete.
-exe@8003D5F0.21	(unlabelled)	Record what has happened up to today
+exe@8003D5F0.21	(unlabelled)	Record the events up to today
 exe@8003D5F0.22	(unlabelled)	on the MEMORY CARD?
 exe@8003D5F0.23	(unlabelled)	(Uses 1 block)
 exe@8003D5F0.24	(unlabelled)	The MEMORY CARD is not formatted.
@@ -129,19 +132,18 @@ exe@8003D5F0.26	(unlabelled)	Format it?
 exe@8003D5F0.27	(unlabelled)	Formatting...
 exe@8003D5F0.28	(unlabelled)	Format and save complete.
 exe@8003D5F0.29	(unlabelled)	New file
-exe@8003D5F0.30	(unlabelled)	The file is corrupted.
-exe@8003D5F0.31	(unlabelled)	This data is old.
-# NOTE exe@8003D5F0: Sony's period wording (glossary § 4e), MEMORY CARD in capitals as Sony wrote it.
-#   .21-.22 are one question over two drawn lines. The game's lenticular brackets become parentheses: the English cells have no bracket.
+exe@8003D5F0.30	(unlabelled)	This file is corrupted.
+exe@8003D5F0.31	(unlabelled)	This data is out of date.
+# NOTE exe@8003D5F0: Sony's period wording for the card ("MEMORY CARD" in capitals); .21-.22 are
+#   one question drawn over two lines; the lenticular brackets of .13, .23 (and exe@8003D9BC.4)
+#   become parentheses, which the font has.
 
 # --- exe@8003D9BC: config screen labels
 exe@8003D9BC.0	(unlabelled)	Message display
 exe@8003D9BC.1	(unlabelled)	Sound
 exe@8003D9BC.2	(unlabelled)	Controller
 exe@8003D9BC.3	(unlabelled)	Vibration
-exe@8003D9BC.4	(unlabelled)	(Vibration)
-# NOTE exe@8003D9BC.3-.4: the Japanese has the loanword (.3) and the native word in brackets (.4)
-#   for the same thing; English has one word for both.
+exe@8003D9BC.4	(unlabelled)	(Rumble)
 
 # --- exe@8003DA00: extras menu labels
 exe@8003DA00.0	(unlabelled)	Picture Diary
@@ -149,8 +151,7 @@ exe@8003DA00.1	(unlabelled)	Specimens + Bug Cage
 exe@8003DA00.2	(unlabelled)	Kites
 exe@8003DA00.3	(unlabelled)	Belongings
 exe@8003DA00.4	(unlabelled)	Endings
-exe@8003DA00.5	(unlabelled)	Dinner Quiz Accuracy
-# UNSURE exe@8003DA00.4: "Endings" assumes the screen lists the endings seen (there are five); "Ending" if it shows one.
+exe@8003DA00.5	(unlabelled)	Dinner Quiz Record
 
 # --- exe@8003DA4C: fish names
 exe@8003DA4C.0	(unlabelled)	Iwana
@@ -175,6 +176,7 @@ exe@800461CC.4	(unlabelled)	Carp-streamer Kite
 exe@800461CC.5	(unlabelled)	Airplane Kite
 exe@800461CC.6	(unlabelled)	Kite Train
 exe@800461CC.7	(unlabelled)	Portrait Kite
+# UNSURE exe@800461CC.1: nina-dako, meaning not established (glossary § 4d, marked there).
 
 # --- exe@80046214: item names
 exe@80046214.0	(unlabelled)	Radio-Calisthenics Card
@@ -194,16 +196,16 @@ exe@80046214.13	(unlabelled)	Photo
 exe@80046214.14	(unlabelled)	Whale's Ear Bone
 
 # --- exe@800462C8: fishing message 0
-exe@800462C8.0	(unlabelled)	For fishing in the morning and evening, use bait.
+exe@800462C8.0	(unlabelled)	Fishing morning or evening: use bait.
 
 # --- exe@800462E4: fishing message 1
-exe@800462E4.0	(unlabelled)	Where a bite is hard to feel, put on a float.
+exe@800462E4.0	(unlabelled)	Where a bite is hard to spot, put on a float.
 
 # --- exe@80046314: fishing message 2
-exe@80046314.0	(unlabelled)	For fishing at midday, use a fly.
+exe@80046314.0	(unlabelled)	Fishing at midday: use a fly.
 
 # --- exe@80046334: fishing message 3
-exe@80046334.0	(unlabelled)	A special fly made from Ken-bo's fur. Go for a big one!
+exe@80046334.0	(unlabelled)	A special fly made from Ken-bo's fur. Go for the big one!
 
 # --- exe@80046364: fishing menu word
 exe@80046364.0	(unlabelled)	Tackle
@@ -221,35 +223,32 @@ exe@80046384.0	(unlabelled)	Rainbow Trout
 exe@80046390.0	(unlabelled)	Yamame
 
 # --- exe@80046398: item descriptions
-exe@80046398.0	(unlabelled)	I minded the house on the day of visiting the grave, and they bought these for me.
-exe@80046398.1	(unlabelled)	It's a dangerous thing, so children mustn't touch it.
-exe@80046398.2	(unlabelled)	With these, the little ants are wiped out! Is that a little cruel?
-exe@80046398.3	(unlabelled)	With this, lots and lots of bugs will gather. My own special sugar water.
-exe@80046398.4	(unlabelled)	Found by the seashore. A strange shape. Who dropped it?
+exe@80046398.0	(unlabelled)	I minded the house on the day of the grave visit, and they bought these for me.
+exe@80046398.1	(unlabelled)	It's dangerous, so children mustn't touch it.
+exe@80046398.2	(unlabelled)	With these, the little ants are done for! Is that a bit mean?
+exe@80046398.3	(unlabelled)	With this, loads of bugs will come. My own special sugar water.
+exe@80046398.4	(unlabelled)	Found by the sea. A strange shape. Who dropped it?
 exe@80046398.5	(unlabelled)	Whose treasure is it? Deep in the cave, playing hide-and-seek all this time.
-exe@80046398.6	(unlabelled)	Something Shirabe dropped. A small ribbon, red and cute.
+exe@80046398.6	(unlabelled)	Something Shirabe dropped. A cute little red ribbon.
 exe@80046398.7	(unlabelled)	A present from Shirabe. A lively sunflower that hasn't wilted.
 exe@80046398.8	(unlabelled)	Sorry, Ken-bo. When winter comes, just this spot might be cold.
 exe@80046398.9	(unlabelled)	The first one I've ever seen. The snake's shape is still all there.
 exe@80046398.10	(unlabelled)	Let's press these pretty flowers. Their name is globeflower.
-exe@80046398.11	(unlabelled)	Lots of shiny kernels, packed in just right.
-exe@80046398.12	(unlabelled)	Drifting on the waves for decades. This is a mysterious thing a whale left behind.
-# NOTE exe@80046398: each description is in the 5-7 phrase rhythm of the Japanese, in Boku's voice;
-#   13 descriptions for items 1-14: .0 is the Souvenir Rice Crackers, .12 the Whale's Ear Bone; the Photo (13) has none. .10: kinbaiso is the
-#   glossary's globeflower (§ 4e, § 7).
+exe@80046398.11	(unlabelled)	Shiny kernels, lots of them, packed in just right.
+exe@80046398.12	(unlabelled)	Drifting on the waves for decades... a mysterious thing a whale left behind.
 
 # --- exe@80046614: photo and morning-glory captions
 exe@80046614.0	(unlabelled)	In the forest, a sudden flash... It gave me a real fright.
 exe@80046614.1	(unlabelled)	I won't be scared anymore. A machine like this... Nyaaaah!
 exe@80046614.2	(unlabelled)	I was sure I'd struck a slightly cooler pose than that...
-exe@80046614.3	(unlabelled)	Pig nose!
-exe@80046614.4	(unlabelled)	The timing was spot on too. Ready, pose!
-exe@80046614.5	(unlabelled)	Shirabe and I had it taken, the two of us. Auntie's work.
+exe@80046614.3	(unlabelled)	Piggy nose!
+exe@80046614.4	(unlabelled)	The timing, just perfect: strike a pose!
+exe@80046614.5	(unlabelled)	Shirabe and me, the two of us. Taken by Auntie.
 exe@80046614.6	(unlabelled)	I was flying a kite, and Auntie came and took this for me.
-exe@80046614.7	(unlabelled)	In front of the sunflowers. Ready, pose.
-exe@80046614.8	(unlabelled)	Found at last: Wolf-kun. But something's odd?
+exe@80046614.7	(unlabelled)	In front of the sunflowers: strike a pose!
+exe@80046614.8	(unlabelled)	Found at last: Wolf-kun. But something's funny?
 exe@80046614.9	(unlabelled)	Goodbye, everyone. I'm going back to the city.
-exe@80046614.10	(unlabelled)	Morning glory in bloom, day 1. Pink flowers came out.
+exe@80046614.10	(unlabelled)	Morning glory in bloom, day 1. The pink flowers came out.
 exe@80046614.11	(unlabelled)	Morning glory in bloom, day 2. Basking in the sunshine, they look comfy.
 exe@80046614.12	(unlabelled)	Morning glory in bloom, day 3. A purple big brother and little brother.
 exe@80046614.13	(unlabelled)	Morning glory in bloom, day 4. Still blooming, full of life.
@@ -258,79 +257,72 @@ exe@80046614.15	(unlabelled)	Morning glory in bloom, day 6. They're all singing 
 exe@80046614.16	(unlabelled)	Morning glory in bloom, day 7. Big umbrellas, opened toward the big sky.
 exe@80046614.17	(unlabelled)	Morning glory in bloom, day 8. Whispering in little voices, in the middle of a chat!
 exe@80046614.18	(unlabelled)	Morning glory in bloom, day 9. Do your best next year too, and bloom lots, okay?
-# NOTE exe@80046614.1: "I-da" is the glossary's nyaah (§ 8), stretched as the Japanese stretches it.
-#   .4, .7: "hai, pose" is the photographer's call, "Ready, pose!"; .5: the aunt took the picture.
-# UNSURE exe@80046614.8: "Wolf-kun" keeps the -kun Boku gives the wolf he thinks he has photographed.
 
 # --- hhon@5328: insect book entries (60 = empty slot)
-hhon@5328.0	(unlabelled)	Swallowtail. It lives all over Japan, and I see it in my town too. They say it's a little weak against the cold.
-hhon@5328.1	(unlabelled)	Yellow Swallowtail. Its caterpillar is a weird one. They say it really, really looooves carrots and parsley, the things I can't stand.
-hhon@5328.2	(unlabelled)	Long-tailed Swallowtail. Birthdays: for some reason the summer-born ones grow bigger than the spring ones, it seems. Strange, isn't it, Long-tail-kun?
-hhon@5328.3	(unlabelled)	Chinese Peacock (Karasu-ageha, 'crow swallowtail'). With such pretty blue and green wings, calling it a crow, poor thing! Take a good long look: it's a sharp dresser.
-hhon@5328.4	(unlabelled)	Musk Swallowtail. It's a male, but it dresses up more than the females and even wears perfume. I'm going to try hard too!
-hhon@5328.5	(unlabelled)	Bluebottle. When it's newborn, its stripes are yellow-green, and right before your eyes they turn blue... A big transformation by the power of the sun!
-hhon@5328.6	(unlabelled)	Mikado Swallowtail. They say it lives in India and Sri Lanka too. I'd like to go there, but where are those countries?
-hhon@5328.7	(unlabelled)	Cabbage White. Its caterpillar loves cabbage! It just eats and eats, and it turns up anywhere and everywhere.
-hhon@5328.8	(unlabelled)	Clouded Yellow. The pink edging, when you look closely, is a little bit cute. Like a girl!
-hhon@5328.9	(unlabelled)	Red Admiral. In the daytime it rests, sitting very still, and when evening comes it starts to move. A guy who likes staying up late.
-hhon@5328.10	(unlabelled)	Comma (C-tateha). Its wings all dented and bumpy? Other butterflies, other cho, have cho-tto (hardly) anything like that, right?
-hhon@5328.11	(unlabelled)	Blue Admiral. Its very pretty lapis-blue wings are the color of the night sky in Uncle's valley.
-hhon@5328.12	(unlabelled)	Peacock. Four eyespots on its wings and its real eyes make six eyes. So confusing, all tangled up!
-hhon@5328.13	(unlabelled)	Great Purple Emperor. Huge and colorful, and just plain beautiful. Japan's king of butterflies.
-hhon@5328.14	(unlabelled)	Poplar Admiral. It lives in cool places, like high up in the mountains, and it likes sunbathing.
-hhon@5328.15	(unlabelled)	Loomis's Blue. Because of pesticides there are fewer and fewer, and soon there'll be none? A thing like that, I will never allow!
-hhon@5328.16	(unlabelled)	Green Hairstreak. They say it has as many as 100 kinds of relatives all over the world, and this guy is one of them.
-hhon@5328.17	(unlabelled)	Pale Grass Blue. The leopard-print pattern on its wings is its trademark. There are lots on the southern islands, and it grew up eating wood-sorrel leaves.
-hhon@5328.18	(unlabelled)	Short-tailed Blue (Tsubame-shijimi, 'swallow blue'). Swallow-colored wings with a swallow's forked tail, but it doesn't migrate.
+hhon@5328.0	(unlabelled)	Swallowtail. It lives all over Japan, and I see it in my town too. It's a little weak in the cold, they say.
+hhon@5328.1	(unlabelled)	Yellow Swallowtail. Its caterpillar's a weird one: carrots and parsley, which I can't stand, it loooves.
+hhon@5328.2	(unlabelled)	Long-tailed Swallowtail. Birthdays: the summer ones somehow grow bigger than the spring ones. Strange, isn't it, Long-tail-kun?
+hhon@5328.3	(unlabelled)	Chinese Peacock (Karasu-ageha, "crow swallowtail"). Such pretty blue and green wings, and they call it a crow? Poor thing! Look closely: it's a snappy dresser.
+hhon@5328.4	(unlabelled)	Musk Swallowtail. It's the male, but it's snazzier than the female, and it even wears perfume. I'll try hard too.
+hhon@5328.5	(unlabelled)	Bluebottle. Just born, its stripes are yellow-green, and right before your eyes they turn blue... A big makeover by the power of the sun!
+hhon@5328.6	(unlabelled)	Mikado Swallowtail. It lives in places like India and Sri Lanka too, they say. I'd like to go, but which countries are those?
+hhon@5328.7	(unlabelled)	Cabbage White. Its caterpillar loves cabbage! It eats and eats, and it turns up just about everywhere.
+hhon@5328.8	(unlabelled)	Clouded Yellow. Its pink edging, if you look closely, is a little cute, like a girl's!
+hhon@5328.9	(unlabelled)	Red Admiral. It rests stock-still all day, and when evening comes, it starts moving. It likes staying up late.
+hhon@5328.10	(unlabelled)	Comma. Wings all bumpy? Other cho, other butterflies, don't have that, not even a cho-tto bit!
+hhon@5328.11	(unlabelled)	Blue Admiral. Its lovely lapis-blue wings are the color of the night sky in Uncle's valley.
+hhon@5328.12	(unlabelled)	Peacock. Four eyes on its wings, and its real eyes too, makes six eyes. It gets me all mixed-up-tangled.
+hhon@5328.13	(unlabelled)	Great Purple Emperor. Great big, colorful, and just plain beautiful: Japan's king of butterflies.
+hhon@5328.14	(unlabelled)	Poplar Admiral. It lives in cool places, like up on high mountains, and it likes to sunbathe.
+hhon@5328.15	(unlabelled)	Loomis's Blue. Because of pesticides, fewer and fewer, and soon there'll be none? I will never, ever allow that!
+hhon@5328.16	(unlabelled)	Green Hairstreak. All over the world it has a hundred kinds of relatives, they say, and this is one of them.
+hhon@5328.17	(unlabelled)	Pale Grass Blue. The leopard spots on its wings are its trademark. There are lots on the southern islands, and it grew up eating wood sorrel leaves.
+hhon@5328.18	(unlabelled)	Short-tailed Blue (Tsubame-shijimi, "swallow blue"). Swallow-colored, with a swallow's forked tail on its wings, but it doesn't migrate.
 hhon@5328.19	(unlabelled)	Chestnut Tiger. When the season comes, it migrates like a bird. It's a bit of an odd one.
-hhon@5328.20	(unlabelled)	Bushbrown. They say it likes cloudy days better than sunny ones. Well, I'm not good with it being too hot either.
-hhon@5328.21	(unlabelled)	Tengu Butterfly (Tengu-cho). The bump on its head is like a tengu's nose too, and its dead-leaf pattern that fools its enemies is a real tengu's cloak of invisibility!
-hhon@5328.22	(unlabelled)	Green Skipper. Pretty wings, a big tummy and big eyes. Its shiny metallic gleam is my favorite!
-hhon@5328.23	(unlabelled)	Miyama Stag Beetle ♂. Beech and sawtooth-oak sap is its favorite food! Its head, sticking out in a weird shape, is a little bit odd...
-hhon@5328.24	(unlabelled)	Giant Stag Beetle ♂. When you say stag beetle, it's got to be this one! It grows big, and it's just plain strong! Stag beetle Kiiing!
-hhon@5328.25	(unlabelled)	Flat Stag Beetle. The big jagged teeth on the very inside of its horns are its trademark! Jet black and glossy. So cool!
-hhon@5328.26	(unlabelled)	Little Stag Beetle. It's a really small guy, but sometimes it grows to 5 centimeters or more!
+hhon@5328.20	(unlabelled)	Bushbrown. It likes cloudy days better than sunny ones, they say. Mind you, I don't like it too hot either.
+hhon@5328.21	(unlabelled)	Tengu Butterfly. The bump on its head is like a tengu's nose, and its dead-leaf pattern that fools its enemies is a real tengu's cloak of invisibility!
+hhon@5328.22	(unlabelled)	Green Skipper. Pretty wings, a big tummy and big eyes. I love its shiny metal gleam!
+hhon@5328.23	(unlabelled)	Miyama Stag Beetle ♂. Beech and sawtooth-oak sap is its favorite food! Its head sticks out in a funny shape, a bit odd...
+hhon@5328.24	(unlabelled)	Giant Stag Beetle ♂. Say "stag beetle" and this is the one! It grows big, and it's just plain strong! Stag beetle Kiiing!
+hhon@5328.25	(unlabelled)	Flat Stag Beetle. The big tooth on the very inside of its horns is its trademark! Jet-black and glossy. So cool...
+hhon@5328.26	(unlabelled)	Little Stag Beetle. It really is a little guy, but once in a while one grows to over 5 centimeters!
 hhon@5328.27	(unlabelled)	Saw Stag Beetle ♂. Just like its name, it's like a saw! Its jagged horns are its trademark!
-hhon@5328.28	(unlabelled)	Red-legged Stag Beetle. Willow sap is its favorite food. It sits on the branches, and when you shake the tree, it falls down.
-hhon@5328.29	(unlabelled)	Oni Stag Beetle (Oni-kuwagata). It's small and pretty cute, but maybe its short horns look like an oni's horns.
-hhon@5328.30	(unlabelled)	Rhinoceros Beetle ♂. It has only one horn to fight with, but it shows amazing strength. Stag beetles are no match for it!
-hhon@5328.31	(unlabelled)	Heike Firefly. As an egg, and as a larva too, it glows its whole life long. It isn't hot even when you touch it. A mysterious glow, the summer firefly.
-hhon@5328.32	(unlabelled)	River Damselfly. It lives by rivers in the mountains, and has wings of all kinds of colors: orange, clear, brown.
-hhon@5328.33	(unlabelled)	Ancient Dragonfly (Mukashi-tonbo, 'long-ago dragonfly'). They say it's been around since ancient times, so long it has become fossils. What an amazing guy.
-hhon@5328.34	(unlabelled)	Mountain Clubtail. It's born where the water runs slowly, down the lower reaches of big rivers. In summer it climbs all the way up to the mountaintops.
-hhon@5328.35	(unlabelled)	Oniyanma. The biggest dragonfly in Japan. A scary guy that even eats wasps. If it bites you, it hurts!
-hhon@5328.36	(unlabelled)	Silver Emperor. The area around the pond is its territory. Cheeky, for a dragonfly.
-hhon@5328.37	(unlabelled)	Salt Skimmer (Shiokara-tonbo, 'salty dragonfly'). Its body starts out straw-colored, and as it grows up it gets covered in white powder, as if dusted with salt.
-hhon@5328.38	(unlabelled)	Summer Red Dragonfly. When it's grown up, it turns bright red from its head to the tip of its tail. A red dragonfly, the color of sunset.
-hhon@5328.39	(unlabelled)	Eyebrow Red Dragonfly (Mayutate-akane, 'eyebrow-raised red'). It's a dragonfly, but if you look closely, it really has eyebrows. It surprised me!
-hhon@5328.40	(unlabelled)	Butterfly Dragonfly (Cho-tonbo). It's a dragonfly, so why cho, butterfly? A weird dragonfly with a weird name. And it's cho-mini, super-mini!
-hhon@5328.41	(unlabelled)	Lord Grasshopper. It jumps dozens of times higher than its own size. Pretty amazing. In a big swarm, it's a bad guy that wrecks the fields.
-hhon@5328.42	(unlabelled)	Kutsuwamushi. In the grassy meadows in the woods, the ones that go gacha-gacha are only the males.
-hhon@5328.43	(unlabelled)	Kusakiri. It likes damp meadows. When night comes, it sings with a long, steady jiiii.
-hhon@5328.44	(unlabelled)	Umaoi. Its call, zuiii-cho, sounds like a packhorse driver's shout driving his horse along, so it got the name Umaoi, 'horse-driver', they say.
-hhon@5328.45	(unlabelled)	Kirigirisu. Its favorite foods are things like leeks and cucumbers. In the hottest part of the day, it sings gii-chon.
-hhon@5328.46	(unlabelled)	Enma Cricket (Enma, the king of hell). It has a scary name like Enma, but with a cool voice, koro-koro-rii-rii, it calls the autumn in.
-hhon@5328.47	(unlabelled)	Kusahibari. In summer by day and in autumn by night, it sings gently: firi-ri-ri-ri.
-hhon@5328.48	(unlabelled)	Suzumushi. Its old name was Matsumushi, and now it's called Suzumushi. Which name do you like better?
-hhon@5328.49	(unlabelled)	Matsumushi. Its old name was Suzumushi, and now it's called Matsumushi. It's a confusing relationship.
-hhon@5328.50	(unlabelled)	Nii-nii-zemi. Cherry-tree trunks are its favorite. It sings chiii-iii, a bit of an odd way to sing.
-hhon@5328.51	(unlabelled)	Abura-zemi ('oil cicada'). With a noisy voice like boiling oil, it sings with all its might. Twice as hot. It feels like real summer!
-hhon@5328.52	(unlabelled)	Ezo-zemi. Pine and cedar trees are its favorites. It sits head-down on the trunk and groans in a low voice: giii.
-hhon@5328.53	(unlabelled)	Higurashi. It likes dim woods. When evening comes, it sings kana-kana-kana, mournfully.
-hhon@5328.54	(unlabelled)	Min-min-zemi. Min-min-min-min, it sings and sings, but its life is only 2 weeks. Min-min-min-min. It's sad, isn't it.
-hhon@5328.55	(unlabelled)	Tsukutsuku-boshi. In the second half of August lots of them come out, so it's called the cicada that announces autumn.
-hhon@5328.56	(unlabelled)	Miyama Stag Beetle ♀. The females work hard too, laying eggs so there'll be lots of stag beetles to catch next year too. Good for them!
-hhon@5328.57	(unlabelled)	Giant Stag Beetle ♀. It has no big horns, but in body size it won't lose to the males!
-hhon@5328.58	(unlabelled)	Saw Stag Beetle ♀. However small it is, it worked hard inside rotten wood for as long as 2 or 3 years to grow from an egg into an adult.
-hhon@5328.59	(unlabelled)	Rhinoceros Beetle ♀. The females are small after all, and they have no horn, so they're weak. At a glance, just a plain old scarab beetle.
+hhon@5328.28	(unlabelled)	Red-legged Stag Beetle. Willow sap is its favorite food. It sits on the branches, and if you shake the tree, it falls down.
+hhon@5328.29	(unlabelled)	Oni Stag Beetle. It's small and pretty cute, really, so maybe it's its short horns that look like an oni's horns?
+hhon@5328.30	(unlabelled)	Rhinoceros Beetle ♂. It fights with just one horn, but it shows amazing strength. Stag beetles are nothing to it.
+hhon@5328.31	(unlabelled)	Heike Firefly. Even as an egg, even as a larva, it glows its whole life long. A strange light that isn't hot when you touch it: the summer firefly.
+hhon@5328.32	(unlabelled)	River Damselfly. It lives by the rivers in the mountains, with wings of all sorts of colors: orange, clear, brown.
+hhon@5328.33	(unlabelled)	Ancient Dragonfly. It's been around since long, long ago, since the days of fossils, they say. It's amazing.
+hhon@5328.34	(unlabelled)	Mountain Clubtail. It's born where big rivers flow slowly, far downstream, and in summer it climbs all the way to the mountaintops.
+hhon@5328.35	(unlabelled)	Oniyanma. The biggest dragonfly in Japan. A scary one that even eats bees. It hurts if it bites you!
+hhon@5328.36	(unlabelled)	Silver Emperor. The pond and around it is its territory. Pretty cheeky, for a dragonfly.
+hhon@5328.37	(unlabelled)	Salt Skimmer. Its body starts out straw-colored, but as it grows it gets covered in white powder, as if it's been dusted with salt.
+hhon@5328.38	(unlabelled)	Summer Red Dragonfly. When it's all grown up, it turns bright red from head to tail. The red dragonfly, the color of sunset.
+hhon@5328.39	(unlabelled)	Eyebrow Red Dragonfly. It's a dragonfly, but look closely and it really has eyebrows. It surprised me.
+hhon@5328.40	(unlabelled)	Butterfly Dragonfly. It's a dragonfly, so why "cho", butterfly? A weird dragonfly with a weird name, and cho-mini, super-mini, at that.
+hhon@5328.41	(unlabelled)	Lord Grasshopper. It jumps dozens of times its own height, which is pretty amazing. But in big swarms, it's a bad one that wrecks the fields.
+hhon@5328.42	(unlabelled)	Kutsuwamushi. In the grassy clearings in the woods, it's only the males that go gacha-gacha.
+hhon@5328.43	(unlabelled)	Kusakiri. It likes damp grassland. At night it sings one long jiiii without stopping.
+hhon@5328.44	(unlabelled)	Umaoi. Its song, zuii-cho, sounds like a packhorse man urging his horse along, so they named it Umaoi, "horse-driver".
+hhon@5328.45	(unlabelled)	Kirigirisu. Its favorite foods are things like leeks and cucumbers. In the heat of the day, it sings gii-chon.
+hhon@5328.46	(unlabelled)	Enma Cricket. It has a scary name, Enma, the king of hell, but it calls in the autumn with a cool voice: koro-koro-rii-rii.
+hhon@5328.47	(unlabelled)	Kusahibari. In summer by day, in autumn by night, it sings gently: firirirri.
+hhon@5328.48	(unlabelled)	Suzumushi. Its old name was Matsumushi, and now it's called Suzumushi. Which name does it like better?
+hhon@5328.49	(unlabelled)	Matsumushi. Its old name was Suzumushi, and now it's called Matsumushi. A confusing relationship.
+hhon@5328.50	(unlabelled)	Nii-nii-zemi. Cherry tree trunks are its favorite. It has a kind of unusual song: chiii-iii.
+hhon@5328.51	(unlabelled)	Abura-zemi. In a racket like boiling oil, "abura", it sings with all its might. Twice as hot: summer in full swing.
+hhon@5328.52	(unlabelled)	Ezo-zemi. It likes pine and cedar trees. It perches head-down on the trunk and drones a low giii.
+hhon@5328.53	(unlabelled)	Higurashi. It likes dim thickets. When evening comes, it sings kana-kana-kana, so sadly.
+hhon@5328.54	(unlabelled)	Min-min-zemi. Min-min-min-min, it sings and sings, but its life is only two weeks. Min-min-min-min... how sad.
+hhon@5328.55	(unlabelled)	Tsukutsuku-boshi. Lots of them come out in the second half of August, so they call it the cicada that announces autumn.
+hhon@5328.56	(unlabelled)	Miyama Stag Beetle ♀. The females work hard too, laying eggs so there'll be lots of stag beetles to catch next year. Good for them!
+hhon@5328.57	(unlabelled)	Giant Stag Beetle ♀. No big horns, but for sheer body size, it won't lose to the other males!
+hhon@5328.58	(unlabelled)	Saw Stag Beetle ♀. However small it is, it worked hard for two or three years inside a rotting log, from egg to grown beetle.
+hhon@5328.59	(unlabelled)	Rhinoceros Beetle ♀. The female is small, after all, with no horn, so it's weak. At first glance, just a plain scarab.
 hhon@5328.60	(unlabelled)	(empty)
-# NOTE hhon@5328: each entry opens with the insect's name as exe@8003D2E0 gives it; where the entry
-#   jokes about the Japanese name (glossary § 4a, marked there), the name carries the Japanese too.
-#   The calls are as the Japanese hears them (style guide § 7).
-# NOTE hhon@5328.10: the Japanese ends on "chotto nai" (hardly any) punned with cho (butterfly): style
-#   guide § 8 kind 3, the Japanese word shown. .40: cho (butterfly) and cho- (super) likewise.
-# NOTE hhon@5328.2: "Onaga-kun" rendered "Long-tail-kun", the -kun kept, the name in English as the entry names it.
-# NOTE hhon@5328.60: the glossary's "(empty)" (§ 4a).
+# NOTE hhon@5328.3, .18: the entry is about the Japanese name, so the first line carries both
+#   (glossary § 4a). .10 and .40 pun on cho (butterfly; chotto, "a little"; super): kind 3, the
+#   word showing. Calls stay as the Japanese hears them (style guide § 7).
 
 # --- hhon@6874: insect book select
 hhon@6874	[SEL]	Delete it? | Yes | No
@@ -368,8 +360,8 @@ musi@2C.28	(unlabelled)	Saba-ori
 musi@2C.29	(unlabelled)	Harite
 musi@2C.30	(unlabelled)	Mantis Scissors
 musi@2C.31	(unlabelled)	Mantis Buster
-# NOTE musi@2C.23: the source is tsuri-dashi (the lifting force-out), not the glossary's okuri-dashi;
-#   the glossary list is wrong on this one. .26: the source's "abiseta oshi" read as abise-taoshi, as the glossary has it.
+# NOTE musi@2C: real sumo techniques keep their Japanese names; the joke moves are translated
+#   (glossary § 4b). .0-.12 are states, probably debug-only.
 
 # --- musi@348: bug-sumo button hint
 musi@348.0	(unlabelled)	{G:47}: tap your bug
@@ -390,7 +382,6 @@ tako@440.0	(unlabelled)	Crashed!
 
 # --- title@7A78: yes / no
 title@7A78.0	(unlabelled)	Yes | No
-# NOTE title@7A78.0: the two answers side by side in one fixed row, as the Japanese "hai" + "iie".
 
 # --- zukan@32E8: write the diary and sleep?
 zukan@32E8	[SEL]	Write in your diary and go to sleep? | Yes | No
@@ -399,11 +390,11 @@ zukan@32E8	[SEL]	Write in your diary and go to sleep? | Yes | No
 exe@code:80037544	(unlabelled)	Date caught {month}/{day}
 
 # --- exe@code:80037698: specimen made, month, day (no caller found)
-exe@code:80037698	(unlabelled)	Date mounted
+exe@code:80037698	(unlabelled)	Pinned
 
 # --- exe@code:800377F8: wins, losses
-exe@code:800377F8	(unlabelled)	W L
-# NOTE exe@code:800377F8: the glossary's W / L (§ 4b), two cells drawn by the code.
+exe@code:800377F8	(unlabelled)	WL
+# NOTE exe@code:800377F8: W and L, one letter for each glyph the code draws (glossary § 4b).
 
 # --- title@code:8007BB60: 8, month, day
 title@code:8007BB60	(unlabelled)	August {day}
@@ -414,6 +405,5 @@ title@code:8007C8EC	(unlabelled)	) / )
 # --- title@code:80080484: the separators of 'n / 31' and 'n %'
 title@code:80080484	(unlabelled)	/31 / 0 / %
 
-# --- title@sjis:188: the title of the save on the memory card, as the console's card screen shows it
+# --- title@sjis:188: the title of the save on the memory card
 title@sjis:188	(unlabelled)	Boku's Memories {slot} August {day}
-# NOTE title@sjis:188: {slot} and {day} are where the code puts the save's slot number and the day.
