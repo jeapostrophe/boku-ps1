@@ -944,3 +944,123 @@ E6001.16	Boku	So that voice saved you?
 E6001.17	Saori	Yeah, somehow I've come to think so.
 E6001.18	Boku	What was it that howled?
 E6001.19	Saori	A Japanese wolf... // the voice of a Japanese wolf, which should have died out long, long ago...
+
+# --- E2206: A10 -- the big tree past the corn (the snake)
+E2206.0	Boku	Aaah, a snake!
+E2206.1	Boku	No, no, go away!
+E2206.2	Uncle	What's the matter? Boku-kun, are you all right?
+E2206.3	Uncle	You're safe now.
+E2206.4	Boku	......
+E2206.5	Uncle	Were you scared?
+E2206.6	Boku	No, I wasn't.
+E2206.7	Uncle	Hahaha, a boy mustn't get scared over a little thing like this.
+
+# --- E2207: A10 -- the big tree (the shed skin)
+E2207.0	Narrator	What lay there was the cast-off skin of a snake, dried out to an almost sorrowful degree.
+E2207.1	(unlabelled)	Got the shed snakeskin.
+
+# --- E2261: B13 -- Saori's camera trap
+E2261.0	Narrator	The sugar water was gone.
+
+# --- E6100: D07 -- Saori's camp (after the photograph)
+E6100.0	Boku	Congratulations, you weird lady.
+E6100.1	Saori	......
+E6100.2	Boku	Aren't you happy?
+E6100.3	Saori	Somehow... you know.
+E6100.4	Boku	Why is that, I wonder?
+E6100.5	Saori	I just can't be.
+E6100.6	Boku	But now you'll be famous overnight, lady.
+E6100.7	Saori	Haha... Dummy. Ever heard of the crested ibis? // I finally found a place where wolves live, and I can't tell anybody.
+E6100.8	Boku	...Huh?
+E6100.9	Saori	But why would it come to sugar water, of all things? // There are records of them liking salt...
+E6100.10	Saori	Did you do something at the camera?
+
+# --- E6101: D07 -- Saori's camp (the howl that saved her)
+E6101.0	Boku	I'm here.
+E6101.1	Saori	......
+E6101.2	Boku	What are you reading?
+E6101.3	Saori	...A book about the forest.
+E6101.4	Boku	Is it interesting?
+E6101.5	Saori	......
+E6101.6	Boku	From today on, it's a little bit autumn.
+E6101.7	Saori	Huh?
+E6101.8	Saori	What makes you think so?
+E6101.9	Boku	Dragonflies... there are lots of dragonflies flying.
+E6101.10	Saori	Huh, when did there get to be so many...
+E6101.11	Saori	When I was little, I lived in the town at the foot of this mountain. // That day, too, there were lots of dragonflies flying, just like today...
+E6101.12	Saori	Back when I was still smaller than you are now, Boku-kun... // I came hiking around here with my family... // That day, before I knew it, I'd gotten lost... // Evening came, and I got scared... // I sat on a big rock on the riverbank and cried... // And then, that voice...
+E6101.13	Boku	What kind of voice?
+E6101.14	(voice only)
+E6101.15	Saori	I got scared, and I ran flat out down the mountain path in the evening glow... // and the next thing I knew, I'd been found by the youth association men who'd come up the mountain looking for me.
+E6101.16	Boku	So that voice saved you?
+E6101.17	Saori	Yeah, somehow I've come to think so.
+E6101.18	Boku	What was it that howled?
+E6101.19	Saori	A Japanese wolf... // the voice of a Japanese wolf, which should have died out long, long ago...
+
+# --- E6102: D07 -- Saori's camp
+E6102.0	Boku	Hey, didn't a weird photo come out?
+E6102.1	Saori	What a big sky it is...
+
+# --- E6103: D07 -- Saori's camp
+E6103.0	Saori	There's lots of interesting stuff in the tent, so go and have a look...
+
+# --- E6104: D07 -- Saori's camp (after the snake)
+E6104.0	Boku	Hello.
+E6104.1	Saori	I heard from Shirabe-chan... you met a snake, huh...
+E6104.2	Boku	......
+E6104.3	Saori	The clouds are starting to take on their autumn shapes...
+E6104.4	Boku	Huh? What about the snake...
+E6104.5	Saori	A sad, lonely cloud, somehow...
+E6104.6	Boku	...Wolf Girl, you know...
+E6104.7	Saori	Were you scared?
+E6104.8	Boku	Huh?
+E6104.9	Saori	You met a snake and ran away, didn't you?
+E6104.10	Boku	......
+E6104.11	[SEL]	I ran away | It was nothing
+E6104.12	Saori	Ahaha...
+E6104.13	Boku	Got a problem with that? That kind of hurts...
+E6104.14	Saori	...Hehe, sorry. // But you know, a guy who gets a little bit scared...
+E6104.15	Saori	Smooch!
+E6104.16	Saori	...is what you'd call attractive.
+E6104.17	Boku	Then don't laugh at me.
+E6104.18	Boku	Hic!
+E6104.19	Saori	It's exactly the ones who feel no fear at all toward nature // who go and build new towns with no human warmth in them, as if they'd been washed in detergent... // The point is, it's a question of balance...
+E6104.20	Boku	Now it's a story about foreign countries?
+E6104.21	Boku	Hic!
+E6104.22	Saori	No.
+E6104.23	Saori	A story about right around here.
+E6104.24	Boku	...Boobs?
+E6104.25	Boku	Hic!
+E6104.26	Saori	...Not quite. // I see... I kissed a grade-schooler, so now I'll have to marry him, huh.
+E6104.27	Boku	......
+E6104.28	Saori	And so I'm a sad, lonely cloud, somehow...
+E6104.29	Saori	Boo!
+E6104.30	Boku	Whoa, you scared me!
+E6104.31	Saori	Hehe, how's that!
+E6104.32	Boku	Huh? It really worked.
+E6104.33	Saori	Ohh, is that so.
+E6104.34	Boku	...Yeah.
+E6104.35	Saori	It must have been a really tiny snake, huh.
+E6104.36	Boku	That's not...
+E6104.37	Saori	About 5 centimeters long.
+E6104.38	Boku	That's an earthworm.
+E6104.39	Saori	Then it was an earthworm.
+E6104.40	Boku	Jeez, Wolf Girl...
+
+# --- E6105: D07 -- Saori's camp
+E6105.0	Saori	Here, Boku-kun, your photos are ready.
+E6105.1	Saori	Here, Boku-kun, your photos are ready.
+E6105.2	Narrator	It was then that I thought: // was there not some way // of luring that mysterious weird ghost to Saori's machine?
+E6105.3	Narrator	Yes... I knew // what that weird ghost liked to eat...
+
+# --- E2251: A18 -- the secret base
+E2251.0	Guts	You know The Adventures of Gamba? Noroi's eyes are just too scary...
+
+# --- E2252: A18 -- the secret base
+E2252.0	Fat	Have you ever talked to Moe-san?
+E2252.1	Boku	Yeah.
+E2252.2	Fat	Whoa! Oh, man!
+E2252.3	Boku	We live in the same house, so obviously.
+
+# --- E2253: A18 -- the secret base
+E2253.0	Specs	Why don't cartoon heroes ever complain about their hairstyles? // No, really, I think they ought to stand up for their rights more.

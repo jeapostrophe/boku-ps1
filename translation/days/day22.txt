@@ -1,0 +1,103 @@
+# day22 (translation/days/README.md)
+# --- E2221: G03 -- kitchen
+E2221.0	Boku	Uncle said, "Keep it an absolute secret from Auntie," // so I'm not telling you anything.
+E2221.1	Aunt	Oh, is that so? Thank you for the valuable information, Boku-kun.
+
+# --- E2260: D07 -- Saori's camp
+E2260.0	Saori	I wonder how long I'll stay here this year?
+E2260.1	Saori	Urrrgh... I slept funny, and now my neck won't move...
+
+# --- E2202: G02 -- after breakfast (the wedding anniversary)
+E2202.0	Uncle	Gochisosama deshita.
+E2202.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2202.2	Uncle	Ta-daa! Now then, what day is today?
+E2202.3	Shirabe	Every year you put a red circle on it the minute you get the calendar. How could anyone forget?
+E2202.4	Boku	What day is it?
+E2202.5	Uncle	It's our wedding anniversary.
+E2202.6	Moe	Honestly, I can't help envying you two...
+E2202.7	(voice only)
+
+# --- E2220: H06 -- garden off the veranda
+E2220.0	Aunt	I see, so today was our wedding anniversary...
+E2220.1	Aunt	I'd completely forgotten.
+
+# --- E2212: G01 -- living room
+E2212.0	Boku	Uncle, how many years ago today did you and Auntie get married?
+E2212.1	Uncle	Seventeen years ago. // Actually, it was supposed to be the day before, // but it was a Sunday, and the Suginami ward office was closed.
+E2212.2	Uncle	I see... seventeen years have gone by already...
+
+# --- E2210: H26 -- the workshop
+E2210.0	Uncle	Boku-kun, I wonder what kind of girl you'll marry someday?
+E2210.1	[SEL]	A glamorous beauty | The daughter of a great fortune | An older woman
+E2210.2	Uncle	I don't think you know what those words mean... but personality is what really matters in a person!
+E2210.3	Uncle	I suppose having money is better than not having it... // Uncle's never been rich, so honestly, I wouldn't know.
+E2210.4	Uncle	Actually, Auntie is a year older than Uncle. // It was an arranged marriage, and yet right up until we registered it, I believed she was younger.
+E2210.5	Boku	Why?
+E2210.6	Uncle	It seems she was wearing a cat, as they say, and a dog, and a tanuki, all sorts of things... // Oh! What I just said is an absolute secret from Auntie, understood?
+# NOTE E2210.6: neko o kaburu, "to wear a cat", is to put on an innocent front; the uncle extends
+#   the idiom to a dog and a tanuki (style guide § 8 kind 3, translated literally).
+
+# --- E2203: G02 -- dinner (sushi)
+E2203.0	Boku	It's kind of delicate, isn't it?
+E2203.1	Aunt	Deluxe!
+E2203.2	Boku	...That.
+E2203.3	Uncle	Ahem, today...
+E2203.4	Aunt	That side is the one without wasabi.
+E2203.5	Shirabe	Sushi!
+E2203.6	Boku	Sushi!
+E2203.7	Shirabe	You get kappa-maki!
+E2203.8	Boku	Awww...
+E2203.9	Shirabe	Ohoho, today nothing but kappa is allowed, I'll have you know!
+E2203.10	Boku	Ugh...
+E2203.11	Aunt	Now, now.
+E2203.12	Boku	I'm gonna eat you uuup...
+E2203.13	Moe	I can't eat hamachi.
+E2203.14	Boku	Oh! I love it!
+E2203.15	Shirabe	I said no!
+E2203.16	Boku	Onee-chan, is there anything else you don't like?
+E2203.17	Shirabe	You get kappa!
+E2203.18	Boku	...I think I'm going to turn delinquent.
+E2203.19	Moe	Hey, when are we giving them the present?
+E2203.20	Uncle	Well then, first, a few words from Dad...
+E2203.21	Shirabe, Moe, Boku, Aunt	Itadakimaaasu.
+# NOTE E2203.0-.2: the deluxe/delicate mix-up of day 18 (E1821.8), swapped (style guide § 8 kind 2).
+
+# --- E2205: G06 -- TV room (the presents)
+E2205.0	Boku	So it's patchin-work.
+E2205.1	Moe	That's right.
+E2205.2	Shirabe	We're giving it to Dad and Mom for their anniversary today.
+E2205.3	Shirabe	For Mom, a pot holder, and for Dad, a cho-necktie!
+E2205.4	Boku	A cho-necktie? A trillion neckties?
+E2205.5	Moe	Cho as in butterfly. A bow tie!
+# NOTE E2205.3-.5: cho written three ways: "super", "trillion" and "butterfly" (a bow tie is a
+#   "butterfly necktie"); the three are the same sound, the joke is in the writing (style guide
+#   § 8 kind 3).
+
+# --- E2231: G15 -- the sisters' room
+E2231.0	Moe	Hey, do you think I'll be able to find a treasure for life too?
+E2231.1	Boku	......?
+E2231.2	(unlabelled)	Hey, Onee-chan, in your whole life so far, what's the most important thing?
+E2231.3	Moe	What, I wonder? // Well, my parents and my brother and sister, my best friends, all the other people close to me... // I think they're all really important, but apart from them... // about all I can think of that's precious to me // is happy memories from when I was a kid...
+E2231.4	Boku	Hmm, so memories are your precious treasure.
+E2231.5	Moe	Yeah, and then maybe that music box.
+E2231.6	Moe	That music box makes such a cute sound, you know.
+# NOTE E2231.1-.2: one utterance across two messages, a silent beat and then Boku's question
+#   (style guide § 9).
+
+# --- E2241: G06 -- TV room
+E2241.0	Shirabe	Oof... I ate too much. // A tuna feels like it's going to come flopping out of my mouth.
+E2241.1	Shirabe	My waist has disappeared again.
+
+# --- E2204: G02 -- after dinner (the vice-principal's treasure)
+E2204.0	Uncle	Gochisosama deshita.
+E2204.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2204.2	Aunt	Onee-chan, Shirabe, thank you so much for today. // Dad and Mom will keep your presents as treasures for life.
+E2204.3	Moe	Treasures, huh... // I'd like something I could call a treasure for life, too...
+E2204.4	Uncle	You're only fifteen, Moe. // Surely you'll be able to find as many as you like from now on?
+E2204.5	Moe	Hmm, that's how life ought to be, isn't it...
+E2204.6	Moe	That reminds me. At our school, that vice-principal who tries too hard... // they say that during the war, the vice-principal hid some precious treasure in the hills behind here.
+E2204.7	Shirabe	Huh? What, what, whaaat...
+E2204.8	Uncle	But a wartime treasure, if you and Moe saw it now, Shirabe, // would probably be surprisingly shabby, I think.
+E2204.9	Moe	What could it be?
+E2204.10	Shirabe	A loincloth!
+E2204.11	(voice only)
