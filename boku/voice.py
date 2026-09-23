@@ -134,11 +134,15 @@ runs, the voice only once the drive has seeked (measured once, `research/event-s
 § Voice-only entries)."""
 
 
+def sector_ticks(sectors: int) -> int:
+    """How many event ticks `sectors` of a clip's own channel play for."""
+    return round(sectors * SAMPLES_PER_SECTOR * TICK_HZ / XA_RATE)
+
+
 def clip_ticks(key: bytes) -> int:
     """How many event ticks the clip a 12-byte voice key names plays for."""
     k = decode_voice_key(key)
-    sectors = own_sectors(k["start"], k["end"], "a voice key")
-    return round(sectors * SAMPLES_PER_SECTOR * TICK_HZ / XA_RATE)
+    return sector_ticks(own_sectors(k["start"], k["end"], "a voice key"))
 
 
 def subtitle_waits(pages: Sequence[str], ticks: int) -> list[int]:

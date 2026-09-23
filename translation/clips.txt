@@ -1,0 +1,59 @@
+# The clips the game plays from its own code rather than from an event: the table
+# BOKU_XA.XCH, clips XCH.00-XCH.47 (research/data/voice-only.tsv lists what each says).
+# Format: translation/README.md § clips.txt -- a day file's row keyed by the clip.
+# English after the second tab is drawn in the dialogue band while the clip plays; a row
+# without English is listed so the ids line up and draws nothing. Licence: CC BY-SA 4.0.
+
+# --- XCH.34: going to sleep on the first night (movie mode, over black, day 1 only).
+XCH.34	Narrator
+
+# --- XCH.41-XCH.45: the five epilogues (ENDOTI, over the ending's still; 28-49 s each).
+#     Which plays is the star count (research/save-format.md § Which ending plays).
+XCH.41	Narrator
+XCH.42	Narrator
+XCH.43	Narrator
+XCH.44	Narrator
+XCH.45	Narrator
+
+# --- XCH.00-XCH.33, XCH.35-XCH.40: the bug-sumo voices (MUSI) and one cheer. English here
+#     is drawn in bug sumo only once PLAN VO-06 has made it so.
+XCH.00	(unlabelled)
+XCH.01	(unlabelled)
+XCH.02	(unlabelled)
+XCH.03	(unlabelled)
+XCH.04	(unlabelled)
+XCH.05	(unlabelled)
+XCH.06	(unlabelled)
+XCH.07	(unlabelled)
+XCH.08	(unlabelled)
+XCH.09	(unlabelled)
+XCH.10	(unlabelled)
+XCH.11	(unlabelled)
+XCH.12	(unlabelled)
+XCH.13	(unlabelled)
+XCH.14	(unlabelled)
+XCH.15	(unlabelled)
+XCH.16	(unlabelled)
+XCH.17	(unlabelled)
+XCH.18	(unlabelled)
+XCH.19	(unlabelled)
+XCH.20	(unlabelled)
+XCH.21	(unlabelled)
+XCH.22	(unlabelled)
+XCH.23	(unlabelled)
+XCH.24	(unlabelled)
+XCH.25	(unlabelled)
+XCH.26	(unlabelled)
+XCH.27	(unlabelled)
+XCH.28	(unlabelled)
+XCH.29	(unlabelled)
+XCH.30	(unlabelled)
+XCH.31	(unlabelled)
+XCH.32	(unlabelled)
+XCH.33	(unlabelled)
+XCH.35	(unlabelled)
+XCH.36	(unlabelled)
+XCH.37	(unlabelled)
+XCH.38	(unlabelled)
+XCH.39	(unlabelled)
+XCH.40	(unlabelled)

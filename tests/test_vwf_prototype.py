@@ -486,10 +486,13 @@ def test_a_cue_file_that_is_not_there_is_a_refusal(tmp_path):
 
 def test_the_build_defines_every_equate_movie_asm_leaves_to_it():
     """The `-equ` contract, read from the assembly's half of it: the `MOVIE_SUB_*` names
-    `movie.asm` uses and never defines itself are exactly the ones `movie_equates` supplies,
-    so one added there fails here rather than inside armips."""
+    `movie.asm` and `voice.asm` (the clip subtitles, which read the same block) use and never
+    define themselves are exactly the ones `movie_equates` supplies, so one added there fails
+    here rather than inside armips."""
     tool = vwf_prototype()
-    source = (tool.ASM.parent / "movie.asm").read_text(encoding="utf-8")
+    source = "\n".join(
+        (tool.ASM.parent / name).read_text(encoding="utf-8") for name in ("movie.asm", "voice.asm")
+    )
     code = "\n".join(line.split(";", 1)[0] for line in source.splitlines())
     defined = set(re.findall(r"^\s*(\w+)\s+equ\s", code, re.M))
     used = set(re.findall(r"\bMOVIE_SUB_\w+", code)) - defined
@@ -576,6 +579,7 @@ def prototype_arguments(tool, out: Path, **extra) -> argparse.Namespace:
         "label": False,
         "font": None,
         "movie_cues": str(tool.CUE_FILE),
+        "clip_subs": str(tool.clip_subs.CLIP_FILE),
         "asm": str(tool.ASM),
         "armips": str(tool.DEFAULT_ARMIPS),
         "skip_image_hash": True,

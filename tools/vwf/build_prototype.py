@@ -63,7 +63,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from boku import edc  # noqa: E402
+from boku import clip_subs, edc  # noqa: E402
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack  # noqa: E402
 from boku.boxes import box_for  # noqa: E402
 from boku.build import verify_sectors  # noqa: E402
@@ -78,11 +78,16 @@ from boku.movie_block import (  # noqa: E402
     BLOCK_LBA,
     BLOCK_RAM,
     CELL,
+    CLIP_HEADER_SIZE,
+    CLIP_ROW_SIZE,
+    CLIP_TRAILER_SIZE,
+    GLYPHS_OFFSET_FIELD,
     MAGIC,
     MASK,
     RECORD_SIZE,
     SCREEN_WIDTH,
     BlockError,
+    clip_count,
     encode_block,
     movie_names,
 )
@@ -94,6 +99,7 @@ from boku.sites import line_key_of, page_waits  # noqa: E402
 from boku.text import PlacedSite, SiteIndex, TextError  # noqa: E402
 from boku.tim import parse_exact  # noqa: E402
 from boku.translation import SampleScenes  # noqa: E402
+from boku.voice import xch_nodes  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ASM = REPO / "asm/vwf.asm"
@@ -897,6 +903,11 @@ def movie_equates(block: bytes) -> dict[str, int]:
         "MOVIE_SUB_MAGIC": MAGIC,
         "MOVIE_SUB_MASK_ROWS": MASK,
         "MOVIE_SUB_RECORD_SHIFT": MOVIE_SUB_RECORD_SHIFT,
+        "MOVIE_SUB_GLYPHS_FIELD": GLYPHS_OFFSET_FIELD,
+        "MOVIE_SUB_CLIP_TRAILER": CLIP_TRAILER_SIZE,
+        "MOVIE_SUB_CLIP_HEADER": CLIP_HEADER_SIZE,
+        "MOVIE_SUB_CLIP_ROW": CLIP_ROW_SIZE,
+        "MOVIE_SUB_CLIPS": clip_count(block),
     }
 
 
@@ -907,8 +918,33 @@ def advance_encoder(font: Mapping[str, Glyph]) -> CellMapEncoder:
     return CellMapEncoder({c: (0, glyph.advance) for c, glyph in font.items()}, name="the font")
 
 
-def movie_block_for(font: Mapping[str, Glyph], cue_file: Path, exe: bytes) -> tuple[bytes, dict]:
-    """The block for `cue_file`'s cues over `font`, and the record of what went in it.
+def clip_words_for(
+    clip_file: Path, archive: Archive, font: Mapping[str, Glyph], cells: Mapping[str, int]
+) -> dict[int, tuple[int, ...]]:
+    """`clip_file`'s subtitles for native `g_xa_clips` plays as dialogue words (VO-03), in
+    the cells and advances this build installs; any problem is a refusal, as a cue's is."""
+    encoder = CellMapEncoder(
+        {c: (cells[c], font[c].advance) for c in cells}, name="the dialogue font"
+    )
+    entries, unread = clip_subs.read(clip_file)
+    words, problems = clip_subs.lay_out_clips(entries, xch_nodes(archive), encoder)
+    listed = unread + [f"{p.origin} {p.line_id}: {p.message}" for p in problems]
+    if listed:
+        raise BuildRefused(
+            f"{len(listed)} problem(s) in the clip subtitles, first: {'; '.join(listed[:5])}. "
+            f"`./make.sh lint-translation` lists them all. Nothing further was written."
+        )
+    return words
+
+
+def movie_block_for(
+    font: Mapping[str, Glyph],
+    cue_file: Path,
+    exe: bytes,
+    clips: Mapping[int, Sequence[int]] | None = None,
+) -> tuple[bytes, dict]:
+    """The block for `cue_file`'s cues and the `clips` words over `font`, and the record of
+    what went in it.
 
     Every rule `boku lint` holds a cue to is a refusal here, with the file and line: the
     block is built from the committed translation, so a cue that would draw other than as
@@ -933,7 +969,9 @@ def movie_block_for(font: Mapping[str, Glyph], cue_file: Path, exe: bytes) -> tu
         unknown = sorted(set(movies) - set(names))
         if unknown:
             raise BlockError(f"{unknown} are in research/data/movies.tsv but not g_movie_table")
-        block = encode_block({names[movie]: cues for movie, cues in movies.items()}, font)
+        block = encode_block(
+            {names[movie]: cues for movie, cues in movies.items()}, font, clips=clips
+        )
     except BlockError as error:
         raise BuildRefused(f"the movie cues: {error}. Nothing further was written.") from error
     record = {
@@ -944,6 +982,7 @@ def movie_block_for(font: Mapping[str, Glyph], cue_file: Path, exe: bytes) -> tu
         "bytes": len(block),
         "sha1": hashlib.sha1(block).hexdigest(),
         "cues": {movie: len(cues) for movie, cues in sorted(movies.items())},
+        "clips": sorted(clips or ()),
     }
     return block, record
 
@@ -1417,7 +1456,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     work = out / "files"
     work.mkdir(parents=True, exist_ok=True)
     (work / "font-sheet.tim").write_bytes(new_tim)
-    block, movie_subtitles = movie_block_for(font, Path(args.movie_cues), stock_exe)
+    clips = clip_words_for(Path(args.clip_subs), archive, font, cells)
+    block, movie_subtitles = movie_block_for(font, Path(args.movie_cues), stock_exe, clips)
     (work / MOVIE_BLOCK_NAME).write_bytes(block)
     # `Archive.blob` copies, and each overlay is wanted three times below; cut once.
     stock_overlays = {name: archive.blob(archive.member(name)) for name in DRAWING_OVERLAYS}
@@ -1641,6 +1681,11 @@ def main() -> int:
         "--movie-cues",
         default=str(CUE_FILE),
         help="the movie subtitle file (default: translation/movies.txt; boku.movie_cues)",
+    )
+    parser.add_argument(
+        "--clip-subs",
+        default=str(clip_subs.CLIP_FILE),
+        help="subtitles for native voice clips (default: translation/clips.txt; boku.clip_subs)",
     )
     parser.add_argument("--asm", default=str(ASM))
     parser.add_argument("--armips", default=str(DEFAULT_ARMIPS))

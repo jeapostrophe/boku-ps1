@@ -88,8 +88,8 @@ from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from boku import REPO_ROOT, movie_cues
-from boku.archive import DEFAULT_DISC_DIR
+from boku import REPO_ROOT, clip_subs, movie_cues
+from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
 from boku.boxes import TextBox, box_for
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
@@ -130,6 +130,7 @@ from boku.script_store import (
     select_shape,
 )
 from boku.translation import SampleScenes, TranslationEntry, select_fields
+from boku.voice import xch_nodes
 
 # `LabelledBox`, `label_allowance`, `original_marks`, `speaker_label` and `select_fields`
 # are imported, not defined: the marks and the label's pixels live in `boku.layout` beside
@@ -863,6 +864,24 @@ def lint_movie_file(movies: Path | None, options: Options, cells: Path | None) -
     return lint_movies(Path(movies), encoder, path)
 
 
+def lint_clip_file(clips: Path | None, options: Options, disc_dir: Path) -> list[Finding]:
+    """`translation/clips.txt` (`boku.clip_subs`): each row laid out against its own clip in
+    the band, as the build lays it out, every problem an error. No file, no findings."""
+    if clips is None:
+        return []
+    entries, unread = clip_subs.read(Path(clips))
+    if not entries and not unread:
+        return []
+    clip_nodes = xch_nodes(Archive(Path(disc_dir)))
+    _words, problems = clip_subs.lay_out_clips(entries, clip_nodes, options.encoder, options.box)
+    name = Path(clips).name
+    out = [Finding(name, 0, "-", "clip-format", ERROR, problem) for problem in unread]
+    for problem in problems:
+        number = int(problem.origin.rsplit(":", 1)[1])
+        out.append(Finding(name, number, problem.line_id, "clip-subtitle", ERROR, problem.message))
+    return out
+
+
 def format_report(findings: Iterable[Finding]) -> list[str]:
     return [finding.format() for finding in findings]
 
@@ -890,6 +909,7 @@ def main_lint(
     additive: bool,
     additive_words: Path | None,
     movies: Path | None = movie_cues.CUE_FILE,
+    clips: Path | None = clip_subs.CLIP_FILE,
 ) -> int:
     paths = translation_paths(sources or DEFAULT_SOURCES)
     if not paths:
@@ -915,6 +935,11 @@ def main_lint(
         findings += lint_movie_file(movies, options, cells)
     except (OSError, LayoutError) as error:
         print(f"lint: {movies}: {error}", file=sys.stderr)
+        return 2
+    try:
+        findings += lint_clip_file(clips, options, disc_dir)
+    except (OSError, ArchiveError) as error:
+        print(f"lint: {clips}: {error}", file=sys.stderr)
         return 2
     findings = sorted(findings)
     print(

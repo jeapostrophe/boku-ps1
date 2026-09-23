@@ -25,6 +25,11 @@ Block layout (little-endian, RAM address `BLOCK_RAM`, read by `movie_sub_load` f
                            the line an even length}, ended by u16 x = 0xFFFF: every header
                            is halfword-aligned, and the routine rounds its cursor up to the
                            next even byte after each 0xFF rather than trusting the count
+    clips_offset: clips     (VO-03) {u16 clip_count, u16 0, clip[clip_count] {u16 index,
+                           u16 words_offset}}, each clip's words before it: subtitles for
+                           native `g_xa_clips` plays -- dialogue words ending in `0x8000`,
+                           drawn by the dialogue renderer (`asm/voice.asm`), not by the masks
+    glyphs_offset - 4       {u16 clips_offset, u16 0}: where `clip_sub_play` finds the clips
     glyphs_offset: record[] `RECORD_SIZE` bytes each, index = the u8 in a line:
                            {u8 advance, u8[3] 0, u16 glyph[MASK], u16 outline[MASK], u8[4] 0}
 
@@ -45,7 +50,7 @@ from typing import Protocol
 
 from boku.archive import EXE_LOAD_BIAS
 from boku.disc import form1_sectors
-from boku.glyphs import unencodable_by
+from boku.glyphs import END_WORD, iter_tokens, unencodable_by, words_of
 from boku.relocate import MOVIE_BLOCK_RESERVE
 
 MAGIC = 0x42534B42
@@ -84,6 +89,19 @@ RECORD_SIZE = 64
 CUE_SIZE = 8
 HEADER_SIZE = 12
 MOVIE_ROW_SIZE = 8
+CLIP_HEADER = struct.Struct("<HH")
+"""The clips' {u16 count, u16 0}."""
+CLIP_ROW = struct.Struct("<HH")
+"""A clip's {u16 index, u16 words_offset}."""
+CLIP_TRAILER = struct.Struct("<HH")
+"""{u16 clips_offset, u16 0}, just before the glyph table."""
+CLIP_HEADER_SIZE, CLIP_ROW_SIZE, CLIP_TRAILER_SIZE = (
+    CLIP_HEADER.size,
+    CLIP_ROW.size,
+    CLIP_TRAILER.size,
+)
+GLYPHS_OFFSET_FIELD = 6
+"""Where the header holds `glyphs_offset`; `clip_sub_play` finds the clips from it."""
 END_OF_LINE = 0xFF
 END_OF_LINES = 0xFFFF
 U16_MAX = 0xFFFF
@@ -163,7 +181,11 @@ def movie_names(exe: bytes) -> dict[str, int]:
     return out
 
 
-def encode_block(movies: Mapping[int, Sequence[Cue]], font: Mapping[str, GlyphLike]) -> bytes:
+def encode_block(
+    movies: Mapping[int, Sequence[Cue]],
+    font: Mapping[str, GlyphLike],
+    clips: Mapping[int, Sequence[int]] | None = None,
+) -> bytes:
     """The block for `movies` -- name pointer -> its cues -- carrying every glyph of `font`
     (the VWF set, so the size measured is the size the design pays). Refuses text the font
     cannot draw, a line wider than `LINE_WIDTH`, a line whose rows leave the frame, a block
@@ -179,6 +201,12 @@ def encode_block(movies: Mapping[int, Sequence[Cue]], font: Mapping[str, GlyphLi
         if len(movies[name]) > U16_MAX:
             raise BlockError(f"{len(movies[name])} cues; the block counts a movie's in a u16")
     cues = [cue for name in names for cue in movies[name]]
+    clip_rows = sorted((clips or {}).items())
+    for clip, words in clip_rows:
+        if not 0 <= clip <= U16_MAX:
+            raise BlockError(f"clip {clip}: a clip row names its index in a u16")
+        if not words or words[-1] != END_WORD:
+            raise BlockError(f"clip {clip}'s words do not end with END ({END_WORD:#06x})")
     cues_start = HEADER_SIZE + MOVIE_ROW_SIZE * len(names)
     line_blobs: list[bytes] = []
     cue_rows: list[tuple[int, int, int]] = []
@@ -210,7 +238,18 @@ def encode_block(movies: Mapping[int, Sequence[Cue]], font: Mapping[str, GlyphLi
         cue_rows.append((cue.start, cue.end, cursor))
         line_blobs.append(bytes(blob))
         cursor += len(blob)
-    glyphs_offset = (cursor + 3) & ~3
+    clip_offsets = []
+    for _index, words in clip_rows:
+        clip_offsets.append(cursor)
+        line_blobs.append(struct.pack(f"<{len(words)}H", *words))
+        cursor += 2 * len(words)
+    clips_offset = cursor
+    section = CLIP_HEADER.pack(len(clip_rows), 0) + b"".join(
+        CLIP_ROW.pack(clip, offset)
+        for (clip, _words), offset in zip(clip_rows, clip_offsets, strict=True)
+    )
+    cursor += len(section)
+    glyphs_offset = ((cursor + 3) & ~3) + CLIP_TRAILER_SIZE
     if glyphs_offset > U16_MAX:
         raise BlockError(
             f"the glyph table would start {glyphs_offset} bytes in; the header names it in a u16"
@@ -222,8 +261,9 @@ def encode_block(movies: Mapping[int, Sequence[Cue]], font: Mapping[str, GlyphLi
         first += CUE_SIZE * len(movies[name])
     for start, end, offset in cue_rows:
         out += struct.pack("<HHHH", start, end, offset, 0)
-    out += b"".join(line_blobs)
-    out += bytes(glyphs_offset - len(out))
+    out += b"".join(line_blobs) + section
+    out += bytes(glyphs_offset - CLIP_TRAILER_SIZE - len(out))
+    out += CLIP_TRAILER.pack(clips_offset, 0)
     for c in characters:
         if not 0 <= font[c].advance <= 0xFF:
             raise BlockError(f"{c!r} advances {font[c].advance} px; a record holds it in a u8")
@@ -237,6 +277,31 @@ def encode_block(movies: Mapping[int, Sequence[Cue]], font: Mapping[str, GlyphLi
             f"run holds {BLOCK_MAX_SECTORS} (boku.relocate.MOVIE_BLOCK_RESERVE)"
         )
     return bytes(out)
+
+
+def clip_words(block: bytes, index: int) -> tuple[int, ...] | None:
+    """The words `clip_sub_play` would open for `g_xa_clips` clip `index`, or `None`: the
+    clips found through the trailer before the glyph table, as the routine finds them."""
+    if struct.unpack_from("<I", block, 0)[0] != MAGIC:
+        return None
+    (glyphs,) = struct.unpack_from("<H", block, GLYPHS_OFFSET_FIELD)
+    at, _ = CLIP_TRAILER.unpack_from(block, glyphs - CLIP_TRAILER_SIZE)
+    count, _ = CLIP_HEADER.unpack_from(block, at)
+    for row in range(count):
+        key, offset = CLIP_ROW.unpack_from(block, at + CLIP_HEADER_SIZE + CLIP_ROW_SIZE * row)
+        if key == index:
+            end = next(t.end for t in iter_tokens(block[offset:glyphs]) if t.word == END_WORD)
+            return tuple(words_of(block[offset : offset + end]))
+    return None
+
+
+def clip_count(block: bytes) -> int:
+    """How many clips the block carries subtitles for; 0 for no block."""
+    if len(block) < HEADER_SIZE or struct.unpack_from("<I", block, 0)[0] != MAGIC:
+        return 0
+    (glyphs,) = struct.unpack_from("<H", block, GLYPHS_OFFSET_FIELD)
+    at, _ = CLIP_TRAILER.unpack_from(block, glyphs - CLIP_TRAILER_SIZE)
+    return CLIP_HEADER.unpack_from(block, at)[0]
 
 
 # --- the reference loader and rasteriser ---------------------------------------------------

@@ -111,9 +111,9 @@ usage: ./make.sh <verb> [arguments]
                                 index.html (tools/libretro/movie_review.py --help)
   test [pytest arguments]       run the test suite
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
-                                `test`): the movie-subtitle and voice-only-subtitle gates on
-                                PCSX-Redux, the English title menu and the generated-save
-                                boot on Beetle PSX
+                                `test`): the movie, voice-only and native-clip subtitle
+                                gates on PCSX-Redux, the English title menu and the
+                                generated-save boot on Beetle PSX
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
@@ -328,7 +328,7 @@ case "$verb" in
     emu-test)
         BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
             tests/test_real_texture_text_beetle.py tests/test_real_save_boot.py \
-            tests/test_real_voice_subtitle.py "$@"
+            tests/test_real_voice_subtitle.py tests/test_real_clip_subtitle.py "$@"
         ;;
     lint)
         uv run ruff check .

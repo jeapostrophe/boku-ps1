@@ -285,11 +285,62 @@ the stock executable opens nothing — page 0 throughout). **Beetle PSX**, the s
 `tools/libretro/boot-to-dialogue.press`, shot every 30 frames: page 1 up by frame 14,440,
 page 2 by 14,620, both gone with the band by 14,710.
 
-**What is not an event entry.** The voice-over at bedtime on day 1 is `XCH.34`
-([voice-only.md](voice-only.md)), played by `movie_queue_play` itself: after the queue, when the byte at `0x800237E5` is `0x0B`,
-`0x800192A4` plays it — on day 1 only — and waits for it over the cleared screen
-(`0x8002E568`, a `VSync` loop) before switching to mode `0x0F`. No event runs, so these hooks
-never see it; it belongs with the endings' clips (`ENDOTI` plays `g_xa_clips` by index too).
+## Native clips (`VO-03`)
+
+Every clip native code plays goes through **`xa_play_indexed` (`0x8002B4E4`)**:
+`xa_play(g_xa_clips + 12·n)`, with `12·n` still in `v1` at its `jal xa_play`. No event runs,
+so the hooks above never see one. The two `VO-03` owns, measured:
+
+* **Bedtime, day 1 — `XCH.34`.** At the end of a day the day-end code (`0x800190F0…`) queues
+  one sleep movie (id 1, 7 or 19) and enters movie mode. `movie_queue_play` (`0x800139E4`)
+  reads the byte at `0x800237E5` into `s4` on entry (`0x0B`: coming from the diary), plays
+  the queue and then, if `s4 == 0x0B`, calls `0x800192A4`, which on day 1 only plays
+  `XCH.34` in `0x8002E568`'s loop — `VSync(0)` and the XA service until the status word
+  clears, drawing nothing, over the screen `ClearImage` left black — then `xa_stop` and mode
+  `0x0F` (the save screen).
+* **The epilogues — `XCH.41 + n`.** After `MOVIE 24`, `ending_prepare` puts the ending in
+  `0x80035F42` ([save-format.md](save-format.md) § Which ending plays) and mode `0x10` loads
+  `ENDOTI`, whose start (`0x80079AF8`) loads `OTI0n`, waits for the drive to go idle and plays
+  `41 + n` (`0x80079BE4`). Its update runs at **60 Hz** (its counter advanced 349 in 349
+  vsyncs), steps five states on the per-ending thresholds at `0x8007A0C4` (e.g. ending 0:
+  600, 690, 1290, 1590 frames), draws the still in two parts and then the credits strip
+  (`OTI0n` child 2, the 276×33 production and copyright line — `textures-plan.md` rules it
+  **N**), and hands over to mode `0x0F` at the last threshold + 120, often while the clip is
+  still playing. The font sheet and its CLUT in VRAM are unchanged throughout (hashed in
+  three states), so the dialogue renderer can draw there.
+
+How `asm/voice.asm` subtitles them (its header is the design): the English is a clip section
+of the movie-subtitle block (`boku.movie_block`), which `movie_sub_load` reads to
+`0x801C0000` before every movie — and a movie plays before both. Measured on PCSX-Redux:
+
+* **The block survives movie mode but not `ENDOTI`.** Its first word stayed the magic from
+  the sleep movie to `XCH.34`; `ENDOTI` wrote `6B6B6B6B` over it 21 frames after it started,
+  then zeros, and nothing after. So in mode `0x10`, and only there, `clip_sub_play` reads the
+  block again before `xa_play` (a read after it would break the stream); the voice and the
+  subtitle then start together 16 vsyncs later than stock. A build whose `clips.txt` has no
+  English assembles without the read (`MOVIE_SUB_CLIPS` = 0) and keeps stock timing. Every
+  byte of the block, not only its first word, then stays unchanged while the subtitle is up
+  in both modes (compared each frame by the gate below).
+* **The main loop's last call before `frame_flip` (`0x80011E44`)** draws the subtitle and its
+  band into OT slot 1, in front of `ENDOTI`'s stills (slot 2), and counts its page timers at
+  30 Hz. When the game mode changes — `ENDOTI` handing over to the save prompt, which reuses
+  the block's memory — the subtitle comes down.
+* **The bedtime loop draws nothing**, so while a subtitle is up `clip_sub_wait` builds and
+  flips its own frame in place of the loop's `VSync(0)`, and its closing `xa_stop` flips one
+  empty frame, or the last page stays on the screen while the save screen loads (a second).
+* `tests/test_real_clip_subtitle.py` drives both from a cold boot (`tools/redux/clip-sub.lua`
+  re-enters movie mode or enters `ENDOTI` at the intro's hand-over) with fixture English:
+  text and band open with the voice, page 1 turns on its derived timer, the bedtime frame is
+  clean after the clip, and the epilogue's subtitle is down when the save prompt comes.
+  **Beetle PSX**, the same image by `run_core.py --poke`: `g_movie_queue[1] = 24` during the
+  intro reaches `ENDOTI` (0 stars: `XCH.45`) with both pages in the band over the stills and
+  the credits and gone before the save prompt; `0x800237E5 = 0x0B` every other frame across
+  the switch to movie mode (frames 4352–4404) reaches `XCH.34` with both pages over black and
+  a clean black frame after.
+
+The bug-sumo voices (`XCH.00`–`.40`) go through the same hook. Whether the block is still in
+memory in bug sumo (mode 7, arena level B from `0x801B3DF4`, [loading-and-memory.md](loading-and-memory.md))
+is not measured: PLAN `VO-06`.
 
 ## Speakers
 

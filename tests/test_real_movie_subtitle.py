@@ -59,6 +59,9 @@ WORK = REPO_ROOT / "work" / "fmv04"
 PREBUILT = os.environ.get("BOKU_MOVIE_BUILD")
 BUILD = Path(PREBUILT) if PREBUILT else WORK / "m2"
 RUNNER = REPO_ROOT / "tools" / "redux" / "run-on-image.sh"
+REDUX_TIMEOUT = "900"
+"""Seconds before `run-headless.sh` calls the boot hung: day 1's arrival is ~12,400 vsyncs,
+which its 300-second default does not cover on a loaded machine."""
 SCRIPT = REPO_ROOT / "tools" / "redux" / "movie-sub.lua"
 PROTOTYPE = REPO_ROOT / "tools" / "vwf" / "build_prototype.py"
 ARMIPS = Path.home() / "Dev/dist/armips/build/armips"

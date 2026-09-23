@@ -30,7 +30,9 @@ are `./make.sh mockup`'s.
 * **`(voice only)` rows** have no text on the disc and are listed so the ids line up. Return
   them as they are, unless you are asked for the clip's words: then write the English after a
   second tab, split into pages with ` // ` wherever you like; it is shown as a subtitle while
-  the clip plays, with no speaker label.
+  the clip plays, with no speaker label. The clips the game plays outside any event — the
+  epilogues, the first night's narration — are rows of `translation/clips.txt` in the same
+  form, keyed `XCH.nn` (`translation/README.md` § clips.txt).
 * **`#` lines are not script.** `# --- E0121: …` opens an event and says where it happens;
   `# NOTE E0121.3: …` is a translator's note on a rendering (a pun, a choice a reviewer should
   know about); `# UNSURE E0121.3: …` flags a line you are not sure of, so that the reviewer

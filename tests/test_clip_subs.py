@@ -1,0 +1,79 @@
+"""`VO-03`: `translation/clips.txt` rows become subtitles for native `g_xa_clips` plays.
+
+The keys are built by `tests/synth_archive.py`; the words come out of the same
+`lay_out_subtitle` a `(voice only)` event row goes through, so the timing is checked
+against `boku.voice`, never retyped.
+"""
+
+from __future__ import annotations
+
+import struct
+
+from boku import clip_subs
+from boku.glyphs import END_WORD, PAGE_WORD
+from boku.layout import StockEncoder
+from boku.voice import clip_ticks, parse_xch, subtitle_waits
+from tests import synth_archive as synth
+
+KEYS = [synth.voice_key(start=16 * k, end=16 * k + 16 * 50) for k in range(3)]
+CLIPS = parse_xch(struct.pack("<I", len(KEYS)) + b"".join(KEYS))
+"""A three-clip table, read by the parser `boku.voice.xch_nodes` uses on the disc's."""
+
+
+def rows(tmp_path, text: str):
+    path = tmp_path / "clips.txt"
+    path.write_text(text, encoding="utf-8")
+    return clip_subs.read(path)
+
+
+def test_the_committed_file_reads_cleanly_and_carries_no_english_yet():
+    entries, problems = clip_subs.read()
+    assert problems == []
+    assert entries == [], "clips.txt gains English in VO-04, reviewed like a day file"
+
+
+def test_a_missing_file_is_no_rows(tmp_path):
+    assert clip_subs.read(tmp_path / "absent.txt") == ([], [])
+
+
+def test_a_row_is_paged_against_its_own_clip(tmp_path):
+    entries, problems = rows(tmp_path, "XCH.02\tNarrator\tone // two\nXCH.01\tNarrator\n")
+    assert problems == []
+    words, found = clip_subs.lay_out_clips(entries, CLIPS, StockEncoder.load())
+    assert found == []
+    assert list(words) == [2], "a row without English is not a subtitle"
+    laid = words[2]
+    assert laid[-1] == END_WORD
+    at = laid.index(PAGE_WORD)
+    assert laid[at + 1] == subtitle_waits(["one", "two"], clip_ticks(KEYS[2]))[0]
+
+
+def test_an_id_that_names_no_clip_is_a_problem(tmp_path):
+    entries, _ = rows(tmp_path, "XCH.03\tNarrator\tx\nE0184.2\t(voice only)\ty\nXCH.1\tA\tz\n")
+    words, found = clip_subs.lay_out_clips(entries, CLIPS, StockEncoder.load())
+    assert words == {}
+    assert sorted(p.line_id for p in found) == ["E0184.2", "XCH.03", "XCH.1"]
+
+
+def test_the_band_limits_apply(tmp_path):
+    entries, _ = rows(tmp_path, "XCH.00\tNarrator\t" + " ".join(["wide"] * 60) + "\n")
+    words, found = clip_subs.lay_out_clips(entries, CLIPS, StockEncoder.load())
+    assert words == {} and any("lines in" in p.message for p in found)
+
+
+def test_the_lint_reports_a_clip_row_by_file_line_and_id(tmp_path, disc_dir):
+    """`boku lint` over `translation/clips.txt`: the same layout as the build, keyed to the
+    disc's own `BOKU_XA.XCH`, so an id past its records and a page too long are both errors."""
+    from boku.lint import Options, lint_clip_file
+
+    path = tmp_path / "clips.txt"
+    path.write_text(
+        "XCH.34\tNarrator\t" + " ".join(["wide"] * 60) + "\nXCH.99\tNarrator\tx\n",
+        encoding="utf-8",
+    )
+    found = lint_clip_file(path, Options(encoder=StockEncoder.load()), disc_dir)
+    assert [(f.number, f.line_id, f.check) for f in found] == [
+        (1, "XCH.34", "clip-subtitle"),
+        (2, "XCH.99", "clip-subtitle"),
+    ]
+    assert lint_clip_file(clip_subs.CLIP_FILE, Options(encoder=StockEncoder.load()), disc_dir) == []

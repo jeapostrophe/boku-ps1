@@ -123,7 +123,8 @@ decided from context and says so in `notes`.
   adult narrator's "and so the first day of that summer vacation came to an end" — the
   voice-over going to sleep on day 1 that opened `VO-01`; **`XCH.41`–`.45` are the five
   epilogues** (28–49 s each; which is which is in `said`). `XCH.46`/`.47` are a click and
-  beeps. How `ENDOTI` picks an index is `VO-03`'s question; `ENDOTI.OVL` holds no key.
+  beeps. `ENDOTI` plays `41 +` the ending number in `0x80035F42` (`0x80079BE4`;
+  [event-scripts.md](event-scripts.md) § Native clips); `ENDOTI.OVL` holds no key.
 * **Movies**: `M27` is 60 s of music, the opening monologue from 70 s to 181 s (16 segments; one
   short voice at 41 s is uncertain),
   then the theme song from 202 s; `M28` is music, one narrated sentence at 64–69.5 s, then the

@@ -46,3 +46,27 @@ build installs (so run `./make.sh build-days` once first; without it the pixel r
 warning that they were not measured). `./make.sh build-days` refuses a file the lint
 would fail, naming the row, because every cue goes into every days build. Nothing is cut
 to fit: a cue too long for two lines becomes two cues.
+
+## clips.txt
+
+Subtitles for the voice clips the game plays from its own code rather than from an event —
+the table `BOKU_XA.XCH`, clips `XCH.00`–`XCH.47`
+([research/data/voice-only.tsv](../research/data/voice-only.tsv) says what each one says):
+the first night's narration going to sleep (`XCH.34`), the five epilogues (`XCH.41`–`.45`)
+and the bug-sumo voices (`XCH.00`–`.40`; drawn once PLAN `VO-06` is done). A day file's row,
+keyed by the clip:
+
+```
+XCH.34	Narrator	And so the first day of that summer vacation came to an end.
+```
+
+* **id** is `XCH.` and the clip's two-digit number. Every worded clip already has a row with
+  no English; a row without English is listed so the ids line up and draws nothing.
+* **speaker** is for the reader of the file; it is not drawn.
+* **English** is drawn in the dialogue band while the clip plays, with no speaker label, in
+  pages split by ` // ` wherever you put them; each page stays up for its share of the clip,
+  shared by length, and the last until the clip ends. An epilogue is half a minute to fifty
+  seconds of narration, so give it as many pages as it needs.
+
+`./make.sh lint-translation` checks every row — a clip the table has, every page inside the
+band — and `tools/vwf/build_prototype.py` refuses a file it would fail.

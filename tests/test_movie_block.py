@@ -247,9 +247,10 @@ def test_a_glyph_table_starting_past_the_u16_offset_is_a_refusal():
     """`glyphs_offset` is a u16 too, and it is the last thing in the block that can pass
     65,535 while every cue row is still inside it: 5,454 empty cues and one two-line cue
     put the last cue's lines at 12 + 8 + 8 * 5,455 + 4 * 5,454 = 65,476 (inside the field)
-    and the glyph table 140 bytes later, at 65,616."""
+    and the glyph table 148 bytes later, at 65,624: 140 of lines, then the empty clip section
+    (4) and its trailer (4)."""
     tail = mb.Cue(1, 2, ("a" * 63, "a" * 63))
-    with pytest.raises(mb.BlockError, match="glyph table would start 65616 bytes in"):
+    with pytest.raises(mb.BlockError, match="glyph table would start 65624 bytes in"):
         mb.encode_block({NAME: [mb.Cue(1, 2, ())] * 5454 + [tail]}, FONT)
 
 
@@ -393,3 +394,46 @@ def test_a_one_cue_block_is_one_sector_the_disc_writers_own_padding_fills():
     assert 0 < len(block) < FORM1_DATA_SIZE
     assert form1_sectors(len(block)) == 1
     assert len(padded(block)) == FORM1_DATA_SIZE
+
+
+# --- the clip section (VO-03): native g_xa_clips subtitles ------------------------------------
+
+
+def test_a_clips_words_are_found_the_way_clip_sub_play_walks_the_block():
+    """`asm/voice.asm` `clip_sub_play` reads the u16 at glyphs_offset - 4, the section's
+    count there, and compares 12 x each row's index with 12 x the playing clip's."""
+    words = {34: (0x30, 0x31, 0x8000), 41: (0x40, 0x8002, 30, 0x41, 0x8000)}
+    block = mb.encode_block({NAME: [mb.Cue(1, 2, ("a",))]}, FONT, clips=words)
+    assert mb.clip_count(block) == 2
+    for index, expected in words.items():
+        assert mb.clip_words(block, index) == expected
+    assert mb.clip_words(block, 35) is None
+
+
+def test_the_clip_section_moves_nothing_the_movie_routine_reads_by_offset():
+    """The glyph table is named by an offset, so the clips before it leave every movie's
+    frame exactly as it was."""
+    plain = mb.encode_block({NAME: [mb.Cue(10, 20, ("ab",))]}, FONT)
+    with_clips = mb.encode_block(
+        {NAME: [mb.Cue(10, 20, ("ab",))]}, FONT, clips={41: (0x40, 0x8000)}
+    )
+    assert with_clips != plain
+    assert mb.render(mb.select(with_clips, NAME), 15) == mb.render(mb.select(plain, NAME), 15)
+    assert mb.render(mb.select(plain, NAME), 15), "no pixel drawn: the comparison is empty"
+
+
+def test_a_block_with_no_clips_still_carries_an_empty_section():
+    """`clip_sub_play` always reads the count, so the section is never absent."""
+    block = mb.encode_block({NAME: [mb.Cue(1, 2, ("a",))]}, FONT)
+    assert mb.clip_words(block, 34) is None
+    assert mb.clip_count(block) == 0
+
+
+def test_clip_words_must_end_with_end():
+    with pytest.raises(mb.BlockError, match="END"):
+        mb.encode_block({}, FONT, clips={34: (0x30,)})
+
+
+def test_a_clip_index_past_a_u16_is_named_as_that_not_as_missing_words():
+    with pytest.raises(mb.BlockError, match="u16"):
+        mb.encode_block({}, FONT, clips={0x10000: (0x30, 0x8000)})

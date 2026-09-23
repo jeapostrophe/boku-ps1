@@ -31,7 +31,7 @@ from boku.events import VOICE_KEY_SIZE
 from boku.sites import Walk
 from boku.translation import SampleScenes
 from boku.voice import TICK_HZ, clip_ticks, subtitle_waits
-from tests.test_real_movie_subtitle import BIOS, REDUX, RUNNER
+from tests.test_real_movie_subtitle import BIOS, REDUX, REDUX_TIMEOUT, RUNNER
 
 BUILD = Path(os.environ.get("BOKU_VWF_BUILD", REPO_ROOT / "build" / "vwf"))
 WORK = REPO_ROOT / "work" / "vo02"
@@ -91,7 +91,9 @@ def probe(cue: Path, name: str, **env: str) -> str:
     """Run `voice-sub.lua` on `cue`; its stdout, also kept as `work/vo02/<name>.log`."""
     done = subprocess.run(
         [str(RUNNER), str(cue), str(SCRIPT)],
-        env=os.environ | {"BOKU_WORK": str(WORK / "redux"), "BOKU_AFTER": "400"} | env,
+        env=os.environ
+        | {"BOKU_WORK": str(WORK / "redux"), "BOKU_AFTER": "400", "REDUX_TIMEOUT": REDUX_TIMEOUT}
+        | env,
         capture_output=True,
         text=True,
         timeout=900,

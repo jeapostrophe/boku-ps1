@@ -175,7 +175,8 @@ tests/               pytest; the disc-dependent tests skip when there is no impo
 tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
                      and the page mock-ups drawn with its font (tools/vwf/mockup.py)
 translation/         the English: story bible, style guide, glossary, the translator's checklist,
-                     open questions, samples, the day files, movies.txt, the movie subtitles
+                     open questions, samples, the day files, movies.txt, the movie subtitles,
+                     clips.txt, the subtitles of the clips native code plays
                      (translation/README.md), and textures/, the strings the build typesets
                      into textures
 research/            what has been learned: formats, prior art, practice. One subject per file
