@@ -34,8 +34,7 @@ from boku.glyphs import (
     iter_tokens,
     words_of,
 )
-from boku.layout import DIALOGUE_BAND, StockEncoder, lay_out_array
-from boku.packets import AVERAGE_PX_PER_CHARACTER
+from boku.layout import AVERAGE_PX_PER_CHARACTER, DIALOGUE_BAND, StockEncoder, lay_out_array
 from boku.reinsert import (
     EVENT_BLOCK_LIMIT,
     ByteEdit,

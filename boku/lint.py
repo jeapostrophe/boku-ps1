@@ -36,6 +36,9 @@ What it checks, and where each rule comes from
   intensifier is present and the source line carries none of a matching set. It is
   word-list matching, it has no idea what the sentence means, and it is right often
   enough to be worth a look and wrong often enough that it may never fail a build.
+* **`em-dash`** -- *a warning only*, on every em dash (style guide § 18): the dash is a
+  habit of machine-written English and is used only where the Japanese breaks or trails
+  the line with a dash-like mark. A warning is a prompt to check the source, not a ban.
 * **`reader-vs-loader`** -- this module's parse against `boku.translation.SampleScenes`,
   the loader the image build reads English through. Two parsers of one provisional format
   is a real risk (`tools/reader/build.py` carries a third and checks it the same way), so
@@ -161,6 +164,10 @@ addition. Written as escapes because this file is tracked and the repo holds no 
 (CLAUDE.md § "This repo is public"); they are dictionary words, not the game's text."""
 
 
+EM_DASH = "\u2014"
+"""What `em-dash` looks for."""
+
+
 def read_word_list(path: Path) -> tuple[str, ...]:
     """One word per line; `#` comments and blanks ignored. Lower-cased, deduplicated."""
     words: list[str] = []
@@ -255,10 +262,16 @@ class Row:
 
 def parse_file(path: Path) -> tuple[list[Row], list[Finding]]:
     """Rows and the problems the format itself shows, in file order."""
+    return parse_text(path.read_text(encoding="utf-8"), path)
+
+
+def parse_text(text: str, path: Path) -> tuple[list[Row], list[Finding]]:
+    """`parse_file` over text not yet on disk -- a translator's answer before it is saved.
+    `path` is only where the rows say they come from."""
     rows: list[Row] = []
     findings: list[Finding] = []
     notes: list[str] = []
-    for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for number, raw in enumerate(text.splitlines(), start=1):
         line = raw.rstrip()
         if not line:
             notes = []
@@ -404,6 +417,7 @@ def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Findi
         _check_row(context, row, record)
         if options.additive:
             _check_additive(context, row, record)
+        _check_em_dash(context, row)
     context.findings.extend(_check_loader_agreement(rows))
     return sorted(context.findings)
 
@@ -618,6 +632,19 @@ def _check_additive(context: _Context, row: Row, record: dict) -> None:
             f"heuristic: {', '.join(added)} in the English, no intensifier in the source "
             f"({len(SOURCE_INTENSIFIERS)} looked for) -- check it is a translation, not an "
             f"addition",
+        )
+
+
+def _check_em_dash(context: _Context, row: Row) -> None:
+    """Style guide § 18, as a prompt to look at the source. Warning only."""
+    count = row.text.count(EM_DASH)
+    if count:
+        context.say(
+            row,
+            "em-dash",
+            WARNING,
+            f"{count} em dash(es); style guide § 18 keeps one only where the Japanese breaks "
+            f"or trails the line with a dash-like mark -- check the source",
         )
 
 

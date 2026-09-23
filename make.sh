@@ -55,11 +55,20 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh patch --help for the switches)
   apply-patch ORIG PATCH --out FILE
                                 apply one of our patches, checking both hashes
-  packet [arguments]            assemble the local translator packets for a day or an
-                                event list into work/packets/ -- the scene as the game
-                                plays it, every line with its Japanese and its capacity,
-                                and the policy narrowed to that scene. Never tracked
+  packet [arguments]            assemble a translator packet into work/packets/<unit>/:
+                                system.md (format, style guide, glossary, the day) given
+                                once, one <EVENT>.md per event in order.txt's order, each
+                                the event's lines in the day-file shape with the Japanese
+                                where the English goes. Never tracked
                                 (./make.sh packet --help for the switches)
+  save-event EVENT [arguments]  write a translator's answer for one event into its day
+                                file, replacing its block or placing it in play order
+                                (./make.sh save-event --help for the switches)
+  mockup [arguments]            draw every page of the translation files with the font
+                                sheet's glyphs at the dialogue band's geometry, one PNG
+                                per scene under work/mockup/ -- no emulator; needs
+                                build/vwf/edits.json (./make.sh build-days writes it)
+                                (./make.sh mockup --help for the switches)
   lint-translation [arguments]  check the committed translation files against your
                                 import's script store: ids, select shape, page counts,
                                 encodable characters, pixel fit, array byte sizes, and
@@ -233,6 +242,12 @@ case "$verb" in
         ;;
     packet)
         exec uv run boku packet "$@"
+        ;;
+    save-event)
+        exec uv run boku save-event "$@"
+        ;;
+    mockup)
+        exec uv run python tools/vwf/mockup.py "$@"
         ;;
     lint-translation)
         exec uv run boku lint "$@"

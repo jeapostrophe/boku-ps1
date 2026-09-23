@@ -68,10 +68,12 @@ disc's unused sectors, new packing or compression routines — not a shorter tra
 ## How the translation is made
 
 **The English script is written by AI agents** — Claude, the strongest model available, not a
-sentence-at-a-time machine translation. The plan (none of it is built yet — PLAN § *Translation*): the event scripts get decoded so a
+sentence-at-a-time machine translation (PLAN § *Translation*). The event scripts are decoded so a
 translator sees a whole scene as the game plays it — which line follows which, where the choices branch — along
-with the speakers, the box limits, the style guide, the glossary, and long-form context on the
-game and its story. A second agent reviews against the Japanese, and then it gets played.
+with the speakers, the style guide, the glossary, and the story of the day, and is handed a
+day's scenes one after another (`./make.sh packet`). The box limits are not handed to it: the
+lint measures every page and `./make.sh mockup` draws them. A second agent reviews against the
+Japanese, and then it gets played.
 Scenes will be readable in order outside the game, with alternatives side by side, in a
 small reader built for this project rather than a generic localization platform. The project
 is made for Jay and his friends and published for anyone who wants it; everything that
@@ -165,12 +167,13 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, build-days, patch, apply-patch, test, emu-test, lint, smoke
+make.sh              every recurring command: import, extract, movies, packet, save-event, mockup, build-days, patch, apply-patch, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, trial, build (text and
                      texture recipes), patch, apply-patch
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
 tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
+                     and the page mock-ups drawn with its font (tools/vwf/mockup.py)
 translation/         the English: story bible, style guide, open questions, samples (drafts so far);
                      textures/ holds the strings the build typesets into textures
 research/            what has been learned: formats, prior art, practice. One subject per file
@@ -181,7 +184,8 @@ research/data/       the tables a note would otherwise have to list: the script 
                      is the one kept by hand, not generated (research/font.md)
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below
-work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects
+work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects, translator
+                        packets (work/packets/), page mock-ups (work/mockup/)
 build/       (ignored)  patched files, patched image, the patch
 ```
 

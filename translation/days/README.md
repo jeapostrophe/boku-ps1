@@ -7,23 +7,47 @@ the translation agents (README § "How the translation is made"); reviewed again
 Japanese by a second agent; then played. Licence: CC BY-SA 4.0 (`LICENSE-translation`).
 
 The format is the samples' provisional one ([../samples/README.md](../samples/README.md) —
-the real one is PLAN `PIPE-01`'s): `line id <TAB> speaker <TAB> English`; ` // ` is a page
-break in the same position as the Japanese one (voiced lines keep the disc's page count and
-order — pages auto-advance with the voice clip); `[SEL]` rows are choice menus, options
-separated by ` | `; `(voice only)` rows have no text on the disc and are listed so the ids line
-up; `#` lines are scene headers and translator's notes, not script. The speaker column is the
-English label of style guide § 9, or the members of a chorus ("Shirabe, Moe, Aunt") where the
-disc's speaker operand is a group. A page that cannot fit the dialogue band (4 lines of ~46
-characters, `research/vwf-prototype.md` § TXT-07) is translated in full anyway and flagged
-`# OVERFLOW` for the engineering side (PLAN `PIPE-06`); nothing is shortened to fit.
+the real one is PLAN `PIPE-01`'s), written out in § Format below. That section is addressed to
+the translator and is quoted whole into every translator packet (`boku packet`), so it states
+the format and nothing the tools measure: fit on screen is `boku lint`'s job, and page mock-ups
+are `./make.sh mockup`'s.
 
-There is no Japanese in these files. With an imported disc,
+## Format
+
+* **One row per line of the script:** `line id <TAB> speaker <TAB> English`, in the order the
+  packet gives them. Every id the packet lists is returned, once, and no other.
+* **` // ` is a page break**, in the same place as the Japanese one and the same number of
+  them. Nothing moves across a break: each page is what is on screen while that part is being
+  said. Inside a page, write the English as one run; the tools break it into lines.
+* **The speaker column** holds the English label of style guide § 9, which lists them. A
+  chorus — no label on screen, several people speaking — lists its members, comma-separated:
+  `Shirabe, Moe, Aunt`. A message nobody speaks (an examine description, "Got the fishing rod.") carries
+  `(unlabelled)`; narration carries `Narrator`.
+* **No quotation marks around speech.** The marks the Japanese draws around a line are put back
+  by the renderer.
+* **`[SEL]` rows are choice menus**: the options separated by ` | `, as many as the Japanese
+  has and in its order. When the menu opens with a question, the question is the first field.
+* **`(voice only)` rows** have no text on the disc and are listed so the ids line up. Return
+  them as they are.
+* **`#` lines are not script.** `# --- E0121: …` opens an event and says where it happens;
+  `# NOTE E0121.3: …` is a translator's note on a rendering (a pun, a choice a reviewer should
+  know about); `# UNSURE E0121.3: …` flags a line you are not sure of, so that the reviewer
+  looks there first.
+* **Nothing is shortened to fit.** Translate the whole of what is said.
+
+## The files
+
+There is no Japanese in these files, notes included (`boku save-event` refuses an answer
+that holds any). A page that does not fit the band is not the translator's to flag: `boku lint
+--encoder cellmap` measures every page and `./make.sh mockup` draws it, so the reader's *over*
+column, which counts `# OVERFLOW` notes, counts only notes someone added by hand. With an
+imported disc,
 `python3 work/rec05/scenes.py --dump 171 184` prints the source beside them.
 
 A unit's state is one of **undrafted → drafted → reviewed → checked → rendered → finalized**:
 drafted by a translator; reviewed by an independent agent against the Japanese; checked once Jay
 has read it and his comments are applied; rendered once our own layout says every page would
-display (`boku lint --encoder cellmap`'s pixel fit, and the page mock-ups of `PLAN` `TRN-08`);
+display (`boku lint --encoder cellmap`'s pixel fit, and the page mock-ups `./make.sh mockup` draws);
 finalized once he has seen it in the game, formatted and displayed correctly. `PLAN.md` `TRN-04` holds the table.
 
 | file | events | status |

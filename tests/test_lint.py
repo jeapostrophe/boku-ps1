@@ -397,6 +397,28 @@ def test_the_additive_word_heuristic_warns_and_only_warns(store, tmp_path):
     assert not any(f.severity == ERROR for f in findings)
 
 
+def test_an_em_dash_warns_and_only_warns(store, tmp_path):
+    """Style guide § 18: every em dash is a prompt to check the source, never a ban.
+
+    The dash is `lint.EM_DASH`, the character the check looks for; the clean row beside it
+    shows the finding is about the dash and not about the row. Measured with `--no-label`
+    and a cell map that draws the dash, so no other finding can stand in for this one.
+    """
+    dashed, plain = f"Three {lint_module.EM_DASH} three.", "Three, three."
+    encoder = layout_module.CellMapEncoder({c: (1, 6) for c in dashed + plain}, name="dash map")
+    rows = [(UNVOICED, "Boku", dashed)]
+    path = write_translation(tmp_path / "day99.txt", rows)
+    parsed, _ = load_rows(translation_paths([path]))
+    findings = lint_rows(store, parsed, Options(encoder=encoder, label=False))
+    finding = only(findings, "em-dash")
+    assert finding.severity == WARNING
+    assert "§ 18" in finding.message
+    assert checks(findings) == ["em-dash"]
+    clean = write_translation(tmp_path / "day98.txt", [(UNVOICED, "Boku", plain)])
+    parsed, _ = load_rows(translation_paths([clean]))
+    assert lint_rows(store, parsed, Options(encoder=encoder, label=False)) == []
+
+
 def test_the_heuristic_is_silent_when_the_source_has_an_intensifier(tmp_path):
     """The same English, over a line whose Japanese carries one. No finding."""
     synth = SynthStore.new(tmp_path)

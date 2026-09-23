@@ -1,11 +1,10 @@
-"""`PLAN TRN-02` -- the translator packets: what is in one, and that two runs agree.
+"""`PLAN TRN-08` -- the translator packet: a system part once, then one part per event.
 
-The packet is a document, so most of what could go wrong is a section that quietly stops
-being written. These tests assert each section is present *and carries the fact it exists
-for* -- the capacity numbers out of the store, the branch target beside its option, the
-glossary row whose term is actually in the scene -- and that the whole thing is
-byte-identical over two runs, which is what lets a translator diff one packet against the
-next.
+The packet is a document, so most of what could go wrong is a part that quietly carries
+the wrong thing: a constraint Jay asked to keep out of the translator's view, a template
+whose ids are not the event's, an answer saved over the wrong block. These tests assert
+each part carries the fact it exists for, that nothing on Jay's drop list survives, that an
+answer round-trips into a day file the lint reads, and that two runs are byte-identical.
 
 The policy parsers are checked against the committed `translation/*.md` themselves: a
 parser that silently matched nothing would leave every packet quietly context-free.
@@ -13,33 +12,54 @@ parser that silently matched nothing would leave every packet quietly context-fr
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
 
 from boku import REPO_ROOT
+from boku.layout import Marks
+from boku.lint import load_rows, parse_file, translation_paths
 from boku.packets import (
     DAYS_DIR,
+    EVENT_HEADER,
+    ORDER_NAME,
     SOURCE_COLUMN,
+    SYSTEM_NAME,
+    DayFile,
     PacketBuilder,
     PacketRefused,
     Policy,
-    band_rule,
+    Unit,
+    answer_lines,
     check_destination,
     condition_in_words,
+    default_day_file,
+    format_section,
+    japanese_text,
     main_packet,
     parse_day_rows,
     parse_glossary,
     parse_places,
+    parse_rulings,
+    save_event,
+    scene_line_ids,
     table_rows,
-    write_packets,
+    unit_like,
+    unit_of_day,
+    untranslated_reachable,
+    without_line_citations,
+    without_plan_citations,
+    write_unit,
 )
-from boku.script_store import load_store, scene_day
+from boku.script_store import Japanese, load_store, scene_day
+from boku.translation import SampleScenes
 from tests.synth_script import SynthStore, write_translation
 
 VOICED = "E9001.0"
 CHOICE = "E9001.1"
 VOICE_ONLY = "E9001.2"
+NEXT = "E9002.0"
 
 GATED_EVENT = "E9011"
 GATED = f"{GATED_EVENT}.0"
@@ -60,17 +80,14 @@ def store(tmp_path: Path):
         voice_only=[VOICE_ONLY],
         quiz={"routines": [15], "quiz": [{"day": 1, "message": 0, "answer": 2}]},
     )
+    synth.message(NEXT, [[3]], voiced=False, speaker="BOKU", slot=0)
+    synth.scene("E9002", [NEXT])
     return load_store(synth.write())
 
 
 @pytest.fixture
 def gated(tmp_path: Path):
-    """`(store, derived day)` for one scene the data gives no day and a condition does.
-
-    The quiz row is written for the day `scene_day` derives, so the packet has every
-    day-keyed section it could get wrong: the header, the bible's § 4 entry, and the
-    "on day d this event asks" line.
-    """
+    """`(store, derived day)` for one scene the data gives no day and a condition does."""
     synth = SynthStore.new(tmp_path)
     synth.message(GATED, [[4]], voiced=False)
     scene = synth.scene(GATED_EVENT, [GATED], day=None)
@@ -83,134 +100,380 @@ def gated(tmp_path: Path):
 
 
 @pytest.fixture
-def builder(store, tmp_path: Path):
-    write_translation(
-        tmp_path / "day01.txt", [(VOICED, "Uncle", "One. // Two.")], header="a day file"
-    )
-    return PacketBuilder.build(store, Policy.load(), [tmp_path / "day01.txt"], False)
+def builder(store):
+    return PacketBuilder.build(store, Policy.load(), [], False)
 
 
-# --- what a packet holds ------------------------------------------------------------------------
+def event(store, name: str) -> dict:
+    return store.scenes_by_event[name]
 
 
-def test_a_packet_holds_every_section_a_translator_needs(store, builder):
-    packet = builder.scene_packet(store.scenes[0])
-    for heading in (
-        "## Where and when",
-        "## Cast",
-        "## The scene, in the order the game plays it",
-        "## The lines",
-        "## The per-day quiz",
-        "## The settled style rulings",
+def template_rows(part: str) -> list[str]:
+    """The rows of an event part's answer block."""
+    fenced = part.split("## Your answer", 1)[1].split("```text\n", 1)[1].split("\n```", 1)[0]
+    return fenced.splitlines()
+
+
+# --- the system part -----------------------------------------------------------------------------
+
+
+def test_the_system_part_carries_the_format_the_rulings_the_glossary_and_the_day(store, builder):
+    """Jay's four (`TRN-08`), each checked by a fact read out of its own home."""
+    system = builder.system_part("day 1", 1, store.scenes)
+    readme = (DAYS_DIR / "README.md").read_text(encoding="utf-8")
+    first_bullet = format_section(readme).splitlines()[0]
+    assert first_bullet in system, "the day-file format is not the README's § Format"
+    for heading, _ in Policy.load().rulings:
+        assert f"### {heading}" in system
+    what = Policy.load().day_row(1)
+    assert without_line_citations(what) in system
+
+
+def test_the_system_part_carries_the_glossary_rows_of_the_unit_s_japanese(store):
+    """The glossary is narrowed to the unit: a row whose term occurs is in, one whose
+    term does not is out. The term is taken from the glossary and put into the store."""
+    policy = Policy.load()
+    wanted, unwanted = policy.glossary[0], policy.glossary[-1]
+    assert not set(wanted.terms) & set(unwanted.terms)
+    store.japanese[VOICED] = Japanese(pages=((tuple(wanted.terms[0]),),))
+    system = PacketBuilder.build(store, policy, [], False).system_part("day 1", 1, store.scenes)
+    assert wanted.markdown() in system
+    assert unwanted.markdown() not in system
+
+
+def test_the_format_section_stops_at_its_own_section():
+    """The README's text after § Format -- the unit states, the file table -- is about the
+    project, not the format; a parser that ran on would hand the translator both."""
+    readme = (DAYS_DIR / "README.md").read_text(encoding="utf-8")
+    section = format_section(readme)
+    assert section, "translation/days/README.md has no § Format for the packet to quote"
+    assert "day01.txt" not in section
+    assert "undrafted" not in section
+
+
+def test_nothing_on_jay_s_drop_list_reaches_the_translator(store, builder):
+    """Capacities, pixels, frame timers, column splits, lint and PLAN citations stay out."""
+    parts = [builder.system_part("day 1", 1, store.scenes)]
+    parts += [builder.event_part(scene, 1, 1) for scene in store.scenes]
+    text = "\n".join(parts)
+    for dropped in (
+        " px",
+        "bytes per copy",
+        "copies on the disc",
+        "turns after",
+        "col 1 (",
+        "PLAN",
     ):
-        assert heading in packet, f"{heading} is missing from the packet"
-    assert f"### `{VOICED}`" in packet
-    assert f"### `{VOICE_ONLY}`" in packet
-    assert "voice only" in packet
+        assert dropped not in text, f"{dropped!r} reached the packet"
+    assert re.search(r"`[A-Z]{2,5}-\d{2}`", text) is None, "a plan row id reached the packet"
+    assert "boku lint" not in text
 
 
-def test_a_line_carries_the_store_s_own_capacity_numbers(store, builder):
-    """The numbers a translator plans against come out of the store, not out of prose."""
-    packet = builder.scene_packet(store.scenes[0])
-    capacity = store.lines[VOICED]["capacity"]
-    assert f"{capacity['bytes']} bytes per copy" in packet
-    assert f"{capacity['pages']} page(s)" in packet
-    assert "fixed by the voice clip" in packet
-    columns = store.lines[VOICED]["layout"]["pages"][0]
-    assert f"col 1 ({columns[0]:2d})" in packet
-
-
-def test_the_band_rule_quotes_the_box_the_lint_measures_against(store, builder):
-    """One home for the limit: `boku.layout.DIALOGUE_BAND` (`DOC-3`)."""
-    from boku.layout import DIALOGUE_BAND
-
-    rule = band_rule()
-    assert f"{DIALOGUE_BAND.lines} lines of {DIALOGUE_BAND.width} px" in rule
-    assert f"{DIALOGUE_BAND.guarded_width} px" in rule
-    assert rule in builder.scene_packet(store.scenes[0])
-
-
-def test_a_select_lists_its_options_against_their_branch_targets(store, builder):
-    packet = builder.scene_packet(store.scenes[0])
-    shape = store.lines[CHOICE]["select"]
-    assert (
-        f"{shape['prompt_lines']} prompt line(s) then "
-        f"{shape['lines'] - shape['prompt_lines']} option(s)" in packet
+def test_a_plan_citation_is_cut_with_its_parenthesis():
+    assert without_plan_citations("the band's decision (PLAN § *Text renderer*).") == (
+        "the band's decision."
     )
-    assert "* prompt:" in packet
-    assert "* option 1:" in packet
+    assert without_plan_citations("The lint warns (`TRN-08`); a warning") == (
+        "The lint warns; a warning"
+    )
+
+
+def test_the_day_summary_carries_no_line_citations():
+    assert without_line_citations("the relay `E0171`\u2013`E0186`, then the kit (`E0107`)") == (
+        "the relay, then the kit"
+    )
+
+
+# --- one event -----------------------------------------------------------------------------------
+
+
+def test_the_template_is_the_event_s_ids_in_the_day_file_shape(store, builder):
+    """Every id the event carries, voice-only included, once, in play order, as a row."""
+    scene = event(store, "E9001")
+    rows = template_rows(builder.event_part(scene, 1, 2))
+    assert rows[0].startswith(f"{EVENT_HEADER}E9001")
+    ids = [row.split("\t", 1)[0] for row in rows if not row.startswith("#")]
+    assert ids == scene_line_ids(scene)
+    assert f"{VOICE_ONLY}\t{SampleScenes.VOICE_ONLY}" in rows
+
+
+def test_a_line_keeps_its_page_breaks_and_loses_its_columns_and_marks(store, builder):
+    record = store.lines[VOICED]
+    japanese = store.japanese[VOICED]
+    _, speaker, text = builder.row(VOICED).split("\t")
+    assert text.count(SampleScenes.PAGE_BREAK) == len(japanese.pages) - 1
+    assert "「" not in text and "{NL}" not in text
+    label = "".join(japanese.pages[0][0]).split("「", 1)[0]
+    assert speaker == label, "the speaker column is the label the Japanese draws"
+    assert not text.startswith(label)
+    part = builder.event_part(event(store, "E9001"), 1, 1)
+    assert f"`{VOICED}` {record['voice']['clip']}" in part.split("## Your answer")[0]
+
+
+def test_columns_join_on_one_space_and_the_indent_and_marks_come_off():
+    """The authoring indent opens every continuation column; the marks are the renderer's."""
+    space = "\u3000"
+    japanese = Japanese(
+        pages=((("L", "「", "a", "b"), (space, "c")), ((space, "d", "」"),)), waits=(90,)
+    )
+    text = japanese_text(japanese, Marks("「", "」", labelled=True))
+    assert text == f"ab{space}c{SampleScenes.PAGE_BREAK}d"
+
+
+def test_a_select_is_a_sel_row_with_the_question_first(store, builder):
+    shape = store.lines[CHOICE]["select"]
+    _, speaker, text = builder.row(CHOICE).split("\t")
+    assert speaker == SampleScenes.SELECT
+    assert len(text.split(SampleScenes.OPTION)) == shape["lines"]
+
+
+def test_a_linear_scene_gets_no_branch_section(store, builder):
+    """Jay: no "in the order the game plays it" framing for a linear scene."""
+    part = builder.event_part(event(store, "E9002"), 2, 2)
+    assert "## Where the scene branches" not in part
+    assert "order the game plays" not in part
+
+
+def test_a_fork_names_the_line_each_way_opens(store, builder):
+    scene = event(store, "E9001")
+    choice = next(node["node"] for node in scene["nodes"] if node.get("line") == CHOICE)
+    after = next(node["node"] for node in scene["nodes"] if node.get("line") == VOICE_ONLY)
+    scene["edges"] = [edge for edge in scene["edges"] if edge["from"] != choice] + [
+        {"from": choice, "to": after, "condition": "opt0"},
+        {"from": choice, "to": "END", "condition": "opt1"},
+    ]
+    part = builder.event_part(scene, 1, 1)
+    assert "## Where the scene branches" in part
+    assert f"After `{CHOICE}`" in part
+    assert f"`{VOICE_ONLY}` comes next when the player chose option 1" in part
+    assert "the event ends when the player chose option 2" in part
 
 
 def test_the_quiz_says_which_day_each_question_belongs_to(store, builder):
-    """Which question this event asks on THIS day -- the fact `TRN-02` exists to add."""
-    packet = builder.scene_packet(store.scenes[0])
-    row = store.scenes[0]["dinner_quiz"]["quiz"][0]
-    assert "day d's question" in packet
-    assert f"On day {row['day']} this event asks `E9001.{row['message']}`" in packet
-    assert f"answer index {row['answer']}" in packet
+    part = builder.event_part(event(store, "E9001"), 1, 2)
+    row = event(store, "E9001")["dinner_quiz"]["quiz"][0]
+    assert "day d's" in part
+    assert f"On day {row['day']} this event asks `E9001.{row['message']}`" in part
 
 
-def test_a_day_derived_from_the_condition_is_not_printed_as_the_scene_s_day(gated):
-    """The header a translator reads first must not name a day the scene is not fixed to.
-
-    `scene_day`'s second return says the day was read off one `day==N` *inside* the entry
-    condition -- routinely one branch of an `|` whose sibling covers the other days, as in
-    `E1006` -- so it is not the day the scene plays on. Printed as "Day N", it is a
-    translator writing day-N context into a scene the player meets on other days.
-    """
+def test_a_derived_day_is_not_printed_as_the_scene_s_day(gated):
     store, day = gated
-    packet = PacketBuilder.build(store, Policy.load(), [], False).scene_packet(store.scenes[0])
-    line = next(row for row in packet.splitlines() if row.startswith("* **Day**"))
-    assert f"**Day**: {day}" not in line
-    assert "any day" in line
+    part = PacketBuilder.build(store, Policy.load(), [], False).event_part(store.scenes[0], 1, 1)
+    line = next(row for row in part.splitlines() if row.startswith("* **When**"))
+    assert f"day {day};" not in line
     assert f"day=={day}" in line, "the header must name the test the day was read off"
+    assert f"On day {day} this event asks" not in part
 
 
-def test_a_derived_day_pulls_in_no_day_keyed_context(gated):
-    """The same rule below the header: the bible's day entry and the quiz's day row are
-    context for a day this scene is not fixed to, and read as fact once they are in the
-    packet. The quiz table itself stays -- it says which day each question belongs to."""
-    store, day = gated
-    packet = PacketBuilder.build(store, Policy.load(), [], False).scene_packet(store.scenes[0])
-    assert "## The day, from the story bible" not in packet
-    assert f"On day {day} this event asks" not in packet
-    assert "## The per-day quiz" in packet
+def test_a_neighbour_outside_the_unit_shows_its_english_one_inside_does_not(store, tmp_path):
+    """The translator already has the unit's own events in view; showing their English
+    as it stands would show a re-translation the draft it is replacing."""
+    write_translation(tmp_path / "day01.txt", [(NEXT, "Boku", "Three.")])
+    builder = PacketBuilder.build(store, Policy.load(), [tmp_path / "day01.txt"], False)
+    first = event(store, "E9001")
+    alone = builder.event_part(first, 1, 1, unit_events=frozenset({"E9001"}))
+    assert f"{NEXT}\tBoku\tThree." in alone
+    together = builder.event_part(first, 1, 2, unit_events=frozenset({"E9001", "E9002"}))
+    assert "Three." not in together
 
 
-def test_for_review_puts_the_current_english_beside_the_line(store, tmp_path):
+def test_for_review_puts_the_current_english_under_the_template(store, tmp_path):
     written = "One. // Two."
     write_translation(tmp_path / "day01.txt", [(VOICED, "Uncle", written)])
     plain = PacketBuilder.build(store, Policy.load(), [tmp_path / "day01.txt"], False)
     review = PacketBuilder.build(store, Policy.load(), [tmp_path / "day01.txt"], True)
-    assert written not in plain.scene_packet(store.scenes[0])
-    assert written in review.scene_packet(store.scenes[0])
-    assert "English as it stands" in review.scene_packet(store.scenes[0])
+    scene = event(store, "E9001")
+    unit = frozenset({"E9001"})
+    assert written not in plain.event_part(scene, 1, 1, unit_events=unit)
+    assert written in review.event_part(scene, 1, 1, unit_events=unit)
 
 
-def test_an_untranslated_neighbour_says_so_rather_than_guessing(store, builder):
-    packet = builder.scene_packet(store.scenes[0])
-    assert "## The scene before this one" not in packet  # the only scene in this store
-    assert "## The scene after this one" not in packet
+# --- the unit, written out ------------------------------------------------------------------------
 
 
-# --- determinism --------------------------------------------------------------------------------
+def test_a_unit_is_a_system_part_one_part_per_event_and_the_order(store, builder, tmp_path):
+    unit = unit_of_day(store, 1)
+    written = write_unit(builder, unit, tmp_path / "day01")
+    names = [path.name for path in written]
+    assert names[0] == SYSTEM_NAME and names[-1] == ORDER_NAME
+    order = (tmp_path / "day01" / ORDER_NAME).read_text(encoding="utf-8").split()
+    assert order == [scene["event"] for scene in unit.scenes]
+    assert [f"{name}.md" for name in order] == names[1:-1]
 
 
 def test_two_runs_are_byte_identical(store, builder, tmp_path):
-    first = write_packets(builder, store.scenes, tmp_path / "a", day=1)
-    second = write_packets(builder, store.scenes, tmp_path / "b", day=1)
-    assert [path.name for path in first] == [path.name for path in second]
+    unit = unit_of_day(store, 1)
+    first = write_unit(builder, unit, tmp_path / "a")
+    second = write_unit(builder, unit, tmp_path / "b")
     for left, right in zip(first, second, strict=True):
         assert left.read_bytes() == right.read_bytes(), f"{left.name} differs between runs"
 
 
-def test_a_day_packet_lists_its_scenes_in_order(store, builder, tmp_path):
-    day = builder.day_packet(1, store.scenes)
-    assert "| 1 | [`E9001`](E9001.md)" in day
-    assert f"| {len(store.scenes[0]['lines'])} |" in day
+def test_a_rerun_leaves_no_stale_event_part(store, builder, tmp_path):
+    out = tmp_path / "day01"
+    write_unit(builder, unit_of_day(store, 1), out)
+    one = Unit("day01", "day 1", 1, (event(store, "E9002"),))
+    write_unit(builder, one, out)
+    assert sorted(path.name for path in out.glob("*.md")) == ["E9002.md", SYSTEM_NAME]
 
 
-# --- the destination a packet may never be written to --------------------------------------------
+def test_a_blank_draft_row_is_not_english_for_the_reachable_report(store, tmp_path):
+    """A day-independent event whose only row is still blank has no English, and `--day`
+    must go on naming it."""
+    event(store, "E9002")["when"]["day"] = None
+    blank = write_translation(tmp_path / "shared.txt", [(NEXT, "Boku", "")])
+    builder = PacketBuilder.build(store, Policy.load(), [blank], False)
+    assert "E9002" in untranslated_reachable(builder, 1)
+
+
+def test_like_takes_a_file_s_events_in_the_file_s_order(store, tmp_path):
+    path = write_translation(
+        tmp_path / "day01.txt", [(NEXT, "Boku", "Three."), (VOICED, "Uncle", "One. // Two.")]
+    )
+    unit = unit_like(store, path)
+    assert [scene["event"] for scene in unit.scenes] == ["E9002", "E9001"]
+    assert unit.day == 1
+
+
+# --- saving an answer -----------------------------------------------------------------------------
+
+
+def answer_for(builder: PacketBuilder, scene: dict) -> str:
+    """The template with every Japanese field replaced, the way a translator returns it."""
+    out = []
+    for line in builder.template(scene):
+        fields = line.split("\t")
+        if line.startswith("#") or len(fields) < 3:
+            out.append(line)
+        elif fields[1] == SampleScenes.SELECT:
+            count = len(fields[2].split(SampleScenes.OPTION))
+            options = SampleScenes.OPTION.join(["Yes"] * count)
+            out.append(f"{fields[0]}\t{SampleScenes.SELECT}\t{options}")
+        else:
+            pages = fields[2].count(SampleScenes.PAGE_BREAK) + 1
+            out.append(f"{fields[0]}\tUncle\t" + SampleScenes.PAGE_BREAK.join(["Words."] * pages))
+    return "Here it is:\n\n```text\n" + "\n".join(out) + "\n```\n"
+
+
+def test_an_answer_saves_as_the_event_s_block_and_the_lint_reads_it(store, builder, tmp_path):
+    into = tmp_path / "day01.txt"
+    scene = event(store, "E9001")
+    save_event(store, "E9001", answer_for(builder, scene), into)
+    text = into.read_text(encoding="utf-8")
+    assert "Here it is" not in text
+    rows, findings = load_rows(translation_paths([into]))
+    assert findings == []
+    assert [row.line_id for row in rows] == scene_line_ids(scene)
+
+
+def test_saving_again_replaces_the_block_in_place_and_a_new_event_is_appended(
+    store, builder, tmp_path
+):
+    """Saved in the order given -- E9002 first, against the ids' order -- and re-saving
+    E9002 leaves it where it was: the file keeps the order the parent saved in."""
+    into = tmp_path / "day01.txt"
+    first, second = event(store, "E9002"), event(store, "E9001")
+    save_event(store, "E9002", answer_for(builder, first), into)
+    save_event(store, "E9001", answer_for(builder, second), into)
+    save_event(store, "E9002", answer_for(builder, first).replace("Words.", "Again."), into)
+    blocks = DayFile.read(into).blocks
+    assert [DayFile.events_of(block) for block in blocks] == [["E9002"], ["E9001"]]
+    rows, _ = parse_file(into)
+    assert [row.line_id for row in rows].count(NEXT) == 1
+    assert "Again." in into.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("change", "reason"),
+    [
+        (lambda text: text.replace(f"{VOICED}\t", "E9001.9\t"), "not a line of E9001"),
+        (
+            lambda text: text.replace(f"{VOICE_ONLY}\t(voice only)\n", ""),
+            f"no row for {VOICE_ONLY}",
+        ),
+        (lambda text: text.replace("Words.", "\u3042", 1), "still holds Japanese"),
+        (lambda text: text.replace("\tUncle\t", "\tUncel\t", 1), "not a speaker label"),
+    ],
+)
+def test_an_answer_that_is_not_the_event_is_refused_and_nothing_written(
+    store, builder, tmp_path, change, reason
+):
+    into = tmp_path / "day01.txt"
+    answer = change(answer_for(builder, event(store, "E9001")))
+    with pytest.raises(PacketRefused) as refusal:
+        save_event(store, "E9001", answer, into)
+    assert reason in str(refusal.value)
+    assert not into.exists()
+
+
+@pytest.mark.parametrize(
+    "header",
+    [f"{EVENT_HEADER}E9001 / E9002: both", f"{EVENT_HEADER}E9001: the header names one"],
+)
+def test_a_block_holding_another_event_s_rows_is_refused(store, builder, tmp_path, header):
+    """A hand-merged block -- `# --- E0441: ... --- E0446:` in day04.txt holds E0446.0 under
+    a header whose id part names only E0441. Replacing it for E0441 deleted E0446's English
+    in silence; now it is refused with the file untouched."""
+    into = tmp_path / "day01.txt"
+    into.write_text(f"{header}\n{VOICED}\tUncle\tOne. // Two.\n{NEXT}\tBoku\tThree.\n")
+    before = into.read_text(encoding="utf-8")
+    with pytest.raises(PacketRefused, match="also holds"):
+        save_event(store, "E9001", answer_for(builder, event(store, "E9001")), into)
+    assert into.read_text(encoding="utf-8") == before
+
+
+def test_an_event_another_file_beside_it_translates_is_refused(store, builder, tmp_path):
+    """Saving into `shared.txt` what `day01.txt` already holds is one id translated twice."""
+    write_translation(tmp_path / "day01.txt", [(NEXT, "Boku", "Three.")])
+    into = tmp_path / "shared.txt"
+    with pytest.raises(PacketRefused, match="already translates"):
+        save_event(store, "E9002", answer_for(builder, event(store, "E9002")), into)
+    assert not into.exists()
+
+
+def test_the_default_file_is_the_one_that_already_holds_the_event(store, tmp_path):
+    """E0001 is day-independent and lives in day01.txt: the convention alone says shared."""
+    scene = event(store, "E9002")
+    scene["when"]["day"] = None
+    assert default_day_file(store, scene, tmp_path) == tmp_path / "shared.txt"
+    write_translation(tmp_path / "day01.txt", [(NEXT, "Boku", "Three.")])
+    assert default_day_file(store, scene, tmp_path) == tmp_path / "day01.txt"
+
+
+def test_a_save_changes_its_own_block_and_nothing_else(store, builder, tmp_path):
+    """The rest of the file keeps its bytes -- blank lines and the notes above their rows."""
+    into = tmp_path / "day01.txt"
+    kept = (
+        f"# a preamble\n\n\n{EVENT_HEADER}E9002: kept\n# NOTE {NEXT}: a note\n"
+        f"{NEXT}\tBoku\tThree.\n\n\n"
+    )
+    into.write_text(kept + f"{EVENT_HEADER}E9001: old\n{VOICED}\tUncle\tOld. // Old.\n")
+    save_event(store, "E9001", answer_for(builder, event(store, "E9001")), into)
+    assert into.read_text(encoding="utf-8").startswith(kept)
+
+
+@pytest.mark.parametrize("name", ["day01.txt", "day03.txt", "shared.txt"])
+def test_a_committed_day_file_reads_and_writes_back_byte_for_byte(name):
+    path = DAYS_DIR / name
+    assert DayFile.read(path).text() == path.read_text(encoding="utf-8")
+
+
+def test_a_note_in_japanese_is_refused(store, builder, tmp_path):
+    """The day files are tracked and hold no Japanese; a note quoting the source would be
+    the way it came in."""
+    answer = answer_for(builder, event(store, "E9001")).replace(
+        "```text\n", f"```text\n# NOTE {VOICED}: \u3042 -> a\n", 1
+    )
+    with pytest.raises(PacketRefused, match="a note still holds Japanese"):
+        save_event(store, "E9001", answer, tmp_path / "day01.txt")
+
+
+def test_answer_lines_takes_the_fenced_block():
+    answer = "prose\n```text\n\nE1.0\tBoku\tHi.\n```\nmore prose\n"
+    assert answer_lines(answer) == ["E1.0\tBoku\tHi."]
+
+
+# --- the destination a packet may never be written to ---------------------------------------------
 
 
 def test_a_packet_refuses_a_tracked_destination():
@@ -232,7 +495,7 @@ def test_the_cli_refuses_both_or_neither_selector(tmp_path, capsys):
     assert "exactly one" in capsys.readouterr().err
 
 
-# --- conditions in words -------------------------------------------------------------------------
+# --- conditions in words --------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(
@@ -248,6 +511,25 @@ def test_the_cli_refuses_both_or_neither_selector(tmp_path, capsys):
 )
 def test_a_condition_reads_as_a_sentence(condition, expected):
     assert condition_in_words(condition, Policy()) == expected
+
+
+def test_a_parenthesised_conjunction_is_read_term_by_term():
+    """`E0121`'s entry condition: the group's parentheses sit on its first and last terms,
+    and a term that kept one was printed in its symbols -- `(hour>=14` -- not in words."""
+    words = condition_in_words("(hour>=14 & hour<=17 & lflag==0)", Policy())
+    assert words == (
+        "the hour is at least 14 and the hour is at most 17 and "
+        "this event's own progress counter is 0"
+    )
+
+
+def test_a_group_inside_a_clause_stays_a_group():
+    """`a & (b | c)` split on every `|` read as two clauses, `a and b -- or -- c`: another
+    condition. Split at depth 0 only, the group keeps its parentheses in words."""
+    words = condition_in_words("hour>=14 & (opt0 | opt1)", Policy())
+    assert words == (
+        "the hour is at least 14 and (the player chose option 1 or the player chose option 2)"
+    )
 
 
 def test_a_compound_condition_keeps_its_structure():
@@ -277,11 +559,7 @@ def test_the_bible_s_month_table_covers_every_day():
 
 
 def test_an_open_ended_day_row_runs_to_the_row_after_it():
-    """The table writes its ranges with an en dash, and `9-` means "until the next row".
-
-    Read as the single day it starts on, every day inside an open-ended range loses its
-    story context: day 10's packets would carry no § 4 entry at all.
-    """
+    """The table writes its ranges with an en dash, and `9-` means "until the next row"."""
     rows = parse_day_rows(
         "## 4. The month\n\n"
         "| day | what happens | ids |\n|---:|---|---|\n"
@@ -307,8 +585,7 @@ def test_the_glossary_matches_on_its_own_source_column():
 
 
 def test_no_table_header_is_parsed_as_a_glossary_row():
-    """A header read as data is a row whose "source term" is the word *source* itself,
-    which then matches any text holding it -- and prints the header twice in the packet."""
+    """A header read as data is a row whose "source term" is the word *source* itself."""
     text = (REPO_ROOT / "translation" / "glossary.md").read_text(encoding="utf-8")
     headers = {header for _, header, _ in table_rows(text)}
     assert headers, "no Markdown tables were found in the glossary"
@@ -320,9 +597,7 @@ def test_no_table_header_is_parsed_as_a_glossary_row():
 
 
 def test_a_table_that_does_not_lead_with_source_is_keyed_on_it_anyway():
-    """§ 4a leads with the insect's array index. Keyed on the first column instead, every
-    one of its 57 rows has a bare number for a term, and a scene whose text holds that
-    digit pulls in unrelated insects."""
+    """§ 4a leads with the insect's array index; keyed on it, a digit pulls in insects."""
     text = (REPO_ROOT / "translation" / "glossary.md").read_text(encoding="utf-8")
     insects = [row for row in parse_glossary(text) if row.section.startswith("4a.")]
     assert insects, "the 57 insect names did not parse"
@@ -330,10 +605,28 @@ def test_a_table_that_does_not_lead_with_source_is_keyed_on_it_anyway():
     assert [term for row in insects for term in row.terms if term.isdigit()] == []
 
 
-def test_the_style_rulings_are_the_settled_ones():
-    policy = Policy.load()
-    assert policy.rulings, "no settled rulings parsed; packets would carry no policy"
-    assert all("SETTLED" in heading or "SETTLED" in ruling for heading, ruling in policy.rulings)
+def test_a_settled_heading_carries_its_text_not_an_empty_section():
+    """§ 17's shape: SETTLED in the heading, one paragraph under it, no bullet at all.
+
+    The first parser took a SETTLED heading as a ruling with no text and then looked only
+    at bullets for the text, so the packet printed § 17 as a bare heading with nothing
+    under it -- the translator was told a ruling exists and not what it is.
+    """
+    heading = "17. Speech with no text on the disc — SETTLED (Q11, 2026-09-20)"
+    body = "The opening monologue is translated into tracked files."
+    rulings = dict(parse_rulings(f"## {heading}\n\n{body}\n\n## 18. Next\n\n* A bullet.\n"))
+    assert body in rulings[heading]
+
+
+def test_every_section_of_the_style_guide_reaches_the_packet_with_its_text():
+    """The guide is in force as a whole (its own status line), so every numbered section is
+    a ruling; the headings are read off the committed file, not listed here."""
+    guide = (REPO_ROOT / "translation" / "style-guide.md").read_text(encoding="utf-8")
+    headings = [line[3:].strip() for line in guide.splitlines() if line.startswith("## ")]
+    rulings = parse_rulings(guide)
+    assert [heading for heading, _ in rulings] == headings
+    empty = [heading for heading, text in rulings if not text.strip()]
+    assert empty == [], f"sections with no text would print as bare headings: {empty}"
 
 
 def test_the_packet_reads_the_committed_day_files_by_default():

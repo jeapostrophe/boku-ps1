@@ -17,6 +17,7 @@ from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
 from boku.lint import add_arguments as add_lint_arguments
 from boku.movies import add_arguments as add_movies_arguments
 from boku.packets import add_arguments as add_packet_arguments
+from boku.packets import add_save_arguments as add_save_event_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
 from boku.textures import DEFAULT_OUT_DIR as TEXTURES_OUT_DIR
@@ -459,14 +460,29 @@ def build_parser() -> argparse.ArgumentParser:
     add_packet_arguments(
         subcommands.add_parser(
             "packet",
-            help="assemble a local translator packet per scene for a day or an event list",
+            help="assemble the local translator packet for a day, a day file or events",
             description=(
-                "PLAN TRN-02: one Markdown file per scene holding everything a translator "
-                "agent needs -- the scene as the game plays it, every line with its Japanese "
-                "and its capacity, the day's bible entry, the glossary rows whose term "
-                "occurs in the scene, the settled style rulings, and the neighbouring "
-                "scenes' English. A packet is the game's own text, so it is written under "
-                "the gitignored work/ and is never tracked."
+                "PLAN TRN-08: a directory per unit -- system.md (the day-file format, the "
+                "style guide, the glossary rows the unit's Japanese uses, the bible's day "
+                "summary), one <EVENT>.md per event holding its lines in the day-file shape "
+                "with the Japanese where the English goes, and order.txt, the order to give "
+                "them in. A packet is the game's own text, so it is written under the "
+                "gitignored work/ and is never tracked."
+            ),
+        )
+    )
+
+    add_save_event_arguments(
+        subcommands.add_parser(
+            "save-event",
+            help="write a translator's answer for one event into its day file",
+            description=(
+                "PLAN TRN-08: the parent's half of a directed translation. The answer is "
+                "the event's block from its packet with the Japanese replaced; it replaces "
+                "that event's block in the day file, or goes in at its place in play order. "
+                "Refused, with the file untouched, when an id is missing, extra or doubled, "
+                "a row still holds Japanese, or a speaker is not a style-guide label. Run "
+                "`./make.sh lint-translation` after."
             ),
         )
     )

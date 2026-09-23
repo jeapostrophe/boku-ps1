@@ -57,6 +57,11 @@ from boku.sites import page_waits
 STOCK_ADVANCE = 14
 """Every fixed-pitch surface steps 14 px per cell (`research/vwf-prototype.md`)."""
 
+AVERAGE_PX_PER_CHARACTER = 5.85
+"""Measured over the prototype's sample lines (`research/vwf-prototype.md` § "Measurements
+for TXT-07"). Only for estimates that need "about N characters a line"; the lint measures
+the real thing."""
+
 SPEECH_MARKS = {"「": "」", "『": "』"}
 """The marks the original draws around speech and narration, opening -> closing. The
 translation text carries none (style guide § 9); `original_marks` reads which the Japanese
