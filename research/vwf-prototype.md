@@ -96,7 +96,10 @@ The other walkers have no dead instructions to spend, but each has one thing the
 lacks: the pen step is a lone `addiu pen,pen,12` whose next instruction is not a branch, so it can
 become a `jal` to a body that adds `vwf_advance[id]` instead. `ra` is free at every one
 (every walker saved its own and `jal glyph_draw` clobbers it each glyph); the bodies write only
-`at` and `t9`, so whatever the delay slot loaded — the next `a0`, a loop constant in `v0` — survives.
+`at`, `t8` and `t9`, so whatever the delay slot loaded — the next `a0`, a loop constant in `v0` —
+survives. The lookup itself is one routine per stock pitch (`vwf_width_12`, `vwf_width_10`):
+a body keeps its caller's `ra` in `t8`, calls it with the id load in the `jal`'s delay slot,
+and returns through `t8` — five to eight words a body instead of twelve to fifteen.
 **A cell that is not English keeps the surface's own stock pitch** (12, or 10 on the help
 screen's one 10-px line): the table holds the dialogue's 14 for every such cell, and
 `vwf_lookup_at stock` turns a 14, or an id past the table, into `stock`; the build refuses an
@@ -156,8 +159,8 @@ given, so it grows with the free-cell allocation, not with the font. **The walke
 bodies live in the walker island**, the second part of `dbg_font_init` `0x800221CC…0x80022494`
 (712 bytes, [text-renderer.md](text-renderer.md) § 6 candidate 2): `asm/vwf.asm` splits it at
 `DEBUG_FONT_SPLIT` (`0x800222EC`) — the movie loader below ([movies.md](movies.md) § 8, 288
-bytes, 228 used), the walkers above (424 bytes; 412 used by eight bodies on 2026-09-23, so the next
-surface needs smaller bodies or another island) —
+bytes, 228 used), the walkers above (424 bytes; 276 used by the shared lookup and eight bodies on
+2026-09-23) —
 and each half is an `.area`, so outgrowing one is a build error; the build prints where the
 walker half's free space starts. The 620 bytes at `0x80012E04` are the movie hooks'.
 Deadness is measured on one path: an execution breakpoint over the whole of `dbg_font_init` logged **0 hits** on the stock disc on PCSX-Redux through the title and card check,
@@ -836,6 +839,15 @@ registers each plus new origins — and their texts are the `HHON` arrays of
 [text-outside-events.md](text-outside-events.md). Decision **A** (route the step through the
 width table with a `jal` body) once the hook site's registers are read; the free space for
 the bodies is § "The free space"'s next island.
+
+**Reaching it on Beetle** (2026-09-23, not yet done): from free roam △ opens the desk with
+the hand on the bag; RIGHT ×2 is the net, UP from there the cage, and ○ zooms into a 3-D view
+of the cage whose pad works (DOWN turns the view; the hand sits on もどる). With insect 5 poked
+into cage slot 0 (`0x80046F28` = `05 00 00 01`) and its book state set — live, or through a
+generated card — no insect and no label appeared in that view, so the cage slot's other
+bytes, or the path from that view to the grid, are still to find. `tools/redux/book-pokes.lua`
+reaches the grid on Redux by forcing the mode, which is enough to measure it but not to
+confirm on Beetle.
 
 ## Not done
 

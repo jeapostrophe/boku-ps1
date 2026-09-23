@@ -5,7 +5,8 @@
 ; Each walker steps its pen by a literal after `jal glyph_draw`. The step becomes a jal to a
 ; body that adds vwf_advance[id] instead -- or the surface's stock pitch for a cell that is
 ; not English, so untranslated text is spaced as the retail game spaces it. Bodies write
-; only at and t9 besides what they are named for, so whatever a delay slot loaded survives.
+; only at, t8 and t9 besides what they are named for, so whatever a delay slot loaded
+; survives.
 ; Sites, registers and why each hook sits where it does: research/vwf-prototype.md
 ; § "The fixed-pitch surfaces"; the walkers are run instruction by instruction in
 ; tests/test_real_walkers.py.
@@ -106,62 +107,83 @@ WALKER_ISLAND_END equ DEBUG_FONT_ISLAND_END
 .area WALKER_ISLAND_END - WALKER_ISLAND
 vwf_island:
 
-; Named by what they touch: pen register, where the id is, and a suffix when the body also
-; steps the pointer (`next`: the id was at -2 and the pointer steps; `cur`: the id is at 0).
+; The lookup is shared: a body keeps its caller's ra in t8, calls vwf_width_<stock> with
+; the id load in the jal's delay slot (the routine's first instruction does not read at),
+; and returns through t8 with its add in the last delay slot. Bodies are named by what they
+; touch: pen register, where the id is, and a suffix when the body also steps the pointer
+; (`next`: the id was at -2 and the pointer steps; `cur`: the id is at 0).
 
-vwf_step_s5_s0:                     ; TITLE 17: s5 += advance[-2(s0)]
-    lhu     at, -2(s0)
+vwf_width_12:                       ; t9 = advance[at], 12 for a cell that is not English
     vwf_lookup_at 12
     jr      ra
+    nop
+
+vwf_width_10:                       ; the same, stock 10 (help_line_draw)
+    vwf_lookup_at 10
+    jr      ra
+    nop
+
+vwf_step_s5_s0:                     ; TITLE 17: s5 += advance[-2(s0)]
+    move    t8, ra
+    jal     vwf_width_12
+    lhu     at, -2(s0)
+    jr      t8
     addu    s5, s5, t9
 
 vwf_step_v1_s0_s1:                  ; TITLE 19: v1 = s0 + advance[-2(s1)]
+    move    t8, ra
+    jal     vwf_width_12
     lhu     at, -2(s1)
-    vwf_lookup_at 12
-    jr      ra
+    jr      t8
     addu    v1, s0, t9
 
 vwf_step_s1_s0_next:                ; TITLE 20: s1 += advance[-2(s0)]; s0 += 2
+    move    t8, ra
+    jal     vwf_width_12
     lhu     at, -2(s0)
-    vwf_lookup_at 12
     addu    s1, s1, t9
-    jr      ra
+    jr      t8
     addiu   s0, s0, 2
 
 vwf_step_s1_s0_p10:                 ; help_line_draw: s1 += advance[-2(s0)], stock 10
+    move    t8, ra
+    jal     vwf_width_10
     lhu     at, -2(s0)
-    vwf_lookup_at 10
-    jr      ra
+    jr      t8
     addu    s1, s1, t9
 
 vwf_count_s2_s0:                    ; text_draw_right, count: s2 += advance[-2(s0)]; s1 += 1
+    move    t8, ra
+    jal     vwf_width_12
     lhu     at, -2(s0)
-    vwf_lookup_at 12
     addu    s2, s2, t9
-    jr      ra
+    jr      t8
     addiu   s1, s1, 1
 
 vwf_back_s2_s0:                     ; text_draw_right, draw: s2 -= advance[0(s0)]
+    move    t8, ra
+    jal     vwf_width_12
     lhu     at, 0(s0)
-    vwf_lookup_at 12
-    jr      ra
+    jr      t8
     subu    s2, s2, t9
 
 vwf_step_s1_answer:                 ; TITLE 18: s1 += advance[lh 2*s0(s4)] (glyph index s0)
+    move    t8, ra
     sll     at, s0, 1
     addu    at, at, s4
+    jal     vwf_width_12
     lhu     at, 0(at)
-    vwf_lookup_at 12                ; (its first instruction does not read at: load delay)
-    jr      ra
+    jr      t8
     addu    s1, s1, t9
 
 vwf_step_s1_s0_cur:                 ; text_draw_line_h / _h: s1 += advance[0(s0)]; s0 += 2;
-    lhu     at, 0(s0)               ; v0 = v1 = the next word
-    vwf_lookup_at 12
+    move    t8, ra                  ; v0 = v1 = the next word
+    jal     vwf_width_12
+    lhu     at, 0(s0)
     addu    s1, s1, t9
     addiu   s0, s0, 2
     lhu     v0, 0(s0)
-    jr      ra
+    jr      t8
     lhu     v1, 0(s0)               ; (the caller's next instruction is a nop: load delay)
 
     .align  4
