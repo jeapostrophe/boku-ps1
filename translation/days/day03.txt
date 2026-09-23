@@ -13,200 +13,114 @@
 # (E0305). Afternoon: E0312 (the uncle, 16:00-18:00). Evening: E0303 (dinner; the night
 # rule), E0304, then E0313 (the uncle), E0332 (Moe on the veranda), E0341 (Shirabe and the TV).
 
-# --- E0301: breakfast (G02), 07:00. Forced.
+# --- E0301: G02 -- breakfast
 E0301.0	Uncle	Boku-kun, have you been to the pond yet? // There are lots of big fish in that pond.
-E0301.1	Boku	Huh! Lots and lots! Nice... niiice!
-E0301.2	Uncle	If you're going to use a fishing rod, this...
-E0301.3	Uncle	It's in the shed on the right as you go out the kitchen door, so take it with you.
-E0301.4	Boku	Yeah, got it. Thank you, Uncle.
-E0301.5	Uncle	Well then, itadakimaasu!
-E0301.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
-# NOTE E0301.1: "ii na, ii naa" is the child's envious "nice" — here at the fish he has not
-#   seen. "Nice... niiice!" is literal (the second is drawn out on the disc); there is no
-#   idiomatic English noise for it. (Reviewed 2026-09-22: kept over "Neat, neaaat!".)
-# NOTE E0301.2-.3: the uncle breaks off on "kono..." ("this...") and starts again with where the
-#   rod is kept; the bare "this..." is the broken-off word, and .3 picks it up.
-# NOTE E0301.5-.6: the drawn-out "itadakimaasu" of the disc (glossary § 3), unlike E0303.7-.8.
-#   The chorus here is the whole table minus the uncle (slot 12), Boku included — he has the
-#   words by now.
+E0301.1	Boku	Whoa! Loooads of them? That sounds great, that sounds great!
+E0301.2	Uncle	If you want to use a fishing rod, it's in this...
+E0301.3	Uncle	...the shed on the right when you go out the kitchen door, so take it with you.
+E0301.4	Boku	Okay, got it. Thanks, Uncle.
+E0301.5	Uncle	Well then, itadakimaasu.
+E0301.6	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
 
-# --- E0302: after breakfast (G02), 08:00. Forced. .6 is a voice-only clip between the
-#     appointment and the terms.
+# --- E0302: G02 -- after breakfast
 E0302.0	Uncle	Gochisosama deshita.
 E0302.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E0302.2	Aunt	Hey, Boku-kun, do you like corn?
-E0302.3	Boku	Yeah, I love it. It's delicious!
+E0302.3	Boku	Yeah, I love it! It's yummy!
 E0302.4	Aunt	Well then...
-E0302.5	Uncle	Boku-kun, you are hereby appointed field-help captain!
+E0302.5	Uncle	Boku-kun, you are hereby appointed field-helper captain!
 E0302.6	(voice only)
-E0302.7	Uncle	It's only helping out for this one day, but... // On the way to the forest, there's our corn field. // You are to come there in the morning and help with the harvest! I'm counting on you.
-# NOTE E0302.5: the mock-official appointment frame (glossary § 3, "You are hereby appointed ...
-#   captain!"), the same words as the morning-glory captain of day 2.
-# NOTE E0302.7: page 1 is "kyou ichinichi dake" (today, one day only); page 3 is the uncle's
-#   mock-official "...koto!" ending, as at E0114.7.
+E0302.7	Uncle	It's only for today, but... // on the way to the forest, there's a corn field of ours. // You are to come there in the morning and help with the harvest! I'm counting on you.
 
-# --- E0307: the shed off the kitchen (H18), any day once the uncle has said where the rod is
-#     (flag 13, E0301) and Boku does not have it yet (flag 10). Examine. Unlabelled on the disc
-#     (shared.txt's convention).
+# --- E0307: H18 -- the shed
 E0307.0	(unlabelled)	Got the fishing rod.
 
-# --- E0306: the corn field (A09), before 16:00, the first time Boku arrives. Forced. .5 is a
-#     voice-only clip after the aunt's "start".
-E0306.0	Aunt	Such lovely weather! Hello, Boku-kun.
+# --- E0306: A09 -- the corn field
+E0306.0	Aunt	What wonderful weather! Hello, Boku-kun.
 E0306.1	Boku	Yeah. Hello, Uncle, Auntie.
-E0306.2	Uncle	Aaah... the sky sure is high today...
-E0306.3	Uncle	Boku-kun, thank you for coming, as you promised.
-E0306.4	Aunt	Hm-hm-hm. Now then, Boku-kun! // The corn in the field, every last ear of it, goes into this basket, all right? // All right, work, start!
+E0306.2	Uncle	Well, well... the sky sure is high today...
+E0306.3	Uncle	Thank you for coming, Boku-kun, just like you promised.
+E0306.4	Aunt	Hm-hm-hm. Now then, Boku-kun! // Put the corn in the field into this basket, every last one you find. // Okay, time to start work!
 E0306.5	(voice only)
-# NOTE E0306.2: "the sky is high" is the Japanese for a clear, deep, autumn-like sky. Kept
-#   literal (style guide § 0.1); "what a clear sky" was the rejected rendering. The "shikashi"
-#   is the exclamatory one, admiration, not a contrast — no "but".
-# NOTE E0306.4, page 3: "start" is the loanword the ear hears (sutaato).
 
 # --- E0371-E0383: the thirteen ears of corn (A09, examine). No text.
-# --- E0391: the corn field (A09), before 16:00, talking to the uncle. .0 while the picking is
-#     on; .1 once it is done (flag 17).
-E0391.0	Uncle	Come on, Boku-kun, do your best.
-E0391.1	Uncle	Uncle and Auntie will do the cleanup. // Now, kids, go play, go play.
-# NOTE E0391.1, page 1: "oji-san-tachi" — Uncle and the others; the other is the aunt.
-# --- E0392: the corn field (A09), before 16:00, talking to the aunt. Same split as E0391.
-E0392.0	Aunt	Phew... But what lovely weather! I'm happy!
-E0392.1	Aunt	Tomorrow at lunchtime, say, I'll boil up plenty in a big pot for you, all right? // So look forward to it, okay?
+# --- E0391: A09 -- the corn field
+E0391.0	Uncle	Go on, Boku-kun, do your best.
+E0391.1	Uncle	We'll take care of the cleaning up. // Go on, kids go and play, go and play.
+# --- E0392: A09 -- the corn field
+E0392.0	Aunt	Phew... But what lovely weather! It makes me so happy!
+E0392.1	Aunt	Tomorrow at lunch, I'll boil up a whole lot for you in a great big pot, // so look forward to it.
 
-# --- E0384: the basket (A09), once every ear is in. The uncle, then the aunt.
-E0384.0	Uncle	Boku-kun, with this, we're just about finished. // Well now, good work.
-E0384.1	Aunt	I've somehow worked up a good sweat myself...
-# NOTE E0384.0, page 2: otsukaresama → "good work" (style guide § 4, glossary § 3); at E0312.1 the
-#   uncle says gokurosama of the same day's work, rendered "thank you for your hard work".
+# --- E0384: A09 -- the corn field
+E0384.0	Uncle	With that, Boku-kun, we're about done. // Well, well, thank you for your hard work.
+E0384.1	Aunt	Somehow I've worked up a good sweat myself.
 
-# --- E0340: a corner of the garden (H04), before 18:00, Shirabe watching ants. .11 on a second
-#     visit.
-E0340.0	Shirabe	Boys are so uncouth. I simply loathe them.
-E0340.1	Boku	...What's "uncouth"?
-E0340.2	Shirabe	Not knowing this sort of thing is what one calls uncouth.
+# --- E0340: H04 -- garden corner where Shirabe watches ants
+E0340.0	Shirabe	Boys are so crude, I can't stand them.
+E0340.1	Boku	...What's "crude"?
+E0340.2	Shirabe	Not knowing things like that is what's called crude.
 E0340.3	Boku	What do you do here every day?
-E0340.4	Shirabe	What does it matter!
+E0340.4	Shirabe	What does it matter to you!
 E0340.5	Boku	Are you looking at the ground?
-E0340.6	Shirabe	Huh? Whyyy would Shirabe be looking at the dirt, of all things?
-E0340.7	Boku	There's only ants there.
-E0340.8	Shirabe	...Say, you. Have you ever seen a queen ant?
+E0340.6	Shirabe	Huh? Whyyy would Shirabe be looking at the dirt?
+E0340.7	Boku	There's nothing here but ants.
+E0340.8	Shirabe	...Say, have you ever seen a queen ant?
 E0340.9	Boku	Huh?
-E0340.10	Shirabe	Never mind, never mind. What I just said is nashinko, all right?
-E0340.11	Shirabe	I said, leave me alooone.
-# NOTE E0340.0-.2: gasatsu — a grown-up word Boku does not know, and Shirabe's definition is
-#   circular (bible § 6, style guide § 8 kind 1). "Uncouth" is the English word an eight-year-old
-#   playing a lady would use and a nine-year-old would not know; the circular definition is
-#   translated as it stands.
-# NOTE E0340.10: nashinko is her coinage (style guide § 7: nashinko stays as a sound) — "doesn't
-#   count". "Yame, yame" is Shirabe cancelling her own slip (the queen ant she studies), not an
-#   order to Boku — so "never mind", not "stop".
-# NOTE E0340.6: "nuande" is a squashed, whining "nande" (why); rendered as a stretched "Whyyy".
-#   "Of all things" is her "nanka".
+E0340.10	Shirabe	Stop, stop. What I just said is nashinko.
+E0340.11	Shirabe	I told you, leave me alone!
+# NOTE E0340.0-.2: gasatsu (rough, crude): Boku does not know the word, and Shirabe's definition
+#   is circular (bible § 6, kind 1); "crude" carries it without mangling.
+# NOTE E0340.10: nashinko, Shirabe's coinage from nashi ("none", "cancelled"); kept as a sound
+#   (style guide § 7).
 
-# --- E0305: the television (G06), examine the set. Five voice-only programme clips chosen by
-#     the hour: .0 before 11:00, .1 11:00-13:00, .2 13:00-16:00, .3 16:00-19:00, .4 from 19:00.
-#     No text on the disc (voice-only.md, "Television programmes").
-E0305.0	(voice only)	The Summer National High School Baseball Championship. // Today's first game: representing Kumamoto, Asosan Minami High, // and representing Miyagi, Chigi Agricultural High. // Top of the second inning, Asosan Minami at bat. // Chigi Agricultural leads 2 to 1, and their ace, Hoshigaki, delivers! // Ah, a big curveball... just misses. // Three straight balls to Satsuma, the left fielder batting sixth. A jam for Chigi!
-E0305.1	(voice only)	The Summer National High School Baseball Championship. // Today's second game: representing Hiroshima, Hiroshima Maritime High, // and representing Niigata, Niigata Inekari Agricultural High. // Bottom of the third, Niigata Inekari at bat. // Hiroshima Maritime's first-year pitcher, Otafuku. // His elbow injury had people worried, but he's pitching so well you'd never know it, // and Hiroshima Maritime now holds a big lead over Niigata Inekari, 3 to 0.
-E0305.2	(voice only)	The Summer National High School Baseball Championship. // Today's third game: representing North Hokkaido, Nemuro Ryuhyo High, // and representing Toyama, Toyama Pharmaceutical College High. // We're in the bottom of the seventh, with Toyama Pharmaceutical at bat. // Now, Nemuro Ryuhyo's ace, Hanasaki, gave up a flood of runs when Toyama batted around in a furious first inning, // but from the second on, he seems to have managed to keep Toyama's bats in check. // Even so, it's 8 to 2, and Toyama's big lead holds.
-E0305.3	(voice only)	The Summer National High School Baseball Championship. // Today's fourth game: representing Aichi, Nagoya Daimyo Technical High, // and representing Okinawa, Okinawa Kaisen High. // The third game dragged on, so play began about an hour behind schedule. // Okinawa Kaisen's pitcher, Gushiken. The first pitch... there it goes, and it's hit! // But Daimyo Tech's Tokugawa seems to have skied it. // Oh! It's carrying farther than you'd think... carrying, carrying... it's gone! A home run on the very first pitch!
-E0305.4	(voice only)	The Summer National High School Baseball Championship: today's results. // Game one: representing Kumamoto, Aso Minami High, // and representing Miyagi, Chigi Agricultural High. // In the top of the second, Aso Minami made the most of a wobble in Chigi ace Hoshigaki's pitch selection, // scored a flood of runs, and won easily, 7 to 2. // Game two: representing Hiroshima, Hiroshima Maritime High, // and representing Niigata, Niigata Inekari Agricultural High. // Hiroshima Maritime's first-year pitcher Otafuku saw the elbow injury everyone feared flare up again, // and in the end it seems to have called the goddess of victory over to Niigata Inekari's side. // The teams traded runs one at a time, and after a close game Niigata Inekari Agricultural won, 4 to 3. // Game three: representing North Hokkaido, Nemuro Ryuhyo High, // and representing Toyama, Toyama Pharmaceutical College High. // In the first inning, Toyama batted around in a furious rally, and Nemuro Ryuhyo gave up all of eight runs, // then closed the gap in the third and the eighth, and in extra innings, top of the eleventh, their ace Hanasaki... // ...hit a triple himself, and Nemuro came from behind to take the win, 9 to 8. // Game four: representing Aichi, Nagoya Daimyo Technical High, // and representing Okinawa, Okinawa Kaisen High. // Daimyo Tech's Tokugawa homered off the very first pitch of the first inning, and that decided the game: // Nagoya Daimyo Technical High won, 1 to 0. // This has been Yoshimoto of NHN Osaka, reporting from Koshien Stadium.
-# NOTE E0305.0-.4: a school name translates its type (Agricultural, Maritime, Technical,
-#   Pharmaceutical College) and keeps the rest as a name, gag words included: Inekari (rice
-#   harvest), Kaisen (seafood), Ryuhyo (Nemuro's drift ice), Daimyo, Asosan (Mount Aso). The
-#   people are gag names kept as sounds: Hoshigaki (dried persimmon), Satsuma (sweet potato),
-#   Otafuku (the Hiroshima sauce), Hanasaki (Nemuro's crab), Gushiken (an Okinawan name, the
-#   boxer Yoko Gushiken's), Tokugawa (the Owari Tokugawa, lords of Nagoya), Yoshimoto of Osaka
-#   (the comedy agency), NHN (NHK).
-# UNSURE E0305.0-.4: readings taken from the ASR, not confirmed by ear: Asosan Minami in .0,
-#   Aso Minami in .4 (what each clip's ASR heard; one school, so one of them is likely wrong);
-#   Chigi; Otafuku (one pass heard Tafuku); Ryuhyo (the live clip's pass heard Ryuhei); Kaisen
-#   (seafood per the results clip; the live clip's passes heard the homophone "naval battle").
+# --- E0305: G06 -- TV room (the high-school baseball broadcast)
+E0305.0	(voice only)
+E0305.1	(voice only)
+E0305.2	(voice only)
+E0305.3	(voice only)
+E0305.4	(voice only)
 
-# --- E0312: the living room (G01), 16:00-18:00, talking to the uncle. .1 the first time, if the
-#     field work is done (flag 15); .0 otherwise, and on every repeat.
-E0312.0	Uncle	Uncle's field, for what we eat at home... // we only farm just enough ground for that. // In everything, the easy way is the best way.
-E0312.1	Uncle	Thank you for your hard work helping in the field today. // Uncle's field is small, so... // it might be just the right size for Boku-kun to help with.
-# NOTE E0312.0: the Japanese is one sentence over pages 1-2 ("we only make it just the size that
-#   feeds our own place"); page 3 is the uncle's motto (bible § 3).
+# --- E0312: G01 -- living room
+E0312.0	Uncle	Uncle's fields are only just big enough // to grow what we eat ourselves. // The easy way is always the best way.
+E0312.1	Uncle	Thank you for your hard work helping in the field today. // Uncle's field is small, // so it might be just the right size for you to help with, Boku-kun.
 
-# --- E0303: dinner (G02), 18:00. Forced; MOVIE 20 follows.
-E0303.0	Uncle	Boku-kun! // Way at the back of Uncle's garden, beside the animal shed, // there's a path that goes on up the Yukino River to Firefly Creek, right... // In that creek, lots of fireflies hatch out, and...
-E0303.1	Boku	Huh, fireflies! I've never seen any. Nice, nice... // They must be really pretty, right? I want to see them, I want to see them!
-E0303.2	Shirabe	Wait... you're surprisingly romantic.
-E0303.3	Uncle	But the path is dangerous at night, so after the sun goes down you absolutely mustn't go there. // That's the rule at Uncle's house.
-E0303.4	Boku	Awww! What a buuummer...
-E0303.5	Aunt	If only you'd kept the fireflies a secret...
-E0303.6	Uncle	Hahaha... that's true.
+# --- E0303: G02 -- dinner
+E0303.0	Uncle	Boku-kun! // Way at the back of Uncle's garden, over by the animal shed, // there's a path that goes up the Yukino River to Firefly Creek... // Lots of fireflies hatch at that creek...
+E0303.1	Boku	Whoa, fireflies! I've never seen any. That sounds great, that sounds great... // They're super pretty, aren't they? I want to see them, I want to see them!
+E0303.2	Shirabe	Oh? You're surprisingly romantic.
+E0303.3	Uncle	But the path is dangerous at night, so you must never go there after the sun goes down. // That's the rule at Uncle's house.
+E0303.4	Boku	Awww! That's a shame.
+E0303.5	Aunt	You could have just kept the fireflies a secret...
+E0303.6	Uncle	Hahaha... So I could.
 E0303.7	Uncle	Well then, itadakimasu!
 E0303.8	Shirabe, Moe, Boku, Aunt	Itadakimasu!
-# NOTE E0303.3, page 2: the house-rule frame, word for word as E0002.1, E0185.0 ("...at Auntie's
-#   house") and E3180.0 (glossary § 3). Firefly Creek, the Yukino River: glossary § 2.
-# NOTE E0303.0: the uncle's sentence trails off on page 4 ("...hatch out, and...") — the Japanese
-#   ends on "and..." too; Boku cuts in.
-# NOTE E0303.1, page 1: "ii na ii na" again (see E0301.1) — here trailing off rather than
-#   drawn out. Page 2: "desho" on fireflies he has never seen is a guess ("must be"), not a tag on
-#   an observed fact.
-# NOTE E0303.4: "e~! zannen da na~" — "Awww" is the nearest English noise (style guide § 7);
-#   "bummer" is 1975 American. "Ehhh! That's too bad" was the rejected rendering: not an
-#   English interjection, and "too bad" is said of someone else's misfortune.
-# NOTE E0303.5: "-ba ii no ni" — "you should have just"; rendered as "if only". She is teasing
-#   him for giving the boy a place to sneak off to.
 
-# --- E0304: after dinner (G02), 19:00.
+# --- E0304: G02 -- after dinner
 E0304.0	Uncle	Gochisosama deshita.
 E0304.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 
-# --- E0313: the living room (G01), 19:00 onward, talking to the uncle. Yes → .2; No → .3.
-E0313.0	Uncle	Come to think of it, have you taken the fishing rod yet?
+# --- E0313: G01 -- living room
+E0313.0	Uncle	By the way, have you taken the fishing rod yet?
 E0313.1	[SEL]	Yes | No
-E0313.2	Uncle	Oh, then I'm expecting a big one.
-E0313.3	Uncle	Listen, the fishing rod is in the shed next to the kitchen, all right?
-# NOTE E0313.1: the question asks about the rod whether or not Boku has it; the branch is the
-#   player's answer, not the flag.
+E0313.2	Uncle	Oh, you have. Then I'm expecting a big catch.
+E0313.3	Uncle	Now listen, the fishing rod is in the shed next to the kitchen.
 
-# --- E0332: the veranda (G17), 19:00 onward, Moe with the clarinet. .7 on a second visit.
+# --- E0332: G17 -- the veranda
 E0332.0	Boku	What's that called?
-E0332.1	Moe	A clarinet... // I've started learning the clarinet from a friend. // The two of us are going to play at the school festival in autumn.
-E0332.2	Boku	Hmmm. You're lousy at it, though.
-E0332.3	Moe	But I'll get good over summer vacation!
-E0332.4	Moe	Definitely. Probably. Surely...
-E0332.5	Boku	Hey, lend me the clarinet too.
-E0332.6	Moe	No! This is something you put your mouth on, you know.
-E0332.7	Moe	Playing the flute in the night breeze feels goood...
-# NOTE E0332.7: "fue" — a flute, a pipe — is what she calls the clarinet here; kept, since the
-#   ear hears a different word from "kurarinetto".
-# NOTE E0332.4: three adverbs in a falling row — "zettai, tabun, kitto" — the joke is the second
-#   undercutting the first; "kitto" is a hope, not a doubt, so "surely", not "maybe".
+E0332.1	Moe	A clarinet... // I've started learning the clarinet from a friend. // The two of us are going to play at the school festival in the autumn.
+E0332.2	Boku	Hmm. But you stink at it.
+E0332.3	Moe	But I'll get good before summer vacation is over!
+E0332.4	Moe	Definitely, probably, surely...
+E0332.5	Boku	Hey, let me borrow the clarinet too.
+E0332.6	Moe	No way! You put your mouth on this thing.
+E0332.7	Moe	Playing a pipe out in the night breeze feels so nice...
 
-# --- E0341: the television room (G06), 19:00 onward, Shirabe in front of the set. .5-.7 on a
-#     second visit.
-E0341.0	Shirabe	I only just ate, and I'm already hungry... // Aww, I want the harusame salad from school lunch...
+# --- E0341: G06 -- TV room
+E0341.0	Shirabe	I only just ate, but I'm already hungry. // Aww, I want the harusame salad from school lunch...
 E0341.1	Boku	What's that?
-E0341.2	Shirabe	...Huh? You don't know it.
+E0341.2	Shirabe	...Huh? You don't know it?
 E0341.3	Boku	Huh?
-E0341.4	Shirabe	A cafeteria without harusame salad? Where you come from is a hundred years behind the times.
-E0341.5	Shirabe	You know, you...
-E0341.6	Boku	Whaat?
-E0341.7	Shirabe	...Nothing.
-# NOTE E0341.0, .4: harusame salad stays "harusame salad" (Jay, 2026-09-21: it should stay
-#   Japanese); kyushoku sentaa → "cafeteria" (Jay, 2026-09-21: "school-lunch center" is too
-#   literal). Glossary § 5, the school-lunch conversations.
-
-# NOTES — the day
-# * Register. The uncle: "Uncle" of himself with Boku throughout (E0303.0, E0312.0-.1,
-#   E0391.1); mock-official for the appointment and its terms (E0302.5, E0302.7 page 3) and the
-#   night rule (E0303.3). The aunt: "all right?" / "okay?" for her sentence endings, "Hey,
-#   Boku-kun" for her "nee" opener (E0302.2, as E0202.2; glossary § 3); "I" where she says
-#   watashi (E0384.1). Boku: "Yeah", "Huh", literal and blunt with Moe
-#   (E0332.2). Shirabe: prim and over-grown-up ("uncouth", "loathe", "one calls", "of all
-#   things"), third-person "Shirabe" (E0340.6), "you" for anta. Moe: thinking aloud, wry about
-#   herself (E0332.4).
-# * Set phrases. Itadakimasu / Itadakimaasu and Gochisosama deshita as the disc has them; the
-#   house-rule frame (E0303.3); the appointment frame (E0302.5); "Got the fishing rod."
-#   (E0307.0); gokurosama / otsukaresama per glossary § 3 (E0312.1, E0384.0).
-# * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
-#   original's. The longest page (E0341.4, 106 characters with the label) is three lines of the
-#   dialogue band; no page reaches the fourth line — no OVERFLOW on day 3.
-# * Voice-only rows: E0302.6, E0306.5, E0305.0-.4 — XA nodes with no text; listed so the ids line
-#   up (voice-only.md).
+E0341.4	Shirabe	A school-lunch cafeteria with no harusame salad? Your place is a hundred years behind.
+E0341.5	Shirabe	You know...
+E0341.6	Boku	What?
+E0341.7	Shirabe	...Never mind.
