@@ -46,12 +46,9 @@
 # --- E0022: G01 -- living room (bookshelf)
 E0022.0	[SEL]	What will you read? | Field Guide to Rare Insects | The Fun Encyclopedia of Kites
 
-# --- E0221: the kitchen (G03), 14:00-17:00, the aunt: guess-the-dinner. On day 1 it shares her
-#     with E0121 (both talk triggers on the same map; E0121 plays once). .0 and .1 are hers; the
-#     native quiz (PROG 15) shows row day+1 of .2-.31, so day 1 is .2, and the answer is curry
-#     rice (g_dinner_answer[0]). The result reaches E4028.
-E0221.0	Aunt	Boku-kun! What do you think we're having for dinner tonight?
-E0221.1	Aunt	Well then, look forward to tonight's dinner, all right?
+# --- E0221: G03 -- kitchen (the guess-the-dinner game; one question a day)
+E0221.0	Aunt	Boku-kun! What do you think tonight's dinner is?
+E0221.1	Aunt	Well then, look forward to tonight's dinner.
 E0221.2	[SEL]	Curry rice | Chicken katsu | Salmon meuniere
 E0221.3	[SEL]	Hayashi rice | Hamburg steak | Diced steak
 E0221.4	[SEL]	Stir-fried meat and vegetables | Chicken karaage | Tonkatsu
@@ -82,11 +79,7 @@ E0221.28	[SEL]	Horse mackerel nanban-zuke | Fried rice and happosai | Nikujaga
 E0221.29	[SEL]	Cabbage rolls | Stuffed green peppers | Hayashi rice
 E0221.30	[SEL]	Curry rice | Ginger pork | Korokke
 E0221.31	[SEL]	Chicken karaage | Sea bass meuniere | Jingisukan
-# NOTE E0221.2-.31: every dish is glossary § 5's rendering, capitalised as a menu row (as the
-#   shaved-ice menu is at E0404.6, day04.txt). "Meuniere" and "saute" drop their
-#   accents in game text for the same reason the long vowels drop their macrons (style guide § 3):
-#   the font has plain letters only. The rows carry trailing pad words on the disc (bible § 8
-#   item 6) — not text, not translated.
+# NOTE E0221.2-.31: the dishes as glossary § 5 names them; each menu is one day's question.
 
 # --- E4029: G03 -- kitchen; I21 -- the fridge
 E4029.0	(voice only)
