@@ -29,6 +29,7 @@ import pytest
 
 from boku import REPO_ROOT
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack
+from boku.boxes import box_for
 from boku.disc import DiscError, DiscWriter, form1_sectors
 from boku.edc import FORM1_DATA_SIZE
 from boku.movie_block import BLOCK_LBA, BLOCK_RAM, RECORD_SIZE
@@ -76,6 +77,53 @@ def test_a_drawn_cell_whose_advance_changed_is_named_with_its_character():
     assert tool.narrowed_cells(table, cells, set(), fixed) == [], "nothing drawn, nothing clashes"
     # A cell nobody claims still has a width, and a Japanese page still steps by it.
     assert tool.narrowed_cells([fixed, 3], {}, {1}, fixed) == [(1, "")]
+
+
+def test_an_english_advance_equal_to_the_stock_pitch_is_refused():
+    """The table holds `fixed_advance` for every cell that is not English, and the
+    fixed-pitch walkers read that value as "use this surface's own stock pitch"
+    (`asm/vwf.asm`, `vwf_lookup_at`). An English glyph advancing exactly that much would be
+    drawn at 12 on a menu instead of 14 -- so the font is refused, not the walker trusted."""
+    tool = vwf_prototype()
+    layout = vwf_layout()
+    blank = tuple([0] * tool.CELL)
+
+    class NoSheet:
+        def get(self, glyph_id):
+            return ()
+
+    wide = tool.Glyph((0xFFF, *blank[1:]), layout.fixed_advance)
+    narrow = tool.Glyph((0xFFF, *blank[1:]), layout.fixed_advance - 1)
+    tool.place_font(NoSheet(), layout, {"W": narrow}, set())
+    with pytest.raises(tool.BuildRefused, match="stock pitch"):
+        tool.place_font(NoSheet(), layout, {"W": wide}, set())
+
+
+def test_a_fixture_wider_than_its_surface_s_box_is_refused():
+    """The prototype's in-place fixtures meet the same measured box the build and lint use
+    (`research/data/text-boxes.tsv`); a fixture running under a frame is a build error."""
+    tool = vwf_prototype()
+    box = box_for("exe@80046214.0").spec
+    blank = tuple([0] * tool.CELL)
+    font = {"M": tool.Glyph(blank, 10), " ": tool.Glyph(blank, 4)}
+    cells = {"M": 300, " ": 10}
+    raw = bytes(2 * 30) + b"\x00\x80"
+    fits = "M" * (box.width // 10)
+    tool.encode_array_item(
+        tool.LineSpec("exe@80046214.0", "fixture", False, False, fits),
+        raw,
+        font,
+        cells,
+        vwf_layout(),
+    )
+    with pytest.raises(tool.BuildRefused, match="px"):
+        tool.encode_array_item(
+            tool.LineSpec("exe@80046214.0", "fixture", False, False, fits + "M"),
+            raw,
+            font,
+            cells,
+            vwf_layout(),
+        )
 
 
 @pytest.mark.parametrize("advance_model", ["c1", "c2"])

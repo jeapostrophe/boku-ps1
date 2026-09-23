@@ -1,11 +1,12 @@
 ; TITLE.OVL's fixed-pitch horizontal walkers, routed through the width table (PLAN TXT-05,
 ; prototype). Included by vwf.asm inside `.open TITLE_PATH, 0x80079A08`; the hook bodies it
-; jumps to live in the executable's free space (vwf.asm), which every overlay can see.
+; jumps to live in the executable's walker island (walkers.asm), which every overlay can see.
 ;
 ; Each walker steps its pen by a literal 12 after `jal glyph_draw`; the step becomes a jal
-; to a body that adds vwf_advance[id] instead. Bodies write only at and t9, so whatever a
-; delay slot loaded (a0, v0) survives. Sites and registers: research/vwf-prototype.md
-; § "The fixed-pitch surfaces" (surfaces 17, 19, 20 of research/text-renderer.md § 3).
+; to a body that adds vwf_advance[id] instead (12 for a cell that is not English). Bodies
+; write only at and t9, so whatever a delay slot loaded (a0, v0) survives. Sites and
+; registers: research/vwf-prototype.md § "The fixed-pitch surfaces" (surfaces 17, 19, 20
+; of research/text-renderer.md § 3).
 
 ; ---- surface 17: the memory-card messages (EXE array 0x8003D5F0), walker 0x8007CB54 ----
 ; Pen s5; s0 was stepped past the word before the draw, so the id is at -2(s0).

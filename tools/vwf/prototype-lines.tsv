@@ -46,3 +46,15 @@ exe@8003DA00.1	fixture	no	no	Insects
 exe@8003DA00.3	fixture	no	no	Item
 exe@8003DA00.4	fixture	no	no	Ending
 exe@8003DA00.5	fixture	no	no	Quiz rate
+# The controls-help screen (START in free roam; exe@80029B20, drawn by text_draw_right and
+# help_line_draw at the positions of g_help_pos 0x80029904) and the day-1 item-menu row
+# (exe@80046214.0, the radio-calisthenics card: triangle, then circle on the bag). Cut to the
+# stock bytes like the TITLE fixtures above; not translations.
+exe@80029B20.0	fixture	no	no	Move
+exe@80029B20.1	fixture	no	no	Up:Go
+exe@80029B20.4	fixture	no	no	Talk/Ex
+exe@80029B20.5	fixture	no	no	Jump/OK
+exe@80029B20.6	fixture	no	no	Skip VO
+exe@80029B20.11	fixture	no	no	Sub-screen: net /
+exe@80029B20.12	fixture	no	no	items, rod or kite
+exe@80046214.0	fixture	no	no	Exercise

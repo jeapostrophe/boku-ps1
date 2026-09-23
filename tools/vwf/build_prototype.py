@@ -65,6 +65,7 @@ sys.path.insert(0, str(REPO))
 
 from boku import edc  # noqa: E402
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack  # noqa: E402
+from boku.boxes import box_for  # noqa: E402
 from boku.build import verify_sectors  # noqa: E402
 from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
@@ -466,6 +467,14 @@ def place_font(
             f"cells {clash} were about to be redrawn, and text on this disc draws them; "
             f"the free-id list in {FONT_CANDIDATES.name} is wrong for this image"
         )
+    ambiguous = sorted(c for c in cells if font[c].advance == layout.fixed_advance)
+    if ambiguous:
+        raise BuildRefused(
+            f"{''.join(ambiguous)!r} advance {layout.fixed_advance}, the value the table holds "
+            f'for every cell that is not English; the fixed-pitch walkers read it as "this '
+            f"surface's stock pitch\" (asm/vwf.asm, vwf_lookup_at), so those glyphs would be "
+            f"drawn at 12 on a menu. Give them another advance."
+        )
     table = bytearray([layout.fixed_advance]) * (max(cells.values()) + 1)
     for character, glyph_id in cells.items():
         table[glyph_id] = font[character].advance
@@ -694,6 +703,13 @@ def encode_array_item(
     missing = sorted({c for c in spec.text if c not in cells})
     if missing:
         raise BuildRefused(f"{spec.site_id}: the font has no glyph for {''.join(missing)!r}")
+    box = box_for(spec.site_id)
+    width = sum(font[c].advance for c in spec.text)
+    if box is not None and width > box.spec.width:
+        raise BuildRefused(
+            f"{spec.site_id}: {spec.text!r} is {width} px and {box.spec.name} holds "
+            f"{box.spec.width} ({box.basis}, research/data/text-boxes.tsv)"
+        )
     spare = len(raw) // 2 - 1 - len(spec.text)
     if spare < 0:
         raise BuildRefused(
@@ -1427,6 +1443,14 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         ),
     ]
     movie_subtitles["islands"] = [island.record for island in islands]
+    walkers = hashed_region(
+        "the walker island",
+        "vwf_island",
+        "vwf_island_free",
+        "vwf_",
+        symbols,
+        patched_exe,
+    )
 
     provenance = {
         "format": 1,
@@ -1448,6 +1472,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             "sha1": hashlib.sha1(table).hexdigest(),
         },
         "gap": gap.record,
+        "walker_island": walkers.record,
         "cells": {
             character: {"id": cells[character], "advance": font[character].advance}
             for character in sorted(cells)
@@ -1562,7 +1587,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
 
     manifest = provenance | {
         "result_sha1": sha1_of(image),
-        "exe_words": changed_words(stock_exe, patched_exe, gap, *islands),
+        "exe_words": changed_words(stock_exe, patched_exe, gap, walkers, *islands),
         "lines": [
             {
                 "site": spec.site_id,
@@ -1657,6 +1682,12 @@ def main() -> int:
     print(
         f"  advance table: {table['ids']} bytes at {table['ram']}, then {' '.join(hooks)}; "
         f"gap free from 0x{int(table['ram'], 16) + gap['bytes']:08X}"
+    )
+    walkers = manifest["walker_island"]
+    first = int(walkers["symbols"]["vwf_island"], 16)
+    print(
+        f"  walker island: {len(walkers['symbols']) - 1} step bodies from 0x{first:08X}, "
+        f"free from 0x{first + walkers['bytes']:08X} (asm/walkers.asm has the end)"
     )
     if args.edits_only:
         changed = sum(len(edit["old"]) // 2 for edit in manifest["edits"])

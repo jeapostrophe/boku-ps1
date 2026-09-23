@@ -184,8 +184,8 @@ research/data/       the tables a note would otherwise have to list: the script 
                      texture census and plan, movies.tsv — what every FMV id plays,
                      which `./make.sh movies` regenerates and a test diffs — and
                      voice-only.tsv, every voice with no text, from `./make.sh voice-only`.
-                     glyph-table.tsv
-                     is the one kept by hand, not generated (research/font.md)
+                     glyph-table.tsv and text-boxes.tsv (what each menu box holds, which
+                     the build and the lint read) are kept by hand, not generated
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects, translator

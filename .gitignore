@@ -7,11 +7,13 @@ TODO.md
 # content. This repo is public and ships none of it — a contributor regenerates it
 # from their own dump (README § "The import step"). Never commit from here, and never
 # copy text out of it into a tracked file beyond a short quoted example.
-/disc/
+# (No trailing slash: a worktree links these to the main checkout, and a link is not a
+# directory to git.)
+/disc
 # Third-party reference material kept locally for context (the GameFAQs walkthrough,
 # cloned upstream repos). Copyrighted by its authors; README § "Reference material"
 # says where to get each piece.
-/reference/
+/reference
 # Scratch: dumps, contact sheets, emulator traces, Ghidra projects (a Ghidra database
 # embeds the executable, so it is disc content too). What is learned from scratch goes
 # in research/; the scratch itself is disposable.

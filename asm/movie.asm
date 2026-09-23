@@ -30,8 +30,8 @@
 
 MOVIE_SUB_ISLAND     equ 0x80012E04  ; research/text-renderer.md § 6 candidate 2: 620 bytes of
 MOVIE_SUB_ISLAND_END equ 0x80013070  ; directory helpers nothing references; § 7 measured it
-MOVIE_LOAD_ISLAND     equ 0x800221CC ; dbg_font_init, 712 bytes, never called (same list);
-MOVIE_LOAD_ISLAND_END equ 0x80022494 ; research/movies.md § 8 measured it
+MOVIE_LOAD_ISLAND     equ DEBUG_FONT_ISLAND ; dbg_font_init's first part (vwf.asm splits it
+MOVIE_LOAD_ISLAND_END equ DEBUG_FONT_SPLIT  ; with the walkers); research/movies.md § 8
 MOVIE_FRAME_VOLUME   equ 0x800350F8
 LOADIMAGE            equ 0x80053684
 DSINTTOPOS           equ 0x8004CAEC

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ import pytest
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, PAGE_WORD, GlyphTable, words_of
 from boku.layout import (
     DIALOGUE_BAND,
+    SELECT_ROW,
     SPEECH_MARKS,
     STOCK_ADVANCE,
     BoxSpec,
@@ -136,6 +138,7 @@ def test_the_band_holds_the_lines_its_geometry_has_room_for():
     fits = (layout.band_y + layout.band_h - layout.pen_y - cell) // layout.line_pitch + 1
     assert DIALOGUE_BAND.lines == fits
     assert DIALOGUE_BAND.width == layout.wrap_width
+    assert SELECT_ROW.width == layout.select_width, "the lint's select row is not the drawn one"
 
     pencil_top = layout.band_y + layout.band_h - pencil_rows()
     reaches = [
@@ -312,6 +315,39 @@ def test_an_array_item_keeps_its_own_terminator_and_may_not_grow():
     too_long = lay_out_array("exe@8003D5F0.8", "abcabc", original, encoder, len(original))
     assert "6 over" in too_long.problems[0]
     assert "no slack" in too_long.problems[0]
+
+
+def test_an_array_item_wider_than_its_box_is_refused_by_the_pixel():
+    """`PLAN TXT-07`: a fixed-pitch surface's box is measured (`research/data/text-boxes.tsv`),
+    and an item that fits its bytes can still run under the frame. One pixel is the edge."""
+    original = raw(0x100, 0x101, 0x102, 0x103, NEWLINE_WORD)
+    encoder = cell_encoder()
+    width = measure(encoder, "mab")
+    exact = BoxSpec(width=width, lines=1, name="the test frame")
+    assert lay_out_array("exe@80046214.0", "mab", original, encoder, 10, exact).fits
+    over = lay_out_array(
+        "exe@80046214.0", "mab", original, encoder, 10, replace(exact, width=width - 1)
+    )
+    assert over.problems == (
+        f"exe@80046214.0: 'mab' is {width} px and the test frame holds {width - 1}, 1 over",
+    )
+    assert over.widths == ((width,),)
+
+
+def test_the_stock_sheet_is_measured_at_the_surface_s_own_step():
+    """The stock renderer steps a menu 12 px a cell (the help screen's one line 10), not the
+    dialogue's 14: a fixed-pitch font has no width of its own, so the box's `pitch` is its
+    width. Nine cells in a 115-px list panel are 108 px on screen, not 126."""
+    encoder = StockEncoder(GlyphTable.load())
+    original = raw(*[0x100] * 9, NEWLINE_WORD)
+    panel = BoxSpec(width=115, lines=1, pitch=12, name="the list panel")
+    assert lay_out_array("exe@80046214.3", "M" * 9, original, encoder, 20, panel).fits
+    over = lay_out_array("exe@80046214.3", "M" * 10, original, encoder, 22, panel)
+    assert over.widths == ((120,),)
+    # A proportional font carries its own widths; the pitch does not apply to it.
+    cells = cell_encoder()
+    laid = lay_out_array("exe@80046214.3", "mmm", original, cells, 20, panel)
+    assert laid.widths == ((measure(cells, "mmm"),),)
 
 
 def test_an_array_group_drawn_whole_is_left_alone_rather_than_divided_by_guesswork():

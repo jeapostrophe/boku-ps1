@@ -44,23 +44,44 @@ HEAP_START_STOCK equ 0x8008F3A4     ; first byte past the largest overlay (MUSI 
 HEAP_START_NEW   equ 0x8008F800     ; = the end of the file's extent in RAM
 CELL             equ 12             ; glyph_draw's sprite is 12 x 12 (0x8002BB4C)
 
-; t9 = the advance of the glyph id in at (FIXED_ADVANCE past the table); clobbers at. The
-; first instruction does not read at, so a `lhu at` may come right before the macro.
-.macro vwf_lookup_at
+; t9 = the advance of the glyph id in at; clobbers at (the first instruction does not read
+; it, so a `lhu at` may come right before). A cell that is not English -- the table's
+; FIXED_ADVANCE, or an id past the table -- advances `stock`, the surface's own pitch; with
+; stock == FIXED_ADVANCE that test is skipped. place_font refuses an English advance of 14.
+.macro vwf_lookup_at, stock
     lui     t9, hi(vwf_advance)
     addu    t9, t9, at
     lbu     t9, lo(vwf_advance)(t9)
+.if stock == FIXED_ADVANCE
     sltiu   at, at, TABLE_IDS       ; (load delay of t9)
     bnez    at, @@have
     nop
     addiu   t9, zero, FIXED_ADVANCE
+.else
+    sltiu   at, at, TABLE_IDS       ; (load delay of t9)
+    beqz    at, @@stock             ; past the table
+    addiu   at, t9, -FIXED_ADVANCE
+    bnez    at, @@have              ; an English cell
+    nop
+@@stock:
+    addiu   t9, zero, stock
+.endif
 @@have:
 .endmacro
+
+; dbg_font_init 0x800221CC..0x80022494: 712 bytes of dead code (research/text-renderer.md
+; § 6 candidate 2), shared. movie.asm's loader takes [ISLAND, SPLIT), walkers.asm's step
+; bodies [SPLIT, END); each block is an .area, so either outgrowing its half is a build
+; error, and moving SPLIT is the one edit that rebalances them.
+DEBUG_FONT_ISLAND     equ 0x800221CC
+DEBUG_FONT_SPLIT      equ 0x800222EC    ; 288 bytes for the movie loader
+DEBUG_FONT_ISLAND_END equ 0x80022494
 
 .include "dialogue.asm"
 .include "select.asm"
 .include "arena.asm"
 .include "voice.asm"
+.include "walkers.asm"
 .include "movie.asm"
 
 ; ---- the heap's first byte ---------------------------------------------------------------
@@ -78,9 +99,9 @@ CELL             equ 12             ; glyph_draw's sprite is 12 x 12 (0x8002BB4C
 .endarea
 
 ; ---- the space that frees ------------------------------------------------------------------
-; The advance table first, then the variables and hook routines of the surfaces that need a
-; jump out (the dialogue advance fits in place and needs none). Everything the includes
-; reference by name is defined here, inside the one area, so an overflow is a build error.
+; The advance table first, then the select's variables and hook routines (the dialogue
+; advance fits in place and needs none; the fixed-pitch walkers' bodies are in walkers.asm's
+; island). One area, so an overflow is a build error.
 .org HEAP_START_STOCK
 .area HEAP_START_NEW - HEAP_START_STOCK
 .if ORIGINAL
@@ -107,7 +128,7 @@ vwf_select_ymax:
 ; jal's delay slot and must survive; v0 at t0 t9 are dead.
 vwf_select_advance:
     lhu     at, -2(s1)              ; the glyph id just drawn
-    vwf_lookup_at
+    vwf_lookup_at FIXED_ADVANCE
     addu    s2, s2, t9              ; the row's pen moves right instead of the column's down
     lui     t0, hi(vwf_select_xmax)
     lw      v0, lo(vwf_select_xmax)(t0)
@@ -119,28 +140,6 @@ vwf_select_advance:
 @@done:
     jr      ra
     nop
-
-; The fixed-pitch walkers' steps (title.asm; research/vwf-prototype.md § "The fixed-pitch
-; surfaces"). Named by what they touch: pen register, id pointer, and `next` when the body
-; also steps the pointer because the stock step's own slot was a branch delay slot.
-vwf_step_s5_s0:                     ; s5 += advance[-2(s0)]
-    lhu     at, -2(s0)
-    vwf_lookup_at
-    jr      ra
-    addu    s5, s5, t9
-
-vwf_step_v1_s0_s1:                  ; v1 = s0 + advance[-2(s1)]
-    lhu     at, -2(s1)
-    vwf_lookup_at
-    jr      ra
-    addu    v1, s0, t9
-
-vwf_step_s1_s0_next:                ; s1 += advance[-2(s0)]; s0 += 2
-    lhu     at, -2(s0)
-    vwf_lookup_at
-    addu    s1, s1, t9
-    jr      ra
-    addiu   s0, s0, 2
 
 ; Called from select_box_draw in place of the table's w and h (select.asm). s1 -> the
 ; rect {x, y, w, h} (select.asm puts the corner SEL_PAD left of the cursor and above the

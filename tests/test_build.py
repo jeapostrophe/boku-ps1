@@ -16,6 +16,8 @@ import pytest
 
 from boku import REPO_ROOT
 from boku.archive import ARCHIVE_NAME, EXE_NAME
+from boku.arrays import SELECT_LINES_ADDR
+from boku.boxes import box_for
 from boku.build import (
     BuildRefused,
     EditSet,
@@ -28,9 +30,11 @@ from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, GlyphTable, words_to_
 from boku.layout import (
     DIALOGUE_BAND,
     LABEL_MARKS,
+    SELECT_ROW,
     SPEAKER_LABELS,
     BoxSpec,
     CellMapEncoder,
+    LayoutError,
     Marks,
     StockEncoder,
     label_allowance,
@@ -330,6 +334,10 @@ class OneSite:
     def raw(self, archive: object, site: object) -> bytes:
         return self.original
 
+    @property
+    def size(self) -> int:
+        return len(self.original)
+
 
 @dataclass(frozen=True)
 class OneArraySite(OneSite):
@@ -358,15 +366,17 @@ def test_a_code_file_menu_is_laid_out_as_its_rows_each_ending_the_line():
 
 
 def test_a_code_file_menu_row_wider_than_the_box_is_refused_as_the_lint_refuses_it():
-    """The build measured bytes only and wrote a row the lint called over-wide."""
+    """The build measured bytes only and wrote a row the lint called over-wide. A code-file
+    menu is a select, so its row is the select row (`SELECT_ROW` / the edit set's), not the
+    dialogue band it was first measured against."""
     table = GlyphTable.load()
     cell = table.from_character["「"]
     original = words_to_bytes([cell, cell, cell, NEWLINE_WORD])
     walk = OneArraySite(original, kind="ARR-S", line_id="exe@1")
     entry = TranslationEntry(line_id="exe@1", speaker="[SEL]", options=("Go",))
     encoder = StockEncoder.load()
-    box = BoxSpec(width=measure(encoder, "Go") - 1, lines=3)
-    (result,) = lay_out(NoArchive(), walk, [entry], encoder, box)
+    row = BoxSpec(width=measure(encoder, "Go") - 1, lines=1)
+    (result,) = lay_out(NoArchive(), walk, [entry], encoder, DIALOGUE_BAND, select_row=row)
     assert any("cannot wrap" in problem for problem in result.problems)
 
 
@@ -384,6 +394,60 @@ def dressed(original: bytes, speaker: str, label: bool = True):
     )
     assert len(results) == 1
     return results[0]
+
+
+def test_an_array_item_is_laid_out_in_its_surface_s_measured_box():
+    """The item-menu row (`exe@80046214.*`, `research/data/text-boxes.tsv`): a word that
+    fits its bytes and not the list panel is refused by the build as it is by the lint."""
+    encoder = StockEncoder.load()
+    box = box_for("exe@80046214.0").spec
+    word = "M" * (box.width // box.pitch + 1)  # the stock sheet steps the menu's own pitch
+    walk = OneSite(words_bytes(*[5] * (len(word) + 1), NEWLINE_WORD), "ARR-E", "exe@80046214.0")
+    wide = lay_out(
+        NoArchive(),
+        walk,
+        [TranslationEntry(walk.line_id, "", (word,))],
+        encoder,
+        BoxSpec(width=9999, lines=4),
+    )[0]
+    assert [p for p in wide.problems if " px and " in p], wide.problems
+    fits = lay_out(
+        NoArchive(),
+        walk,
+        [TranslationEntry(walk.line_id, "", (word[1:],))],
+        encoder,
+        BoxSpec(width=9999, lines=4),
+    )[0]
+    assert fits.problems == ()
+
+
+def test_the_select_row_is_the_one_the_installed_renderer_draws():
+    """`build_prototype.py --sel-x/--pen-x` move the row; the edit set records the row it
+    assembled (`layout.select_width`), and that is what a select is measured against --
+    not `SELECT_ROW`'s default, which only describes a default build."""
+    assert EditSet((), {}).select_row == SELECT_ROW, "an edit set that says nothing is stock"
+    narrow = EditSet((), {"layout": {"select_width": SELECT_ROW.width - 40}}).select_row
+    assert narrow.width == SELECT_ROW.width - 40
+    with pytest.raises(LayoutError):
+        _ = EditSet((), {"layout": {"select_width": "wide"}}).select_row
+
+    encoder = StockEncoder.load()
+    option = "M" * ((narrow.width // encoder.advance("M")) + 1)  # past narrow, inside stock
+    assert narrow.width < measure(encoder, option) <= SELECT_ROW.width
+    walk = OneSite(words_bytes(5, NEWLINE_WORD, 6, NEWLINE_WORD), "SEL1.1", "E1.0")
+    entry = TranslationEntry(walk.line_id, "[SEL]", options=(option, "No"))
+
+    class TwoLineSelects(NoArchive):
+        """`g_select_lines[0]` = 2 and no prompt line: select 1.1 is a plain yes/no."""
+
+        def exe_bytes(self, address: int, size: int) -> bytes:
+            return bytes([2 if address == SELECT_LINES_ADDR else 0]) + bytes(size - 1)
+
+    def laid(row):
+        return lay_out(TwoLineSelects(), walk, [entry], encoder, DIALOGUE_BAND, select_row=row)[0]
+
+    assert laid(SELECT_ROW).problems == ()
+    assert [p for p in laid(narrow).problems if "cannot wrap" in p]
 
 
 def marked(*marks: str) -> dict[str, int]:

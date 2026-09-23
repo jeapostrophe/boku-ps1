@@ -48,6 +48,7 @@ from boku.archive import (
     ArchiveError,
 )
 from boku.arrays import ArrayError, SelectTables
+from boku.boxes import box_for
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
 from boku.events import VOICE_KEY_SIZE, EventError
@@ -56,6 +57,7 @@ from boku.importer import ImportRefused, check_out_dir, sha1_of
 from boku.layout import (
     DIALOGUE_BAND,
     MENU_IS_SEL,
+    SELECT_ROW,
     BoxSpec,
     CellMapEncoder,
     Encoder,
@@ -68,6 +70,7 @@ from boku.layout import (
     lay_out_select,
     lay_out_subtitle,
     original_marks,
+    select_row_of,
     speaker_label,
 )
 from boku.reinsert import (
@@ -454,6 +457,11 @@ class EditSet:
         return CellMapEncoder.from_document(self.document, "the edit set")
 
     @property
+    def select_row(self) -> BoxSpec:
+        """The select row the renderer in these edits draws (`boku.layout.select_row_of`)."""
+        return select_row_of(self.document)
+
+    @property
     def work_area_end(self) -> int:
         """The map work area the patched engine tests against (`asm/arena.asm`).
 
@@ -613,6 +621,7 @@ def lay_out(
     indent_continuations: bool = False,
     label: bool = True,
     voice_subtitles: bool = False,
+    select_row: BoxSpec = SELECT_ROW,
 ) -> list[LineResult]:
     """Turn every entry of a translation into words, collecting the lints it failed.
 
@@ -664,13 +673,7 @@ def lay_out(
             if not prompts:
                 prompts, options = select_fields(entry, shape[1])
             laid = lay_out_select(
-                entry.line_id,
-                options,
-                original,
-                shape,
-                encoder,
-                box,
-                prompts,
+                entry.line_id, options, original, shape, encoder, select_row, prompts
             )
         elif kind == "MSG":
             # The marks follow the original and the label is the translation's speaker
@@ -706,7 +709,7 @@ def lay_out(
         elif kind == "ARR-S" and entry.is_select:
             # A menu held in a code file, opened by `select_open_ptr`: a select's rows.
             laid = lay_out_array_select(
-                entry.line_id, entry.options, original, encoder, sites[0].size, box
+                entry.line_id, entry.options, original, encoder, sites[0].size, select_row
             )
         elif kind == "ARR-S":
             out.append(
@@ -731,8 +734,14 @@ def lay_out(
                     )
                 )
                 continue
+            measured = box_for(entry.line_id)
             laid = lay_out_array(
-                entry.line_id, " ".join(entry.pages), original, encoder, sites[0].size
+                entry.line_id,
+                " ".join(entry.pages),
+                original,
+                encoder,
+                sites[0].size,
+                measured.spec if measured else None,
             )
         else:
             out.append(
@@ -829,6 +838,7 @@ def build(
     name: str = DEFAULT_BUILD_NAME,
     work_area_end: int = MAP_WORK_AREA_END,
     voice_subtitles: bool = False,
+    select_row: BoxSpec = SELECT_ROW,
 ) -> BuildResult:
     """Read an import and a translation, and write a patched image (`PIPE-04`).
 
@@ -867,6 +877,7 @@ def build(
             indent_continuations=indent_continuations,
             label=label,
             voice_subtitles=voice_subtitles,
+            select_row=select_row,
         )
         problems = [p for line in lines for p in line.problems]
         if problems and not skip_unfitted:
@@ -1139,6 +1150,7 @@ def main_build(
             name=name,
             work_area_end=(edit_set.work_area_end if edit_set is not None else MAP_WORK_AREA_END),
             voice_subtitles=edit_set is not None and edit_set.voice_subtitles,
+            select_row=(edit_set.select_row if edit_set is not None else SELECT_ROW),
         )
     except (
         ArchiveError,

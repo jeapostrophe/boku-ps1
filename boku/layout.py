@@ -56,7 +56,9 @@ from boku.sites import page_waits
 from boku.voice import subtitle_waits
 
 STOCK_ADVANCE = 14
-"""Every fixed-pitch surface steps 14 px per cell (`research/vwf-prototype.md`)."""
+"""The dialogue's step per cell, 14 px, and what a `StockEncoder` charges by default. The
+menus step less -- 12, or 10 on one help line -- which a `BoxSpec`'s `pitch` carries
+(`research/data/text-boxes.tsv`)."""
 
 AVERAGE_PX_PER_CHARACTER = 5.85
 """Measured over the prototype's sample lines (`research/vwf-prototype.md` § "Measurements
@@ -196,9 +198,9 @@ def measure(encoder: Encoder, run: str) -> int:
 class BoxSpec:
     """What one text surface can hold, in pixels and lines.
 
-    Measured for the dialogue band on the running prototype
-    (`research/vwf-prototype.md` § "Measurements for `TXT-07`"); every other surface is
-    still to be measured, which is what `PLAN TXT-07` is.
+    The dialogue band was measured on the running prototype
+    (`research/vwf-prototype.md` § "Measurements for `TXT-07`"); the menu surfaces measured
+    so far are `research/data/text-boxes.tsv`'s rows (`boku.boxes`).
     """
 
     width: int
@@ -210,6 +212,9 @@ class BoxSpec:
     guarded_width: int = 0
     """What a guarded line has to fit in instead, because the pencil occupies the rest."""
     name: str = "box"
+    pitch: int = 0
+    """The surface's own step per cell, which is the width of every glyph of a font that
+    has none of its own (the stock sheet, `StockEncoder`); 0 = the encoder's."""
 
     def width_of_line(self, number: int) -> int:
         """The usable width of line `number` (1-based), pencil included."""
@@ -232,6 +237,27 @@ default crop shows and a TV's title-safe margin; 272 usable px with the left mar
 mirrored. The next-page pencil is moved to the band's last 11 rows at x >= 267, which
 crosses line 3 only, so that line must end before x ~ 262 = 24 + 238.
 `research/vwf-prototype.md` § "The ruled band"."""
+
+
+SELECT_ROW = BoxSpec(width=248, lines=1, name="a select row")
+"""One option of a SELECT as `TXT-05` draws it: a row from `SEL_X` (48) to the dialogue
+pen's right margin, 320 - 24 - 48 px, for a renderer built with the default geometry
+(`build_prototype.Layout.select_width`, which `tests/test_layout.py` ties this to). A build
+with its own `--sel-x`/`--pen-x` records the row it drew in its edit set, and
+`select_row_of` reads that instead. A row cannot wrap; the box is measured from the text,
+so nothing else caps it (`research/vwf-prototype.md` § "SELECT")."""
+
+
+def select_row_of(document: object) -> BoxSpec:
+    """The select row a `TXT-05` edit set was assembled with (`layout.select_width`);
+    `SELECT_ROW` when the document records none -- a cell map with no layout of its own."""
+    layout = document.get("layout") if isinstance(document, dict) else None
+    width = layout.get("select_width") if isinstance(layout, dict) else None
+    if width is None:
+        return SELECT_ROW
+    if not isinstance(width, int) or width <= 0:
+        raise LayoutError(f"the edit set's layout.select_width is {width!r}, not a pixel count")
+    return replace(SELECT_ROW, width=width)
 
 
 SPEAKER_LABELS = frozenset(
@@ -452,6 +478,7 @@ def lay_out_array(
     original: bytes,
     encoder: Encoder,
     size: int,
+    box: BoxSpec | None = None,
 ) -> LaidOut:
     """One item of a code-file array: the English, then the item's own terminator.
 
@@ -467,12 +494,15 @@ def lay_out_array(
     known yet -- it is reported rather than guessed at. A code-file menu (an **S** array)
     is not this function's: it is a `[SEL]` row, `lay_out_array_select`.
 
-    There is no pixel lint here: the 20 fixed-pitch surfaces these arrays feed have not
-    been measured (`PLAN TXT-07`), so the only limit that is known is the byte length.
+    `box` is the surface's measured frame (`boku.boxes`, `research/data/text-boxes.tsv`,
+    `PLAN TXT-07`); an item whose surface has no measured box yet is held to its bytes
+    alone. The item is one line: none of the walkers these arrays feed wraps.
     """
     words = words_of(original)
     controls = [index for index, word in enumerate(words) if word & 0x8000]
     problems: list[str] = []
+    if box is not None and box.pitch and isinstance(encoder, StockEncoder):
+        encoder = replace(encoder, fixed_advance=box.pitch)
     if controls != [len(words) - 1]:
         return LaidOut(
             line_id=line_id,
@@ -493,6 +523,12 @@ def lay_out_array(
     missing = unencodable(encoder, text)
     if missing:
         problems.append(f"{line_id}: the {encoder.name} draws no cell for {''.join(missing)!r}")
+    width = measure(encoder, text)
+    if box is not None and width > box.width:
+        problems.append(
+            f"{line_id}: {text!r} is {width} px and {box.name} holds {box.width}, "
+            f"{width - box.width} over"
+        )
     new = (*(_cell(encoder, character) for character in text), words[-1])
     if 2 * len(new) > size:
         problems.append(
@@ -504,7 +540,7 @@ def lay_out_array(
         line_id=line_id,
         words=new,
         pages=((text,),),
-        widths=((measure(encoder, text),),),
+        widths=((width,),),
         problems=tuple(problems),
     )
 
@@ -524,7 +560,7 @@ def lay_out_array_select(
     original: bytes,
     encoder: Encoder,
     size: int,
-    box: BoxSpec = DIALOGUE_BAND,
+    row: BoxSpec = SELECT_ROW,
 ) -> LaidOut:
     """A select held in a code file (an **S** array): `lay_out_select`, in its own bytes.
 
@@ -533,7 +569,7 @@ def lay_out_array_select(
     (`research/text-outside-events.md` § "What changed against `REC-03`'s array table").
     Like every array item it has no slack, so growth is refused.
     """
-    laid = lay_out_select(line_id, lines, original, (menu_lines(original), 0), encoder, box)
+    laid = lay_out_select(line_id, lines, original, (menu_lines(original), 0), encoder, row)
     need = 2 * len(laid.words)
     if need <= size:
         return laid
@@ -554,7 +590,7 @@ def lay_out_select(
     original: bytes,
     shape: tuple[int, int],
     encoder: Encoder,
-    box: BoxSpec = DIALOGUE_BAND,
+    row: BoxSpec = SELECT_ROW,
     prompts: Sequence[str] = (),
 ) -> LaidOut:
     """One select box: `shape` is `(lines, prompt lines)` read out of the executable.
@@ -583,9 +619,9 @@ def lay_out_select(
     for index, (line, width) in enumerate(zip(text, widths, strict=True), start=1):
         if "\n" in line:
             problems.append(f"{line_id} line {index}: a select line cannot be broken")
-        if width > box.width:
+        if width > row.width:
             problems.append(
-                f"{line_id} line {index}: {width} px in {box.width}, {width - box.width} "
+                f"{line_id} line {index}: {width} px in {row.width}, {width - row.width} "
                 f"over ({line!r}); a select line cannot wrap"
             )
     words: list[int] = []

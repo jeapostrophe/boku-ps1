@@ -1,0 +1,29 @@
+line_id	x	right	pitch	surface	basis
+exe@80029B20.0	64	160	12	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
+exe@80029B20.1	64	160	12	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
+exe@80029B20.2	52	160	12	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
+exe@80029B20.3	64	160	12	5 controls help (START)	left column: ends at the button column (lines 13-14 at x 160)
+exe@80029B20.4	172	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.5	184	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.6	184	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.7	172	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.8	172	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.9	202	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.10	52	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.11	52	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.12	52	268	12	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.13	160	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.14	160	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.15	136	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.16	160	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.17	160	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.18	136	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.19	150	172	10	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.20	150	172	10	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@80029B20.21	148	172	12	5 controls help (START)	button label: ends where the right column starts (x 172)
+exe@8003D5F0.*	34	299	12	17 memory-card messages (TITLE)	the panel's inner edge; g_mc_msg's layouts other than 5-6 start at 34
+exe@8003D5F0.29	74	299	12	17 memory-card messages (TITLE)	g_mc_msg layouts 5-6 start at 74
+exe@8003D5F0.30	74	299	12	17 memory-card messages (TITLE)	g_mc_msg layouts 5-6 start at 74
+exe@8003D9BC.*	40	149	12	19 config labels (TITLE)	the left panel's frame
+exe@8003D9BC.4	88	149	12	19 config labels (TITLE)	line 4 (the setting) starts at 88
+exe@80046214.*	40	155	12	12 item names (bag)	the list panel's frame

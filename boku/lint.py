@@ -28,6 +28,7 @@ What it checks, and where each rule comes from
   wrap logic and clips at the screen edge silently, so this is the real gate
   (`research/vwf-prototype.md`).
 * **`select-width`** -- a select line cannot wrap; a second line would be a second option.
+  Measured against the row the renderer draws (`renderer_for`), not the band.
 * **`array-bytes`** -- a code-file array item has no slack: the next symbol starts where
   it ends, so growth is refused by the reinserter (`boku/layout.py`, `PLAN PIPE-03`). A
   menu held in a code file (an **S** array) is written as a `[SEL]` row and checked like a
@@ -35,6 +36,9 @@ What it checks, and where each rule comes from
 * **`not-placeable`** -- *a warning*: a label assembled from instruction immediates or the
   memory-card title (`script_store.PLACED_BY_CODE`). It has English but no text site, so
   the build cannot place it until a code patch does (`PLAN TXT-05`).
+* **`array-width`** -- an array item wider, in pixels, than its surface's measured box
+  (`boku.boxes`, `research/data/text-boxes.tsv`, `PLAN TXT-07`). A surface with no row has
+  not been measured and is held to its bytes alone.
 * **`additive-word`** -- *a heuristic, and a warning only.* The pilot's recurring defect
   was English the Japanese does not have -- adverbs and intensifiers added for rhythm
   (`translation/days/README.md` § "Lessons from the pilot"). It fires when an English
@@ -71,19 +75,22 @@ is deliberately the pessimistic way round for a limit nobody has settled.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from boku import REPO_ROOT, movie_cues
 from boku.archive import DEFAULT_DISC_DIR
+from boku.boxes import TextBox, box_for
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import (
     DIALOGUE_BAND,
     MENU_IS_SEL,
+    SELECT_ROW,
     BoxSpec,
     CellMapEncoder,
     Encoder,
@@ -96,6 +103,7 @@ from boku.layout import (
     lay_out_subtitle,
     measure,
     original_marks,
+    select_row_of,
     speaker_label,
     unencodable,
     wrap,
@@ -412,6 +420,10 @@ class Options:
     they are the ones the Japanese drew (`boku.layout.original_marks`), not a choice."""
     additive_words: tuple[str, ...] = ADDITIVE_WORDS
     additive: bool = True
+    boxes: Mapping[str, TextBox] | None = None
+    """The non-dialogue boxes by line id; `None` reads `research/data/text-boxes.tsv`."""
+    select_row: BoxSpec = SELECT_ROW
+    """What one select option may take (`renderer_for`)."""
 
 
 @dataclass
@@ -546,7 +558,7 @@ def _check_select(context: _Context, row: Row, record: dict, shape: tuple[int, i
         context.say(
             row, "unencodable", ERROR, f"the {encoder.name} draws no cell for {''.join(missing)!r}"
         )
-    width = context.options.box.width
+    width = context.options.select_row.width
     for index, line in enumerate(drawn, start=1):
         pixels = measure(encoder, line)
         if pixels > width:
@@ -567,7 +579,7 @@ def _check_array_select(context: _Context, row: Row, record: dict) -> None:
         original_bytes(record, context.table),
         context.options.encoder,
         record["capacity"]["bytes"],
-        context.options.box,
+        context.options.select_row,
     )
     for problem in laid.problems:
         check = "array-bytes"
@@ -581,20 +593,26 @@ def _check_array_select(context: _Context, row: Row, record: dict) -> None:
 
 
 def _check_array(context: _Context, row: Row, record: dict) -> None:
-    """The byte size, through the same `lay_out_array` the build lays arrays out with.
-
-    There is no pixel lint here: the fixed-pitch surfaces these arrays feed have not been
-    measured (`PLAN TXT-07`), so the byte length is the only limit that is known.
-    """
+    """Bytes and pixels, through the same `lay_out_array` and box the build uses."""
     encoder = context.options.encoder
     text = " ".join(row.entry.pages)
     size = record["capacity"]["bytes"]
-    laid = lay_out_array(row.line_id, text, original_bytes(record, context.table), encoder, size)
+    box = box_for(row.line_id, context.options.boxes)
+    laid = lay_out_array(
+        row.line_id,
+        text,
+        original_bytes(record, context.table),
+        encoder,
+        size,
+        box.spec if box else None,
+    )
     for problem in laid.problems:
         detail = problem.split(": ", 1)[-1]
         check = "array-bytes"
         severity = ERROR
-        if "drawn as a group" in problem:
+        if " px and " in problem and problem.endswith(" over"):
+            check = "array-width"
+        elif "drawn as a group" in problem:
             check, severity = "array-group", WARNING
         elif "draws no cell" in problem:
             check = "unencodable"
@@ -756,17 +774,28 @@ def _check_loader_agreement(rows: Sequence[Row]) -> Iterator[Finding]:
 # --- running it -------------------------------------------------------------------------------
 
 
-def make_encoder(kind: str, cells: Path | None) -> Encoder:
-    """`stock` or `cellmap`; a cell map defaults to the edit set the build installs."""
+def renderer_for(kind: str, cells: Path | None) -> tuple[Encoder, BoxSpec]:
+    """`(encoder, select row)` for `stock` or `cellmap`. A cell map defaults to the edit set
+    the build installs, and the select row is the one that edit set was assembled with
+    (`boku.layout.select_row_of`) -- one file read for both, as `EditSet` does."""
     if kind == "stock":
-        return StockEncoder.load()
+        return StockEncoder.load(), SELECT_ROW
     path = Path(cells) if cells is not None else DEFAULT_CELLS
     if not path.is_file():
         raise LayoutError(
             f"--encoder cellmap needs a character -> cell map and {path} is not there; "
             f"run `./make.sh build-days`, or give --cells FILE to measure another font"
         )
-    return CellMapEncoder.from_json(path)
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise LayoutError(f"{path}: {error}") from error
+    return CellMapEncoder.from_document(document, path.name), select_row_of(document)
+
+
+def make_encoder(kind: str, cells: Path | None) -> Encoder:
+    """`stock` or `cellmap`; a cell map defaults to the edit set the build installs."""
+    return renderer_for(kind, cells)[0]
 
 
 def lint_movies(path: Path, encoder: Encoder | None, cells: Path) -> list[Finding]:
@@ -842,9 +871,11 @@ def main_lint(
         return 2
     try:
         store = load_store(Path(disc_dir) / SCRIPT_DIR_NAME)
+        encoder, select_row = renderer_for(encoder_kind, cells)
         options = Options(
-            encoder=make_encoder(encoder_kind, cells),
+            encoder=encoder,
             box=box_from(width, lines, guard_from, guard_width),
+            select_row=select_row,
             label=label,
             additive=additive,
             additive_words=(read_word_list(additive_words) if additive_words else ADDITIVE_WORDS),

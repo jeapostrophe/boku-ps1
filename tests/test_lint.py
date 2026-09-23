@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -21,15 +22,18 @@ from boku import layout as layout_module
 from boku import lint as lint_module
 from boku import translation as translation_module
 from boku.archive import EXE_NAME
+from boku.boxes import TextBox
 from boku.build import VWF_EDITS_FORMAT, load_edit_set
 from boku.glyphs import GlyphTable
 from boku.layout import (
     DIALOGUE_BAND,
     LABEL_MARKS,
+    SELECT_ROW,
     CellMapEncoder,
     LayoutError,
     StockEncoder,
     lay_out_message,
+    measure,
     original_marks,
 )
 from boku.lint import (
@@ -46,11 +50,13 @@ from boku.lint import (
     lint_rows,
     load_rows,
     make_encoder,
+    renderer_for,
     select_fields,
     translation_paths,
 )
 from boku.script_store import load_store, original_bytes
 from tests.synth_script import SynthStore, write_translation
+from tests.test_vwf_prototype import vwf_layout
 
 VOICED = "E9001.0"
 UNVOICED = "E9001.1"
@@ -136,6 +142,34 @@ def test_a_select_with_the_wrong_option_count_is_an_error(store, tmp_path):
     assert f"fixes {fixed}" in finding.message
 
 
+def test_a_select_option_is_measured_against_the_row_the_renderer_draws(store, tmp_path):
+    """A select row starts at `SEL_X` and runs to the pen's right margin
+    (`build_prototype.Layout.select_width`, 248 px) -- not the dialogue band's 272. An option
+    between the two passed this lint and the prototype build refused it (the translation
+    lane, 2026-09-22), so the width is the renderer's, read from its own layout here."""
+    row_width = vwf_layout().select_width
+    encoder = StockEncoder.load()
+    step = encoder.advance("M")
+    word = "M" * (row_width // step + 1)  # just past the row, well inside the band
+    assert row_width < measure(encoder, word) <= DIALOGUE_BAND.width, "no gap to test"
+    rows = [row for row in GOOD if row[0] != CHOICE]
+    findings = run(store, tmp_path, [*rows, (CHOICE, "[SEL]", f"{word} | No | Again")], label=False)
+    assert f"in {row_width}," in only(findings, "select-width").message
+
+
+def test_the_lint_measures_selects_in_the_row_its_cell_map_s_build_drew(tmp_path):
+    """The lint's cell map is the edit set the build installs (`DEFAULT_CELLS`), and that
+    file also records the select row the renderer was assembled with; a lint measuring the
+    default row against a narrower build would pass options the screen clips."""
+    edits = tmp_path / "edits.json"
+    edits.write_text(
+        json.dumps({"cells": {"A": {"id": 292, "advance": 9}}, "layout": {"select_width": 200}}),
+        encoding="utf-8",
+    )
+    assert renderer_for("cellmap", edits)[1].width == 200
+    assert renderer_for("stock", edits)[1] == SELECT_ROW, "the stock renderer is the default"
+
+
 def test_a_select_s_question_is_not_counted_as_an_option(tmp_path):
     """A `[SEL]` whose box opens with a question lists the question as the first field.
 
@@ -152,10 +186,10 @@ def test_a_select_s_question_is_not_counted_as_an_option(tmp_path):
     shape = store.lines[CHOICE]["select"]
     options = shape["lines"] - shape["prompt_lines"]
 
-    good = [(CHOICE, "[SEL]", "What will you read? | Insects | Kites")]
+    good = [(CHOICE, "[SEL]", "Read which? | Insects | Kites")]
     assert checks(run(store, tmp_path, good, label=False)) == []
 
-    short = [(CHOICE, "[SEL]", "What will you read? | Insects")]
+    short = [(CHOICE, "[SEL]", "Read which? | Insects")]
     finding = only(run(store, tmp_path, short, label=False), "select-options")
     assert finding.severity == ERROR
     assert f"{options - 1} option(s) given" in finding.message
@@ -385,6 +419,26 @@ def test_an_array_item_that_grows_is_an_error(store, tmp_path):
     assert f"holds {size}" in finding.message
 
 
+def test_an_array_item_wider_than_its_measured_box_is_an_error(store, tmp_path):
+    """`PLAN TXT-07`: the byte limit is not the only one once a surface's box is measured
+    (`research/data/text-boxes.tsv`). The box is the one the build lays the item out in."""
+    encoder = StockEncoder.load()
+    text = "Item"
+    width = measure(encoder, text)
+    rows = [row for row in GOOD if row[0] != ARRAY]
+
+    def lint(right: int) -> list:
+        boxes = {ARRAY: TextBox(ARRAY, 0, right, 0, "test", "a test frame")}
+        path = write_translation(tmp_path / "day99.txt", [*rows, (ARRAY, "Boku", text)])
+        parsed, _ = load_rows(translation_paths([path]))
+        return lint_rows(store, parsed, Options(encoder=encoder, label=False, boxes=boxes))
+
+    assert "array-width" not in checks(lint(width))
+    finding = only(lint(width - 1), "array-width")
+    assert finding.severity == ERROR
+    assert f"is {width} px" in finding.message and "1 over" in finding.message
+
+
 def test_the_additive_word_heuristic_warns_and_only_warns(store, tmp_path):
     """One English sentence against two sources: one with an intensifier, one without.
 
@@ -451,6 +505,16 @@ def test_a_code_file_menu_that_outgrows_its_bytes_is_an_error(surfaces, tmp_path
     finding = only(run(surfaces, tmp_path, [(MENU, "[SEL]", f"{long} | a | b")]), "array-bytes")
     assert finding.severity == ERROR
     assert f"holds {size}" in finding.message
+
+
+def test_a_code_file_menu_row_is_measured_against_the_select_row(surfaces, tmp_path):
+    """A code-file menu is drawn by `select_draw`: its rows get the select row, not the band."""
+    encoder = StockEncoder.load()
+    rows = [(MENU, "[SEL]", "Go? | Yes | No")]
+    narrow = replace(SELECT_ROW, width=measure(encoder, "Go?") - 1)
+    parsed, _ = load_rows(translation_paths([write_translation(tmp_path / "day99.txt", rows)]))
+    options = Options(encoder=encoder, label=False, select_row=narrow)
+    assert "select-width" in checks(lint_rows(surfaces, parsed, options))
 
 
 def test_a_code_file_menu_written_as_a_plain_row_says_to_write_sel(surfaces, tmp_path):

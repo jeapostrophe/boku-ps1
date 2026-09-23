@@ -145,7 +145,7 @@ any image. **V** = vertical, **H** = horizontal, adv = glyph advance / line step
 | 2 | EXE `select_draw` `0x8002C234` | event `SELECT` (`select_open`) and 8 native `select_run_ptr` sites: EXE `0x8003F02C/F0B0/F1E4` (insect cage), `TAKO 0x8007F55C`, `MUSI 0x8007EF0C`, `HHON 0x8007C988` (EXE array `0x80046158`) and `0x8007D23C`, `ZUKAN 0x8007B07C` | **V** 12 / table | hard-coded: `addiu s0,s0,0xc` on the y register at `0x8002C2D0` | `g_select_pos`, `g_select_rect`; cursor offset literals `0x8002C3D4/DC` |
 | 3 | `HHON hhon_text_draw_v` `0x8007C278` | insect book entries `+0x5328` (the grid screen of mode 10 — text-outside-events.md § "The insect and kite books") | **V** 12 / 14 | hard-coded (`0x8007C2D8`, `0x8007C2E4/EC`) | literals: (0x100,0x2C) for the unseen placeholder, (0x124,0x26) for an insect; continuation columns restart at y `0x20`. **Measured** (`GFX-05`, `work/gfx05/shots/hhon-00300.png`): glyphs at x 292 stepping −14, y 38 stepping +12, OT layer 1, on the screen's own cream column — no `MZKAN` page under them |
 | 4 | `HHON hhon_text_scroll_v` `0x8007C1C4` | same, scrolling, via `glyph_draw_layer` (the cage label on mode 10's hub) | **V** 12 / 14 | hard-coded | literals (0x32,0x110−s) / (0x5A,0xFE−s), s = `g_hhon_scroll` `0x800805DC` (0 at the top of the hub, 200 once the box scrolls down), layer literal `0x1D4C`. **Measured** at s = 0: 39 glyphs at x 20..90, y 254..356 — below the visible frame until the hub scrolls (`work/gfx05/hhon-run1.log`) |
-| 5 | EXE `help_screen_draw` `0x80035674` | `g_help_text` `0x80029B20` | H 12 right-aligned (`text_draw_right`) ×4, H **10** (`help_line_draw`) ×2 | hard-coded | literals; rect 7 |
+| 5 | EXE `help_screen_draw` `0x80035674` | `g_help_text` `0x80029B20` | H 12 (`text_draw_right` ×4 — left-aligned despite the name: glyph 0 lands at x, [vwf-prototype.md](vwf-prototype.md) § "The fixed-pitch surfaces" 5a), H **10** (`help_line_draw`) ×2 | hard-coded | literals; rect 7 |
 | 6 | EXE `date_label_draw` `0x80037544` (callers: EXE `cage_hud_draw`, `MUSI`, `HHON`) | immediates `0x21F 0x382 … 0x1B8 … 0x157` + sprite digits | H, offsets `+0xD +0x25 +0x3A/0x41` | hard-coded | args |
 | 7 | EXE `date_label_draw_b` `0x80037698` | immediates `0x3EC 0x158 0x1F7 0x25D 0x1B8 0x157` | H | — | **unreferenced** |
 | 8 | EXE `count_label_draw` `0x800377F8` (EXE, `MUSI` ×2, `HHON`) | immediates `0x26A`, `0x4B9` + digits | H; x shifts by digit count | hard-coded | args |
@@ -276,7 +276,7 @@ encodes right-to-left columns). A VWF here needs a real hook: the loop has no sp
 
 | hazard | here (measured) |
 |---|---|
-| `strlen`-style centring / right-align | **Two sites.** `text_draw_right` `0x80035360` counts glyphs and draws backwards from `x_right` at 12 px (controls help, 4 calls). `cage_hud_draw` `0x8003FEA4` places the gender icon and size at `x + 12 × (glyph count returned by sysmsg_draw)`; `HHON 0x8007C464` and the `MUSI` name sites use the same return value (*callers' arithmetic not read in MUSI*). No PsyQ `strlen` is involved — text is `u16`. Nothing centres dialogue. |
+| `strlen`-style centring / right-align | **One site, not two.** `text_draw_right` `0x80035360` (controls help, 4 calls) counts glyphs forward and draws backwards by the same 12 px, so glyph 0 lands at the x it was given — not a right-align; both passes now take the width table (`asm/walkers.asm`). The real one: `cage_hud_draw` `0x8003FEA4` places the gender icon and size at `x + 12 × (glyph count returned by sysmsg_draw)`; `HHON 0x8007C464` and the `MUSI` name sites use the same return value (*callers' arithmetic not read in MUSI*). No PsyQ `strlen` is involved — text is `u16`. Nothing centres dialogue. |
 | measurer must skip control codes | The only measurers stop at the first bit-15 word; none sees `0x8002`'s operand because those arrays contain none. |
 | line caps in characters | **None** in any walker. `max_newlines`-style parameters do not exist. SELECT's line *count* is a table (`g_select_lines`), not a cap on length. |
 | buffers sized by glyph count | None for text. Shared primitive buffer `0x130B0` bytes/frame, unchecked (§1). Event data: **EV members are read into a `0x4000`-byte per-slot buffer** (`g_ev_buf` `0x80027808`), bump-allocated in whole sectors; `ev_queue_load` `0x80019DEC` panics ("event buffer over", `sjis_panic_print`) when `cursor + sectors × 0x800 ≥ base + 0x4000`, and takes at most 10 events. This bounds EV growth before the sector does. |
@@ -322,7 +322,9 @@ Candidates, cheapest first:
 2. **Dead code, unreferenced by any `jal`, data word or `lui` pair in any image**
    (`work/txt01/dead.py`): `0x80012E04…0x80013070` — 620 contiguous bytes (`cd_dir_sectors_form2`,
    `0x80012E40`, `0x80012E64`, `cd_dir_search_file`, `cd_dir_find`, `0x80012FF8`);
-   `dbg_font_init` `0x800221CC` — 712 bytes; `date_label_draw_b` `0x80037698` — 352;
+   `dbg_font_init` `0x800221CC` — 712 bytes (**now split between the movie loader and the walker bodies** at
+   `DEBUG_FONT_SPLIT`, `asm/vwf.asm`; the 620 bytes at
+   `0x80012E04` are the movie hooks', `asm/movie.asm`); `date_label_draw_b` `0x80037698` — 352;
    `0x80037414` — 272; `0x80043928` — 296; `0x8001CA64` 244, `0x8001CDF4` 192, `0x8001CC4C` 168.
    About 3.1 KB, in islands. (Function starts are heuristic — re-check each island's bounds when
    used.) **Taken:** `0x80012E04` and `dbg_font_init` `0x800221CC` hold the movie-subtitle

@@ -20,9 +20,11 @@ select geometry are build arguments, and the typeface is an input file.
 | 1 dialogue (`dialog_draw`) | **done, proven on both emulators** |
 | 17 memory-card messages, 19 config labels (`TITLE.OVL` walkers) | **done, proven on both emulators** |
 | 20 extras labels (`TITLE.OVL`) | patched and assembled against the retail bytes; the screen needs a save file, so not shot |
+| 5 the controls-help screen (START in free roam) | **done, proven on both emulators** (2026-09-22) |
+| 12 item names (the bag, △ then ○) | **done, proven on both emulators**; descriptions, captions, kite names and fishing ride the same two walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
 | 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
 | 3, 4 the insect book's two walkers (`HHON.OVL`) | **documented only**, not patched: § "The `HHON` walkers" |
-| the other 17 fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
+| the other fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
 
 ## Build and look
 
@@ -53,11 +55,13 @@ The build reads the import under `disc/` and never writes there.
 | `asm/dialogue.asm` | the dialogue surface; every site carries the retail instructions as an `ORIGINAL` block |
 | `asm/select.asm` | SELECT menus: the two hooks, cursor, pad, and the two geometry tables |
 | `asm/title.asm` | the three `TITLE.OVL` walkers, routed through the width table |
+| `asm/walkers.asm` | the executable's fixed-pitch walkers (help screen, items) and the island every walker's step body lives in |
 | `tools/vwf/build_prototype.py` | sheet rebuild, advance table, armips over the executable and the overlays, text, image writes, manifest |
 | `tools/vwf/placeholder-glyphs.txt` | eight placeholder cells (space `' " - ( ) ~ —`) and the glyph-file format |
 | `tools/vwf/prototype-lines.tsv` | which sample line or fixture goes over which site: dialogue, selects, array items |
 | `tools/vwf/reach-select.lua` | PCSX-Redux driver that reaches `E0112.1` from free roam (a map poke, § "Reaching the living room"), drives the select with the pad and reports `select_open` / `select_draw` |
 | `tools/vwf/shoot.sh` | the headless runs and the frames worth keeping |
+| `tools/vwf/shoot-menus.sh` | the card check, the controls-help screen and the item menu on both emulators (free roam reached by playing the arrival sequence out); `ISLAND_WATCH=1` arms `island-watch.lua` |
 
 ## Design
 
@@ -90,9 +94,16 @@ needs a jump out.
 
 The other walkers have no dead instructions to spend, but each has one thing the dialogue loop
 lacks: the pen step is a lone `addiu pen,pen,12` whose next instruction is not a branch, so it can
-become a `jal` to a ten-word body that adds `vwf_advance[id]` instead. `ra` is free at every one
+become a `jal` to a body that adds `vwf_advance[id]` instead. `ra` is free at every one
 (every walker saved its own and `jal glyph_draw` clobbers it each glyph); the bodies write only
 `at` and `t9`, so whatever the delay slot loaded — the next `a0`, a loop constant in `v0` — survives.
+**A cell that is not English keeps the surface's own stock pitch** (12, or 10 on the help
+screen's one 10-px line): the table holds the dialogue's 14 for every such cell, and
+`vwf_lookup_at stock` turns a 14, or an id past the table, into `stock`; the build refuses an
+English advance of 14 so the two meanings cannot meet (`place_font`). Until 2026-09-22 the
+`TITLE` bodies took the table's 14 for Japanese too, and the card-check screen's untranslated
+second line was drawn 32 px wider than stock; it is now pixel-identical to the retail frame
+on Beetle.
 Where the step itself sits in a branch delay slot (`text_draw_line_h`, the extras walkers) the
 `jal` takes the pointer step's slot instead and the body steps the pointer too. One macro,
 `vwf_lookup_at`, is the lookup; a body is that plus its add. The bodies are named by what they
@@ -139,14 +150,21 @@ over the dead-code islands because it is the only candidate whose deadness was *
 write-breakpoints rather than inferred from missing references ([renderer-runtime.md](renderer-runtime.md)
 § Q5), it is one contiguous `.area`, and it costs nothing but 1.1 KB of heap. Layout of the
 (c2) build (`edits.json` → `gap`): `vwf_advance` **812 bytes** at `0x8008F3A4`;
-`vwf_select_xmax/ymax` at `0x8008F6D0`; `vwf_select_advance`, `vwf_step_s5_s0`,
-`vwf_step_v1_s0_s1`, `vwf_step_s1_s0_next`, `vwf_select_box` from `0x8008F6D8`; free again
-from `vwf_free` = `0x8008F7DC` — **36 bytes**, which is not a whole body. The table is as
-long as the highest cell any English character was given, so it grows with the free-cell
-allocation, not with the font. The surfaces still to hook (§ "The
-fixed-pitch surfaces") need five to seven, about 240 bytes, so the next home is the 620-byte
-island at `0x80012E04` ([text-renderer.md](text-renderer.md) § 6 candidate 2), whose deadness is
-inferred, not measured — a write-breakpoint run like Q5's should precede it.
+`vwf_select_xmax/ymax` at `0x8008F6D0`; `vwf_select_advance` and `vwf_select_box` from
+`0x8008F6D8`; free again from `vwf_free` — the table is as long as the highest cell any English character was
+given, so it grows with the free-cell allocation, not with the font. **The walkers' step
+bodies live in the walker island**, the second part of `dbg_font_init` `0x800221CC…0x80022494`
+(712 bytes, [text-renderer.md](text-renderer.md) § 6 candidate 2): `asm/vwf.asm` splits it at
+`DEBUG_FONT_SPLIT` (`0x800222EC`) — the movie loader below ([movies.md](movies.md) § 8, 288
+bytes, 228 used), the walkers above (424 bytes, 356 used by seven bodies on 2026-09-22) —
+and each half is an `.area`, so outgrowing one is a build error; the build prints where the
+walker half's free space starts. The 620 bytes at `0x80012E04` are the movie hooks'.
+Deadness is measured on one path: an execution breakpoint over the whole of `dbg_font_init` logged **0 hits** on the stock disc on PCSX-Redux through the title and card check,
+the arrival sequence into free roam (14,000 frames from the first line), the help screen and
+the item menu, while a control breakpoint on `glyph_draw` logged about 69,000
+(`tools/vwf/island-watch.lua`, which `ISLAND_WATCH=1 tools/vwf/shoot-menus.sh
+disc/image.cue` arms). It is not assembled under `ORIGINAL` (dead retail code has no stock
+claim to check), and the manifest carries it as one SHA-1 (`walker_island`).
 
 ### The ruled band, the advance model, and what fits (Jay, 2026-09-20)
 
@@ -457,8 +475,18 @@ ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 | `0x8008045C`, `68` | 20a, extras label 5 (pen `s1`) | `addiu s0,s0,2` · `addiu s1,s1,0xC` (in a branch delay slot) | `jal vwf_step_s1_s0_next` · `nop` |
 | `0x80080790`, `A8`, `B0` | 20b, extras labels 0–4 | `addiu v1,s1,0xC` (next is a branch) · `addiu s1,v1,4` (lines 0, 3) · `addiu s0,s0,2` | `move v1,s1` · `move s1,v1` · `jal vwf_step_s1_s0_next` |
 
+**Executable walkers** (`asm/walkers.asm`):
+
+| RAM | walker | stock | patched |
+|---|---|---|---|
+| `0x8003539C`, `B0`, `C0` | 5a `text_draw_right` (help screen) | `addiu s1,s1,1` (count) · `addiu s2,s2,0xC` (delay slot) · `addiu s2,s2,-0xC` (draw) | `jal vwf_count_s2_s0` · `nop` · `jal vwf_back_s2_s0` |
+| `0x80035490` | 5b `help_line_draw` | `addiu s1,s1,0xA` | `jal vwf_step_s1_s0_p10` |
+| `0x80043834`, `48` | 12a `text_draw_line_h` (item, kite names; fishing) | `addiu s0,s0,2` · `addiu s1,s1,0xC` (delay slot) | `jal vwf_step_s1_s0_cur` · `nop` |
+| `0x800438A4`, `B8` | 12b `text_draw_h` (descriptions, captions; fishing) | the same two | the same two |
+
 **Free space**: `0x80068AF0` heap bump pointer `0x8008F3A4` → `0x8008F800`; `0x8008F3A4…` the
-table, variables and bodies listed above.
+table, the select's variables and bodies; `0x800222EC…0x80022494` (the upper part of `dbg_font_init`, dead)
+the walker bodies.
 
 On the disc this build changed 36 sectors: 7 of the executable, 6 of the font TIM (`ONMEM.BIN`
 child 2 starts at `BOKU.BIN + 0x5F94AA0`), 3 of `TITLE.OVL`, and the text (dialogue in the map
@@ -548,8 +576,9 @@ Reached from a cold boot (Beetle: START at 3300, then CIRCLE at 3600 for the car
 
 * **Card check** (`beetle-title-card-check.png`, `redux-title-card-check.png`): "Checking card"
   set proportionally at (36, 160) in the wooden frame, dark text with shadow, over the stock
-  second line `【メモリーカードを抜かないで下さい】` still at its 12-px pitch — one walker, two
-  pitches, keyed on the id. Surface 17's hook is right.
+  second line `【メモリーカードを抜かないで下さい】` — one walker, two pitches, keyed on the
+  id. (This note first said that line kept its 12-px pitch; it was drawn at 14, 32 px wider
+  than stock, until the 2026-09-22 walker bodies; now its pixels match the retail frame's.)
 * **Continue with no card** (`beetle-title-no-file.png`, `redux-title-no-file.png`): "No file
   here" (message 4) proportional, the `!` book icon above. The extras entry shows the same
   message, so surface 20's screen is not reachable without a save.
@@ -557,6 +586,19 @@ Reached from a cold boot (Beetle: START at 3300, then CIRCLE at 3600 for the car
   Rumble" at x = 40 and "On" at the stock line-4 x of 88, all proportional, hand cursor on line
   0; the right-hand panel (`音声＋字幕` …) is a texture. Line 1's stock 16-px letter-spacing is
   gone — with proportional glyphs it read as a mistake.
+
+### The controls-help screen and the item menu (both emulators, `shoot-menus.sh`)
+
+* **Help** (START in free roam): the fixtures "Move", "Up:Go", "Talk/Ex", "Jump/OK", "Skip
+  VO" and the two bottom lines set proportionally at the pens of § "The fixed-pitch boxes";
+  the untranslated lines (`左　右：向き`, `×：走る`, `△・□：サブ画面を表示` …) keep 12 px. Glyph
+  0 of every line is at its stock x — `text_draw_right` is a left-align.
+* **Items** (△, then ○ on the bag, day 1): "Exercise" in place of the radio-calisthenics
+  card's name at x 40, proportional, the hand cursor beside it, the card's picture on the right as stock.
+* **Card check**, rebuilt: the second line's ink map is identical to the retail frame's
+  (compared column by column on Beetle), "Checking card" above it proportional.
+
+The two emulators agree on all three.
 
 ### SELECT on screen (PCSX-Redux; `reach-select.lua`, frames state-relative)
 
@@ -618,6 +660,32 @@ lines at (c1) widths (`work/txt05b/shots/`). Everything below was measured on th
   end at row 238.
 * **Primitive cost** is unchanged per glyph (3 × `SPRT`); the longest page here is 56 glyphs.
 
+### The fixed-pitch boxes
+
+What an item of a menu array may hold is one row per line id (or `<array>.*`) in
+[`data/text-boxes.tsv`](data/text-boxes.tsv): the x its walker starts it at and the column
+`right` where its frame begins, so the English may advance `right − x` px on one line (none of
+these walkers wraps); a line's own row wins over its array's. `pitch` is the walker's stock
+step (12; 10 on `help_line_draw`), which is what the stock sheet — a font with no widths of
+its own — is measured at there. `boku.boxes` reads it; `boku lint` (`array-width`), `boku build` and this
+prototype's fixtures all refuse an item past it. Measured 2026-09-22 on Beetle screenshots of
+the stock disc (frame edges) and read off the code (pens — `tests/test_real_boxes.py`
+re-derives every pen from the disc's bytes):
+
+* **Controls help** (START, surface 5): 22 rows. Pens from `g_help_pos` (`0x80029904`) and
+  `help_draw`'s literals. The screen is a diagram, not a box: the left column (lines 0–3)
+  ends at the button column (x 160), the right column and the two bottom lines at 268 (the
+  help box `g_select_rect[6]` = 32…288, less the 20-px margin the stock lines keep), and the
+  button labels (13–21) at the right column's x, 172.
+* **Memory-card messages** (surface 17): pen 34, or 74 for the two lines layouts 5–6 draw
+  (`g_mc_msg`); the panel's inner edge is 299.
+* **Config labels** (surface 19): pen 40 (line 4 at 88); the left panel's frame at 149.
+* **Item names** (surface 12, the bag): pen 40; the list panel's frame at 155.
+
+Not measured, so held to their bytes alone: item descriptions and photo captions (no day-1
+item has one), kite names, fishing, the fish names, the extras labels (need a save), insect
+names and the `HHON`/`MUSI` surfaces.
+
 ## The fixed-pitch surfaces
 
 Every horizontal surface of [text-renderer.md](text-renderer.md) § 3 rows 5–26, read again at
@@ -626,21 +694,23 @@ branch-delay slot; every function here saves `ra`). Decision: **A** = route thro
 table with a `jal` hook; **B** = keep the fixed pitch; **C** = untouched, the surface never draws
 Latin from the re-aligned range (immediates, digits, one-glyph rows). Status: **proven** = on
 screen on both emulators; **assembled** = in `asm/` and checked against the retail bytes, screen
-not reached; **table** = this row is the whole specification.
+not reached; **tested** = hooked, and the walker run instruction by instruction on the patched
+executable (`tests/test_real_walkers.py`), screen not reached; **table** = this row is the whole
+specification.
 
 | # | image · function | step instruction (stock) | pen · id | decision | status |
 |---|---|---|---|---|---|
-| 5a | EXE `text_draw_right` `0x80035360` — not right-aligned: a count pass steps `s2 += 12` per glyph, then the draw pass walks the line backwards, `s2 −= 12` before each draw, so glyph 0 lands at x | `0x8003539C addiu s1,s1,1` (count; id at `-2(s0)`, delay slot `lh v0,0(s0)`) · `0x800353B0 addiu s2,s2,0xC` (branch delay slot) · `0x800353C0 addiu s2,s2,-0xC` (draw; id at `0(s0)`, delay slot `lh a0,0(s0)`) | `s2` · `s0` | **A**: `539C → jal` {`s2 += w[-2(s0)]; s1 += 1`}, `53B0 → nop`, `53C0 → jal` {`s2 −= w[0(s0)]`}; the bodies must not write `v0`/`a0` | table |
-| 5b | EXE `help_line_draw` `0x80035448` (pitch 10) | `0x80035490 addiu s1,s1,0xA`; delay slot `addiu s0,s0,2` so the id is at `-2(s0)` in the body | `s1` · `-2(s0)` | **A**, body = `vwf_step_s1_s0` (pen `s1`, id `-2(s0)`) | table |
+| 5a | EXE `text_draw_right` `0x80035360` — not right-aligned: a count pass steps `s2 += 12` per glyph, then the draw pass walks the line backwards, `s2 −= 12` before each draw, so glyph 0 lands at x | `0x8003539C addiu s1,s1,1` (count; id at `-2(s0)`, delay slot `lh v0,0(s0)`) · `0x800353B0 addiu s2,s2,0xC` (branch delay slot) · `0x800353C0 addiu s2,s2,-0xC` (draw; id at `0(s0)`, delay slot `lh a0,0(s0)`) | `s2` · `s0` | **A**: `539C → jal` {`s2 += w[-2(s0)]; s1 += 1`}, `53B0 → nop`, `53C0 → jal` {`s2 −= w[0(s0)]`}; the bodies must not write `v0`/`a0` | **proven** |
+| 5b | EXE `help_line_draw` `0x80035448` (pitch 10) | `0x80035490 addiu s1,s1,0xA`; delay slot `addiu s0,s0,2` so the id is at `-2(s0)` in the body | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0_p10` (stock 10) | tested (only pad type 2, whose labels are `Ｌ２`/`Ｌ１`, draws it; the shots were pad type 0) |
 | 6 | EXE `date_label_draw` `0x80037544` | none: five immediates at `x, x+0xD, x+0x25, x+0x3A/0x41` plus sprite digits | — | **C**; a translation re-points the ids and re-tunes the literals | table |
 | 7 | `date_label_draw_b` | unreferenced | — | **C** | table |
 | 8 | EXE `count_label_draw` `0x800377F8` | none: `0x26A`, `0x4B9` at offsets chosen by digit count | — | **C** | table |
 | 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with a contract change**: body `s3 += w; s2 += w` and `0x80037B3C → nop`, so the return value becomes the pixel width; then the five consumers of `12 × count` must take it as pixels — EXE `cage_hud_draw` `0x8003FF98…A0` (`sll/addu/sll` → `move v1,v0` + nops), `HHON 0x8007C46C…74` (same), `MUSI 0x8007D474…7C`, and the two right-aligning `8 − n` blocks `MUSI 0x8007D918…30` and `0x8007D874…8C` (the latter through `sllv … s5`, whose `s5` is not settled statically — an emulator question before it is patched). The vertical path (`a3 ≠ 0`) has no traced caller | table (blocked on reach: the cage HUD needs a caught insect) |
 | 10 | EXE `mc_slot_labels_draw` `0x8003A7A4` — really the fortune result (`大吉！` …), three glyphs stacked vertically at x `0x9A` | rows, not a pen | — | **C** | table |
 | 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table |
-| 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | table |
-| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body can serve both by reloading `v0` and `v1` | table |
-| 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | |
+| 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
+| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | tested |
+| 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | tested |
 | 15 | `TITLE 0x8007BB60` (save date) | none: `0x3C` at `s1`, `0x1B8` at `+0xC`, digits, `0x157` at `+0x30` | — | **C** | table |
 | 16 | `TITLE 0x8007C8EC` (slot digits, `0x5B0`) | none | — | **C** | table |
 | 17 | `TITLE 0x8007CB54` (memory-card messages; `0x8007CC4C` is inside it, not a second walker) | `0x8007CDD8 addiu s5,s5,0xC` | `s5` · `-2(s0)` | **A** | **proven** |
@@ -656,12 +726,11 @@ not reached; **table** = this row is the whole specification.
 | 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | table |
 
 Counts: **A** 12 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 19, 20a, 20b, 25, 26; 13 and 14 ride on
-12), of which 2 proven and 2 assembled; **B** 3 (18, 23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21,
-22). The "six copies of one walker" are not register-identical — pens `s3`, `s5`, `v1`+`s0`,
-`v1`+`s1`, `s1`, `s1`; id pointers `s0` or `s1` — so the bodies are per shape: `vwf_step_s1_s0`
-serves four surfaces (5b, 11, 25, 26), the three in `asm/vwf.asm` serve `TITLE`, and 5a, 9, 12
-need one each. Every body is ten words; with 52 bytes left in the gap the next ones go to the
-`0x80012E04` island (§ "The free space").
+12), of which 4 proven (5a, 12a, 17, 19), 2 tested (5b, 12b), 2 assembled (20a, 20b); **B** 3
+(18, 23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
+register-identical — pens `s3`, `s5`, `v1`+`s0`, `v1`+`s1`, `s1`, `s1`; id pointers `s0` or
+`s1` — so the bodies are per shape and per stock pitch (`asm/walkers.asm`, the walker island;
+§ "The free space").
 
 ## Reaching the living room (why the SELECT proof is Redux-only)
 
@@ -724,8 +793,8 @@ the bodies is § "The free space"'s next island.
 ## Not done
 
 * **The extras screen** (surface 20) needs a save file. **`HHON`** is documented, not
-  patched. **The twelve other A-decision surfaces** of § "The fixed-pitch surfaces" are a
-  table, not code. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
+  patched. **The A-decision surfaces marked "table"** in § "The fixed-pitch surfaces" (9, 11,
+  25, 26) are not code yet. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
   route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
   bodies add only the table byte.
