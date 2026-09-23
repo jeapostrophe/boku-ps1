@@ -92,6 +92,7 @@ from boku.movie_block import (  # noqa: E402
     movie_names,
 )
 from boku.movie_cues import CUE_FILE, check, cues_by_movie, read, read_movie_lengths  # noqa: E402
+from boku.pointers import destination  # noqa: E402
 from boku.ppf import differing_spans  # noqa: E402
 from boku.reinsert import MAP_WORK_AREA_END  # noqa: E402
 from boku.relocate import SectorEdit, padded  # noqa: E402
@@ -751,50 +752,154 @@ def glyph_ids_in(raw: bytes) -> set[int]:
     return ids
 
 
-def _a0_immediate(words: list[int], site: int) -> tuple[int, int] | None:
-    """The `(base, count)` of ids a `jal glyph_draw` at `words[site]` passes in `a0`.
+DIGIT_BASE = 0x34
+"""The full-width zero's glyph: code draws a digit d as `0x34 + d`
+(`research/text-outside-events.md` § "Text made at run time")."""
 
-    Reads the delay slot and up to eight instructions back for the last write to `a0`:
-    `addiu/ori a0,zero,imm` is the one id `imm`; `addiu a0,rs,imm` with a live `rs` is the
-    digit pattern `0x34 + d` (`research/text-outside-events.md` § "Text made at run time"),
-    ten ids from `imm`. Any other write (a load, a move) is an array walk, which the site
-    index already covers, and returns None. Mirrors `work/rec04/direct_ids.py`, which
-    `research/font.md` § "The draw code" was read from.
-    """
-    for j in [site + 1, *range(site - 1, max(site - 9, -1), -1)]:
-        word = words[j]
-        op, rs, rt = word >> 26, (word >> 21) & 31, (word >> 16) & 31
-        if op in (9, 13) and rt == 4:  # addiu / ori, rt = a0
-            imm = word & 0xFFFF
-            return (imm, 1) if rs == 0 else (imm, 10)
-        if op == 0 and (word >> 11) & 31 == 4 and j != site + 1:  # R-type writing a0
-            return None
-        if op in (0x20, 0x21, 0x23, 0x24, 0x25) and rt == 4:  # a load into a0
-            return None
+
+def _writes_a0(word: int) -> bool:
+    return destination(word) == 4
+
+
+def _flow(word: int) -> str | None:
+    """ "call", "jump" (never falls through), "branch", or None."""
+    op = word >> 26
+    if op == 3 or (op == 1 and (word >> 16) & 31 in (0x10, 0x11)) or (op == 0 and word & 0x3F == 9):
+        return "call"
+    if op == 2 or (op == 0 and word & 0x3F == 8):
+        return "jump"
+    if op == 1 or 4 <= op <= 7:
+        return "branch"
     return None
+
+
+UNKNOWN_ENTRY = -1
+"""In `entries`: a way into a word whose `a0` this image cannot show -- a function entry
+(callers in other images, or through `jalr`) or a jump-table target."""
+
+
+def branch_entries(words: Sequence[int], base: int) -> dict[int, list[int]]:
+    """Word index -> the branches and `j`s that land there; `UNKNOWN_ENTRY` for a `jal`
+    target and for any word of the image whose value is an address inside it (a jump
+    table can land there too)."""
+    end = base + 4 * len(words)
+    out: dict[int, list[int]] = {}
+    for index, word in enumerate(words):
+        op = word >> 26
+        if op == 1 or 4 <= op <= 7:
+            offset = (word & 0xFFFF) - (0x10000 if word & 0x8000 else 0)
+            out.setdefault(index + 1 + offset, []).append(index)
+        elif op in (2, 3):
+            target = ((base + 4 * index) & 0xF0000000) | ((word & 0x3FFFFFF) << 2)
+            if base <= target < end:
+                out.setdefault((target - base) // 4, []).append(UNKNOWN_ENTRY if op == 3 else index)
+        if base <= word < end and not word & 3:
+            out.setdefault((word - base) // 4, []).append(UNKNOWN_ENTRY)
+    return out
+
+
+A0_DEPTH = 12
+"""How many blocks `_a0_immediate` follows back before calling `a0` unknown."""
+
+
+def _a0_immediate(
+    words: Sequence[int], site: int, entries: dict[int, list[int]] | None = None
+) -> frozenset[tuple[int, int]] | None:
+    """Every `(base, count)` of ids a `jal glyph_draw` at `words[site]` can pass in `a0`, where
+    the code proves it on every path; None where any path does not.
+
+    Walks back from the draw (its delay slot first) along every path into it, to the last
+    write to `a0` on each: `addiu/ori a0,zero,imm` is the one id `imm`; `addiu a0,rs,
+    DIGIT_BASE` the digit pattern, ten ids. Any other write -- a load, a move, arithmetic --
+    makes the answer None, as does a path that returns from a call (it leaves `a0`
+    undefined), a way in `entries` cannot name, or going deeper than `A0_DEPTH` blocks. A
+    branch's delay slot runs on both of its paths. None is the safe answer: such a site is
+    named, with what it walks, in `tests/test_real_glyph_sites.py`.
+    """
+    entries = entries or {}
+
+    def classify(word: int) -> frozenset[tuple[int, int]] | None:
+        op, rs, imm = word >> 26, (word >> 21) & 31, word & 0xFFFF
+        if op in (9, 13) and rs == 0:
+            return frozenset({(imm, 1)})
+        if op == 9 and imm == DIGIT_BASE:
+            return frozenset({(DIGIT_BASE, 10)})
+        return None
+
+    def after(index: int, depth: int) -> frozenset[tuple[int, int]] | None:
+        if _writes_a0(words[index]):
+            return classify(words[index])
+        return before(index, depth)
+
+    def before(index: int, depth: int) -> frozenset[tuple[int, int]] | None:
+        if depth > A0_DEPTH or index <= 0:
+            return None
+        found: set[tuple[int, int]] = set()
+        for source in entries.get(index, ()):
+            if source == UNKNOWN_ENTRY:
+                return None
+            value = after(source + 1, depth + 1)  # the branch's delay slot ran first
+            if value is None:
+                return None
+            found |= value
+        previous = index - 1
+        ahead = _flow(words[previous - 1]) if previous > 0 else None
+        if ahead == "call":
+            return None  # returning from a call: a0 is whatever it left
+        if ahead != "jump":  # after a jump's delay slot nothing falls through
+            value = after(previous, depth + (1 if index in entries else 0))
+            if value is None:
+                return None
+            found |= value
+        return frozenset(found) if found else None
+
+    if site + 1 < len(words) and _writes_a0(words[site + 1]):
+        return classify(words[site + 1])
+    return before(site, 0)
+
+
+@dataclass(frozen=True)
+class GlyphSite:
+    """One `jal glyph_draw` / `glyph_draw_layer` in an image, and what `a0` is there."""
+
+    image: str
+    ram: int
+    ids: frozenset[tuple[int, int]] | None
+    """`_a0_immediate`'s `(base, count)`s, or None where the code does not prove `a0`."""
+
+
+def glyph_draw_sites(archive: Archive) -> list[GlyphSite]:
+    """Every glyph draw in the executable and every overlay, resolved as far as the code says."""
+    images = [(EXE_NAME, archive.exe[EXE_HEADER:], EXE_LOAD_BIAS + EXE_HEADER)]
+    overlays = sorted(m.short_name for m in archive.members if m.short_name.endswith(".OVL"))
+    for name in overlays:
+        images.append((name, archive.blob(archive.member(name)), OVERLAY_BASE))
+    calls = {0x0C000000 | ((target >> 2) & 0x3FFFFFF) for target in (GLYPH_DRAW, GLYPH_DRAW_LAYER)}
+    out: list[GlyphSite] = []
+    for name, data, base in images:
+        count = len(data) // 4
+        words = list(struct.unpack_from(f"<{count}I", data))
+        entries = branch_entries(words, base)
+        for site, word in enumerate(words):
+            if word in calls and site + 1 < count:
+                out.append(GlyphSite(name, base + 4 * site, _a0_immediate(words, site, entries)))
+    return out
 
 
 def code_glyph_ids(archive: Archive) -> set[int]:
     """Glyph ids the code passes to `glyph_draw` without reading them from text.
 
     Derived from the binaries, not retyped: every `jal glyph_draw` / `glyph_draw_layer` in
-    the executable and the four drawing overlays is resolved by `_a0_immediate`. Plus the
+    the executable and every overlay is resolved by `_a0_immediate`. Plus the
     remap `sysmsg_draw` applies. This is the set the free-cell list of
-    `research/font-candidates.md` § 1 promises to exclude and the text-site gate cannot see.
+    `research/font-candidates.md` § 1 promises to exclude and the text-site gate cannot see;
+    the sites it cannot resolve walk messages or arrays, which `tests/test_real_glyph_sites.py`
+    names one by one.
     """
-    images = [(archive.exe[EXE_HEADER:], EXE_LOAD_BIAS + EXE_HEADER)]
-    for name in DRAWING_OVERLAYS:
-        images.append((archive.blob(archive.member(name)), OVERLAY_BASE))
-    calls = {0x0C000000 | ((target >> 2) & 0x3FFFFFF) for target in (GLYPH_DRAW, GLYPH_DRAW_LAYER)}
     ids: set[int] = set(SYSMSG_REMAP) | set(SYSMSG_REMAP.values())
-    for data, _ in images:
-        count = len(data) // 4
-        words = list(struct.unpack_from(f"<{count}I", data))
-        for site, word in enumerate(words):
-            if word in calls and site + 1 < count:
-                found = _a0_immediate(words, site)
-                if found:
-                    ids.update(range(found[0], found[0] + found[1]))
+    for site in glyph_draw_sites(archive):
+        for base, count in site.ids or ():
+            ids.update(range(base, base + count))
     return ids
 
 

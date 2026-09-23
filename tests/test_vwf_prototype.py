@@ -149,6 +149,79 @@ def test_a_description_fixture_breaks_where_it_says_up_to_its_box_s_lines():
         encode("exe@80046214.0", "a\na")
 
 
+JAL_GLYPH_DRAW = 0x0C000000 | ((0x8002BA2C >> 2) & 0x3FFFFFF)
+JAL_OTHER = 0x0C000000 | ((0x80011000 >> 2) & 0x3FFFFFF)
+NOP = 0
+ADDIU_A0_ZERO = 0x24040000  # addiu a0,zero,imm
+ANDI_A0_V0 = 0x30440000  # andi a0,v0,imm
+MOVE_A0_S0 = 0x02002021  # addu a0,s0,zero
+BNE_V0_ZERO = 0x14400000  # bne v0,zero,+imm
+
+
+def a0_of(words, site, entries=None):
+    return vwf_prototype()._a0_immediate(words, site, entries or {})
+
+
+def test_an_immediate_id_is_found_anywhere_in_the_draw_s_block():
+    """TITLE's save-date drawer sets its first id far above the draw, arithmetic between."""
+    words = [ADDIU_A0_ZERO | 0x3C, *[NOP] * 20, JAL_GLYPH_DRAW, NOP]
+    assert a0_of(words, 21) == {(0x3C, 1)}
+
+
+@pytest.mark.parametrize(
+    ("words", "site", "entries", "why"),
+    [
+        # a call between: a0 is whatever the call left
+        ([ADDIU_A0_ZERO | 0x3C, JAL_OTHER, NOP, NOP, JAL_GLYPH_DRAW, NOP], 4, None, "call"),
+        # the immediate sits in an earlier call's delay slot: it was that call's argument
+        ([JAL_OTHER, ADDIU_A0_ZERO | 0x3C, NOP, JAL_GLYPH_DRAW, NOP], 3, None, "call's slot"),
+        # a way in nobody can read (a jump table) between the write and the draw
+        ([ADDIU_A0_ZERO | 0x3C, NOP, NOP, JAL_GLYPH_DRAW, NOP], 3, {2: [-1]}, "table"),
+        # a0 computed after the immediate
+        ([ADDIU_A0_ZERO | 5, ANDI_A0_V0 | 0xFF, JAL_GLYPH_DRAW, NOP], 2, None, "andi"),
+        # a0 set in the draw's own delay slot, by a move
+        ([ADDIU_A0_ZERO | 5, JAL_GLYPH_DRAW, MOVE_A0_S0], 1, None, "slot move"),
+    ],
+)
+def test_a0_not_proven_immediate_is_reported_unknown(words, site, entries, why):
+    """Unknown is safe -- the site goes to the walker audit (`tests/test_real_glyph_sites.py`);
+    a wrong immediate is not: the draw's real ids would be protected by nothing."""
+    assert a0_of(words, site, entries) is None, why
+
+
+def test_a_conditional_branch_s_fallthrough_keeps_its_block():
+    """Falling through a branch does not leave the block: the id set above it still holds."""
+    words = [ADDIU_A0_ZERO | 0x3C, BNE_V0_ZERO | 8, NOP, NOP, JAL_GLYPH_DRAW, NOP]
+    assert a0_of(words, 4) == {(0x3C, 1)}
+
+
+def test_every_path_s_id_is_collected():
+    """`count_label_draw`'s shape: a branch to the draw carries one id in its delay slot, the
+    fall-through another; both are ids the code draws."""
+    # 0: beq zero,zero,+2 (to 3) with a0=0x26A in its slot; 2: a0=0x4B9; 3: the draw
+    words = [0x10000002, ADDIU_A0_ZERO | 0x26A, ADDIU_A0_ZERO | 0x4B9, JAL_GLYPH_DRAW, NOP]
+    assert a0_of(words, 3, {3: [0]}) == {(0x26A, 1), (0x4B9, 1)}
+
+
+def test_a_function_entry_is_not_walked_into_its_callers():
+    """A function that passes its caller's `a0` to the draw: the one caller in this image
+    sets an immediate, but another image or a `jalr` can call it with anything."""
+    tool = vwf_prototype()
+    base = 0x80010000
+    jal_f = 0x0C000000 | (((base + 16) >> 2) & 0x3FFFFFF)  # jal F (word 4)
+    jr_ra = 0x03E00008
+    words = [jal_f, ADDIU_A0_ZERO | 0x3C, jr_ra, NOP, JAL_GLYPH_DRAW, NOP]
+    assert a0_of(words, 4, tool.branch_entries(words, base)) is None
+
+
+def test_only_the_digit_base_is_read_as_digits():
+    tool = vwf_prototype()
+    digits = 0x24440000 | tool.DIGIT_BASE  # addiu a0,v0,0x34
+    other = 0x24440000 | 0x1234  # addiu a0,v0,0x1234: an address, not a digit
+    assert a0_of([digits, JAL_GLYPH_DRAW, NOP], 1) == {(tool.DIGIT_BASE, 10)}
+    assert a0_of([other, JAL_GLYPH_DRAW, NOP], 1) is None
+
+
 @pytest.mark.parametrize("advance_model", ["c1", "c2"])
 def test_no_cell_the_script_draws_changes_width_under_either_advance_model(
     archive: Archive, site_index: SiteIndex, advance_model: str

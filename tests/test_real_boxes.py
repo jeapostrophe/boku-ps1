@@ -97,6 +97,8 @@ def test_the_bag_and_extras_pens_are_their_drawers_literals(archive):
     for prefix in ("exe@80046398", "exe@80046614"):
         assert box_for(f"{prefix}.0").x == desc & 0xFFFF
     assert set(pens("exe@8003DA00", range(5)).values()) == {extras & 0xFFFF}
+    label5 = word(archive, 0x800803E0, "TITLE.OVL")  # 20a: addiu s1,zero,0x72
+    assert label5 >> 16 == 0x2411 and box_for("exe@8003DA00.5").x == label5 & 0xFFFF
 
 
 def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
@@ -128,6 +130,7 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         "exe@8003D9BC.1": walkers["exe@8003D9BC"] + config_extra,
         "exe@8003DA00.0": walkers["exe@8003DA00"] + extras_extra,
         "exe@8003DA00.3": walkers["exe@8003DA00"] + extras_extra,
+        "exe@8003DA00.5": step(0x80080468, "TITLE.OVL"),  # label 5's own walker (20a)
     }
     for line_id, box in load_boxes().items():
         wanted = special.get(line_id, walkers.get(line_id.rpartition(".")[0]))

@@ -131,7 +131,8 @@ strings (file `0x1A230…0x37146`; the "text" `REC-01` saw near file `0x60CAA` i
 * **559 inked glyphs are never used** by anything found: 80 of ids 1–113, 13 kana, 466
   kanji/specials. With the 24 blank cells that is **583 slots that could be repurposed** — an
   upper bound until `REC-03` walks the script structurally (strings shorter than 3 glyphs,
-  text in formats the heuristic cannot see, and the 23 computed-id draw sites are not counted).
+  text in formats the heuristic cannot see, and the computed-id draw sites were not counted; those
+  walk messages and arrays the structural walk has: `tests/test_real_glyph_sites.py`).
 
 ## What the font offers English (`TXT-02`)
 
@@ -171,6 +172,9 @@ re-spaced without touching untranslated lines, and those ten only shift by their
   only the screens not sampled: the pause menu, item menu, insect book, sumo and the diary.
 * `MDLTIM.RTM` TIM headers name (768, 0) and (640, 0); if its loader honours them they would
   collide with the font. *Hypothesis:* it relocates, as `tim_upload` does. Not read.
-* The 23 `glyph_draw` sites with computed ids, and who sets `g_text_flags & 0x10` (`TXT-01`).
+* Who sets `g_text_flags & 0x10` (`TXT-01`). The draws with computed ids are not open: the 24
+  `code_glyph_ids` cannot resolve are each a walker of messages or arrays (or a wrapper whose
+  callers are sites themselves), named and checked against the site index in
+  `tests/test_real_glyph_sites.py`.
 * PsyQ identities `SetSprt`, `AddPrim`, `SetDrawTPage`, `LoadImage` are from the Ghidra
   signature export in `symbols/`, except `SetSprt`, recognised from its body.

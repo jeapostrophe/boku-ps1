@@ -19,7 +19,7 @@ select geometry are build arguments, and the typeface is an input file.
 |---|---|
 | 1 dialogue (`dialog_draw`) | **done, proven on both emulators** |
 | 17 memory-card messages, 19 config labels (`TITLE.OVL` walkers) | **done, proven on both emulators** |
-| 20 summer-memories labels (`TITLE.OVL`) | **labels 0–4 done, proven on both emulators** (2026-09-23, a "finished" card: § "Screens behind a save"); label 5 (the dinner-quiz rate, walker 20a) assembled, not shot |
+| 20 summer-memories labels (`TITLE.OVL`) | **labels 0–4 done, proven on both emulators** (2026-09-23, a "finished" card: § "Screens behind a save"); label 5 (the dinner-quiz rate, walker 20a) proven on both emulators, forced: § "Screens behind a save" |
 | 5 the controls-help screen (START in free roam) | **done, proven on both emulators** (2026-09-22) |
 | 12 item names and descriptions (the bag, △ then ○) | **done, proven on both emulators** — descriptions wrapped to three lines in their box (2026-09-23, items poked into the bag: § "Screens behind a save"); captions, kite names and fishing ride the same two walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
 | 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
@@ -374,7 +374,21 @@ state: `g_map_load` `0x801B5A50`, `g_bg_clut_save` = B + `0x7C00`, level C `0x80
 **Proven**: with the raise in, the arrival sequence, three map changes (`G14` → `G06` →
 `G01`), the SELECT and the day-2 `H06000` scene (`E0220`, `work/txt05b/shots/08`) all run
 on Beetle, and `M_H06001` itself — child 6 past `0x6400` — loads and draws (§ "Round 2").
-**Not proven**: the stack in menus, sumo and fishing. Under the full-translation estimate six maps pass `0x6400` by up to 5,926 bytes
+**The stack elsewhere** (2026-09-23, Beetle, `tools/vwf/stack-watch.sh`: a sentinel from
+level C + 0x6000 up, and the lowest changed byte still joined to the stack's top —
+`state_poke.py --scan`'s `stack_mark`, because the item menu writes a 2,776-byte buffer at
+the fill's floor): free-roam walking 0x228 bytes deep, the controls-help screen none past the
+fill's top, the item menu 0x298, the insect box forced open (hub, notebook page, grid)
+0x350, the kite game 0x348, `MUSI` forced (its init only: it returns to the field before a
+bout) 0x320, and mode 15 forced (which runs on into the evening's dinner scene rather than a
+save screen) **0xFB0 — 4,016 bytes, the same event-path depth as the arrival sequence**.
+Nothing measured goes deeper than the 4,016 the raise was sized against. But the item menu's
+2,776 bytes land at the scratch's end, inside the gap `arena.asm`'s `STACK_GAP` counts as free
+(not traced whose they are): with them the 6,640 bytes past the measured depth are 3,864 —
+still above the guard's half-depth 2,008, if the two ever coexist. `stack_mark` is a
+heuristic: a buffer written within `FRAME_HOLE` bytes of the stack's frames would be read as
+stack (over-reporting depth, the safe side). Not measured: § "Not done". Under the
+full-translation estimate six maps pass `0x6400` by up to 5,926 bytes
 (`M_H06001`), inside this raise.
 
 ### No cell the Japanese script draws is touched
@@ -398,9 +412,14 @@ character map the build emits (`manifest.json` → `cells`), not through NFKC of
 **Two gates refuse a cell that would change under something that draws it.** The first walks
 every text site of the import — messages, selects, arrays — and refuses if any draws a cell about
 to be redrawn. The second, `code_glyph_ids`, covers what no site can show: it scans every `jal
-glyph_draw` / `glyph_draw_layer` in the executable and the four drawing overlays and resolves
+glyph_draw` / `glyph_draw_layer` in the executable and every overlay and resolves
 the `a0` each passes — an immediate (`addiu/ori a0,zero,n`), or the digit pattern `addiu a0,r,0x34`
-(ten ids), plus `sysmsg_draw`'s 13 → 14 remap. On this image that is 25 ids: 13, 14, 15, 40,
+(ten ids), plus `sysmsg_draw`'s 13 → 14 remap. It follows every path back into the draw (branch
+targets and delay slots; a return from a call, a jump-table entry or any other write to `a0`
+makes the draw unresolved), so TITLE's save date, which sets its id twenty instructions early,
+and `count_label_draw`'s two ids in branch delay slots are resolved. The 24 draws it cannot resolve
+are each named with the arrays they walk, and checked against the site index, in
+`tests/test_real_glyph_sites.py`, so a new computed-id draw fails a test. On this image that is 25 ids: 13, 14, 15, 40,
 52–61, 343, 344, 440, 503, 543, 605, 618, 898, 1004, 1209, 1456 — the same list
 [font.md](font.md) § "The draw code" was read from by hand, now derived from the bytes. Made red
 on purpose: with 1209 pretended free the *text* gate already refuses (an array draws it); with
@@ -691,10 +710,11 @@ re-derives every pen from the disc's bytes):
   build wraps the English to the box by pixels (`boku.layout.lay_out_array`), a `0x8001` at
   each break. Photo captions use the same drawer and pen, so the same box — not shot.
 * **Summer-memories labels 0–4** (surface 20): pen 40 (`extras_draw`'s `addiu s1,zero,0x28`),
-  the left panel's frame at 149, as the config screen's.
+  the left panel's frame at 149, as the config screen's. **Label 5**, the quiz rate: pen 114
+  (walker 20a's `addiu s1,zero,0x72`) in its popup, x 112…223.
 
-Not measured, so held to their bytes alone: kite names, fishing, the fish names, the
-summer-memories quiz rate (label 5), insect names and the `HHON`/`MUSI` surfaces.
+Not measured, so held to their bytes alone: kite names, fishing, the fish names, insect
+names and the `HHON`/`MUSI` surfaces.
 
 ### Screens behind a save (2026-09-23)
 
@@ -713,6 +733,13 @@ Reached on both emulators with generated cards (`./make.sh saves`,
   the list as it opens, so a poke before that is lost): "Crackers", `斧`, "Bang" at 16-px
   rows, and item 2's description "Sharp. / Not for / kids." in three lines at (184, 126).
 
+* **The quiz rate** (label 5, walker 20a, with the day count and percentage under it): a
+  popup over the summer-memories menu that `0x80080810` draws only while the word
+  `0x80025938` is 1 and toggles on a pad bit. The only store to that word by address in the
+  executable or any overlay is a `sw zero` at `0x80011FF0` (`MUSI`, `TAKO`, `BUMPER` and
+  `TITLE` only load it), so in retail the popup is probably unreachable; both the word and the
+  popup's byte flag `0x800820DC` are written (`shoot-menus.sh`; `tools/vwf/word-pokes.lua`
+  on Redux). "Quiz rate" set proportionally at (114, 80) on both emulators.
 ## The fixed-pitch surfaces
 
 Every horizontal surface of [text-renderer.md](text-renderer.md) § 3 rows 5–26, read again at
@@ -743,7 +770,7 @@ specification.
 | 17 | `TITLE 0x8007CB54` (memory-card messages; `0x8007CC4C` is inside it, not a second walker) | `0x8007CDD8 addiu s5,s5,0xC` | `s5` · `-2(s0)` | **A** | **proven** |
 | 18 | `TITLE 0x8007CF7C` (card-screen yes/no, 5 raw glyphs at `0x80081480`) | `0x8007D050 addiu s1,s1,0xC`; after glyph index 1 (`0x8007D03C addiu v0,zero,1`) the step is `+0x30` (`0x8007D04C`) — the word gap | `s1` · `lh 2·s0(s4)` | **A**, with the build: `0x8007D050 → jal vwf_step_s1_answer` (id fetched by index), the gap `0x8007D04C → addiu s1,zero,0xAC` (the second answer starts where the stock one did), and the split and count rewritten from the translation — § "The card screens' two answers" | **proven** |
 | 19 | `TITLE 0x8007FA94` (config) | `0x8007FBC4 addiu v1,s0,0xC` | `v1 = s0 +` · `-2(s1)` | **A** | **proven** |
-| 20a | `TITLE 0x800803D8` (extras label 5) | `0x80080468` in a branch delay slot; hook at `0x8008045C addiu s0,s0,2` | `s1` · `-2(s0)` | **A** | assembled |
+| 20a | `TITLE 0x800803D8` (extras label 5) | `0x80080468` in a branch delay slot; hook at `0x8008045C addiu s0,s0,2` | `s1` · `-2(s0)` | **A** | **proven** (forced) |
 | 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | **proven** |
 | 21 | `TITLE 0x80080484` (extras numbers `／ 3 1 ％`) | none | — | **C** | table |
 | 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **C** | table |
@@ -753,8 +780,8 @@ specification.
 | 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | tested |
 
 Counts: **A** 13 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 18, 19, 20a, 20b, 25, 26; 13 and 14
-ride on 12), of which 7 proven (5a, 12a, 12b, 17, 18, 19, 20b), 5 tested (5b, 9, 11, 25, 26),
-1 assembled (20a); **B** 2 (23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
+ride on 12), of which 8 proven (5a, 12a, 12b, 17, 18, 19, 20a, 20b), 5 tested (5b, 9, 11,
+25, 26); **B** 2 (23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
 register-identical — pens `s3`, `s5`, `v1`+`s0`, `v1`+`s1`, `s1`, `s1`; id pointers `s0` or
 `s1` — so the bodies are per shape and per stock pitch (`asm/walkers.asm`, the walker island;
 § "The free space").
@@ -872,7 +899,7 @@ not register in mode 10, so the scroll (`0x800805DC` = 200) and the grid are wri
 
 ## Not done
 
-* **Summer memories' label 5** (walker 20a) is not on the screen shot. **`HHON`** is
+* **Summer memories' label 5** is proven only by forcing its popup. **`HHON`** is
   measured and prototyped, not installed (§ "The `HHON` walkers"). **Surfaces 9, 11, 25
   and 26** are installed and run in `tests/test_real_walkers.py` but not on screen: the cage
   HUD needs a caught insect, fishing and sumo days of play. Their boxes are not measured,
@@ -907,7 +934,7 @@ not register in mode 10, so the scroll (`0x800805DC` = 200) and the grid are wri
 * `vwf_select_xmax` is consumed by the first `select_box_draw` after a `select_draw`. Both
   runners keep that order; a third caller drawing the box first would see 0 and get the table's
   80 × 40.
-* Free-roam, menus and sumo were not sampled for primitive-buffer headroom (§ Q4), nor for
-  stack depth under the raised work area (§ "The map work area": 6,640 bytes past the
-  measured 4,016).
+* Free-roam, menus and sumo were not sampled for primitive-buffer headroom (§ Q4). The stack
+  was, under most of them (§ "The map work area"); a real save, a sumo bout and fishing
+  were not.
 * Confirmed on emulators only; EDC/ECC is regenerated and self-checked, but no disc was burned.

@@ -51,6 +51,12 @@ beetle load --memcard "$saves/corpus/day05.mcd" --frames 4400 --press 3300:START
 beetle extras --memcard "$work/finished.mcd" --frames 6100 --press 3300:START \
     --press 3610:DOWN --press 3640:DOWN --press 3700:CIRCLE --press 4350:CIRCLE \
     --press 4700:CIRCLE --shot 6000:summer-memories
+# Summer memories' quiz rate (label 5): its popup draws only while the word at 0x80025938 is
+# 1 and the byte 0x800820DC is 1: both written (research/vwf-prototype.md, "The quiz rate").
+beetle quiz-rate --memcard "$work/finished.mcd" --frames 6100 --press 3300:START \
+    --press 3610:DOWN --press 3640:DOWN --press 3700:CIRCLE --press 4350:CIRCLE \
+    --press 4700:CIRCLE --poke 6010:80025938=01000000 --poke 6010:800820DC=01 \
+    --shot 6090:quiz-rate
 # The insect box: tools/redux/book-pokes.lua's mode_set as pokes -- mode 10, the previous
 # mode (the live one), the change flag, and the arena the mode's g_modes record names, all
 # read from this image's RAM (the map-area raise moves the arena) -- with insect 0 at book
@@ -113,6 +119,11 @@ run load drive.lua BOKU_FRAMES=3200 BOKU_SHOT_AT=3200 BOKU_PREFIX=load \
     -memcard1 "$work/redux-day05.mcd"
 run extras drive.lua BOKU_FRAMES=5000 BOKU_SHOT_AT=5000 BOKU_PREFIX=extras \
     BOKU_INPUT="2430:START:5;2590:DOWN:5;2620:DOWN:5;2690:CIRCLE:5;3100:CIRCLE:5;3400:CIRCLE:5" \
+    -memcard1 "$work/redux-finished.mcd"
+cp "$work/finished.mcd" "$work/redux-finished.mcd"
+run quiz-rate drive.lua BOKU_FRAMES=5000 BOKU_SHOT_AT=5000 BOKU_PREFIX=quiz-rate \
+    BOKU_INPUT="2430:START:5;2590:DOWN:5;2620:DOWN:5;2690:CIRCLE:5;3100:CIRCLE:5;3400:CIRCLE:5" \
+    BOKU_POKES="$repo/tools/vwf/word-pokes.lua" BOKU_W32=4900:0x80025938=1 BOKU_W8=4900:0x800820DC=1 \
     -memcard1 "$work/redux-finished.mcd"
 # The insect box, forced open (book-pokes.lua): the hub scrolled to its page, then the grid.
 run hub drive.lua BOKU_LOAD=free BOKU_FRAMES=420 BOKU_SHOT_AT=410 BOKU_PREFIX=hub-page \

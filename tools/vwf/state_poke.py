@@ -17,8 +17,9 @@ addresses and what they mean belong to the research notes that name them.
 `--map` writes what `map_request` (`0x80017A04`) writes, as `tools/vwf/reach-select.lua`
 does from Lua: the base name, the request pointer, the one-shot flag and the two bits.
 `--scan` is the read-back for a `--fill` made earlier: it prints the lowest address in the
-range whose byte is no longer the sentinel, which is the stack's low-water mark when the
-range lies under the stack (`tools/vwf/stack-probe.lua` is the same measurement on Redux).
+range whose byte is no longer the sentinel, and the lowest one still joined to the top
+(`stack_mark`), which is the stack's low-water mark when the range lies under the stack --
+the first can be another buffer (`tools/vwf/stack-probe.lua` measures on Redux).
 """
 
 from __future__ import annotations
@@ -42,6 +43,26 @@ def ram_offset(address: int, count: int = 1) -> int:
     if (address >> 28) not in (0, 8, 0xA) or physical + count > RAM_SIZE:
         raise SystemExit(f"0x{address:08X} is not main RAM")
     return RAM_OFFSET + physical
+
+
+FRAME_HOLE = 512
+"""Unchanged bytes the stack's frames never leave between them; a wider hole below them is
+something else's buffer (`research/vwf-prototype.md` § "The map work area")."""
+
+
+def stack_mark(changed: list[bool], gap: int = FRAME_HOLE) -> int | None:
+    """The index of the lowest changed byte still joined to the top of `changed` by holes
+    shorter than `gap` -- the stack's low-water mark in a fill under the stack -- or None."""
+    mark = None
+    hole = 0
+    for index in range(len(changed) - 1, -1, -1):
+        if changed[index]:
+            if mark is not None and hole >= gap:
+                break
+            mark, hole = index, 0
+        elif mark is not None:
+            hole += 1
+    return mark
 
 
 def parse_int(text: str) -> int:
@@ -82,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
         touched = [a for a in range(low, high) if data[ram_offset(a)] != sentinel]
         if touched:
             print(f"scan: lowest changed 0x{touched[0]:08X}, {len(touched)} of {high - low} bytes")
+            changed = [data[ram_offset(a)] != sentinel for a in range(low, high)]
+            print(f"stack: low-water 0x{low + stack_mark(changed):08X}")
         else:
             print(f"scan: nothing in 0x{low:08X}..0x{high:08X} changed")
 
