@@ -224,7 +224,7 @@ ending events [xneo].
 | 6 | Oversleeps (no calisthenics stamp); the aunt found a firefly in his futon; the hive can come down (any day once he has the rod — `E0205` has no day of its own, and this is when it usually happens); Fat and Megane; sugar bait | `E0605`, `E0620`, `E0205`, `E0650`, `E0604` |
 | 7 | The hill → kites; Moe's flowers in the forest ★ | `E0701`, `E0733`–`E0786` |
 | 8 | The old axe; "Boku-kun unbanned" from the sisters' room; fireworks from his window | `E0814`, `E0830`, `E0805` |
-| 9– | The giant fish, Ken-bō's fur, the fly ★(catch it); the satellite; the log bridge (five days of chopping) | `E0906`, `E0904`, `E1006`, `E1008`, `E0807` |
+| 9– | The giant fish, Ken-bō's fur, the fly ★(catch it); the satellite (day 10: the narrator's sentence begins in movie M120 and ends in the first line of the satellite event (`E1008.0`), whose English picks it up as "...a satellite, flying quietly on, as if gliding."; translation/movies.txt, M120); the log bridge (five days of chopping) | `E0906`, `E0904`, `E1006`, `E1008`, `E0807` |
 | 11 | "Tomorrow is the anniversary"; Moe posts her letter, buys salad oil instead of mirin; yukata and sparklers | `E1101`, `E1102`, `E1121`, `E1104`, `E1171` |
 | 12 | The monk; "When did he die?" | `E1202`–`E1204`, `E1220` |
 | 13–14 | Cloud shapes at dinner → with Shirabe to the Cape of Winds ★: sunflowers, the beach, asleep on the cape, sunset. The aunt's war story. First meeting with the thing in the woods | `E1304`, `E1402`–`E1406`, `E1420`, `E1306` |
