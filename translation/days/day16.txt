@@ -1,0 +1,63 @@
+# day16 (translation/days/README.md)
+# --- E1602: G02 -- after breakfast (the swing)
+E1602.0	Uncle	Gochisosama deshita.
+E1602.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1602.2	Uncle	Earlier, before the exercises, I hung a swing from the tree.
+E1602.3	Aunt	Oh? How nice. It hasn't been used for three years now, but...
+E1602.4	Shirabe	A swing! A swing!
+
+# --- E1623: H08 -- the yard with the swing tree
+E1623.0	Aunt	A swing, up in mountains like these... // it feels kind of like Heidi, Girl of the Alps.
+E1623.1	Aunt	Hm-hm, Auntie had a go on the swing too, just now.
+
+# --- E1612: G01 -- living room
+E1612.0	(voice only)
+E1612.1	Uncle	Huh, our Nora is mooing at this hour... // I wonder what's the matter?
+E1612.2	Boku	Nora, that's the cow's name?
+E1612.3	Uncle	That's right.
+E1612.4	Boku	Why Nora?
+E1612.5	Uncle	She was a stray cow, a "nora", so we call her Nora. // Still, it's strange... did a wolf come by, maybe?
+E1612.6	Uncle	One day, Nora was suddenly just there, in front of our gate. // And in the end, we never found out who owned her, // so she just became our family's Nora.
+# NOTE E1612.5: nora, "stray"; the uncle explains the name, so the word shows (glossary § 1).
+
+# --- E1610: H26 -- the workshop
+E1610.0	Uncle	Boku-kun, have you had a ride // on Uncle's special swing yet?
+E1610.1	[SEL]	Yes | No
+E1610.2	Uncle	Have you? Well, be careful when you ride it.
+E1610.3	Uncle	Oh...... not yet? // It's fun. Go on, hurry up and ride it.
+
+# --- E1630: G15 -- the sisters' room
+E1630.0	Moe	I wonder if I could ride the swing too.
+E1630.1	Boku	Why?
+E1630.2	Moe	Because I'm heavy, obviously.
+E1630.3	Boku	Huh? What? What did you say?
+E1630.4	Boku	Why can't you ride the swing?
+E1630.5	Moe	That is a secret.
+
+# --- E1632: G17 -- the veranda; H06 -- the garden (the stars)
+E1632.0	Boku	Doing okay today?
+E1632.1	Moe	Well, who knows? Hm-hm... // But I think the tone is ringing out a bit better than before. // Because, you know...
+E1632.2	Boku	Because?
+E1632.3	Moe	Because it feels like my playing // is making the air around me just a little bit... lustrous.
+E1632.4	Boku	What's that supposed to mean?
+E1632.5	Moe	What, I wonder... // Kind of high-grade countryside, I guess?
+E1632.6	Boku	I don't think so.
+E1632.7	Moe	Aww, how cruel.
+E1632.8	Moe	Hey... // I wonder if anyone... has ever tried to count the stars.
+E1632.9	Moe	If you strain your eyes, even in the dark between the stars, // tiny grains of light, like fine dust... // don't you feel like the star-dust is packed in there, tight?
+E1632.10	Moe	When I went to Tokyo on the school trip in elementary school...
+E1632.11	Boku	The sky was bright even at night?
+E1632.12	Moe	Right, right... // But they say that when astronauts spot the glow of that city from space, // they feel kind of relieved.
+E1632.13	Boku	Why is that, I wonder?
+E1632.14	Moe	Why is that, I wonder?
+E1632.15	Moe	I'd like to be an astronaut...
+# NOTE E1632.14: Moe throws Boku's quiz-show tic back at him (glossary § 3).
+
+# --- E1641: G06 -- TV room
+E1641.0	Shirabe	Aren't we going to talk about school lunch anymore?
+E1641.1	Shirabe	Don't the jam packets get squashed in your school backpack?
+
+# --- E1642: H08 -- the yard with the swing tree
+E1642.0	Shirabe	You, go on and ride it. I'll watch you.
+E1642.1	Shirabe	You're not bad on the swing, are you?
+E1642.2	Shirabe	But Shirabe is definitely better.

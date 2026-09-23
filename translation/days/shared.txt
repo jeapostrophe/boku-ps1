@@ -123,12 +123,6 @@ E1006.1	(voice only)
 E1006.2	Boku	Hup!
 E1006.3	(voice only)
 
-# --- The garden animals (H09, H10): talk targets 13-15 and E1605's actor 12, all voice only.
-#     E1605 carries a day-16 id, but its condition is day > 0 and it sits in every H10 variant and
-#     slot — day-independent by condition and placement; .1 and .2 are its day-16 branches.
-E1605.0	(voice only)
-E1605.1	(voice only)
-E1605.2	(voice only)
 
 # --- The sheds, examined: the woodshed (H17), the shed with the pickle barrels (H18), the shed
 #     with the gas cylinders (H25).
@@ -730,3 +724,36 @@ E1504.14	Boku	But can you really find something like that?
 E1504.15	Uncle	Well, the chances probably aren't very high, // but if you walk along the shore and look carefully, // with luck you can find two or three in a single day, they say. // Maybe the whales, who went back from the land to the sea as they evolved, // come to miss this land again, and come back.
 E1504.16	Boku	Hmm, I see.
 # NOTE E1504.8: tako-nyuudou, an octopus pictured as a bald, big-headed goblin.
+
+# --- E1605: H10 -- garden corner (Nora)
+E1605.0	(voice only)
+E1605.1	(voice only)
+E1605.2	(voice only)
+
+# --- E1606: C08 -- the sunflower fields (the aunt's third photograph)
+E1606.0	Aunt	I've run into you again, Boku-kun! // All right, I'll take a picture of you here!
+E1606.1	Aunt	Okaaay, here I go. What's Uncle's very favorite food?
+E1606.2	(voice only)
+E1606.3	Aunt	Well, Auntie is going to take a little walk around here before she goes home.
+
+# --- E1650: A18 -- the secret base
+E1650.0	Guts	Tomorrow we send in our secret secret weapon!
+E1650.1	Fat	No way! Gacchan, that's kind of dirty.
+E1650.2	Guts	Heh... in a contest, anything goes!
+E1650.3	Specs	You guys... it's not about winning or losing. You need more room in your hearts...
+E1650.4	Guts, Fat	No waaay!
+
+# --- E1651: A18 -- the secret base
+E1651.0	Guts	Heh-heh-heh, next time I'll really let 'em have it.
+
+# --- E1652: A18 -- the secret base
+E1652.0	Fat	Rider Snack says "a sister product of Kappa Ebisen" on the bag, // but it tasted totally different, didn't it?
+
+# --- E1653: A18 -- the secret base
+E1653.0	Specs	Aren't the names of TV shows strange? I mean... // for instance, what's the "romper" in Romper Room?
+
+# --- E1604: G02 -- after dinner (the photo)
+E1604.0	Uncle	Gochisosama deshita.
+E1604.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1604.2	Aunt	Here, Boku-kun, this is for you.
+E1604.3	Boku	Oh, the photo's ready. Thanks, Auntie.
