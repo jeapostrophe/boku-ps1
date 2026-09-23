@@ -26,7 +26,16 @@ from dataclasses import dataclass
 from itertools import pairwise
 
 from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, OVERLAY_LOAD_ADDRESS, Archive
-from boku.arrays import ArrayWalk, SelectTables, relocatable, walk_all
+from boku.arrays import (
+    SAVE_TITLE_LINE_ID,
+    SAVE_TITLE_PARTS_ADDR,
+    ArrayWalk,
+    SelectTables,
+    read_save_title,
+    relocatable,
+    walk_all,
+)
+from boku.code_text import split_title_blob
 from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
 from boku.pointers import LuiPair, PointerError, repoint, scan
@@ -201,6 +210,9 @@ class _Unit:
     grown: tuple[str, ...]
     """The items that outgrew their own bytes -- what a refusal leaves in Japanese."""
     lines: tuple[str, ...]
+    table: tuple[tuple[int, int], ...] = ()
+    """A unit reached through a pointer table in `BOKU.BIN` instead of `lui` pairs:
+    `(offset of the table word, offset in the blob it must point at)` per word."""
 
 
 def _array_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterator[_Unit]:
@@ -258,6 +270,30 @@ def _block_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterat
             )
 
 
+def _title_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterator[_Unit]:
+    """The save title's three Shift-JIS parts (`boku.code_text`), when translated: written
+    anywhere resident, and `g_save_title_parts` (three words in `TITLE.OVL`) repointed."""
+    if SAVE_TITLE_LINE_ID not in words:
+        return
+    blob = words_to_bytes(words[SAVE_TITLE_LINE_ID])
+    member = archive.member("TITLE.OVL")
+    table = tuple(
+        (member.offset + SAVE_TITLE_PARTS_ADDR + 4 * k - OVERLAY_LOAD_ADDRESS, at)
+        for k, at in enumerate(split_title_blob(blob))
+    )
+    old = read_save_title(archive).part_offsets[0] + OVERLAY_LOAD_ADDRESS
+    yield _Unit(
+        SAVE_TITLE_LINE_ID,
+        "title",
+        old,
+        old,
+        blob,
+        (SAVE_TITLE_LINE_ID,),
+        (SAVE_TITLE_LINE_ID,),
+        table,
+    )
+
+
 def plan_arrays(
     archive: Archive,
     words: Mapping[str, Sequence[int]],
@@ -269,14 +305,21 @@ def plan_arrays(
 
     `scanned` supplies `scans(archive)`, called only once something grows; a caller that
     plans more than once memoises it."""
-    units = {u.prefix: u for u in (*_array_units(archive, words), *_block_units(archive, words))}
+    units = {
+        u.prefix: u
+        for u in (
+            *_array_units(archive, words),
+            *_block_units(archive, words),
+            *_title_units(archive, words),
+        )
+    }
     if not units:
         return ArrayPlan((), (), frozenset(), sum(r.size for r in regions))
 
     def refusal(why: str, prefixes: Sequence[str]) -> ArrayRoomRefused:
         return ArrayRoomRefused(why, [line for prefix in prefixes for line in units[prefix].grown])
 
-    spans = {prefix: (u.image, u.start, u.end) for prefix, u in units.items()}
+    spans = {prefix: (u.image, u.start, u.end) for prefix, u in units.items() if not u.table}
     vacated = [
         Region(u.start, u.end, f"{prefix}'s old bytes")
         for prefix, u in units.items()
@@ -300,8 +343,21 @@ def plan_arrays(
         for m in moved
     ]
     new_start = {m.prefix: m.new for m in moved}
+    for prefix, unit in units.items():
+        for offset, at in unit.table:
+            edits.append(
+                ByteEdit(
+                    file=ARCHIVE_NAME,
+                    offset=offset,
+                    old=archive.boku[offset : offset + 4],
+                    new=(new_start[prefix] + at).to_bytes(4, "little"),
+                    reason=f"{prefix}: pointer table word to its moved text (PLAN PIPE-07)",
+                )
+            )
 
-    for (image, code, base, file, file_base), pairs in (scanned or (lambda: scans(archive)))():
+    for (image, code, base, file, file_base), pairs in (
+        (scanned or (lambda: scans(archive)))() if spans else ()
+    ):
         for pair in pairs:
             inside = _interior(pair, image, spans)
             if inside:

@@ -551,10 +551,27 @@ def test_a_code_file_menu_written_as_a_plain_row_says_to_write_sel(surfaces, tmp
     assert "[SEL]" in finding.message
 
 
-def test_a_code_immediate_label_warns_that_the_build_cannot_place_it(surfaces, tmp_path):
+def test_a_code_immediate_label_with_more_glyphs_than_the_code_draws_warns(surfaces, tmp_path):
+    """Four drawn glyphs: "Date" is placed by rewriting their immediates, "Caught" needs two
+    more draws than the function makes -- a layout change, so a warning with the counts."""
+    assert run(surfaces, tmp_path, [(LABEL, "(unlabelled)", "Date")], label=False) == []
     findings = run(surfaces, tmp_path, [(LABEL, "(unlabelled)", "Caught")], label=False)
     assert checks(findings) == ["not-placeable"]
     assert findings[0].severity == WARNING
+    assert "draws [4] glyph(s) per run and 'Caught' needs [6]" in findings[0].message
+
+
+def test_the_save_title_must_say_where_the_slot_and_the_day_go(tmp_path):
+    synth = SynthStore.new(tmp_path)
+    title = synth.save_title()["id"]
+    store = load_store(synth.write())
+    good = [(title, "(unlabelled)", "Boku's Memories {slot} August {day}")]
+    assert run(store, tmp_path, good, label=False) == []
+    finding = only(
+        run(store, tmp_path, [(title, "(unlabelled)", "Boku's Memories August")], label=False),
+        "save-title",
+    )
+    assert finding.severity == ERROR
 
 
 def test_a_settled_phrase_holding_an_intensifier_is_not_an_addition(store, tmp_path):

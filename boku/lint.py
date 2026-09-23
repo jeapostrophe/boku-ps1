@@ -38,9 +38,12 @@ What it checks, and where each rule comes from
 * **`array-room`** -- a grown array moves whole (`boku.array_relocate`), so what limits it
   is the free space: the build's own allocation, over this import and the edit set's
   regions, and a refusal names the array's laid-out lines.
-* **`not-placeable`** -- *a warning*: a label assembled from instruction immediates or the
-  memory-card title (`script_store.PLACED_BY_CODE`). It has English but no text site, so
-  the build cannot place it until a code patch does (`PLAN TXT-05`).
+* **`not-placeable`** -- *a warning*: a label assembled from instruction immediates whose
+  English needs more glyphs than the function draws (`boku.code_text`): one character per
+  drawn glyph is placed by rewriting the immediates, more is a change to its layout.
+* **`save-title`** -- the memory-card title (`title@sjis:188`) must mark where the code puts
+  the slot and the day (`{slot}`, `{day}`), encode as full-width Shift-JIS, and fit the
+  card's 64-byte field at slot 15, day 31.
 * **`answer-pair`** -- the card screens' two answers (`title@7A78.0`) not written as
   `Yes | No`; their widths and cells are `array-width` and `array-bytes`
   (`boku.layout.ANSWER_PAIR`).
@@ -95,6 +98,7 @@ from boku import REPO_ROOT, clip_subs, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
 from boku.arrays import byte_limit
 from boku.boxes import TextBox, box_for
+from boku.code_text import lay_out_code_label, lay_out_save_title
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import (
@@ -122,7 +126,6 @@ from boku.layout import (
     wrap,
 )
 from boku.script_store import (
-    PLACED_BY_CODE,
     Store,
     StoreMissing,
     is_array,
@@ -553,14 +556,21 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
             f"{row.line_id} is written as a SELECT but the store has it as a message",
         )
         return
-    if record["kind"] in PLACED_BY_CODE:
-        context.say(
-            row,
-            "not-placeable",
-            WARNING,
-            f"a {record['kind']} has no text site; the build cannot place this English "
-            f"until a code patch does (PLAN TXT-05)",
-        )
+    if record["kind"] == "code-label":
+        text = " ".join(row.entry.pages)
+        laid = lay_out_code_label(row.line_id, record["runs"], text, context.options.encoder)
+        for problem in laid.problems:
+            detail = problem.split(": ", 1)[-1]
+            unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
+            check = "unencodable" if unencodable_cell else "not-placeable"
+            context.say(row, check, ERROR if unencodable_cell else WARNING, detail)
+        return
+    if record["kind"] == "sjis-title":
+        laid = lay_out_save_title(row.line_id, " ".join(row.entry.pages))
+        for problem in laid.problems:
+            context.say(row, "save-title", ERROR, problem.split(": ", 1)[-1])
+        if not laid.problems:
+            context.array_words[row.line_id] = laid.words  # it moves like an array
         return
     if is_array(record):
         _check_array(context, row, record)

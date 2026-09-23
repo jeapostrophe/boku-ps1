@@ -279,10 +279,24 @@ class SynthStore:
             "kind": "code-label",
             "text": filler(self.table, cells, skip=6),
             "glyphs": cells,
+            "runs": [list(range(0x100, 0x100 + cells))],
             "function": "0x80000000",
             "purpose": "synth_label_draw: a synthetic label",
             "sites": [],
             "capacity": {"bytes": None, "note": "assembled from instruction immediates"},
+        }
+        self.lines.append(record)
+        return record
+
+    def save_title(self, line_id: str = "title@sjis:188") -> dict:
+        """The Shift-JIS save title: no text site; `boku.code_text` places it."""
+        record = {
+            "id": line_id,
+            "kind": "sjis-title",
+            "text": "",
+            "glyphs": 0,
+            "sites": [],
+            "capacity": {"bytes": 64, "note": "the SC header's title"},
         }
         self.lines.append(record)
         return record

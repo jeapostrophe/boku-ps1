@@ -415,5 +415,5 @@ title@code:8007C8EC	(unlabelled)	) / )
 title@code:80080484	(unlabelled)	/31 / 0 / %
 
 # --- title@sjis:188: the title of the save on the memory card, as the console's card screen shows it
-title@sjis:188	(unlabelled)	Boku's Memories August
-# NOTE title@sjis:188: the code puts the slot after "Memories" and the day digits after "August".
+title@sjis:188	(unlabelled)	Boku's Memories {slot} August {day}
+# NOTE title@sjis:188: {slot} and {day} are where the code puts the save's slot number and the day.

@@ -210,7 +210,7 @@ def is_array_select(record: dict) -> bool:
 
 PLACED_BY_CODE = frozenset({"code-label", "sjis-title"})
 """Kinds with no text site: a label assembled from instruction immediates, and the
-memory-card title in Shift-JIS. Translating one is a code patch, not a data rewrite."""
+memory-card title in Shift-JIS. `boku.code_text` places both."""
 
 
 def original_bytes(record: dict, table: GlyphTable) -> bytes:

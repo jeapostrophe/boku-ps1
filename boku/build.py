@@ -59,8 +59,17 @@ from boku.array_relocate import (
     plan_arrays,
     scans,
 )
-from boku.arrays import ArrayError, SelectTables, byte_limit
+from boku.arrays import (
+    CODE_LABEL_MARK,
+    SAVE_TITLE_LINE_ID,
+    ArrayError,
+    CodeLabel,
+    SelectTables,
+    byte_limit,
+    read_code_labels,
+)
 from boku.boxes import box_for
+from boku.code_text import code_label_edits, lay_out_code_label, lay_out_save_title
 from boku.disc import DirEntry, DiscError, DiscImage, DiscWriter, SectorWrite
 from boku.edc import FORM1_DATA_SIZE
 from boku.events import VOICE_KEY_SIZE, EventError
@@ -681,11 +690,24 @@ def lay_out(
     without it a `(voice only)` row's English is refused, because nothing would draw it.
     """
     selects = SelectTables(archive)
+    labels: dict[str, CodeLabel] = {}  # read on the first code label, not for every build
     table = GlyphTable.load() if label else None
     out: list[LineResult] = []
     for entry in translation:
         if entry.voice_only:
             out.append(_lay_out_voice_only(archive, walk, entry, encoder, box, voice_subtitles))
+            continue
+        if CODE_LABEL_MARK in entry.line_id and not labels:
+            labels = {label.line_id: label for label in read_code_labels(archive)}
+        if entry.line_id in labels:
+            laid = lay_out_code_label(
+                entry.line_id, labels[entry.line_id].runs, " ".join(entry.pages), encoder
+            )
+            out.append(LineResult(entry.line_id, laid, laid.problems))
+            continue
+        if entry.line_id == SAVE_TITLE_LINE_ID:
+            laid = lay_out_save_title(entry.line_id, " ".join(entry.pages))
+            out.append(LineResult(entry.line_id, laid, laid.problems))
             continue
         sites = walk.by_line.get(entry.line_id)
         if not sites:
@@ -952,12 +974,13 @@ def build(
                 f"and leave the rest in Japanese, or give the text more room."
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
+        labels = {label.line_id for label in read_code_labels(archive)}  # code_label_patches'
         moved, refused = move_arrays(archive, words, array_regions, skip_unfitted)
         binary_patches = [*binary_patches, *moved.edits]
         the_plan, still = _plan_what_fits(
             archive,
             walk,
-            {k: v for k, v in words.items() if k not in moved.lines},
+            {k: v for k, v in words.items() if k not in moved.lines and k not in labels},
             in_place,
             skip_unfitted,
             work_area_end,
@@ -972,8 +995,9 @@ def build(
             for line in lines
         ]
         answers = answer_pair_patches(archive, lines)
-        binary_patches = [*binary_patches, *answers]
-        edits += [*answers, *the_plan.edits]
+        labelled = code_label_patches(archive, lines)
+        binary_patches = [*binary_patches, *answers, *labelled]
+        edits += [*answers, *labelled, *the_plan.edits]
 
     edits.sort(key=lambda e: (e.file, e.offset))
     # `plan` checks its own edits are disjoint; the caller's binary patches (less the ones
@@ -1008,6 +1032,18 @@ def build(
         sectors=sectors,
     )
     return result
+
+
+def code_label_patches(archive: Archive, lines: Sequence[LineResult]) -> list[ByteEdit]:
+    """The immediates of every written code label (`boku.code_text`), each expecting the
+    retail instruction there."""
+    written = {line.line_id: line.laid_out for line in lines if line.written}
+    return [
+        edit
+        for label in read_code_labels(archive)
+        if label.line_id in written
+        for edit in code_label_edits(archive, label, written[label.line_id].words)
+    ]
 
 
 def answer_pair_patches(archive: Archive, lines: Sequence[LineResult]) -> list[ByteEdit]:

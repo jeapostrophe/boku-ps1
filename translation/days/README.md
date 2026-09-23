@@ -43,6 +43,13 @@ are `./make.sh mockup`'s.
   way `# --- E0121` opens an event. A game glyph the English sits beside — a button, the
   dashed rule — is written `{G:n}` (its id in `research/data/glyph-table.tsv`) or as the
   character the sheet draws (○ × ↓); either is that one cell of the game's own sheet.
+* **The memory card's save title** (`title@sjis:188`) marks where the game puts the slot
+  number and the day: `Boku's Memories {slot} August {day}`. The console's card screen
+  shows it in full-width letters, at most 64 bytes with the widest slot and day (the lint
+  says when it is over).
+* **A label the code draws glyph by glyph** (`exe@code:…`, `title@code:…`) is placed one
+  character per glyph the function draws, runs separated by ` / ` where it draws a number
+  in between; more characters than it draws are left in Japanese (`not-placeable`).
 * **The card screens' two answers** (`title@7A78.0`, the Japanese "hai" and "iie" side by
   side) are one row written `Yes | No`: the first answer, ` | `, the second. The build places
   the second where the Japanese one began and tells the drawer where the first ends; the two

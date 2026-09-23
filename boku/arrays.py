@@ -537,6 +537,10 @@ _FUNCTION_WORD_LIMIT = 512
 would otherwise read to the end of the image."""
 
 
+CODE_LABEL_MARK = "@code:"
+"""What sets a code label's id (`exe@code:80037544`) apart from an array item's."""
+
+
 @dataclass(frozen=True)
 class CodeLabel:
     """A label a function assembles from immediate glyph ids, with no data to extract."""
@@ -552,10 +556,12 @@ class CodeLabel:
     are more sites than draws: a label reached down two branches is assembled twice, so
     `）` is one drawn character and four instructions a code patch has to change."""  # noqa: RUF001
     purpose: str
+    draws: tuple[int, ...] = ()
+    """For each of `sites`, which drawn glyph it feeds: an index into `glyph_ids`."""
 
     @property
     def line_id(self) -> str:
-        return f"{self.image}@code:{self.function:X}"
+        return f"{self.image}{CODE_LABEL_MARK}{self.function:X}"
 
     @property
     def glyph_ids(self) -> tuple[int, ...]:
@@ -650,6 +656,7 @@ def read_code_labels(archive: Archive) -> list[CodeLabel]:
 
         drawn: dict[int, int] = {}
         sites: list[tuple[int, int]] = []
+        feeds: list[int] = []
         for i, word in enumerate(words):
             value = _a0_literal(word)
             if value is None:
@@ -658,6 +665,7 @@ def read_code_labels(archive: Archive) -> list[CodeLabel]:
             if draw is not None:
                 drawn[draw] = value
                 sites.append((function + 4 * i, value))
+                feeds.append(draw)
 
         runs: list[tuple[int, ...]] = []
         current: list[int] = []
@@ -671,7 +679,9 @@ def read_code_labels(archive: Archive) -> list[CodeLabel]:
                 current = []
         if current:
             runs.append(tuple(current))
-        out.append(CodeLabel(image, function, tuple(runs), tuple(sites), purpose))
+        order = sorted(drawn)
+        draws = tuple(order.index(draw) for draw in feeds)
+        out.append(CodeLabel(image, function, tuple(runs), tuple(sites), purpose, draws))
     return out
 
 
@@ -685,8 +695,9 @@ overlay, so neither count is typed here."""
 
 SAVE_TITLE_LINE_ID = "title@sjis:188"
 SAVE_TITLE_BYTES = 64
-"""The `SC` header's title field. The BIOS wants full-width characters, so an English
-title is at most 32 letters (`research/text-outside-events.md`)."""
+"""The `SC` header's title field. The BIOS wants full-width characters (two bytes each),
+and `save_title_build` adds the slot and the day (up to 2 + 2 of them) and a terminator, so
+the English around them is at most 27 characters (`boku.code_text.save_title_parts`)."""
 
 
 @dataclass(frozen=True)

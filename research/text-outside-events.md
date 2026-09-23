@@ -147,7 +147,7 @@ A Shift-JIS scan of all eight code files finds exactly these strings:
 
 | where | string | seen by a player? |
 |---|---|---|
-| `TITLE.OVL` `+0x188`…, through `g_save_title_parts` (`0x80081444`) and `g_save_title_digits` (`0x8008141C`) | the **memory-card save title**: `ボクの思い出` + slot + `　８月` + day + `日`, digits full-width, built by `save_title_build` (`0x8007AEF4`) into the `SC` header at `+4` | **yes — in the BIOS card manager.** 64 bytes of Shift-JIS; the BIOS wants full-width characters, so an English title is ≤ 32 full-width letters |
+| `TITLE.OVL` `+0x188`…, through `g_save_title_parts` (`0x80081444`) and `g_save_title_digits` (`0x8008141C`) | the **memory-card save title**: `ボクの思い出` + slot + `　８月` + day + `日`, digits full-width, built by `save_title_build` (`0x8007AEF4`) into the `SC` header at `+4` | **yes — in the BIOS card manager.** 64 bytes of Shift-JIS, written with no bound; the BIOS wants full-width characters, so with the widest slot and day an English title has 27 full-width characters around them (`boku.code_text`, which places it) |
 | EXE `0x800480C4` (+ English at `0x80048070`) | mod-chip warning | only on failure — [integrity.md](integrity.md) |
 | EXE `0x80011738` | "event buffer over" | only if the `EV` buffer overflows — a developer panic that a careless reinsertion *can* trigger ([loading-and-memory.md](loading-and-memory.md)) |
 | EXE `0x80029D94` | a debug assertion ("struct size is 0") | no |

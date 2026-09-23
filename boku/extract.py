@@ -188,8 +188,8 @@ def build(
                 "sites": [],
                 "capacity": {
                     "bytes": None,
-                    "note": "assembled from instruction immediates; translating it is a "
-                    "code patch, not a data rewrite",
+                    "note": "assembled from instruction immediates: placed one character "
+                    "per drawn glyph by rewriting them (boku.code_text)",
                 },
             }
         )
@@ -207,7 +207,7 @@ def build(
             "capacity": {
                 "bytes": SAVE_TITLE_BYTES,
                 "note": "Shift-JIS in the memory card's SC header; the BIOS draws "
-                "full-width characters, so at most 32 of them",
+                "full-width characters; written with {slot} and {day} (boku.code_text)",
             },
         }
     )

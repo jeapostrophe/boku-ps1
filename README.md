@@ -169,7 +169,8 @@ LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
 make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), boot-save, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, voice-only, trial, build (text,
-                     texture recipes, code-file arrays moved whole when they grow), patch,
+                     texture recipes, code-file arrays moved whole when they grow, labels
+                     drawn from code immediates, the memory-card save title), patch,
                      apply-patch, save
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import

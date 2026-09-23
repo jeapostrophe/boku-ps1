@@ -29,7 +29,15 @@ from pathlib import Path
 import pytest
 
 from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, Archive, overlay_read_end_of
-from boku.arrays import ARRAYS, locate
+from boku.arrays import (
+    ARRAYS,
+    CODE_LABELS,
+    SAVE_TITLE_LINE_ID,
+    SAVE_TITLE_PARTS_ADDR,
+    CodeLabel,
+    locate,
+    read_code_labels,
+)
 from boku.build import (
     EditSet,
     check_before_writing,
@@ -37,12 +45,14 @@ from boku.build import (
     load_edit_set,
     verify_written_sectors,
 )
+from boku.code_text import lay_out_code_label
 from boku.disc import DiscImage
 from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
 from boku.reinsert import check_disjoint
 from boku.relocate import MOVIE_BLOCK_RESERVE
 from boku.sites import RESIDENT_BLOCK_ADDRS, Walk, resident_block_at
+from boku.translation import SampleScenes
 from tests.test_real_reinsert import FILESYSTEM_ENTRIES, read_back
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -50,6 +60,12 @@ EDITS = REPO_ROOT / "build" / "vwf" / "edits.json"
 DAYS_DIR = REPO_ROOT / "build" / "days"
 
 BUILD_COMMAND = "./make.sh build-days"
+ARRAYS_TXT = REPO_ROOT / "translation" / "days" / "arrays.txt"
+
+CODE_LABEL_IDS = frozenset(CodeLabel(image, fn, (), (), "").line_id for image, fn, _ in CODE_LABELS)
+PLACED_IN_CODE = CODE_LABEL_IDS | {SAVE_TITLE_LINE_ID}
+"""Written lines with no text site: `boku.code_text` places them, and the tests below read
+them back through the code that draws them."""
 
 
 @pytest.fixture(scope="module")
@@ -293,7 +309,7 @@ def test_every_written_line_reads_back_as_the_words_the_build_laid_out(
     written = set(days_manifest["lines_written"])
     assert written, "nothing was written; this gate would pass over nothing"
     changed = 0
-    for line_id in sorted(written):
+    for line_id in sorted(written - PLACED_IN_CODE):
         sites = built_walk.by_line.get(line_id)
         assert sites, f"{line_id} is not a line of the built image"
         if line_id in walk_reader.voice_only:
@@ -405,7 +421,11 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
     elsewhere = 0
     for entry in moved:
         to = int(entry["to"], 16)
-        if entry["array"] in blocks:  # an event block the executable holds
+        if entry["array"] == SAVE_TITLE_LINE_ID:  # a pointer table, not a lui pair
+            pointer = built.overlay_bytes("TITLE.OVL", SAVE_TITLE_PARTS_ADDR, 4)
+            assert int.from_bytes(pointer, "little") == to, entry
+            continue  # a pointer table, so it says nothing about lui pairs
+        elif entry["array"] in blocks:  # an event block the executable holds
             retail = blocks[entry["array"]]
             assert resident_block_at(built, retail) == to, entry
         else:
@@ -414,3 +434,35 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
             assert locate(built, array) == ("exe", to), entry
         elsewhere += to != retail  # a repack that still fits may be written where it was
     assert elsewhere, "every 'moved' array stayed put; the pairs were never exercised"
+
+
+def test_every_written_code_label_is_drawn_from_its_new_immediates(
+    days_read_back: tuple[Archive, Walk], days_manifest: dict, archive: Archive, edit_set: EditSet
+):
+    """`PLAN PIPE-07`: a label the code assembles from `addiu a0` immediates is placed by
+    rewriting them (`boku.code_text`); read back through the same disassembly the extract
+    uses, every written label's glyphs changed and every site of one drawn glyph agrees --
+    two branches that load the same glyph were both rewritten."""
+    built, _ = days_read_back
+    written = set(days_manifest["lines_written"])
+    before = {label.line_id: label for label in read_code_labels(archive)}
+    after = {label.line_id: label for label in read_code_labels(built)}
+    placed = [line for line in written if line in before]
+    assert placed, "no code label was written; nothing here would be checked"
+    # A label whose English spells its own glyphs keeps them (`/31 %`, the paren), so not
+    # every one changes -- but one that draws new letters must (`W L`).
+    assert any(before[line].glyph_ids != after[line].glyph_ids for line in placed)
+    rows = {entry.line_id: entry for entry in SampleScenes.from_paths([ARRAYS_TXT])}
+    for line in placed:
+        label = after[line]
+        wanted = lay_out_code_label(
+            line, before[line].runs, " ".join(rows[line].pages), edit_set.encoder
+        ).words
+        assert label.glyph_ids == wanted, f"{line} draws {label.glyph_ids}, laid out {wanted}"
+        for draw, glyph in enumerate(label.glyph_ids):
+            loads = {
+                value
+                for (_, value), fed in zip(label.sites, label.draws, strict=True)
+                if fed == draw
+            }
+            assert loads == {glyph}, f"{line}: glyph {draw} is loaded as {sorted(loads)}"
