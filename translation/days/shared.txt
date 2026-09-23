@@ -792,7 +792,7 @@ E1754.1	Fat	Guess cheating's no good after all...
 E1754.2	Specs	But Gacchan, Boku-kun has gotten really strong!
 E1754.3	Guts	Yeah, he has...
 E1754.4	Guts	Come with me a sec. I'll show you something good.
-E1754.5	Guts	Boku-chan, here's something good. Try pressing the ○ button here!
+E1754.5	Guts	Boku-chan, here's something good. Try pressing the {G:45} button here!
 E1754.6	Boku	Huh? What happens?
 E1754.7	Guts	Heh... welcome to the secret shortcut nobody knows about but us!
 E1754.8	Boku	Secret?

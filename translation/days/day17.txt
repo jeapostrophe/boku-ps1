@@ -1,4 +1,21 @@
 # day17 (translation/days/README.md)
+
+# --- E1701: G02 -- breakfast (the Bath Lady is back)
+E1701.0	Shirabe	They say the Bath Lady came to our house this morning. // She came late this year, didn't she?
+E1701.1	Aunt	That's right. Usually she comes bringing souvenirs from the Sendai Tanabata festival.
+E1701.2	Moe	I wonder where she's pitched her tent? // Last year it was around the Great Ginkgo.
+E1701.3	Aunt	This year it looks like she's going in as far as Dragon God Pond.
+E1701.4	Boku	Question.
+E1701.5	Aunt	Yes?
+E1701.6	Boku	Who is she?
+E1701.7	Uncle	Wolf... Girl. // She's a pretty university student who shuts herself away in these mountains every summer, // and she comes to our house to borrow the bath.
+E1701.8	Aunt	She brings loads of books and lives in a tent. // If you go left at the Jizo-sama and through the forest, there's a big pond, isn't there?
+E1701.9	Uncle	This year she seems to have pitched her tent around there, // so you should go and have a look too, Boku-kun.
+E1701.10	Uncle	Well then, itadakimaasu.
+E1701.11	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+# NOTE E1701.7: the nickname spelled out syllable by syllable in the Japanese; the English words
+#   said slowly (style guide § 7).
+
 # --- E1720: H09 -- the garden corner
 E1720.0	Boku	What kind of person is the Wolf Girl?
 E1720.1	Aunt	Hmm, that girl, of all people, is hard to put in a word.
