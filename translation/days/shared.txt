@@ -100,8 +100,7 @@ E8051.0	(unlabelled)	From the right: flour, sugar, salt.
 # --- The room with the family altar (G11), examined.
 
 
-# --- E0835: the upstairs landing (G12 → close-up I18). The sisters' door: before day 8, walking
-#     up to it cuts to the door (voice only) and the message. E0830 unbans him on day 8.
+# --- E0835: G12 -- upstairs landing; I18 -- close-up
 E0835.0	(voice only)
 E0835.1	(unlabelled)	It's locked.
 
@@ -542,3 +541,45 @@ E8028.1	(unlabelled)	It's locked.
 # --- E8029: H11 -- outside the workshop
 E8029.0	(voice only)
 E8029.1	(unlabelled)	It's locked.
+
+# --- E0807: A16 -- the fallen bridge, the tree to chop
+E0807.0	Boku	Heave-ho!
+E0807.1	Boku	Heave-ho! Whoa!
+E0807.2	Boku	Tomorrow again, then.
+E0807.3	Boku	Heave-ho!
+E0807.4	(voice only)
+E0807.5	Boku	All right!
+
+# --- E0830: G15 -- the sisters' room
+E0830.0	Moe	Hm-hm, Boku-kun has finally invaded...
+E0830.1	Boku	Moe-neechan... // can I... come and play here any time?
+E0830.2	Moe	Yeah, sure. // But be quiet when I'm studying.
+E0830.3	Boku	Huh, Onee-chan, you like studying?
+E0830.4	Moe	Ahaha... I only like the things I like.
+E0830.5	Boku	So what do you like?
+E0830.6	Moe	Japanese and art, and I like music too.
+E0830.7	Boku	And what don't you like?
+E0830.8	Moe	...English! // ...The teacher is the vice-principal, and somehow I just can't warm to that teacher. // So intense, so completely all-out, that when class is over, every one of us is wiped out.
+E0830.9	Boku	Hmm, so the teacher tries too hard.
+
+# --- E0833: G15 -- the sisters' room; I08 -- close-up
+E0833.0	(unlabelled)	There are lots of spoiled drafts of a letter in here.
+
+# --- E0808: H25 -- the shed; I09 -- close-up
+E0808.0	(unlabelled)	Got the axe.
+
+# --- E0851: A18 -- the secret base
+E0851.0	Guts	Boku-chan, what do you like on TV?
+E0851.1	Boku	I like the ones who transform but don't get bigger.
+E0851.2	Guts	Hmm, that's just like you, Boku-chan.
+# NOTE E0851.1: the Kamen Rider heroes, as against Ultraman, who grows giant (glossary § 6).
+
+# --- E0852: A18 -- the secret base
+E0852.0	Fat	Those long ice pops in a plastic tube, what do you call them? // See? They don't have a name, do they...
+
+# --- E0853: A18 -- the secret base
+E0853.0	Specs	In the picture book Miffy... // why is her mouth an X?
+# NOTE E0853.0: Miffy was published in Japan as "Chiisana Usako-chan" (glossary § 6).
+
+# --- E4001: G12 -- upstairs landing
+E4001.0	Narrator	That was the first time I had set foot in the sisters' room...

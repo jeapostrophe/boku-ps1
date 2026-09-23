@@ -1,0 +1,49 @@
+# day08 (translation/days/README.md)
+# --- E0811: H26 -- the workshop
+E0811.0	Uncle	I've put the old axe away in the shed, // but it's dangerous, Boku-kun, so don't touch it.
+E0811.1	Uncle	Ohh, my aching muscles.
+
+# --- E0821: G03 -- kitchen
+E0821.0	Aunt	Have you been to Onee-chan's room today? // Onee-chan said that from today, Boku-kun is unbanned.
+
+# --- E0814: H13 -- behind the workshop, the chopping block
+E0814.0	Uncle	Phew... this axe is about at the end of its life. // I'll put it away in the shed and use a new one.
+E0814.1	Uncle	Phew... just a little more. Keep at it!
+
+# --- E0820: H08 -- the yard
+E0820.0	Aunt	Mmm... // do this... // do that... // All right! Tonight's dinner plan, complete!
+E0820.1	Aunt	Come to think of it, from today... hm-hm... go and have a look in the girls' room upstairs.
+
+# --- E0812: G01 -- living room
+E0812.0	Uncle	Come to think of it, the fireworks festival must be coming up... // Huh? What day was it again?
+E0812.1	Uncle	For the fireworks festival down in the village, the view from your room is the best there is, Boku-kun.
+
+# --- E0831: G15 -- the sisters' room
+E0831.0	Moe	I love the view from this room's south window. // The sunset, for one, looks just like the purple flowers of some southern island // popping into bloom between the clouds. It's so pretty.
+
+# --- E0832: G17 -- the veranda; H06 -- the garden
+E0832.0	Moe	Hm-hm, I've gotten a little better, haven't I?
+E0832.1	Boku	Have you?
+E0832.2	Moe	Aww, so that's what you say... // You could show a little consideration, you know. // You're a freeloader, after all. The art of getting by in the world, as they call it...
+E0832.3	Boku	But it's an instrument that makes a gentle sound.
+E0832.4	Moe	Yeah, doesn't it? // Somehow, when I'm wrapped in the dark of night like this, playing the clarinet...
+E0832.5	Moe	the waves of sound get quietly soaked up into the forest, // and things like the treetops and the flowers... // and sleepy-eyed baby tanuki, and Ground Wasp-kun out courting... // I feel like they're all, every one of them, becoming happy.
+E0832.6	Boku	That's kind of like, Onee-chan, // you've become everybody's mom.
+E0832.7	Moe	How come, I wonder?
+E0832.8	Boku	Why is that, I wonder?
+E0832.9	Moe	Oh, that's right, the Sagi-no-sato fireworks festival is today. // You can probably see it from your room.
+# NOTE E0832.7-.8: Moe's plain "how come?" and Boku's quiz-show tic (glossary § 3), which is why
+#   the two lines differ.
+
+# --- E0840: H10 -- garden corner where Shirabe watches ants
+E0840.0	Boku	Pipsqueak, do you always play by yourself?
+E0840.1	Shirabe	That name is baaanned.
+E0840.2	Boku	Don't you... have any friends?
+E0840.3	Shirabe	Of course that's not true! // Shirabe could eat rice balls on top of Mt. Fuji with a hundred friends, you know...
+E0840.4	Shirabe	Where is Mt. Fuji again?
+# NOTE E0840.3: from the children's song every first-grader learns, "Ichinensei ni nattara" ("when
+#   I'm a first-grader, will I make a hundred friends and eat rice balls on top of Mt. Fuji?").
+
+# --- E0841: G06 -- TV room
+E0841.0	Shirabe	Kin-chan looks like he has lots of friends...
+E0841.1	Shirabe	I wonder if the fireworks have started yet.
