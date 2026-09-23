@@ -1207,3 +1207,59 @@ E4064.14	Aunt	Tonight's dinner was... // cabbage rolls, grilled eggplant, and an
 E4064.15	Aunt	Tonight's dinner was... // curry rice with marinated horse mackerel, salad, edamame and so on. I worked hard on it.
 E4064.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad. Italian style, by main force.
 E4064.17	Aunt	Tonight's dinner was... // the deluxe nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
+
+# --- E3171: H02 -- front of the house (Father arrives)
+E3171.0	Father	Well, well, you've all taken such good care of him... // Hey, you, you've got to thank them properly, now...
+E3171.1	Narrator	My father, whom I was seeing for the first time in a month, had for some reason a sparkling vigor about him, // as though he had become another man entirely.
+
+# --- E3172: H01 -- front of the house
+E3172.0	Narrator	My father, whom I was seeing for the first time in a month, had for some reason a sparkling vigor about him, // as though he had become another man entirely.
+
+# --- E3173: I31 -- close-up
+E3173.0	Uncle	You look very well, somehow... // or rather, wh-what's happened to you?
+
+# --- E3174: H02 -- front of the house
+E3174.0	Father	Well, how to put it, our second one's been born, see, // so I've made a big decision to really give it everything I've got, I have.
+E3174.1	Aunt	Onii-chan! Give what everything you've got?
+E3174.2	Father	Hmm, what indeed... gahahahaha!
+E3174.3	(voice only)
+E3174.4	Aunt	Somehow I'm so glad to see you looking happy, Onii-chan!
+E3174.5	Father	Is that so... but you're one to talk, Kaoru.
+E3174.6	Aunt	Yes!
+# NOTE E3174.1, .4: the aunt calls her own older brother, Boku's father, "Onii-chan", a name
+#   (style guide § 2), the same word as her dead son's.
+
+# --- E3175: I31 -- close-up
+E3175.0	(voice only)
+
+# --- E3176: H02 -- front of the house
+E3176.0	Aunt	Somehow I'm so glad to see you looking happy, Onii-chan!
+E3176.1	Father	Is that so... but you're one to talk, Kaoru.
+E3176.2	Aunt	Yes!
+
+# --- E3177: I31 -- close-up
+E3177.0	Moe	Wah! Mom! No fair!
+E3177.1	Uncle	What's the matter?
+E3177.2	Moe	For now, at least, for the time being... // the one I love is supposed to be Dad...
+E3177.3	Uncle	For the time being, huh... hmm... // here the sorrow of a father with daughters is served up in full, with every care...
+E3177.4	Aunt	Oh? // If you want Dad for your sweetheart, don't forget there's a powerful rival right here!
+E3177.5	Moe	Oh, really? Well, I won't lose either!
+# NOTE E3177.3: itareri-tsukuseri, "every attention lavished", an idiom for perfect hospitality,
+#   which the uncle puts to his sorrow.
+
+# --- E3178: H03 -- front of the house
+E3178.0	(voice only)
+
+# --- E3179: H02 -- front of the house ("Hold me")
+E3179.0	(voice only)
+E3179.1	Father	Well then, it's about time...
+E3179.2	Boku	Hey, Auntie...
+E3179.3	Aunt	Hm? What is it?
+E3179.4	Boku	One last favor...
+E3179.5	Aunt	Huh? What could it be?
+E3179.6	Boku	Hold me.
+E3179.7	Boku	......
+
+# --- E3180: H01 -- front of the house (the last rule)
+E3180.0	Aunt	Now, now, none of that... boys mustn't cry. // That's... the rule at Auntie's house.
+# NOTE E3180.0: the house-rule frame, its fourth and last use (glossary § 3).
