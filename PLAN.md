@@ -262,11 +262,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       with the movie loader (`asm/walkers.asm`; `tests/mips.py` runs the game's walkers on the
       patched EXE). **Done 2026-09-23:** summer-memories labels 0–4 and item descriptions (wrapped
       to their box by the build) proven on both emulators, reached with generated cards /
-      pokes. **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
-      surfaces 9 (with its return-value change), 11, 25, 26, summer-memories label 5, and the
-      card-screen yes/no (18: 5 raw glyphs, the gap hard-coded after glyph 1 — the build
-      rewrites the split point from the translator's `Yes | No`, keeping the translation
-      files the only interface, README § "How the translation is made");
+      pokes; the card screens' two answers (surface 18): the row is written `Yes | No` and the
+      build rewrites the drawer's split and count in `TITLE.OVL`, proven on both emulators.
+      **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
+      surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
       the 23 computed-id `glyph_draw` sites (probably covered by the site index plus
       `code_glyph_ids` — needs a test that proves it); watching the heap gap and stack under
       the four overlays / a save / menus, sumo and fishing. (Round 3, 2026-09-21: the
@@ -545,19 +544,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `GFX-04`–`GFX-09` (Jay: no churn on one task). The audit that would have been its first
       step is `research/textures-plan.md`; the rules that stay: redrawn images are tracked, a
       subtitled texture is tracked only as text + placement, originals never.
-- [ ] **[GFX-04]** **The rest of the diaries** — 93 pages after the prototyped one, programmatic
-      with the game's glyphs. Moved here from `research/diary-redraw.md` (it was a plan hiding
-      in a research note): (1) the entries need their own keyed home in `translation/`, keyed
-      by **page id** (`NIKKI_048`), not day — `g_diary_pages[day]` picks a page at run time and
-      the same page can serve different days; (2) per-page wrapping with a refusal, as a lint
-      the build runs — five lines of ~32 game glyphs, nothing shortened to fit; (3) **the date
-      strip stays as it is** — RULED (Jay, 2026-09-21): keep the Japanese month/day symbols
-      with the composited numeral, "fun and simple to understand", which also leaves
-      `nikki_date_upload` untouched; (4) `NIKKI_047`'s shading differs and still redraws —
-      re-run `measure` on any contributor's import before a bulk run; (5) `NIKKI_000` is the
-      unused dummy and must be skipped deliberately; (6) each page is stored once, so 94
-      independent edits and no propagation. The 94 entries are new English (`TRN-04`'s
-      table). Harmed: the player, who writes a diary every night.
+- [x] **[GFX-04]** **The diaries' engineering.** DONE 2026-09-23: entries keyed by page id in
+      `translation/textures/diary.txt` (`nikki@NIKKI_072` — `g_diary_pages[day]` picks a page
+      at run time), built by the `nikki@` family (`boku/diary.py`, `boku/texture_text.py`):
+      each page re-measured on the contributor's dump (`NIKKI_047`'s shading columns excepted
+      exactly), `NIKKI_000` refused, every fit refused rather than cut (five lines, a word
+      wider than a line, an undrawable character); the date strip stays (Jay, 2026-09-21);
+      `./make.sh textures check` is the per-page lint. Proven on Beetle by
+      `tests/test_real_texture_text_beetle.py`; how to reach the diary is in
+      `research/diary-redraw.md`. Three sample entries; the other 91 are `TRN-04`'s table row.
 - [x] **[GFX-05]** **Is the insect book's body text already a line?** MEASURED 2026-09-21
       (`tools/redux/book-pokes.lua`, `work/gfx05/`): **no — (a)**. The `MZKAN` spreads are
       `ZUKAN.OVL` mode 13 and draw no glyph; `hhon@5328` is drawn only in `HHON.OVL` mode
@@ -574,7 +569,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       area, keep the photo/kite panel, re-rule under the header, reflow the vertical body to
       horizontal (the diary's answer applies). Every field is pixels (`GFX-05`). Text:
       species name (glossary § 4a), family, size, food, body; kite name, difficulty, how to
-      build. Harmed: the player who opens the book.
+      build. **Blocked on the small-type ruling (`GFX-07`, [MINE: product])** —
+      measured 2026-09-23: a faithful insect description needs ~20 lines at 12 px and a spread
+      holds 12 (kite pages: ~130 characters of room for 190–265); nothing is shortened. An
+      English draft of all 17 pages is in `work/gfx06/`, ready once the type is ruled. Harmed: the player who opens the book.
 - [ ] **[GFX-07]** **UI plates and the title menu** — 17 programmatic images: `T_TITLE` **first**
       (four menu lines on transparent, outlined with a drop shadow — Jay, 2026-09-20: "needs
       to be translated early"), `T_CONFIG` value plates, the oval action buttons across seven
