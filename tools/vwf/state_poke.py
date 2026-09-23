@@ -12,6 +12,7 @@ addresses and what they mean belong to the research notes that name them.
     state_poke.py IN.state OUT.state --day 2 --hour 10  # g_clock
     state_poke.py IN.state OUT.state --fill 0x801FD700 0x801FF700 0xEE
     state_poke.py IN.state --scan 0x801FD700 0x801FF700 0xEE   # lowest byte that changed
+    state_poke.py IN.state OUT.state --word 0x8002982C 0x8002A19C  # any u32, repeatable
 
 `--map` writes what `map_request` (`0x80017A04`) writes, as `tools/vwf/reach-select.lua`
 does from Lua: the base name, the request pointer, the one-shot flag and the two bits.
@@ -61,6 +62,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--scan", nargs=3, type=parse_int, metavar=("LO", "HI", "BYTE"), help="report the change"
     )
+    parser.add_argument(
+        "--word",
+        nargs=2,
+        type=parse_int,
+        action="append",
+        default=[],
+        metavar=("ADDRESS", "VALUE"),
+        help="write one little-endian u32; repeatable (a table entry is several)",
+    )
     args = parser.parse_args(argv)
 
     data = bytearray(args.state.read_bytes())
@@ -89,6 +99,11 @@ def main(argv: list[str] | None = None) -> int:
         struct.pack_into("<I", data, ram_offset(REQ_ONE, 4), 1)
         (flags,) = struct.unpack_from("<I", data, ram_offset(REQ_FLAGS, 4))
         struct.pack_into("<I", data, ram_offset(REQ_FLAGS, 4), flags | 3)
+        changed = True
+    for address, value in args.word:
+        was = struct.unpack_from("<I", data, ram_offset(address, 4))[0]
+        struct.pack_into("<I", data, ram_offset(address, 4), value)
+        print(f"word 0x{address:08X}: 0x{was:08X} -> 0x{value:08X}")
         changed = True
     for offset, value in ((0, args.day), (1, args.hour), (2, args.minute)):
         if value is not None:

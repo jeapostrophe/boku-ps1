@@ -226,12 +226,9 @@ the picture is untouched outside the glyphs. **Built and measured: § 7.**
 * **Where the cues live.** Not in the EXE: the heap-raise gap has 1,116 − 812 = 304 bytes
   after `vwf_advance` (`vwf-prototype.md` § free space) and the dead islands total ~3 KB
   (`text-renderer.md` § 6) — enough for the hook code, not for ~10 minutes of narration.
-  Put the cue blob (per movie: `{u16 start_frame, u16 end_frame, u16 text_offset}` rows, then
-  the encoded lines; E2 adds the glyph masks) in the relocation arena — the 765 filler
-  sectors at LBA 281–1045 that `relocation.md` § Where the room is already allocates from —
-  and read it at `movie_play_entry` into the arena above `0x8018D3F4` with the game's own
-  LBA reader (`0x80012CFC` + `DsRead`; `boku-bin.md` § how the EXE reads). Frame = round(t ×
-  15), header numbers 1-based; `FMV-02`'s "keyed by movie and time" becomes this.
+  So the cues and the glyph masks are a block on the disc, read at `movie_play_entry`
+  into RAM above the movie's end address with the game's own reader: as built, § 7 and
+  § 8.
 * **Frame budget.** Either hook adds work that is small next to the VLC decode and sits in a
   loop that measurably idles (§ 2.2); the loop waits on the ring rather than dropping frames,
   so an overrun degrades to a late frame, not a glitch.
@@ -321,13 +318,10 @@ and the STR player streams fine headless (the earlier "the smoke run skipped it"
 encoder and reference rasteriser `boku/movie_block.py`, the probe `tools/redux/movie-sub.lua`,
 the gate `tests/test_real_movie_subtitle.py` (two Redux boots; `./make.sh emu-test`). The cue
 is a placeholder — two lines of the game's own first narration line over STR frames 120–300 —
-hard-coded in `build_prototype.py` (`MOVIE_CUE`). **The block carries no movie key**: the
-loader reads it at every `movie_play_entry` and the blit tests only the frame range, so the
-prototype draws this cue over every movie whose frames reach 120 — thirteen ids in
-`data/movies.tsv`, the ending among them. The cue file keyed by movie, and its carrier in
-`boku build`, are milestone 2; until then `boku build --vwf` images carry none of these
-sites — the exported edit set is cut from a third armips pass, `MOVIE_SUBTITLES=0`, which
-leaves `movie.asm` out of the assembly altogether.
+hard-coded in `build_prototype.py`. That block carried no movie key, so the cue was drawn
+over every movie whose frames reached 120, and `boku build --vwf` carried none of these
+sites; both are milestone 2's, § 8, which also moved the loader and the block. What follows
+is milestone 1 as measured, with § 8's changes named where they apply.
 
 **Sites** (retail word → patched; the `ORIGINAL` arm carries each stock word):
 
@@ -338,10 +332,10 @@ leaves `movie.asm` out of the assembly altogether.
 | `movie_dctout_cb` | `0x80034C14` | `jal LoadImage` | `jal movie_sub_blit`: paints the cue into the slice, jumps on with `a0`, `a1`, `ra` intact |
 
 **Where the code is.** The island `0x80012E04…0x80013070` (`text-renderer.md` § 6 candidate
-2): `movie_sub_frame_no` +0, `movie_sub_loc` +4 (a `DslLOC`), `movie_sub_frame` `0x80012E0C`
-(16 B), `movie_sub_load` `0x80012E1C` (136 B), `movie_sub_blit` `0x80012EA4` (460 B) — **620 of
-620 bytes**; the next instruction goes to the 712-byte island at `0x800221CC` or into the
-loaded block. The island is not assembled under `ORIGINAL` (dead retail code has no stock
+2) held all three routines in milestone 1 — 620 of 620 bytes. Since § 8 it holds
+`movie_sub_frame_no`, `movie_sub_frame` and `movie_sub_blit` (484 bytes; the addresses are the
+build's, in `edits.json` → `movie_subtitles.islands`), and the loader is in the second
+island. The island is not assembled under `ORIGINAL` (dead retail code has no stock
 claim to check, and restating it would put 620 bytes of the executable in the repo). Its
 deadness, inferred in `text-renderer.md`, is now measured on one path: an execution
 breakpoint over the range logged **0 hits** from boot through the title, the card check and
@@ -350,9 +344,9 @@ the opening to STR frame 400 on the stock disc, where the same breakpoint over
 is still inference.
 
 **The block.** RAM `0x801C0000` (above the arena's end under `arena.asm`'s raise, 250 KB under
-the stack's low-water mark), read from LBA 1040–1042 — three filler sectors near the top of
-the relocation arena, written Form 1 by `build_prototype.py` (`write_movie_block`, which
-refuses sectors that are no longer filler). Layout: `boku/movie_block.py`'s docstring. 6,000
+the stack's low-water mark), read from filler sectors written Form 1 (milestone 1: LBA
+1040–1042 by `build_prototype.py` alone; § 8: the reserve at LBA 1014, through the edit set).
+Layout: `boku/movie_block.py`'s docstring. 6,000
 bytes: 112 of header, cue rows and lines, then 92 records × 64 — the whole VWF glyph set,
 each an advance byte and two 14×14 masks (§ 3's "18 bytes per glyph" was the 12×12 estimate;
 the outline needs a pixel of margin, and 64 makes the index a shift). The loader is
@@ -403,3 +397,82 @@ there is no room in it for the per-movie selection; a line header must be halfwo
 (the first build stalled at frame 120 on an odd `lhu`); and the frame number is per slice,
 not per frame. The block's home (relocation arena, read at `movie_play_entry`) is as § 3
 said, at a fixed sector for now.
+
+## 8. Keyed by movie, carried by `boku build` (`FMV-04` milestone 2, 2026-09-22)
+
+What changed from § 7: the cues come from a committed file, the block keys them by movie,
+the loader picks the playing movie's out of it, and the block and the hooks travel in the
+edit set, so `./make.sh build-days` carries movie subtitles. Code: `boku/movie_cues.py`
+(the file's one parser and its rules), `boku/movie_block.py` (the block, `select` and
+`render` as the loader's and blit's reference model), `asm/movie.asm`,
+`tools/vwf/build_prototype.py` (`movie_block_for`, `movie_sector_edit`), `boku/build.py`
+(`EditSet.sectors`), `boku/relocate.py` (`MOVIE_BLOCK_RESERVE`); the gate is
+`tests/test_real_movie_subtitle.py`.
+
+**The cue file** is `translation/movies.txt`, one row `movie <TAB> first <TAB> last <TAB>
+English`; its format is `translation/README.md` § "movies.txt" and nowhere else. The key is
+the movie *file* (`M27`), not the `MOVIE` id: `g_movie_table`'s entries that play one file
+share one name string (§ 1: ids 0, 15 and 23 all point at `0x8002A32C`), and all play it
+from frame 1, the first two stopping at 58, so a cue shows under whichever reaches its
+frames. A cue's last frame may be at most the largest
+`stop_frame` of the file's ids in `data/movies.tsv`. `boku lint` checks every rule in the
+cell map the build installs (never the stock 14-px cells — no movie draws those), and the
+font build refuses a file the lint would fail.
+
+**The per-movie select.** `movie_play_entry` stores the entry's name pointer to
+`g_movie_name` `0x80036680` (`0x800345EC`) before the hooked pair at `0x8003462C`, so the
+loader needs no id: after the read it scans the block's movie rows for `g_movie_name`
+and copies the matching row's cue offset and count into the block's header
+(`boku/movie_block.py`'s docstring has the layout); no row leaves the count 0. `movie_sub_blit` reads its
+cue list from +8 instead of +8's old fixed start — one instruction more. The block is
+re-read and re-selected at every movie, so a previous movie's selection never survives
+into the next. `movie_sub_frame_no` does still hold the previous movie's last frame when the
+next one starts, and by § 2.2's call order is never read that way: `movie_run`'s priming
+`movie_next_frame` stores the new movie's first frame number before the first slice is
+uploaded (inferred from the order, not measured at the first frame). The name pointers are
+read out of the contributor's own executable at build time
+(`boku.movie_block.movie_names`), never typed.
+
+**The second island.** The loader and the select moved to `dbg_font_init` `0x800221CC…
+0x80022494` (712 bytes; `text-renderer.md` § 6: never called — no `jal`, data word or `lui`
+pair names it; its bounds re-read: it opens `addiu sp,sp,-0xD0` and ends `jr ra` / `addiu
+sp,sp,0xD0` at `0x8002248C`, the debug printer starting at `0x80022494`). They take 228
+bytes of it. **Measured dead on one path**, as § 7's island was: an execution breakpoint
+over all 712 bytes logged **0 hits** from boot through the title, the card check and the
+opening to STR frame 400 on the stock disc (`work/fmv04/island2-stock.log`,
+`BOKU_ISLAND_RANGE=800221CC,2C8`). After the opening it is inference, like the first.
+
+**The carrier: reserved sectors.** The block cannot be a `BOKU.BIN` member without a new
+`g_cd_dir` entry, and the executable needs a fixed LBA it was assembled against, so the
+block lives in the top 32 sectors of the relocation arena, **LBA 1014–1045**
+(`MOVIE_BLOCK_RESERVE`, 64 KB), and the allocator's arena stops below it (`DEFAULT_ARENA` =
+LBA 281–1013, 733 sectors; `relocation.md` § Where the room is). The font build writes the
+block into `edits.json` as its one `sectors` entry — `{lba, new, reason}`, whole sectors —
+and `boku build --vwf` applies it beside the relocations as a `SectorEdit` over filler,
+refusing any sector write outside the reserve and any LBA written twice. The hooks and both
+islands are now ordinary words of the exported executable; the `MOVIE_SUBTITLES=0` pass is
+gone. `encode_block` refuses a block larger than the reserve. The days build of 2026-09-22
+relocates 60 members and leaves 479 of the 733 sectors; with no cues yet the block is 3
+sectors, the header and the 92 glyph records.
+
+**Measured.** Redux (`./make.sh emu-test`, the fixture cues on `M27` and `M60`, both over
+frames 120–300, built through `build_prototype.py --edits-only` and `boku build --vwf`;
+`M60` played in the opening's place by rewriting the table entry `movie_play_entry` is
+handed, `movie-sub.lua` `BOKU_PLAY_NAME`): on both movies the frame inside the cue is the
+stock decode plus exactly that movie's predicted text (3,409 and 2,116 pixels), the frames
+outside are byte-identical to stock, and the hook's frame number is the player's. Red on
+purpose with the select's `bne` made a `nop` (every movie takes the first row, `M60`'s):
+"633 of M60's pixels are drawn over M27" and "3163 pixels of M27 k199 differ". Beetle
+(`work/fmv04/beetle-m2/`, a state at frame 3000 with the same table entry poked by
+`tools/vwf/state_poke.py --word`, then START/CIRCLE and a shot every 5 frames): every
+patched shot that matches a stock shot outside the text rows and differs inside them — 84
+on `M27`, 83 on `M60` — is that stock shot plus exactly its own movie's text, with none of
+the other's; the patched run is 25 frames behind the stock one, the block's read (§ 7 says
+22–25).
+
+**Observed, not chased:** two of eleven headless Redux boots that night never reached the
+opening by vsync 6000 (`strframes=0`), one on the stock image and one on a patched one, and
+the same command passed on a rerun. Other lanes were running Redux at the same time.
+*Hypothesis*, unchecked: the runs share Redux's memory cards (`run_core.py` keeps Beetle's
+per work directory; where Redux keeps its own was not looked at), and the card check read
+another run's save.

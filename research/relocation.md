@@ -85,7 +85,11 @@ The arena is the **765 zero-filled Form 2 filler sectors at LBA 281–1045**, be
 filesystem rather than trusting the constants, and a test on the real dump holds the two
 together.
 
-Only the 281–1045 run is allocated from. The tail run is ~279,000 sectors past the
+Only the 281–1045 run is allocated from, and not all of it: its top 32 sectors, LBA
+1014–1045, are the movie-subtitle block's (`boku.relocate.MOVIE_BLOCK_RESERVE`, PLAN
+`FMV-04`; `research/movies.md` § 8). The executable reads that block from a fixed LBA, so
+`DEFAULT_ARENA` is LBA 281–1013, **733 sectors**, and the block is written by the font
+build's edit set rather than allocated. The tail run is ~279,000 sectors past the
 containers — far outside a `u16` record — and a top-level member placed there would fall
 outside the contiguous span the archive is read back through, so it is counted as reserve
 and left alone.
@@ -144,7 +148,7 @@ longer in sector order with its neighbours (§ "Does it fit?" says why it cannot
 
 ## Does it fit?
 
-**Yes — 456 sectors of the 765, with 309 to spare.** Measured 2026-09-20 by
+**Yes — 456 sectors of the 733, with 277 to spare.** Measured 2026-09-20 by
 `tests/test_real_reinsert.py`'s `test_the_full_translation_estimate_lays_out_inside_the_arena`,
 which synthesises the growth and then runs the real allocator over it.
 
@@ -166,8 +170,8 @@ figure anyone typed.
 | sectors those members ask for | 11,141 |
 | sectors they abandon | 10,889 |
 | **net** new sectors the disc must find | **252** |
-| arena | 765 |
-| **arena the layout actually spends** | **456**, leaving 309 |
+| arena | 733 (765 less the movie block's 32) |
+| **arena the layout actually spends** | **456**, leaving 277 |
 | placements written into a run another member vacated | 171 of 181 |
 
 The gap between 11,141 and 456 is the whole of this unit. A member that moves leaves its

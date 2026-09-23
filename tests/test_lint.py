@@ -26,6 +26,7 @@ from boku.glyphs import GlyphTable
 from boku.layout import (
     DIALOGUE_BAND,
     LABEL_MARKS,
+    CellMapEncoder,
     LayoutError,
     StockEncoder,
     lay_out_message,
@@ -40,6 +41,8 @@ from boku.lint import (
     LabelledBox,
     Options,
     label_allowance,
+    lint_movie_file,
+    lint_movies,
     lint_rows,
     load_rows,
     make_encoder,
@@ -535,3 +538,37 @@ def test_the_rules_this_module_shares_are_defined_where_they_belong():
     assert lint_module.original_marks is layout_module.original_marks
     assert lint_module.speaker_label is layout_module.speaker_label
     assert lint_module.select_fields is translation_module.select_fields
+
+
+# --- the movie cues ------------------------------------------------------------------------------
+
+
+def test_the_movie_cues_are_linted_with_their_file_and_line(tmp_path):
+    """`translation/movies.txt` rides the same report as the day files, each rule a
+    `boku.movie_cues` check, each finding pointing at its row."""
+    cues = tmp_path / "movies.txt"
+    cues.write_text("# note\nM60\t1\t9999\tAB\nM60\t5\t6\tA | B | A\n", encoding="utf-8")
+    font = CellMapEncoder({"A": (1, 9), "B": (2, 9), " ": (3, 4)}, name="test")
+    found = lint_movies(cues, font, tmp_path / "cells.json")
+    assert [(f.file, f.number, f.line_id, f.check, f.severity) for f in found] == [
+        ("movies.txt", 2, "M60@1", "cue-frames", ERROR),
+        ("movies.txt", 3, "M60@5", "cue-lines", ERROR),
+        ("movies.txt", 3, "M60@5", "cue-overlap", ERROR),
+    ]
+
+
+def test_movie_cues_without_a_font_are_checked_and_their_pixels_said_to_be_unmeasured(tmp_path):
+    cues = tmp_path / "movies.txt"
+    cues.write_text("M60\t1\t2\t" + "A" * 400 + "\n", encoding="utf-8")
+    found = lint_movies(cues, None, tmp_path / "named.json")
+    assert [(f.check, f.severity) for f in found] == [("cue-unmeasured", WARNING)]
+    assert "named.json" in found[0].message, "the warning names a cell map nobody asked for"
+
+
+def test_a_cue_file_named_on_the_command_line_that_is_not_there_is_an_error(tmp_path):
+    """A mistyped `--movies` used to lint nothing and pass; only the default file, which a
+    checkout before any cue need not have, may be absent."""
+    options = Options(encoder=StockEncoder.load(), box=DIALOGUE_BAND)
+    with pytest.raises(OSError):
+        lint_movie_file(tmp_path / "movie.txt", options, tmp_path / "cells.json")
+    assert lint_movie_file(None, options, None) == []

@@ -39,6 +39,10 @@ What it checks, and where each rule comes from
 * **`em-dash`** -- *a warning only*, on every em dash (style guide § 18): the dash is a
   habit of machine-written English and is used only where the Japanese breaks or trails
   the line with a dash-like mark. A warning is a prompt to check the source, not a ban.
+* **`cue-*`** -- `translation/movies.txt`, the movie subtitles: `boku.movie_cues.check`'s
+  rules, measured in the cell map the build installs whatever `--encoder` says, because the
+  movies are drawn only in that font; without one the pixel rules are a `cue-unmeasured`
+  warning, never a pass.
 * **`reader-vs-loader`** -- this module's parse against `boku.translation.SampleScenes`,
   the loader the image build reads English through. Two parsers of one provisional format
   is a real risk (`tools/reader/build.py` carries a third and checks it the same way), so
@@ -66,7 +70,7 @@ from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from boku import REPO_ROOT
+from boku import REPO_ROOT, movie_cues
 from boku.archive import DEFAULT_DISC_DIR
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
@@ -695,6 +699,45 @@ def make_encoder(kind: str, cells: Path | None) -> Encoder:
     return CellMapEncoder.from_json(path)
 
 
+def lint_movies(path: Path, encoder: Encoder | None, cells: Path) -> list[Finding]:
+    """The movie cue file against the movie list and, given one, the font's pixels.
+    `cells` is where the font was looked for, which the warning names when it was not."""
+    rows, problems = movie_cues.read(path)
+    problems += movie_cues.check(rows, movie_cues.read_movie_lengths(), encoder)
+    findings = [Finding(path.name, p.line, p.key, p.check, ERROR, p.message) for p in problems]
+    if encoder is None and rows:
+        findings.append(
+            Finding(
+                path.name,
+                0,
+                "-",
+                "cue-unmeasured",
+                WARNING,
+                f"no cell map at {cells}: the cues' widths, line counts and glyphs "
+                f"were not measured; run `./make.sh build-days` or give --cells",
+            )
+        )
+    return findings
+
+
+def lint_movie_file(movies: Path | None, options: Options, cells: Path | None) -> list[Finding]:
+    """`lint_movies` over `--movies`, in the font the movies are drawn in: `--encoder
+    cellmap`'s, else the cell map at `--cells` or the default if the build has written one
+    -- never the stock 14-px cells, which no movie draws. The default cue file may be
+    absent (nothing to lint); a file named on the command line may not, so a mistyped path
+    raises `OSError` rather than linting nothing and passing."""
+    if movies is None or (
+        Path(movies) == movie_cues.CUE_FILE and not movie_cues.CUE_FILE.is_file()
+    ):
+        return []
+    path = Path(cells) if cells is not None else DEFAULT_CELLS
+    if isinstance(options.encoder, CellMapEncoder):
+        encoder: Encoder | None = options.encoder
+    else:
+        encoder = CellMapEncoder.from_json(path) if path.is_file() else None
+    return lint_movies(Path(movies), encoder, path)
+
+
 def format_report(findings: Iterable[Finding]) -> list[str]:
     return [finding.format() for finding in findings]
 
@@ -721,6 +764,7 @@ def main_lint(
     label: bool,
     additive: bool,
     additive_words: Path | None,
+    movies: Path | None = movie_cues.CUE_FILE,
 ) -> int:
     paths = translation_paths(sources or DEFAULT_SOURCES)
     if not paths:
@@ -739,7 +783,13 @@ def main_lint(
         print(f"lint: {error}", file=sys.stderr)
         return 2
     rows, findings = load_rows(paths)
-    findings = sorted([*findings, *lint_rows(store, rows, options)])
+    findings = [*findings, *lint_rows(store, rows, options)]
+    try:
+        findings += lint_movie_file(movies, options, cells)
+    except (OSError, LayoutError) as error:
+        print(f"lint: {movies}: {error}", file=sys.stderr)
+        return 2
+    findings = sorted(findings)
     print(
         f"read {', '.join(path.name for path in paths)} "
         f"({len(rows)} row(s)) against {store.root} in {options.encoder.name}, "
@@ -840,6 +890,16 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         metavar="FILE",
         help="the English intensifier list to use instead of the built-in one, one per line",
     )
+    parser.add_argument(
+        "--movies",
+        type=Path,
+        default=movie_cues.CUE_FILE,
+        metavar="FILE",
+        help=(
+            "the movie cue file linted beside the day files, always in the cell map "
+            f"(default: {movie_cues.CUE_FILE.relative_to(REPO_ROOT)})"
+        ),
+    )
     parser.set_defaults(
         run=lambda args: main_lint(
             args.sources,
@@ -853,6 +913,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
             args.label,
             args.additive,
             args.additive_words,
+            args.movies,
         )
     )
     return parser

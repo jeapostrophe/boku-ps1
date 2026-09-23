@@ -1,0 +1,4 @@
+# The movies' subtitles: movie <TAB> first frame <TAB> last frame <TAB> English.
+# The format and its rules: translation/README.md § "movies.txt". Licence: CC BY-SA 4.0.
+#
+# No cues yet: the narration is being transcribed (PLAN FMV-02).

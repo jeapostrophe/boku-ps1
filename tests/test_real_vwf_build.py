@@ -39,6 +39,7 @@ from boku.disc import DiscImage
 from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
 from boku.reinsert import check_disjoint
+from boku.relocate import MOVIE_BLOCK_RESERVE
 from boku.sites import Walk
 from tests.test_real_reinsert import FILESYSTEM_ENTRIES, read_back
 
@@ -239,6 +240,26 @@ def test_the_renderer_patch_is_really_in_the_built_image(days_image: Path, edit_
             entry = entries[edit.file]
             found = opened.read_file_bytes(entry.lba, edit.offset, len(edit.new))
             assert found == edit.new, f"{edit.reason} is not in the built image"
+
+
+def test_the_days_build_carries_the_movie_block_where_no_relocation_went(
+    days_image: Path, days_manifest: dict, edit_set: EditSet
+):
+    """`FMV-04`: the edit set's one sector write -- the cue block the movie hooks read -- is
+    in the image at the LBA the executable was assembled to read, and not one relocated
+    member was given a sector of its reserve."""
+    (block,) = edit_set.sectors
+    assert [(row["lba"], row["sectors"]) for row in days_manifest["sector_patches"]] == [
+        (block.lba, block.sectors)
+    ]
+    assert days_manifest["relocations"], "nothing relocated; the reserve was never at risk"
+    for moved in days_manifest["relocations"]:
+        home = range(moved["to_lba"], moved["to_lba"] + moved["sectors"])
+        assert not set(home) & set(range(MOVIE_BLOCK_RESERVE.start, MOVIE_BLOCK_RESERVE.end)), (
+            f"{moved['member']} was placed at {moved['to_lba']}, inside the movie block's reserve"
+        )
+    with DiscImage(days_image) as opened:
+        assert opened.read_form1_span(block.lba, block.sectors) == block.new
 
 
 # --- every line, at every copy ------------------------------------------------------------------

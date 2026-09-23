@@ -28,11 +28,6 @@
 ;        MOVIE_SUB_MASK_ROWS, MOVIE_SUB_RECORD_SHIFT
 ;                       movies: where the subtitle block is read from and to, and the
 ;                       numbers of its format (movie.asm; boku/movie_block.py owns them)
-;   -equ MOVIE_SUBTITLES
-;                       1 assembles movie.asm -- the hooks and the island. 0 leaves it out
-;                       entirely, and that pass is the executable the exported edit set is
-;                       cut from: no edit set can carry the block those hooks read
-;                       (tools/vwf/build_prototype.py, MOVIE_BLOCK_NAME).
 ;   -equ ORIGINAL       0 builds the patch. 1 assembles, at every site, the instructions the
 ;                       retail executable holds there; the build runs that pass first and
 ;                       refuses unless the file comes back byte-identical. That is what
@@ -65,9 +60,7 @@ CELL             equ 12             ; glyph_draw's sprite is 12 x 12 (0x8002BB4C
 .include "dialogue.asm"
 .include "select.asm"
 .include "arena.asm"
-.if MOVIE_SUBTITLES
 .include "movie.asm"
-.endif
 
 ; ---- the heap's first byte ---------------------------------------------------------------
 ; 0x80068AF0 is the bump pointer itself; the file carries its initial value, `main` zeroes

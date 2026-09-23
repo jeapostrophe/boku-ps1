@@ -45,6 +45,8 @@ from boku.reinsert import (
     sector_head_room,
 )
 from boku.relocate import (
+    DEFAULT_ARENA,
+    MOVIE_BLOCK_RESERVE,
     PREFIX_FILLER,
     RelocationRefused,
     Run,
@@ -54,6 +56,8 @@ from boku.relocate import (
 )
 from boku.sites import walk as walk_all_sites
 from tests import synth_archive as synth
+
+ARENA_SECTORS = sum(run.count for run in DEFAULT_ARENA)
 
 
 def walk(archive: Archive):
@@ -577,9 +581,27 @@ def test_a_member_too_big_for_the_arena_is_refused_with_the_numbers():
     archive = a_disc_with_one_line()
     member = archive.member("M_A01000.BIN")
     with pytest.raises(RelocationRefused, match="no run that long") as raised:
-        plan_layout(archive, {member.short_name: (PREFIX_FILLER.count + 1) * SECTOR})
-    assert str(PREFIX_FILLER.count) in str(raised.value)
+        plan_layout(archive, {member.short_name: (ARENA_SECTORS + 1) * SECTOR})
+    assert str(ARENA_SECTORS) in str(raised.value)
     assert raised.value.member == member.short_name
+
+
+def test_the_allocator_never_hands_out_the_movie_blocks_reserved_sectors():
+    """`FMV-04`'s cue block lives at a fixed LBA the executable reads (`asm/movie.asm`), so a
+    member placed there would be read as subtitles at every movie and overwritten by the
+    block. The narrowest request that reaches the reserve is one sector more than the
+    rest of the filler: it fits `PREFIX_FILLER` and must still be refused, while the
+    largest request that does not reach it is placed clear of it."""
+    assert PREFIX_FILLER.contains(MOVIE_BLOCK_RESERVE), "the reserve is not in the filler"
+    room = PREFIX_FILLER.count - MOVIE_BLOCK_RESERVE.count
+    archive = a_disc_with_one_line()
+    member = archive.member("F000.BIN")
+    with pytest.raises(RelocationRefused, match="no run that long"):
+        plan_layout(archive, {member.short_name: (room + 1) * SECTOR})
+    (placement,) = plan_layout(archive, {member.short_name: room * SECTOR}).placements
+    assert placement.home.end <= MOVIE_BLOCK_RESERVE.start, (
+        f"{placement.home} reaches the movie block's {MOVIE_BLOCK_RESERVE}"
+    )
 
 
 def test_the_capacity_answer_separates_what_is_asked_for_from_what_is_net_new():
@@ -608,7 +630,7 @@ def test_the_null_re_layout_moves_nothing_and_writes_nothing():
     layout = plan_layout(archive, {m.short_name: m.size for m in archive.members})
     assert layout.unchanged
     assert layout.placements == ()
-    assert layout.free_after == layout.free_before == PREFIX_FILLER.count
+    assert layout.free_after == layout.free_before == ARENA_SECTORS
     assert directory_edits(archive, layout) == []
 
 

@@ -395,16 +395,22 @@ def test_a_span_that_cannot_be_read_as_filler_is_a_refusal_not_a_traceback():
         tool.write_movie_block(writer, bytes(64), tool.Ledger())
 
 
-def test_a_font_that_cannot_draw_the_cue_is_a_refusal_not_a_traceback():
-    """`--font` is a build input and `MOVIE_CUE` is text: a glyph file missing one of its
-    characters raises `BlockError`, which `main` does not catch."""
+def test_a_font_that_cannot_draw_a_cue_is_a_refusal_naming_the_row(tmp_path):
+    """`--font` is a build input and the cue file is text: a glyph file missing one of a
+    cue's characters is the lint's `cue-unencodable`, reported with the file and line, and
+    never a `BlockError` out of `main` as a traceback."""
     tool = vwf_prototype()
-    text = set("".join(tool.MOVIE_CUE.lines))
+    cues = tmp_path / "movies.txt"
+    cues.write_text("# a note\nM60\t1\t2\tab\n", encoding="utf-8")
     blank = tool.Glyph((0,) * tool.CELL, 4)
-    assert tool.movie_block_for({c: blank for c in text}), "the cue's own characters encode"
-    dropped = sorted(text)[0]
-    with pytest.raises(tool.BuildRefused, match=f"no glyph for {dropped!r}"):
-        tool.movie_block_for({c: blank for c in text - {dropped}})
+    with pytest.raises(tool.BuildRefused, match=r"movies\.txt:2 M60@1 the font has no glyph"):
+        tool.movie_block_for({"a": blank}, cues, b"")
+
+
+def test_a_cue_file_that_is_not_there_is_a_refusal(tmp_path):
+    tool = vwf_prototype()
+    with pytest.raises(tool.BuildRefused, match="the movie cues"):
+        tool.movie_block_for({}, tmp_path / "missing.txt", b"")
 
 
 def test_the_build_defines_every_equate_movie_asm_leaves_to_it():
@@ -498,6 +504,7 @@ def prototype_arguments(tool, out: Path, **extra) -> argparse.Namespace:
         "days": None,
         "label": False,
         "font": None,
+        "movie_cues": str(tool.CUE_FILE),
         "asm": str(tool.ASM),
         "armips": str(tool.DEFAULT_ARMIPS),
         "skip_image_hash": True,
@@ -532,33 +539,47 @@ sites are somewhere in it, and this test may not be a copy of where `movie_sites
 
 @NEEDS_IMPORT
 @NEEDS_ARMIPS
-def test_the_exported_edit_set_carries_no_movie_hook_and_no_island_word(tmp_path, monkeypatch):
-    """`edits.json` cannot carry the cue block the hooks read, so it carries neither
-    (`build_prototype.MOVIE_BLOCK_NAME` is why). Both halves are asserted here -- the words
-    are in the image this script writes, and in no exported edit -- because dropping them
-    from both would also pass the first.
+def test_the_edit_set_carries_the_movie_hooks_the_islands_and_the_block_they_read(
+    tmp_path, monkeypatch
+):
+    """`FMV-04` milestone 2: `boku build --vwf` gets the whole of the movie subtitles or
+    none of it. The executable the edit set rebuilds from the stock one is the image's,
+    byte for byte -- hooks and both islands included -- and the block they read is its
+    `sectors` entry at `BLOCK_LBA`, the same bytes this script writes into its own image.
     """
     tool = vwf_prototype()
+    blocks: list[bytes] = []
+    monkeypatch.setattr(
+        tool, "write_movie_block", lambda writer, block, ledger: blocks.append(block)
+    )
+    captured: dict[str, tuple] = {}
+    assemble = tool.assemble
+
+    def capture(*arguments, **keywords):
+        captured["it"] = assemble(*arguments, **keywords)
+        return captured["it"]
+
+    monkeypatch.setattr(tool, "assemble", capture)
     manifest = build_without_a_disc(tool, tmp_path, monkeypatch)
-    island = manifest["movie_subtitles"]["island"]
-    first = int(island["symbols"]["movie_sub_frame_no"], 16)
-    island_words = range(first, first + island["bytes"])
-
-    hooked = [word for word in manifest["exe_words"] if int(word["ram"], 16) in MOVIE_PLAYER]
-    assert len(hooked) >= 3, "the image itself carries no movie hook; this would pass over nothing"
-    assert island["sha1"], "the island's contents are recorded nowhere"
-
     document = json.loads((tmp_path / tool.EDITS_NAME).read_text(encoding="utf-8"))
-    assert document["edits"], "the edit set is empty; this would pass over nothing"
-    assert "movie_subtitles" not in document, "the edit set describes a block it cannot carry"
+
+    rebuilt = bytearray((REPO_ROOT / "disc" / "files" / EXE_NAME).read_bytes())
     for edit in document["edits"]:
-        if edit["file"] != EXE_NAME:
-            continue
-        first = edit["offset"] + tool.EXE_LOAD_BIAS
-        for ram in range(first, first + len(edit["old"]) // 2):
-            assert ram not in island_words and ram not in MOVIE_PLAYER, (
-                f"0x{ram:08X} is a movie word, promised by {edit['reason']}"
-            )
+        if edit["file"] == EXE_NAME:
+            old, new = bytes.fromhex(edit["old"]), bytes.fromhex(edit["new"])
+            assert rebuilt[edit["offset"] : edit["offset"] + len(old)] == old
+            rebuilt[edit["offset"] : edit["offset"] + len(new)] = new
+    images, _ = captured["it"]
+    assert bytes(rebuilt) == images[EXE_NAME], "the edit set is not the image's executable"
+    hooked = [word for word in manifest["exe_words"] if int(word["ram"], 16) in MOVIE_PLAYER]
+    assert len(hooked) >= 3, "the image carries no movie hook; this would pass over nothing"
+    assert len(document["movie_subtitles"]["islands"]) == 2
+
+    (sector,) = document["sectors"]
+    (block,) = blocks
+    assert sector["lba"] == BLOCK_LBA == document["movie_subtitles"]["lba"]
+    assert bytes.fromhex(sector["new"]) == padded(block)
+    assert document["movie_subtitles"]["sha1"] == manifest["movie_subtitles"]["sha1"]
 
 
 @NEEDS_IMPORT
@@ -592,7 +613,8 @@ def test_two_executables_differing_only_inside_the_island_are_two_manifests(tmp_
     assert first["exe_words"] == second["exe_words"], "the word list sees inside the island"
     assert first["result_sha1"] == second["result_sha1"], "no image is written here"
     assert [key for key in first if first[key] != second[key]] == ["movie_subtitles"]
-    assert first["movie_subtitles"]["island"]["sha1"] != second["movie_subtitles"]["island"]["sha1"]
+    was, now = first["movie_subtitles"]["islands"], second["movie_subtitles"]["islands"]
+    assert was[0]["sha1"] != now[0]["sha1"] and was[1] == now[1]
 
 
 @NEEDS_IMPORT

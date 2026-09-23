@@ -72,7 +72,8 @@ usage: ./make.sh <verb> [arguments]
   lint-translation [arguments]  check the committed translation files against your
                                 import's script store: ids, select shape, page counts,
                                 encodable characters, pixel fit, array byte sizes, and
-                                the additive-word heuristic
+                                the additive-word heuristic; and translation/movies.txt,
+                                the movie subtitles (translation/README.md)
                                 (./make.sh lint-translation --help for the switches)
   coverage [arguments]          per in-game day, every line the player can meet and what
                                 the build did with it -- translated, refused (English

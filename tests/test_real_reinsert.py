@@ -44,6 +44,8 @@ from boku.reinsert import (
     sector_head_room,
 )
 from boku.relocate import (
+    DEFAULT_ARENA,
+    MOVIE_BLOCK_RESERVE,
     PREFIX_FILLER,
     SECTOR_FIELD_MAX,
     TAIL_FILLER,
@@ -100,9 +102,17 @@ def read_back(image: Path) -> tuple[Archive, object]:
         archive_entry = files["BOKU.BIN"]
         end = archive_entry.lba + (archive_entry.size + SECTOR - 1) // SECTOR
         assert archive_entry.lba == PREFIX_FILLER.end, "the arena is not against BOKU.BIN"
-        boku = opened.read_form1_span(PREFIX_FILLER.start, end - PREFIX_FILLER.start)
+        boku = bytearray(opened.read_form1_span(PREFIX_FILLER.start, end - PREFIX_FILLER.start))
+    # The movie-subtitle block belongs to no member: `require_clean` would read it as a
+    # stray, and `test_real_vwf_build` checks its bytes. Blanked here, not skipped, so a
+    # member that had been placed in the reserve would fail its read-back.
+    reserve = slice(
+        (MOVIE_BLOCK_RESERVE.start - PREFIX_FILLER.start) * SECTOR,
+        (MOVIE_BLOCK_RESERVE.end - PREFIX_FILLER.start) * SECTOR,
+    )
+    boku[reserve] = bytes(reserve.stop - reserve.start)
     assert len(entries) == FILESYSTEM_ENTRIES, "the build added or lost a filesystem entry"
-    built = Archive.from_bytes(exe, boku, source=str(image), base_lba=PREFIX_FILLER.start)
+    built = Archive.from_bytes(exe, bytes(boku), source=str(image), base_lba=PREFIX_FILLER.start)
     built.require_clean()
     return built, walk_sites(built)
 
@@ -550,7 +560,7 @@ def test_the_full_translation_estimate_lays_out_inside_the_arena(archive: Archiv
         ESTIMATE_SECTORS_NEEDED,
         ESTIMATE_SECTORS_VACATED,
     )
-    assert answer.needed > PREFIX_FILLER.count, (
+    assert answer.needed > sum(run.count for run in DEFAULT_ARENA), (
         "the whole allocation now fits the arena on its own; there is nothing here for "
         "re-use to buy and this test no longer asks the question it is named for"
     )
@@ -587,7 +597,7 @@ def test_the_estimate_needs_the_vacated_runs_and_not_just_the_arena(archive: Arc
         ),
         reverse=True,
     )
-    arena_only = FreeSpace([PREFIX_FILLER])
+    arena_only = FreeSpace(DEFAULT_ARENA)
     refused = [sectors for sectors in wanted if arena_only.take(sectors) is None]
     assert refused, "the arena alone held the whole estimate; re-use buys nothing here"
     assert len(refused) > len(wanted) // 2, (
@@ -676,7 +686,7 @@ def test_a_member_with_no_slack_moves_into_the_arena_instead_of_refusing(
     assert placement.old_lba == tight.lba
     assert placement.sectors == tight.sectors + 1
     assert PREFIX_FILLER.start <= placement.lba < PREFIX_FILLER.end
-    assert the_plan.layout.free_after == PREFIX_FILLER.count - placement.sectors
+    assert the_plan.layout.free_after == sum(r.count for r in DEFAULT_ARENA) - placement.sectors
 
 
 def test_a_growth_the_arena_cannot_hold_is_refused_with_the_numbers(

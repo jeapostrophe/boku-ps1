@@ -1,9 +1,10 @@
 """The movie-subtitle block: glyph masks and cues, as `asm/movie.asm` reads them (`FMV-04`).
 
-`research/movies.md` § 7 is the specification; this module is its one encoder and the
-reference rasteriser the emulator test predicts pixels with. Nothing here reads the disc:
-the glyphs come in as the same `Glyph` objects `build_prototype.py` builds the font sheet
-from, so the masks are derived from the sheet's source and never retyped.
+`research/movies.md` § 7 and § 8 are the specification; this module is its one encoder and
+the reference rasteriser the emulator test predicts pixels with. Nothing here reads the
+disc: the glyphs come in as the same `Glyph` objects `build_prototype.py` builds the font
+sheet from, so the masks are derived from the sheet's source and never retyped, and the
+movies come in keyed by the RAM address of their name string (`movie_names`).
 
 Block layout (little-endian, RAM address `BLOCK_RAM`, read by `movie_sub_load` from the
 `boku.disc.form1_sectors(len(block))` sectors at `BLOCK_LBA`):
@@ -11,9 +12,15 @@ Block layout (little-endian, RAM address `BLOCK_RAM`, read by `movie_sub_load` f
     +0   u32 magic         `MAGIC`; the blit routine is a no-op unless it matches, so an
                            image with the hooks and no block (or filler where the block
                            would be) plays its movies untouched
-    +4   u16 cue_count
+    +4   u16 cue_count     the playing movie's: 0 in the file, written by `movie_sub_load`
     +6   u16 glyphs_offset  from the block's first byte
-    +8   cue[cue_count]     {u16 start_frame, u16 end_frame, u16 lines_offset, u16 0}
+    +8   u16 cues_offset   the playing movie's: 0 in the file, written by `movie_sub_load`
+    +10  u16 movie_count
+    +12  movie[movie_count] {u32 name, u16 cues_offset, u16 cue_count}: `name` is the
+                           `g_movie_table` name pointer `movie_play_entry` copies to
+                           `g_movie_name`; the loader copies the matching row's two
+                           fields to +8 and +4, and leaves +4 at 0 when no row matches
+    cues_offset: cue[]      {u16 start_frame, u16 end_frame, u16 lines_offset, u16 0}
     lines_offset: line*     {u16 x, u16 y, u8 glyph_index..., 0xFF, u8 0 if needed to make
                            the line an even length}, ended by u16 x = 0xFFFF: every header
                            is halfword-aligned, and the routine rounds its cursor up to the
@@ -32,22 +39,33 @@ one, which is also the order the routine draws in.
 from __future__ import annotations
 
 import struct
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
+from boku.archive import EXE_LOAD_BIAS
+from boku.disc import form1_sectors
 from boku.glyphs import unencodable_by
+from boku.relocate import MOVIE_BLOCK_RESERVE
 
 MAGIC = 0x42534B42
 """`b"BKSB"` as the little-endian word the routine compares."""
 BLOCK_RAM = 0x801C0000
 """Above the movie arena's end (`research/movies.md` § 2.1: `0x8018D3F4` retail, `0x3000`
 higher under `asm/arena.asm`) and 250 KB under the stack's measured low-water mark."""
-BLOCK_LBA = 1040
-"""Near the top of the relocation arena (`boku.relocate.PREFIX_FILLER`), which the allocator
-fills from the bottom: milestone 1 of `FMV-04` writes here directly, and `write_movie_block`
-refuses a block that does not fall inside that run. The cue-file unit hands the block to the
-allocator instead."""
+BLOCK_LBA = MOVIE_BLOCK_RESERVE.start
+"""The block's first sector: the start of the run the relocation allocator never hands out
+(`boku.relocate.MOVIE_BLOCK_RESERVE`), so every build -- the prototype's own image and
+`boku build --vwf` -- writes it to the same LBA the executable was assembled to read."""
+BLOCK_MAX_SECTORS = MOVIE_BLOCK_RESERVE.count
+"""The reserve's size; `encode_block` refuses a block that would not fit it."""
+MOVIE_TABLE = 0x80029604
+"""`g_movie_table`: `MOVIE_ENTRIES` entries of `MOVIE_ENTRY_SIZE` bytes, the name pointer
+first (`research/movies.md` § 1)."""
+MOVIE_ENTRIES = 27
+MOVIE_ENTRY_SIZE = 0x18
+MOVIE_NAME_PREFIX = "\\__STR\\"
+MOVIE_NAME_SUFFIX = ".IKI;1"
 SCREEN_WIDTH = 320
 """Pixels across the frame -- the movie's and the dialogue renderer's alike, so
 `tools/vwf/build_prototype.py` measures its margins against this one."""
@@ -62,6 +80,8 @@ MASK = 14
 RECORD_SIZE = 64
 """Advance + two 14-row masks is 60 bytes; 64 makes the record index a shift."""
 CUE_SIZE = 8
+HEADER_SIZE = 12
+MOVIE_ROW_SIZE = 8
 END_OF_LINE = 0xFF
 END_OF_LINES = 0xFFFF
 U16_MAX = 0xFFFF
@@ -69,6 +89,8 @@ U16_MAX = 0xFFFF
 WHITE = (0xFF, 0xFF, 0xFF)
 DARK = (0x18, 0x18, 0x14)
 """`g_text_flags & 4`'s shadow colour (`research/font.md` § The draw code)."""
+LINE_WIDTH = SCREEN_WIDTH - 2
+"""The widest line, in pixels of advance: the outline takes a column on either side."""
 LINE_Y = (200, 200 + MASK)
 """The two lines' cell tops, a whole mask apart so no outline overlaps the line above.
 Ink to row 225, outline to 226 -- inside DuckStation's ~232 visible rows
@@ -121,24 +143,44 @@ def text_width(text: str, font: Mapping[str, GlyphLike]) -> int:
     return sum(font[c].advance for c in text)
 
 
-def encode_block(cues: Iterable[Cue], font: Mapping[str, GlyphLike]) -> bytes:
-    """The block for `cues`, carrying every glyph of `font` (the VWF set, so the size
-    measured is the size the design pays). Refuses text the font cannot draw, a line wider
-    than the screen, a line whose rows leave the frame, and anything the count and offset
-    fields cannot name -- every refusal a `BlockError`, so the build reports it as the input
-    problem it is rather than letting a `struct.error` out."""
+def movie_names(exe: bytes) -> dict[str, int]:
+    """Each movie file's stem (`M27`) -> the RAM address of its name string, read out of
+    `g_movie_table` in the executable. Entries playing one file share one string (the
+    opening's three ids do), so the key the loader matches is the file's, not the id's."""
+    out: dict[str, int] = {}
+    for entry in range(MOVIE_ENTRIES):
+        at = MOVIE_TABLE + MOVIE_ENTRY_SIZE * entry - EXE_LOAD_BIAS
+        (name,) = struct.unpack_from("<I", exe, at)
+        start = name - EXE_LOAD_BIAS
+        text = exe[start : exe.index(b"\0", start)].decode("ascii")
+        if not (text.startswith(MOVIE_NAME_PREFIX) and text.endswith(MOVIE_NAME_SUFFIX)):
+            raise BlockError(f"g_movie_table[{entry}] names {text!r}, not an .IKI under __STR")
+        stem = text[len(MOVIE_NAME_PREFIX) : -len(MOVIE_NAME_SUFFIX)]
+        if out.setdefault(stem, name) != name:
+            raise BlockError(f"{stem} has two name strings, 0x{out[stem]:08X} and 0x{name:08X}")
+    return out
+
+
+def encode_block(movies: Mapping[int, Sequence[Cue]], font: Mapping[str, GlyphLike]) -> bytes:
+    """The block for `movies` -- name pointer -> its cues -- carrying every glyph of `font`
+    (the VWF set, so the size measured is the size the design pays). Refuses text the font
+    cannot draw, a line wider than `LINE_WIDTH`, a line whose rows leave the frame, a block
+    larger than its reserved sectors, and anything the count and offset fields cannot name
+    -- every refusal a `BlockError`, so the build reports it as the input problem it is
+    rather than letting a `struct.error` out."""
     characters = sorted(font)
     if len(characters) > END_OF_LINE:
         raise BlockError(f"{len(characters)} glyphs; a line's index byte reserves {END_OF_LINE:#x}")
     index = {c: i for i, c in enumerate(characters)}
-    cues = list(cues)
-    if len(cues) > U16_MAX:
-        raise BlockError(f"{len(cues)} cues; the block counts them in a u16")
-    header = struct.calcsize("<IHH")
-    lines_start = header + CUE_SIZE * len(cues)
+    names = sorted(name for name, cues in movies.items() if cues)
+    for name in names:
+        if len(movies[name]) > U16_MAX:
+            raise BlockError(f"{len(movies[name])} cues; the block counts a movie's in a u16")
+    cues = [cue for name in names for cue in movies[name]]
+    cues_start = HEADER_SIZE + MOVIE_ROW_SIZE * len(names)
     line_blobs: list[bytes] = []
     cue_rows: list[tuple[int, int, int]] = []
-    cursor = lines_start
+    cursor = cues_start + CUE_SIZE * len(cues)
     for cue in cues:
         if not 0 <= cue.start <= cue.end <= 0xFFFF:
             raise BlockError(f"cue frames {cue.start}..{cue.end} are not 0 <= start <= end < 65536")
@@ -150,10 +192,8 @@ def encode_block(cues: Iterable[Cue], font: Mapping[str, GlyphLike]) -> bytes:
             if missing:
                 raise BlockError(f"the font has no glyph for {''.join(missing)!r}")
             width = text_width(text, font)
-            if width > SCREEN_WIDTH - 2:
-                raise BlockError(
-                    f"{text!r} is {width} px wide; the screen holds {SCREEN_WIDTH - 2}"
-                )
+            if width > LINE_WIDTH:
+                raise BlockError(f"{text!r} is {width} px wide; a movie line holds {LINE_WIDTH}")
             if y < 1 or y + MASK - 1 > FRAME_HEIGHT:
                 raise BlockError(f"line y {y} puts rows outside the {FRAME_HEIGHT}-row frame")
             x = (SCREEN_WIDTH - width) // 2
@@ -173,20 +213,49 @@ def encode_block(cues: Iterable[Cue], font: Mapping[str, GlyphLike]) -> bytes:
         raise BlockError(
             f"the glyph table would start {glyphs_offset} bytes in; the header names it in a u16"
         )
-    out = bytearray(struct.pack("<IHH", MAGIC, len(cues), glyphs_offset))
+    out = bytearray(struct.pack("<IHHHH", MAGIC, 0, glyphs_offset, 0, len(names)))
+    first = cues_start
+    for name in names:
+        out += struct.pack("<IHH", name, first, len(movies[name]))
+        first += CUE_SIZE * len(movies[name])
     for start, end, offset in cue_rows:
         out += struct.pack("<HHHH", start, end, offset, 0)
     out += b"".join(line_blobs)
     out += bytes(glyphs_offset - len(out))
     for c in characters:
+        if not 0 <= font[c].advance <= 0xFF:
+            raise BlockError(f"{c!r} advances {font[c].advance} px; a record holds it in a u8")
         masks = masks_of(font[c].rows)
         record = struct.pack("<B3x", font[c].advance)
         record += struct.pack(f"<{MASK}H", *masks.glyph) + struct.pack(f"<{MASK}H", *masks.outline)
         out += record.ljust(RECORD_SIZE, b"\0")
+    if form1_sectors(len(out)) > BLOCK_MAX_SECTORS:
+        raise BlockError(
+            f"the block is {len(out)} bytes, {form1_sectors(len(out))} sectors; its reserved "
+            f"run holds {BLOCK_MAX_SECTORS} (boku.relocate.MOVIE_BLOCK_RESERVE)"
+        )
     return bytes(out)
 
 
-# --- the reference rasteriser --------------------------------------------------------------
+# --- the reference loader and rasteriser ---------------------------------------------------
+
+
+def select(block: bytes, name: int) -> bytes:
+    """The block as `movie_sub_load` leaves it in RAM for the movie named `name`: the
+    matching row's `cues_offset` and `cue_count` copied to +8 and +4, or a count of 0 when
+    no row matches. Decoded from the bytes, as `render` is."""
+    out = bytearray(block)
+    if struct.unpack_from("<I", out, 0)[0] != MAGIC:
+        return bytes(out)
+    struct.pack_into("<H", out, 4, 0)
+    (count,) = struct.unpack_from("<H", out, 10)
+    for row in range(count):
+        key, offset, cues = struct.unpack_from("<IHH", out, HEADER_SIZE + MOVIE_ROW_SIZE * row)
+        if key == name:
+            struct.pack_into("<H", out, 8, offset)
+            struct.pack_into("<H", out, 4, cues)
+            break
+    return bytes(out)
 
 
 def render(
@@ -194,16 +263,19 @@ def render(
 ) -> dict[tuple[int, int], tuple[int, int, int]]:
     """Every pixel the routine writes for `frame` whose x is in `x_range`, in draw order.
 
-    Decoded from the block's *bytes*, not from the objects that made them, so it holds the
-    format to the routine as written; `x_range` is a slice's 16 columns when the test is
-    about clipping, the whole width when it is about a frame.
+    `block` is the block as it is in RAM once a movie has started -- `select`'s output --
+    because the routine draws the cues its +4 and +8 name. Decoded from the block's
+    *bytes*, not from the objects that made them, so it holds the format to the routine as
+    written; `x_range` is a slice's 16 columns when the test is about clipping, the whole
+    width when it is about a frame.
     """
-    magic, cue_count, glyphs_offset = struct.unpack_from("<IHH", block, 0)
+    magic, cue_count, glyphs_offset, cues_offset = struct.unpack_from("<IHHH", block, 0)
     if magic != MAGIC:
         return {}
     pixels: dict[tuple[int, int], tuple[int, int, int]] = {}
     for n in range(cue_count):
-        start, end, lines_offset, _ = struct.unpack_from("<HHHH", block, 8 + CUE_SIZE * n)
+        row = cues_offset + CUE_SIZE * n
+        start, end, lines_offset, _ = struct.unpack_from("<HHHH", block, row)
         if not start <= frame <= end:
             continue
         cursor = lines_offset

@@ -1,20 +1,28 @@
-"""`FMV-04` milestone 1 on headless PCSX-Redux: one cue over the opening, pixel for pixel.
+"""`FMV-04` on headless PCSX-Redux: cues keyed by movie, carried by `boku build`, to the pixel.
 
-The image `tools/vwf/build_prototype.py` wrote and the stock dump are both booted to the
-opening movie by `tools/redux/movie-sub.lua`, which copies the same decoded frames of each
-out of RAM -- the twenty slice buffers at the `LoadImage` call design E2 hooks, which is
-where the routine writes and the only place the result can be read exactly (the emulator's
-screenshot is black in this display mode; the script says where that was measured). What
-each gate asks is on the gate; between them they cover the pixels inside the cue, the frame
-number they are predicted from, and the frames outside it.
+The image under test is built here the way `./make.sh build-days` builds one --
+`tools/vwf/build_prototype.py --edits-only`, then `boku build --vwf` -- from `FIXTURE_CUES`,
+placeholder English on two movies over the same frames. So what is proved is the carrier
+as well as the hook: the block reaches the reserved sectors through the edit set, and the
+loader picks each movie's own cues out of it.
 
-Skips without the import, without a built image, its manifest and its block, without
-PCSX-Redux and the BIOS, and unless `BOKU_EMU_TESTS=1`: two emulator boots are minutes, not
-a unit test. The stock dumps are cached under `work/fmv04/stock/` (the run is
-deterministic) and the cache is keyed on the probe that wrote them, so a change to
-`movie-sub.lua`'s dump format re-runs the stock image instead of comparing fresh frames
-against stale ones; the patched image is rerun every time. `BOKU_VWF_BUILD` names another
-build directory than `build/vwf/`; a build without the hooks is this test's red.
+Each movie is booted twice, on the stock dump and on the build, by `tools/redux/movie-sub.lua`,
+which copies the same decoded frames of each out of RAM -- the twenty slice buffers at the
+`LoadImage` call design E2 hooks, the only place the result can be read exactly (the
+emulator's screenshot is black in this display mode). The opening is what the boot plays;
+`M60` is played in its place by the probe rewriting the table entry the player is handed
+(`BOKU_PLAY_NAME`), since nothing in a headless boot reaches the fireworks. What each gate
+asks is on the gate; between them they cover the pixels inside a cue, the frame number they
+are predicted from, the frames outside it, and the other movie's cue not being there.
+
+Skips without the import, without armips, PCSX-Redux and the BIOS, and unless
+`BOKU_EMU_TESTS=1`: four emulator boots are minutes, not a unit test. The stock dumps are
+cached under `work/fmv04/stock-<movie>/` (the run is deterministic), keyed on the probe
+that wrote them, so a change to `movie-sub.lua`'s dump format re-runs the stock image
+instead of comparing fresh frames against stale ones; the build and its runs are redone
+every time. `BOKU_MOVIE_BUILD` names an already-built directory (its `edits.json` and
+`image/image.cue`) instead -- how a build without the hooks, or with another loader, is made
+this test's red.
 """
 
 from __future__ import annotations
@@ -23,13 +31,16 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
 
 from boku import REPO_ROOT
+from boku.build import main_build
 from boku.movie_block import (
     DARK,
     FRAME_HEIGHT,
@@ -37,18 +48,33 @@ from boku.movie_block import (
     SLICE_WIDTH,
     SLICES,
     WHITE,
+    movie_names,
     render,
+    select,
     slice_columns,
 )
+from boku.movie_cues import read_movie_lengths
 
-BUILD = Path(os.environ.get("BOKU_VWF_BUILD", REPO_ROOT / "build" / "vwf"))
 WORK = REPO_ROOT / "work" / "fmv04"
+PREBUILT = os.environ.get("BOKU_MOVIE_BUILD")
+BUILD = Path(PREBUILT) if PREBUILT else WORK / "m2"
 RUNNER = REPO_ROOT / "tools" / "redux" / "run-on-image.sh"
 SCRIPT = REPO_ROOT / "tools" / "redux" / "movie-sub.lua"
+PROTOTYPE = REPO_ROOT / "tools" / "vwf" / "build_prototype.py"
+ARMIPS = Path.home() / "Dev/dist/armips/build/armips"
 REDUX = Path(os.environ.get("REDUX_APP", Path.home() / "Dev/dist/pcsx-redux/PCSX-Redux.app"))
 BIOS = Path(
     os.environ.get("REDUX_BIOS", Path.home() / "Dev/retro-trainer/config/system/scph5500.bin")
 )
+EXE = REPO_ROOT / "disc" / "files" / "SCPS_100.88"
+
+FIXTURE_CUES = (
+    "# FIXTURE: tests/test_real_movie_subtitle.py's placeholder cues. Not a translation.\n"
+    "M27\t120\t300\tFIXTURE: the opening, M27 frames 120-300 | keyed to M27 and nothing else\n"
+    "M60\t120\t300\tFIXTURE: the fireworks, M60 frames 120-300\n"
+)
+"""Two movies' cues over the same frames: the one frame index inside both is where a
+loader that ignored the movie would draw the wrong one, and every pixel of it is checked."""
 
 BYTES_PER_PIXEL = 3
 """The slice buffers are 24-bit: the movie's display mode, and what the blit writes."""
@@ -56,10 +82,15 @@ SLICE_ROW = SLICE_WIDTH * BYTES_PER_PIXEL
 """One row of one slice buffer -- the stride the routine steps by."""
 SLICE_BYTES = SLICE_ROW * FRAME_HEIGHT
 INSIDE = 199
-OUTSIDE = (59, 399)
-"""Decoded-frame indices (STR header number minus one, as the run records it): one inside
-the cue's 120-300 and one well clear on either side."""
-INDICES = (OUTSIDE[0], INSIDE, OUTSIDE[1])
+"""A decoded-frame index (STR header number minus one, as the run records it) inside
+both cues' 120-300."""
+OUTSIDE = {"M27": (59, 399), "M60": (59, 330)}
+"""One index clear of the cues on either side; `M60` stops at 362."""
+MOVIES = tuple(OUTSIDE)
+
+
+def indices(movie: str) -> tuple[int, ...]:
+    return (OUTSIDE[movie][0], INSIDE, OUTSIDE[movie][1])
 
 
 @dataclass(frozen=True)
@@ -94,102 +125,164 @@ def read_dump(work: Path, index: int) -> Frame:
     )
 
 
-def have_dumps(work: Path) -> bool:
-    return all(
-        (work / "dumps" / f"k{n}.{ext}").is_file() for n in INDICES for ext in ("bin", "txt")
-    )
-
-
 STAMP = "probe.sha1"
-"""Beside a run's dumps: what produced them. The stock run is cached because it is
-deterministic, and it was keyed on the frame indices alone -- so an edit to the probe's
-dump format compared fresh patched frames against stock frames written by the old one."""
+"""Beside a stock run's dumps: what produced them, so a changed probe re-runs the stock
+image rather than comparing its fresh frames with an old probe's."""
 
 
-def probe_stamp(sub_frame_no: str) -> str:
-    return hashlib.sha1(
-        SCRIPT.read_bytes() + repr((INDICES, sub_frame_no)).encode("ascii")
-    ).hexdigest()
+@dataclass(frozen=True)
+class Play:
+    """What one run is told: which movie in the opening's place, and the island address."""
+
+    movie: str
+    name: int
+    frames: int
+    sub_frame_no: str
+
+    def env(self) -> dict[str, str]:
+        return {
+            "BOKU_DUMP_INDEX": ",".join(str(n) for n in indices(self.movie)),
+            # The island's address has one home, the build's edit set; the probe keeps no
+            # copy (`asm/movie.asm` `MOVIE_SUB_ISLAND` is where it is decided).
+            "BOKU_SUB_FRAME_NO": self.sub_frame_no,
+            "BOKU_PLAY_NAME": f"0x{self.name:08X}",
+            "BOKU_PLAY_FRAMES": str(self.frames),
+        }
+
+    def stamp(self) -> str:
+        return hashlib.sha1(
+            SCRIPT.read_bytes() + repr(sorted(self.env().items())).encode()
+        ).hexdigest()
 
 
-def run_redux(image: Path, work: Path, sub_frame_no: str) -> dict[int, Frame]:
+def run_redux(image: Path, work: Path, play: Play) -> dict[int, Frame]:
     work.mkdir(parents=True, exist_ok=True)
-    env = os.environ | {
-        "BOKU_WORK": str(work),
-        "BOKU_DUMP_INDEX": ",".join(str(n) for n in INDICES),
-        # The island's address has one home, the build's manifest; the probe keeps no copy
-        # (`asm/movie.asm` `MOVIE_SUB_ISLAND` is where it is decided).
-        "BOKU_SUB_FRAME_NO": sub_frame_no,
-        "REDUX_BIOS": str(BIOS),
-    }
+    env = os.environ | play.env() | {"BOKU_WORK": str(work), "REDUX_BIOS": str(BIOS)}
     done = subprocess.run(
         [str(RUNNER), str(image), str(SCRIPT)],
         cwd=REPO_ROOT,
         env=env,
         capture_output=True,
         text=True,
-        timeout=600,
+        timeout=900,
         check=False,
     )
     (work / "redux.log").write_text(done.stdout + done.stderr, encoding="utf-8")
     assert done.returncode == 0, f"redux exited {done.returncode}; see {work / 'redux.log'}"
-    return {n: read_dump(work, n) for n in INDICES}
+    return {n: read_dump(work, n) for n in indices(play.movie)}
+
+
+# --- the build --------------------------------------------------------------------------------
 
 
 @pytest.fixture(scope="module")
-def block() -> bytes:
+def build() -> Path:
+    """`BUILD/edits.json` and `BUILD/image/image.cue`, from `FIXTURE_CUES`."""
     if os.environ.get("BOKU_EMU_TESTS") != "1":
-        pytest.skip("set BOKU_EMU_TESTS=1: two headless PCSX-Redux boots, about three minutes")
+        pytest.skip("set BOKU_EMU_TESTS=1: four headless PCSX-Redux boots, several minutes")
     for path, what in [
-        (BUILD / "image.cue", "run `uv run python tools/vwf/build_prototype.py`"),
-        (BUILD / "manifest.json", "the full build writes it; `--edits-only` removes it"),
-        (BUILD / "files" / "movie-subtitles.bin", "the build writes it beside the image"),
+        (EXE, "run `./make.sh import` first"),
+        (ARMIPS, "the font build assembles with armips"),
         (REDUX / "Contents" / "MacOS" / "PCSX-Redux", "set REDUX_APP"),
         (BIOS, "set REDUX_BIOS (research/tooling-setup.md § The BIOS question)"),
     ]:
         if not path.exists():
             pytest.skip(f"no {path}: {what}")
-    return (BUILD / "files" / "movie-subtitles.bin").read_bytes()
+    if PREBUILT:
+        return BUILD
+    shutil.rmtree(BUILD, ignore_errors=True)
+    BUILD.mkdir(parents=True)
+    cues = BUILD / "cues.txt"
+    cues.write_text(FIXTURE_CUES, encoding="utf-8")
+    subprocess.run(
+        [
+            sys.executable,
+            str(PROTOTYPE),
+            "--edits-only",
+            "--movie-cues",
+            str(cues),
+            "--out",
+            str(BUILD),
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        timeout=600,
+    )
+    status = main_build(
+        source=None,
+        out_dir=BUILD / "image",
+        translation_dir=None,
+        cell_map=None,
+        disc_dir=REPO_ROOT / "disc",
+        name="fmv04-fixture",
+        skip_unfitted=False,
+        dry_run=False,
+        vwf=BUILD / "edits.json",
+    )
+    assert status == 0, "boku build --vwf refused the fixture's edit set"
+    return BUILD
 
 
 @pytest.fixture(scope="module")
-def sub_frame_no(block: bytes) -> str:
-    """Where the probe reads the frame number the hook kept: the build's own record of the
-    island it assembled, so the address is not restated in the Lua or here. Takes `block`
-    for its skips -- this is the first fixture that opens a file of the build, and every
-    other one reaches it through this."""
-    manifest = json.loads((BUILD / "manifest.json").read_text(encoding="utf-8"))
-    return manifest["movie_subtitles"]["island"]["symbols"]["movie_sub_frame_no"]
+def edits(build: Path) -> dict:
+    return json.loads((build / "edits.json").read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="module")
-def stock(real_image: Path, sub_frame_no: str) -> dict[int, Frame]:
-    work = WORK / "stock"
-    stamp = work / STAMP
-    if (
-        have_dumps(work)
-        and stamp.is_file()
-        and stamp.read_text(encoding="ascii") == probe_stamp(sub_frame_no)
-    ):
-        return {n: read_dump(work, n) for n in INDICES}
-    frames = run_redux(real_image.with_suffix(".cue"), work, sub_frame_no)
-    stamp.write_text(probe_stamp(sub_frame_no), encoding="ascii")
-    return frames
+def block(edits: dict) -> bytes:
+    """The block as written: the edit set's one sector write, trimmed to its size."""
+    (sector,) = edits["sectors"]
+    return bytes.fromhex(sector["new"])[: edits["movie_subtitles"]["bytes"]]
 
 
 @pytest.fixture(scope="module")
-def patched(sub_frame_no: str) -> dict[int, Frame]:
-    return run_redux(BUILD / "image.cue", WORK / f"patched-{BUILD.name}", sub_frame_no)
+def names() -> dict[str, int]:
+    return movie_names(EXE.read_bytes())
 
+
+@pytest.fixture(scope="module")
+def plays(edits: dict, names: dict[str, int]) -> dict[str, Play]:
+    lengths = read_movie_lengths()
+    island = edits["movie_subtitles"]["islands"][0]["symbols"]["movie_sub_frame_no"]
+    return {movie: Play(movie, names[movie], lengths[movie], island) for movie in MOVIES}
+
+
+@pytest.fixture(scope="module")
+def stock(real_image: Path, plays: dict[str, Play]) -> dict[str, dict[int, Frame]]:
+    out = {}
+    for movie, play in plays.items():
+        work = WORK / f"stock-{movie}"
+        stamp = work / STAMP
+        cached = stamp.is_file() and stamp.read_text(encoding="ascii") == play.stamp()
+        if cached and all((work / "dumps" / f"k{n}.bin").is_file() for n in indices(movie)):
+            out[movie] = {n: read_dump(work, n) for n in indices(movie)}
+            continue
+        out[movie] = run_redux(real_image.with_suffix(".cue"), work, play)
+        stamp.write_text(play.stamp(), encoding="ascii")
+    return out
+
+
+@pytest.fixture(scope="module")
+def patched(build: Path, plays: dict[str, Play]) -> dict[str, dict[int, Frame]]:
+    return {
+        movie: run_redux(build / "image" / "image.cue", WORK / f"patched-{movie}", play)
+        for movie, play in plays.items()
+    }
+
+
+# --- the gates -------------------------------------------------------------------------------
 
 Pixels = dict[tuple[int, int], tuple[int, int, int]]
 
 
-def predicted(block: bytes, frame: Frame) -> Pixels:
-    """What the routine should have drawn: each slice for the frame number it saw."""
+def predicted(block: bytes, name: int, frame: Frame) -> Pixels:
+    """What the routine should have drawn for the movie `name`: the block as the loader
+    selects it, each slice for the frame number it saw."""
+    loaded = select(block, name)
     out: Pixels = {}
     for k in range(SLICES):
-        out.update(render(block, frame.sub_frame[k], slice_columns(k)))
+        out.update(render(loaded, frame.sub_frame[k], slice_columns(k)))
     return out
 
 
@@ -219,58 +312,90 @@ def differences(one: tuple[bytes, ...], other: tuple[bytes, ...]) -> list[tuple]
     return out
 
 
+def other(movie: str) -> str:
+    (found,) = [m for m in MOVIES if m != movie]
+    return found
+
+
+@pytest.mark.parametrize("movie", MOVIES)
 def test_the_stock_frames_are_pictures_and_the_same_decoded_frame_in_both_runs(
-    stock: dict[int, Frame], patched: dict[int, Frame]
+    movie, stock, patched
 ):
-    """The two gates below compare frames; this says the frames are worth comparing: the
-    frame under the text is a picture, no frame is flat black (k59 is a dark fade-in: 15
-    colours), and each index is the same STR frame in both runs."""
-    for n in INDICES:
-        colours = {pixel(row, x) for row in stock[n].rows for x in range(0, SCREEN_WIDTH, 4)}
+    """The gates below compare frames; this says the frames are worth comparing: the frame
+    under the text is a picture, no frame is flat black, and each index is the same STR
+    frame in both runs -- of the movie asked for, not the opening."""
+    for n in indices(movie):
+        colours = {pixel(row, x) for row in stock[movie][n].rows for x in range(0, SCREEN_WIDTH, 4)}
         least = 100 if n == INSIDE else 1
-        assert len(colours) > least, f"stock frame k{n} has {len(colours)} colours"
-        assert stock[n].header == patched[n].header, f"k{n} is not the same STR frame in both runs"
+        assert len(colours) > least, f"stock {movie} frame k{n} has {len(colours)} colours"
+        assert stock[movie][n].header == patched[movie][n].header, (
+            f"{movie} k{n} is not the same STR frame in both runs"
+        )
+    assert stock["M27"][INSIDE].rows != stock["M60"][INSIDE].rows, "both runs played one movie"
 
 
-def test_the_frame_number_the_hook_kept_is_the_one_the_player_saw(
-    patched: dict[int, Frame], sub_frame_no: str
-):
+@pytest.mark.parametrize("movie", MOVIES)
+def test_the_frame_number_the_hook_kept_is_the_one_the_player_saw(movie, patched, plays):
     """What the pixel gate cannot ask. It predicts each slice from `movie_sub_frame_no`
     itself, so a hook that stored a frame number the player never saw -- a stale word, a
     store the wrong side of the jump, a probe reading the wrong address -- is predicted
-    wrongly and matches wrongly, pixel for pixel. `movie_sub_frame` stores `a0` and jumps
-    to `movie_frame_volume`, and the probe reads both at the same breakpoint, so they are
-    the same number on every slice."""
-    for n in INDICES:
-        assert patched[n].sub_frame == patched[n].header, (
-            f"k{n}: the hook kept {patched[n].sub_frame} and movie_frame_volume was passed "
-            f"{patched[n].header}; the probe read movie_sub_frame_no at {sub_frame_no}"
+    wrongly and matches wrongly, pixel for pixel."""
+    for n in indices(movie):
+        frame = patched[movie][n]
+        assert frame.sub_frame == frame.header, (
+            f"{movie} k{n}: the hook kept {frame.sub_frame} and movie_frame_volume was passed "
+            f"{frame.header}; the probe read movie_sub_frame_no at {plays[movie].sub_frame_no}"
         )
 
 
-def test_inside_the_cue_the_frame_is_the_stock_decode_plus_exactly_the_predicted_text(
-    block: bytes, stock: dict[int, Frame], patched: dict[int, Frame]
+@pytest.mark.parametrize("movie", MOVIES)
+def test_inside_its_cue_the_frame_is_the_stock_decode_plus_exactly_its_own_text(
+    movie, block, names, stock, patched
 ):
-    pixels = predicted(block, patched[INSIDE])
-    seen = sorted(set(patched[INSIDE].sub_frame))
+    frame = patched[movie][INSIDE]
+    pixels = predicted(block, names[movie], frame)
     assert pixels, (
-        f"nothing predicted at k{INSIDE} (the hook saw frames {seen}); the cue is not where "
-        f"the test thinks"
+        f"nothing predicted for {movie} at k{INSIDE} (the hook saw frames "
+        f"{sorted(set(frame.sub_frame))}); the cue is not where the test thinks"
     )
     assert WHITE in pixels.values() and DARK in pixels.values()
-    expected = painted(stock[INSIDE].rows, pixels)
-    assert expected != stock[INSIDE].rows, "painting the prediction changed nothing; vacuous"
-    wrong = differences(expected, patched[INSIDE].rows)
+    expected = painted(stock[movie][INSIDE].rows, pixels)
+    assert expected != stock[movie][INSIDE].rows, "painting the prediction changed nothing"
+    wrong = differences(expected, frame.rows)
     assert not wrong, (
-        f"{len(wrong)} pixels differ from the stock frame plus the predicted text "
-        f"({len(pixels)} predicted); first: {wrong[:8]}"
+        f"{len(wrong)} pixels of {movie} k{INSIDE} differ from the stock frame plus its own "
+        f"predicted text ({len(pixels)} predicted); first: {wrong[:8]}"
     )
 
 
-@pytest.mark.parametrize("index", OUTSIDE)
+@pytest.mark.parametrize("movie", MOVIES)
+def test_the_other_movies_cue_is_not_drawn(movie, block, names, stock, patched):
+    """The per-movie key. The other movie's cue covers this frame too, so a loader that
+    ignored the movie -- milestone 1's, which had no key -- would draw it here. Every pixel
+    it would have changed that this movie's own text does not cover shows the stock
+    decode."""
+    frame = patched[movie][INSIDE]
+    own = predicted(block, names[movie], frame)
+    theirs = predicted(block, names[other(movie)], frame)
+    base = stock[movie][INSIDE].rows
+    telling = {
+        (x, y): colour
+        for (x, y), colour in theirs.items()
+        if (x, y) not in own and pixel(base[y], x) != bytes(colour)
+    }
+    assert len(telling) > 100, f"{other(movie)}'s cue would barely show over {movie}; vacuous"
+    drawn = [
+        (x, y) for (x, y), colour in telling.items() if pixel(frame.rows[y], x) == bytes(colour)
+    ]
+    assert not drawn, f"{len(drawn)} of {other(movie)}'s pixels are drawn over {movie}: {drawn[:8]}"
+
+
+@pytest.mark.parametrize("movie", MOVIES)
 def test_outside_the_cue_the_frame_is_byte_identical_to_the_stock_decode(
-    index: int, block: bytes, stock: dict[int, Frame], patched: dict[int, Frame]
+    movie, block, names, stock, patched
 ):
-    assert predicted(block, patched[index]) == {}, f"k{index} is inside a cue; not an outside frame"
-    wrong = differences(stock[index].rows, patched[index].rows)
-    assert not wrong, f"{len(wrong)} pixels changed on a frame with no cue; first {wrong[:8]}"
+    for n in OUTSIDE[movie]:
+        frame = patched[movie][n]
+        assert predicted(block, names[movie], frame) == {}, f"{movie} k{n} is inside a cue"
+        wrong = differences(stock[movie][n].rows, frame.rows)
+        assert not wrong, f"{len(wrong)} pixels of {movie} k{n} changed; first {wrong[:8]}"

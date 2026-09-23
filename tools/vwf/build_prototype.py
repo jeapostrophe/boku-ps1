@@ -57,7 +57,7 @@ import subprocess
 import sys
 import unicodedata
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -69,6 +69,7 @@ from boku.build import verify_sectors  # noqa: E402
 from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
 from boku.importer import IMAGE_SHA1, sha1_of  # noqa: E402
+from boku.layout import CellMapEncoder  # noqa: E402
 from boku.movie_block import (  # noqa: E402
     BLOCK_LBA,
     BLOCK_RAM,
@@ -78,12 +79,13 @@ from boku.movie_block import (  # noqa: E402
     RECORD_SIZE,
     SCREEN_WIDTH,
     BlockError,
-    Cue,
     encode_block,
+    movie_names,
 )
+from boku.movie_cues import CUE_FILE, check, cues_by_movie, read, read_movie_lengths  # noqa: E402
 from boku.ppf import differing_spans  # noqa: E402
 from boku.reinsert import MAP_WORK_AREA_END  # noqa: E402
-from boku.relocate import PREFIX_FILLER, Run, SectorEdit, padded  # noqa: E402
+from boku.relocate import SectorEdit, padded  # noqa: E402
 from boku.sites import line_key_of, page_waits  # noqa: E402
 from boku.text import PlacedSite, SiteIndex, TextError  # noqa: E402
 from boku.tim import parse_exact  # noqa: E402
@@ -124,28 +126,10 @@ EDITS_NAME = "edits.json"
 
 MOVIE_BLOCK_NAME = "movie-subtitles.bin"
 """The cue block `asm/movie.asm` reads at every movie (`boku.movie_block`), written under
-`files/` and into the image's filler sectors at `BLOCK_LBA`.
-
-**The block and the hooks go into this script's own image and into no `edits.json`.** The
-block belongs to no file, so an edit set cannot carry it, and `BLOCK_LBA` is inside the
-relocation arena `boku.relocate` hands out (`research/relocation.md`): a `--vwf` image with
-the hooks and no block would read whatever the allocator had left there at every movie.
-What keeps them out is that the exported executable is a pass of its own, assembled with
-`MOVIE_SUBTITLES=0` so that `asm/movie.asm` is never included -- the edit set is cut from
-an executable the hooks were never in, rather than from one they were taken back out of.
-`PLAN FMV-04` milestone 2 gives the block a carrier, and the hooks travel with it."""
-MOVIE_CUE = Cue(
-    120,
-    300,
-    ("Far away, I could see the village", "of Sagi-no-sato at the foot of the mountain..."),
-)
-"""`FMV-04` milestone 1's one hard-coded cue, aimed at the opening (`M27`, id 23) at STR
-frames 120-300 (8-20 s). The block carries no movie key and `movie_sub_blit` asks only
-`start <= frame <= end`, so this cue is drawn over **every** movie whose frame numbers reach
-120, not the opening alone (`research/movies.md` § 7 counts them); the per-movie key is
-milestone 2. The words are a placeholder -- the game's own first narration line, `E0001.0`
-in `translation/days/day01.txt` -- not the monologue's translation, which does not exist
-yet; the proof is that the pixels land, not what they say."""
+`files/`, into this script's own image at `BLOCK_LBA`, and into `edits.json` as `sectors`
+-- the one edit-set entry that writes by LBA, into the run the relocation allocator never
+hands out (`boku.relocate.MOVIE_BLOCK_RESERVE`), so `boku build --vwf` carries the block
+and the hooks that read it together."""
 
 
 class BuildRefused(Exception):
@@ -877,7 +861,7 @@ if 1 << MOVIE_SUB_RECORD_SHIFT != RECORD_SIZE:
 def movie_equates(block: bytes) -> dict[str, int]:
     """The `-equ`s `asm/movie.asm` takes: where this block is, and the numbers of its format.
 
-    Every one of them is `boku.movie_block`'s -- the assembly restates none of them, so a
+    Every one of them is `boku.movie_block`'s, not retyped in the assembly, so a
     change to the block's layout cannot leave the routine reading the old one.
     """
     return {
@@ -890,17 +874,52 @@ def movie_equates(block: bytes) -> dict[str, int]:
     }
 
 
-def movie_block_for(font: Mapping[str, Glyph]) -> bytes:
-    """`MOVIE_CUE` encoded over `font`, the encoder's refusals reported as this script's.
+def advance_encoder(font: Mapping[str, Glyph]) -> CellMapEncoder:
+    """`font` as the `boku.layout` encoder `boku.movie_cues` measures and wraps in: the
+    advances the block's glyph records carry, so a cue is laid out in the pixels it is drawn
+    in. The cell ids are the block's own concern, not the measure's."""
+    return CellMapEncoder({c: (0, glyph.advance) for c, glyph in font.items()}, name="the font")
 
-    `--font` is a build input and the cue is text, so a glyph file without the cue's comma
-    or hyphen is an input problem like any other -- not a `BlockError` traceback past
-    `main`'s "Nothing further was written".
+
+def movie_block_for(font: Mapping[str, Glyph], cue_file: Path, exe: bytes) -> tuple[bytes, dict]:
+    """The block for `cue_file`'s cues over `font`, and the record of what went in it.
+
+    Every rule `boku lint` holds a cue to is a refusal here, with the file and line: the
+    block is built from the committed translation, so a cue that would draw other than as
+    written is an input problem like an unencodable dialogue line -- never a `BlockError`
+    traceback past `main`'s "Nothing further was written".
     """
+    encoder = advance_encoder(font)
     try:
-        return encode_block([MOVIE_CUE], font)
+        rows, problems = read(cue_file)
+        problems += check(rows, read_movie_lengths(), encoder)
+    except OSError as error:
+        raise BuildRefused(f"the movie cues: {error}. Nothing further was written.") from error
+    if problems:
+        listed = "; ".join(f"{cue_file.name}:{p.line} {p.key} {p.message}" for p in problems[:5])
+        raise BuildRefused(
+            f"{len(problems)} problem(s) in the movie cues, first: {listed}. "
+            f"`./make.sh lint-translation` lists them all. Nothing further was written."
+        )
+    movies = cues_by_movie(rows, encoder)
+    try:
+        names = movie_names(exe)
+        unknown = sorted(set(movies) - set(names))
+        if unknown:
+            raise BlockError(f"{unknown} are in research/data/movies.tsv but not g_movie_table")
+        block = encode_block({names[movie]: cues for movie, cues in movies.items()}, font)
     except BlockError as error:
-        raise BuildRefused(f"the movie cue: {error}. Nothing further was written.") from error
+        raise BuildRefused(f"the movie cues: {error}. Nothing further was written.") from error
+    record = {
+        "cue_file": str(cue_file),
+        "lba": BLOCK_LBA,
+        "sectors": form1_sectors(len(block)),
+        "ram": f"0x{BLOCK_RAM:08X}",
+        "bytes": len(block),
+        "sha1": hashlib.sha1(block).hexdigest(),
+        "cues": {movie: len(cues) for movie, cues in sorted(movies.items())},
+    }
+    return block, record
 
 
 RUN_MERGE_GAP = 32
@@ -1263,30 +1282,29 @@ def write_ranges(writer, entries: Mapping[str, object], ranges: Sequence[RawRang
         )
 
 
+def movie_sector_edit(block: bytes) -> SectorEdit:
+    """The block as the whole sectors it is written in, from `BLOCK_LBA` over filler
+    (`encode_block` refuses a block larger than its reserve)."""
+    data = padded(block)
+    return SectorEdit(BLOCK_LBA, bytes(len(data)), data, f"the movie cue block at LBA {BLOCK_LBA}")
+
+
 def write_movie_block(writer: DiscWriter, block: bytes, ledger: Ledger) -> None:
     """The cue block into the filler sectors at `BLOCK_LBA`, which must still be filler.
 
     `write_data_sector` converts zero Form 2 filler and refuses XA, but it overwrites a
     Form 1 sector without a word, so the span is verified first as any relocation's is: an
-    image that already holds a block here (a build over a built image) or a member the
-    allocator placed here is a refusal, not a block laid over it.
+    image that already holds a block here (a build over a built image) is a refusal, not a
+    block laid over it.
     """
-    data = padded(block)
-    run = Run(BLOCK_LBA, form1_sectors(len(block)))
-    if not PREFIX_FILLER.contains(run):
-        raise BuildRefused(
-            f"LBA {run.start}..{run.end - 1} is not inside the relocation arena "
-            f"({PREFIX_FILLER.start}..{PREFIX_FILLER.end - 1}), the filler this block is "
-            f"laid in. Nothing further was written."
-        )
-    edit = SectorEdit(run.start, bytes(len(data)), data, f"the movie cue block at LBA {run.start}")
+    edit = movie_sector_edit(block)
     try:
         verify_sectors(writer, [edit], refused=BuildRefused)
     except DiscError as error:
         # Form 2 carrying anything but zeros: real-time data, which `read_form1_span`
-        # refuses to flatten. Here that is an image whose LBA 1040 is XA, not filler.
+        # refuses to flatten. Here that is an image whose reserve is XA, not filler.
         raise BuildRefused(
-            f"LBA {run.start}..{run.end - 1} cannot be read as filler: {error}. "
+            f"LBA {edit.lba}..{edit.end - 1} cannot be read as filler: {error}. "
             f"Nothing further was written."
         ) from error
     ledger.add(writer.write_data_sectors(edit.lba, edit.new), MOVIE_BLOCK_NAME, BLOCK_LBA)
@@ -1373,21 +1391,16 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     work = out / "files"
     work.mkdir(parents=True, exist_ok=True)
     (work / "font-sheet.tim").write_bytes(new_tim)
-    block = movie_block_for(font)
+    block, movie_subtitles = movie_block_for(font, Path(args.movie_cues), stock_exe)
     (work / MOVIE_BLOCK_NAME).write_bytes(block)
     # `Archive.blob` copies, and each overlay is wanted three times below; cut once.
     stock_overlays = {name: archive.blob(archive.member(name)) for name in DRAWING_OVERLAYS}
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
         Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
-    # Two patch passes over one source. The image is assembled with `asm/movie.asm`; the
-    # executable the edit set is cut from is assembled without it, which is what keeps the
-    # movie hooks out of `edits.json` (`MOVIE_BLOCK_NAME`). Each pass brings its own
-    # `ORIGINAL` gate, so the retail bytes come back under both.
-    equates = movie_equates(block)
-    arguments = (Path(args.armips), Path(args.asm), images, bytes(table), layout, work)
-    exported_images, _ = assemble(*arguments, equates | {"MOVIE_SUBTITLES": 0})
-    patched, symbols = assemble(*arguments, equates | {"MOVIE_SUBTITLES": 1})
+    patched, symbols = assemble(
+        Path(args.armips), Path(args.asm), images, bytes(table), layout, work, movie_equates(block)
+    )
     patched_exe = patched[EXE_NAME]
     patched_overlays = {
         name: patched[name] for name in DRAWING_OVERLAYS if patched[name] != stock_overlays[name]
@@ -1395,14 +1408,25 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     gap = hashed_region(
         "the renderer's free space", "vwf_advance", "vwf_free", "vwf_", symbols, patched_exe
     )
-    island = hashed_region(
-        "the movie island",
-        "movie_sub_frame_no",
-        "movie_sub_end",
-        "movie_sub_",
-        symbols,
-        patched_exe,
-    )
+    islands = [
+        hashed_region(
+            "the movie island",
+            "movie_sub_frame_no",
+            "movie_sub_end",
+            "movie_sub_",
+            symbols,
+            patched_exe,
+        ),
+        hashed_region(
+            "the movie loader's island",
+            "movie_sub_loc",
+            "movie_load_end",
+            "movie_sub_",
+            symbols,
+            patched_exe,
+        ),
+    ]
+    movie_subtitles["islands"] = [island.record for island in islands]
 
     provenance = {
         "format": 1,
@@ -1425,19 +1449,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             character: {"id": cells[character], "advance": font[character].advance}
             for character in sorted(cells)
         },
+        "movie_subtitles": movie_subtitles,
     }
-    # The image's own record, and not `edits.json`'s: only the image this script writes
-    # carries the block and the hooks (`MOVIE_BLOCK_NAME`).
-    movie_subtitles = {
-        "file": f"files/{MOVIE_BLOCK_NAME}",
-        "lba": BLOCK_LBA,
-        "sectors": form1_sectors(len(block)),
-        "ram": f"0x{BLOCK_RAM:08X}",
-        "bytes": len(block),
-        "sha1": hashlib.sha1(block).hexdigest(),
-        "cue": {"start": MOVIE_CUE.start, "end": MOVIE_CUE.end, "lines": list(MOVIE_CUE.lines)},
-        "island": island.record,
-    }
+    movie_edit = movie_sector_edit(block)
     ranges = [
         RawRange(EXE_NAME, 0, stock_exe, patched_exe, "VWF executable patch"),
         RawRange(ARCHIVE_NAME, font_offset, stock_tim, new_tim, "VWF font sheet"),
@@ -1456,13 +1470,11 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         )
         for name in sorted(patched_overlays)
     ]
-    # `ranges` is what the image is given; the edit set is the same patch cut from the
-    # executable assembled without the movie hooks (`MOVIE_BLOCK_NAME`). `ranges[0]` is the
-    # executable; nothing else differs between the two passes.
-    exported = [replace(ranges[0], new=exported_images[EXE_NAME])]
-    edits = edit_entries(exported + ranges[1:])
+    edits = edit_entries(ranges)
+    sectors = [{"lba": movie_edit.lba, "new": movie_edit.new.hex(), "reason": movie_edit.reason}]
     (out / EDITS_NAME).write_text(
-        json.dumps(provenance | {"edits": edits}, indent=2) + "\n", encoding="utf-8"
+        json.dumps(provenance | {"edits": edits, "sectors": sectors}, indent=2) + "\n",
+        encoding="utf-8",
     )
     if args.edits_only:
         # `manifest.json` is defined as the record of an image (see this file's docstring),
@@ -1470,7 +1482,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         # image that no longer matches the `edits.json` just written beside it. It is
         # removed rather than left to be read as current.
         (out / "manifest.json").unlink(missing_ok=True)
-        return provenance | {"edits": edits}
+        return provenance | {"edits": edits, "sectors": sectors}
 
     specs = load_lines(Path(args.lines))
     unfitted: list[dict[str, str]] = []
@@ -1546,9 +1558,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     )
 
     manifest = provenance | {
-        "movie_subtitles": movie_subtitles,
         "result_sha1": sha1_of(image),
-        "exe_words": changed_words(stock_exe, patched_exe, gap, island),
+        "exe_words": changed_words(stock_exe, patched_exe, gap, *islands),
         "lines": [
             {
                 "site": spec.site_id,
@@ -1588,6 +1599,11 @@ def main() -> int:
         help="with --days, prefix each message with its speaker as inline text ('Boku: ')",
     )
     parser.add_argument("--font", help="a glyph file in placeholder-glyphs.txt's format")
+    parser.add_argument(
+        "--movie-cues",
+        default=str(CUE_FILE),
+        help="the movie subtitle file (default: translation/movies.txt; boku.movie_cues)",
+    )
     parser.add_argument("--asm", default=str(ASM))
     parser.add_argument("--armips", default=str(DEFAULT_ARMIPS))
     parser.add_argument("--skip-image-hash", action="store_true", help="for repeat builds")

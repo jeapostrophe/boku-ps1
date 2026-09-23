@@ -1,9 +1,9 @@
-; Subtitles over the 24-bit movies (PLAN FMV-04, milestone 1): design E2 of
-; research/movies.md § 3, as built in § 7. Included by vwf.asm, which owns the file, the
+; Subtitles over the 24-bit movies (PLAN FMV-04): design E2 of research/movies.md § 3, as
+; built in § 7 and keyed by movie in § 8. Included by vwf.asm, which owns the file, the
 ; equates and the ORIGINAL gate.
 ;
-; boku/movie_block.py owns the block's layout, and every number of it this file needs comes
-; in as an equate rather than being retyped here:
+; boku/movie_block.py owns the block's layout. Where it is and the sizes a change there
+; would move come in as equates:
 ;
 ;   -equ MOVIE_SUB_BLOCK    RAM address the cue block is read to
 ;   -equ MOVIE_SUB_LBA      the block's first sector
@@ -12,9 +12,14 @@
 ;   -equ MOVIE_SUB_MASK_ROWS  rows and columns in a glyph mask (MASK)
 ;   -equ MOVIE_SUB_RECORD_SHIFT  log2 of a glyph record's size (RECORD_SIZE)
 ;
-; Three sites, one routine each, bodies in the island below:
+; The header's field offsets and the row and cue strides are typed here, as its docstring
+; states them; select() and render() there model this code, and the emulator gate
+; (tests/test_real_movie_subtitle.py) holds the two to each other pixel for pixel.
+;
+; Three sites, one routine each, bodies in two dead islands:
 ;   movie_play_entry  two words before the frame loop become a jal: movie_sub_load reads
-;                     the block, once per movie, with the game's own CD reader
+;                     the block, once per movie, with the game's own CD reader, and picks
+;                     out the playing movie's cues
 ;   movie_get_frame   jal movie_frame_volume -> movie_sub_frame keeps the STR frame number
 ;   movie_dctout_cb   jal LoadImage -> movie_sub_blit paints the cue into the slice first
 ;
@@ -25,16 +30,20 @@
 
 MOVIE_SUB_ISLAND     equ 0x80012E04  ; research/text-renderer.md § 6 candidate 2: 620 bytes of
 MOVIE_SUB_ISLAND_END equ 0x80013070  ; directory helpers nothing references; § 7 measured it
+MOVIE_LOAD_ISLAND     equ 0x800221CC ; dbg_font_init, 712 bytes, never called (same list);
+MOVIE_LOAD_ISLAND_END equ 0x80022494 ; research/movies.md § 8 measured it
 MOVIE_FRAME_VOLUME   equ 0x800350F8
 LOADIMAGE            equ 0x80053684
 DSINTTOPOS           equ 0x8004CAEC
 DSREAD               equ 0x800506CC
 DSREADSYNC           equ 0x80050A7C
+G_MOVIE_NAME         equ 0x80036680  ; movie_play_entry stores the entry's name pointer here
 
 ; ---- movie_play_entry: read the block before the first frame -----------------------------
 ; v0 holds 0x80030000 from the lui at 0x80034628 and a1 the frame count; the stock pair
 ; stores frames - 3 to g_movie_fade_frame. The jal takes the addiu as its delay slot and
-; movie_sub_load opens with the store, so both keep their effect.
+; movie_sub_load opens with the store, so both keep their effect. g_movie_name was stored
+; at 0x800345EC, before this.
 .org 0x8003462C
 .area 2*4
 .if ORIGINAL
@@ -66,16 +75,15 @@ DSREADSYNC           equ 0x80050A7C
 .endif
 .endarea
 
-; ---- the island ---------------------------------------------------------------------------
-; Not assembled under ORIGINAL: the island is dead retail code, not a site with a stock
-; claim to check, and restating 620 bytes of the executable here would put them in the repo.
+; The islands are not assembled under ORIGINAL: they are dead retail code, not sites with a
+; stock claim to check, and restating them here would put the executable's bytes in the repo.
 .if ORIGINAL == 0
+
+; ---- island 1: the frame hook and the blit ------------------------------------------------
 .org MOVIE_SUB_ISLAND
 .area MOVIE_SUB_ISLAND_END - MOVIE_SUB_ISLAND
 
 movie_sub_frame_no:                 ; the last STR header frame number seen
-    .dw     0
-movie_sub_loc:                      ; DslLOC of the block's first sector
     .dw     0
 
 movie_sub_frame:
@@ -83,52 +91,6 @@ movie_sub_frame:
     sw      a0, lo(movie_sub_frame_no)(at)
     j       MOVIE_FRAME_VOLUME
     nop
-
-; The read half of cd_load_sync (0x800127C8), for a fixed sector: DsIntToPos, DsRead(loc,
-; sectors, dst, 0x80) until it is accepted, DsReadSync until it reports done. Not copied:
-; the libcd reset cd_load_sync runs at the head of every retry (0x800521FC — clears the
-; callback slots, DsEndReadySystem); the block reads fine without it on both emulators.
-; Bounded: after eight failed reads the block's magic is zeroed and the movie plays with no
-; subtitles, rather than a retry loop a drive that dislikes the sector could never leave.
-movie_sub_load:
-    sw      a1, 0x66F4(v0)          ; the displaced g_movie_fade_frame store
-    addiu   sp, sp, -0x20
-    sw      ra, 0x1C(sp)
-    sw      s0, 0x18(sp)
-    addiu   s0, zero, 8
-@@read:
-    beqz    s0, @@give_up
-    addiu   s0, s0, -1
-    addiu   a0, zero, MOVIE_SUB_LBA
-    lui     a1, hi(movie_sub_loc)
-    jal     DSINTTOPOS
-    addiu   a1, a1, lo(movie_sub_loc)
-    lui     a0, hi(movie_sub_loc)
-    addiu   a0, a0, lo(movie_sub_loc)
-    addiu   a1, zero, MOVIE_SUB_SECTORS
-    lui     a2, hi(MOVIE_SUB_BLOCK)
-    addiu   a2, a2, lo(MOVIE_SUB_BLOCK)
-    jal     DSREAD
-    addiu   a3, zero, 0x80
-    beqz    v0, @@read
-    nop
-@@sync:
-    jal     DSREADSYNC
-    addiu   a0, sp, 0x10            ; its 8-byte result buffer
-    beqz    v0, @@done
-    addiu   at, zero, -1
-    beq     v0, at, @@read
-    nop
-    b       @@sync
-    nop
-@@give_up:
-    lui     at, hi(MOVIE_SUB_BLOCK)
-    sw      zero, lo(MOVIE_SUB_BLOCK)(at)
-@@done:
-    lw      ra, 0x1C(sp)
-    lw      s0, 0x18(sp)
-    jr      ra
-    addiu   sp, sp, 0x20
 
 ; a0 -> the slice rect {x in VRAM halfwords, y, w, h}, a1 -> the slice's 16 x 240 pixels of
 ; 3 bytes, rows 48 bytes apart. Both go on to LoadImage untouched, and so does ra: this is
@@ -148,7 +110,8 @@ movie_sub_blit:
     bne     t1, t2, @@out
     lui     t1, hi(movie_sub_frame_no)
     lw      t1, lo(movie_sub_frame_no)(t1)
-    lhu     t5, 4(t0)               ; cue count
+    lhu     t5, 4(t0)               ; the playing movie's cue count (movie_sub_load)
+    lhu     t4, 8(t0)               ; and where its cues start
     lhu     t2, 0(a0)               ; slice x, halfwords: 24 per 16 pixels
     addiu   t6, zero, 3
     sll     t2, t2, 1
@@ -162,7 +125,7 @@ movie_sub_blit:
     sw      s3, 0x0C(sp)
     sw      s4, 0x10(sp)
     move    t3, a1
-    addiu   t4, t0, 8
+    addu    t4, t4, t0
 @@cue:
     lhu     v0, 0(t4)               ; start
     lhu     v1, 2(t4)               ; end
@@ -272,5 +235,91 @@ movie_sub_blit:
     nop
 
 movie_sub_end:
+.endarea
+
+; ---- island 2: the loader and the per-movie select ----------------------------------------
+.org MOVIE_LOAD_ISLAND
+.area MOVIE_LOAD_ISLAND_END - MOVIE_LOAD_ISLAND
+
+movie_sub_loc:                      ; DslLOC of the block's first sector
+    .dw     0
+
+; The read half of cd_load_sync (0x800127C8), for a fixed sector: DsIntToPos, DsRead(loc,
+; sectors, dst, 0x80) until it is accepted, DsReadSync until it reports done. Not copied:
+; the libcd reset cd_load_sync runs at the head of every retry (0x800521FC — clears the
+; callback slots, DsEndReadySystem); the block reads fine without it on both emulators.
+; Bounded: after eight failed reads the block's magic is zeroed and the movie plays with no
+; subtitles, rather than a retry loop a drive that dislikes the sector could never leave.
+;
+; Then the select: the block's movie row whose name is g_movie_name gives the cue count and
+; offset the blit reads at +4 and +8. No row -- a movie without cues -- leaves the count 0,
+; which is also what makes the RAM copy's previous movie irrelevant: it is re-read and
+; re-selected at every movie.
+movie_sub_load:
+    sw      a1, 0x66F4(v0)          ; the displaced g_movie_fade_frame store
+    addiu   sp, sp, -0x20
+    sw      ra, 0x1C(sp)
+    sw      s0, 0x18(sp)
+    addiu   s0, zero, 8
+@@read:
+    beqz    s0, @@give_up
+    addiu   s0, s0, -1
+    addiu   a0, zero, MOVIE_SUB_LBA
+    lui     a1, hi(movie_sub_loc)
+    jal     DSINTTOPOS
+    addiu   a1, a1, lo(movie_sub_loc)
+    lui     a0, hi(movie_sub_loc)
+    addiu   a0, a0, lo(movie_sub_loc)
+    addiu   a1, zero, MOVIE_SUB_SECTORS
+    lui     a2, hi(MOVIE_SUB_BLOCK)
+    addiu   a2, a2, lo(MOVIE_SUB_BLOCK)
+    jal     DSREAD
+    addiu   a3, zero, 0x80
+    beqz    v0, @@read
+    nop
+@@sync:
+    jal     DSREADSYNC
+    addiu   a0, sp, 0x10            ; its 8-byte result buffer
+    beqz    v0, @@select
+    addiu   at, zero, -1
+    beq     v0, at, @@read
+    nop
+    b       @@sync
+    nop
+@@give_up:
+    lui     at, hi(MOVIE_SUB_BLOCK)
+    b       @@done
+    sw      zero, lo(MOVIE_SUB_BLOCK)(at)
+;   t0 block  t1 g_movie_name  t2 rows left  t3 row  t4 a row's name, then its fields
+@@select:
+    lui     t0, hi(MOVIE_SUB_BLOCK)
+    addiu   t0, t0, lo(MOVIE_SUB_BLOCK)
+    lw      t4, 0(t0)
+    lui     t1, MOVIE_SUB_MAGIC >> 16
+    ori     t1, t1, MOVIE_SUB_MAGIC & 0xFFFF
+    bne     t4, t1, @@done          ; not a block: the blit tests the magic and draws nothing
+    lui     t1, hi(G_MOVIE_NAME)
+    lw      t1, lo(G_MOVIE_NAME)(t1)
+    lhu     t2, 10(t0)              ; movie count
+    sh      zero, 4(t0)             ; no cues unless a row names this movie
+    addiu   t3, t0, 12
+@@movie:
+    beqz    t2, @@done
+    addiu   t2, t2, -1
+    lw      t4, 0(t3)
+    addiu   t3, t3, 8
+    bne     t4, t1, @@movie
+    nop
+    lhu     t4, -4(t3)              ; the row's cues offset
+    lhu     t5, -2(t3)              ; and count
+    sh      t4, 8(t0)
+    sh      t5, 4(t0)
+@@done:
+    lw      ra, 0x1C(sp)
+    lw      s0, 0x18(sp)
+    jr      ra
+    addiu   sp, sp, 0x20
+
+movie_load_end:
 .endarea
 .endif

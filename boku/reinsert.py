@@ -50,7 +50,7 @@ The three measured limits, and where they come from
   why a shrinking member has its tail zeroed here rather than left holding its own old
   bytes — and why a relocated member's new sectors are zero-padded too. The room is the
   sectors the other moving members vacate plus a finite arena
-  (`boku.relocate.PREFIX_FILLER`); running out is a refusal, with the numbers.
+  (`boku.relocate.DEFAULT_ARENA`); running out is a refusal, with the numbers.
 
 The `0x4000` event-block limit has not been watched in an emulator yet — the research asks
 for that before anything relies on it (`PLAN PIPE-03`). The map work area has: `asm/arena.asm`

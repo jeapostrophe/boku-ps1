@@ -32,6 +32,7 @@ written to the manifest is sorted, and the edits are applied in `(file, offset)`
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 from collections.abc import Callable, Mapping, Sequence
@@ -75,7 +76,8 @@ from boku.reinsert import (
     check_no_double_write,
     plan,
 )
-from boku.relocate import RelocationRefused, SectorEdit
+from boku.relocate import MOVIE_BLOCK_RESERVE, RelocationRefused, Run, SectorEdit
+from boku.relocate import check_disjoint as check_sectors_disjoint
 from boku.sites import SiteError, Walk, load
 from boku.staging import StagingRefused, staged
 from boku.texture_text import TextureTextError
@@ -431,6 +433,10 @@ class EditSet:
 
     edits: tuple[ByteEdit, ...]
     document: dict
+    sectors: tuple[SectorEdit, ...] = ()
+    """Whole sectors written by LBA -- the movie-subtitle block, which belongs to no file
+    (`tools/vwf/build_prototype.py` `MOVIE_BLOCK_NAME`). Only ever inside
+    `MOVIE_BLOCK_RESERVE`, over the filler the retail disc has there."""
 
     @property
     def encoder(self) -> CellMapEncoder:
@@ -514,7 +520,7 @@ def load_edit_set(path: Path) -> EditSet:
         )
     edits.sort(key=lambda edit: (edit.file, edit.offset))
     check_disjoint(edits)
-    edit_set = EditSet(edits=tuple(edits), document=document)
+    edit_set = EditSet(edits=tuple(edits), document=document, sectors=_sector_edits(path, document))
     try:
         # The font's bytes and the widths English is measured with are the two halves of
         # one build, and this file is the only place they are held together. A document
@@ -525,6 +531,44 @@ def load_edit_set(path: Path) -> EditSet:
     except LayoutError as error:
         raise BuildRefused(f"{path}: {error}") from error
     return edit_set
+
+
+def _sector_edits(path: Path, document: dict) -> tuple[SectorEdit, ...]:
+    """The edit set's `sectors`: each `{lba, new, reason}` a whole number of sectors inside
+    `MOVIE_BLOCK_RESERVE` and starting at its first, where the executable reads the block
+    (`boku.movie_block.BLOCK_LBA`), expecting filler. Anywhere else by LBA is the arena the
+    relocation allocator hands out, or a file's extent -- both written through their own
+    gates, never through a file that happens to name an LBA."""
+    entries = document.get("sectors", [])
+    if not isinstance(entries, list):
+        raise BuildRefused(f"{path}: `sectors` is not a list")
+    out: list[SectorEdit] = []
+    for number, entry in enumerate(entries, start=1):
+        where = f"{path.name} sector write {number}"
+        if not isinstance(entry, dict) or {"lba", "new"} - set(entry):
+            raise BuildRefused(f"{where} is not an (lba, new) record")
+        try:
+            lba, new = int(entry["lba"]), bytes.fromhex(entry["new"])
+            edit = SectorEdit(lba, bytes(len(new)), new, str(entry.get("reason", where)))
+        except (TypeError, ValueError, RelocationRefused) as error:
+            raise BuildRefused(f"{where}: {error}") from error
+        if not MOVIE_BLOCK_RESERVE.contains(Run(edit.lba, edit.sectors)):
+            raise BuildRefused(
+                f"{where} writes LBA {edit.lba}..{edit.end - 1}, outside the movie block's "
+                f"reserve {MOVIE_BLOCK_RESERVE.start}..{MOVIE_BLOCK_RESERVE.end - 1}, the "
+                f"only sectors an edit set may write by LBA"
+            )
+        if edit.lba != MOVIE_BLOCK_RESERVE.start:
+            raise BuildRefused(
+                f"{where} starts at LBA {edit.lba}; the movie block is read from LBA "
+                f"{MOVIE_BLOCK_RESERVE.start}, the reserve's first sector"
+            )
+        out.append(edit)
+    try:
+        check_sectors_disjoint(out)
+    except RelocationRefused as error:
+        raise BuildRefused(f"{path}: {error}") from error
+    return tuple(sorted(out, key=lambda edit: edit.lba))
 
 
 # --- a translation, laid out -------------------------------------------------------------------
@@ -686,6 +730,7 @@ class BuildResult:
     box: BoxSpec
     translation: str
     binary_patches: tuple[ByteEdit, ...]
+    sector_patches: tuple[SectorEdit, ...] = ()
 
     @property
     def refused_lines(self) -> list[LineResult]:
@@ -705,6 +750,7 @@ def build(
     encoder: Encoder | None = None,
     box: BoxSpec | None = None,
     binary_patches: Sequence[ByteEdit] = (),
+    sector_patches: Sequence[SectorEdit] = (),
     in_place: bool = False,
     indent_continuations: bool = False,
     label: bool = True,
@@ -723,6 +769,8 @@ def build(
 
     `work_area_end` is the map work area of the engine the image will run
     (`EditSet.work_area_end`); a build with no renderer patch measures against retail.
+    `sector_patches` are an edit set's whole-sector writes (`EditSet.sectors`), applied
+    beside the relocation's and refused if any LBA is written twice.
     """
     box = box or DIALOGUE_BAND
     encoder = encoder or StockEncoder.load()
@@ -771,7 +819,8 @@ def build(
     # inside one would be applied over the rebuild at an offset the growth has already
     # moved -- and would verify against the *source* first, so nothing would notice.
     check_disjoint(edits)
-    sectors = list(the_plan.sectors) if the_plan else []
+    sectors = [*(the_plan.sectors if the_plan else ()), *sector_patches]
+    check_sectors_disjoint(sectors)
     if archive is not None:
         check_no_sector_clash(binary_patches, sectors, archive)
     result = BuildResult(
@@ -783,6 +832,7 @@ def build(
         box=box,
         translation=getattr(translation, "name", "none") if translation else "none",
         binary_patches=tuple(binary_patches),
+        sector_patches=tuple(sector_patches),
     )
     if dry_run:
         check_before_writing(source, out_dir, edits, what=name, sectors=sectors)
@@ -872,6 +922,15 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
                 "meaning": patch.reason,
             }
             for patch in result.binary_patches
+        ],
+        "sector_patches": [
+            {
+                "lba": patch.lba,
+                "sectors": patch.sectors,
+                "sha1": hashlib.sha1(patch.new).hexdigest(),
+                "meaning": patch.reason,
+            }
+            for patch in result.sector_patches
         ],
         "sectors": [
             {
@@ -1001,6 +1060,7 @@ def main_build(
             translation=translation,
             encoder=encoder,
             binary_patches=binary_patches,
+            sector_patches=edit_set.sectors if edit_set is not None else (),
             label=label,
             skip_unfitted=skip_unfitted,
             dry_run=dry_run,

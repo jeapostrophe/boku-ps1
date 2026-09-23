@@ -37,7 +37,8 @@ a test on the real dump holds the constants against the derivation. Both are zer
 Mode 2 **Form 2** filler, so writing a member there means converting the sector to Form 1
 (`DiscWriter.write_data_sector`).
 
-Only `PREFIX_FILLER` is allocated from (`DEFAULT_ARENA`). The tail run is out of reach of
+Only `PREFIX_FILLER` is allocated from (`DEFAULT_ARENA`), less its top 32 sectors, which hold
+the movie-subtitle block (`MOVIE_BLOCK_RESERVE`). The tail run is out of reach of
 any `.SEC` record — 279,000 sectors past the containers, far past the `u16` — and a
 top-level member placed there would fall outside the contiguous span the archive is read
 back through, so it is counted as reserve by `capacity` and left alone. `BOKU.BIN` itself
@@ -49,7 +50,7 @@ The sectors a move vacates are the other pool
 A member that moves leaves its old sectors behind, and they are as good as the arena for
 whatever else has to move: `FreeSpace` hands them out first and spends the arena only on
 what they cannot hold. That is what makes a whole translation fit — under the estimate 181
-members outgrow their sectors and ask for 11,141, abandoning 10,889, so the arena's 765
+members outgrow their sectors and ask for 11,141, abandoning 10,889, so the arena's 733
 answer the *difference* and not the demand (`research/relocation.md` § "Does it fit?").
 
 What it costs is the `.SEC` records' order. A member written into the hole another record
@@ -121,8 +122,18 @@ image beside it; `unclaimed_runs` is the derivation and a test holds the two tog
 TAIL_FILLER = Run(280020, 150)
 """The filler at the end of the disc. Reserve — see the module docstring."""
 
-DEFAULT_ARENA: tuple[Run, ...] = (PREFIX_FILLER,)
-"""What `plan_layout` allocates from unless a caller says otherwise."""
+MOVIE_BLOCK_RESERVE = Run(PREFIX_FILLER.end - 32, 32)
+"""The top 32 sectors (64 KB) of `PREFIX_FILLER`: the movie-subtitle block's home
+(`boku.movie_block`, PLAN `FMV-04`). The executable reads the block from a fixed LBA
+assembled into it, so these sectors are never allocated to a relocated member; the block
+is written here by the font build's edit set (`boku.build.load_edit_set`), from the run's
+first sector (`boku.movie_block.BLOCK_LBA`)."""
+
+DEFAULT_ARENA: tuple[Run, ...] = (
+    Run(PREFIX_FILLER.start, MOVIE_BLOCK_RESERVE.start - PREFIX_FILLER.start),
+)
+"""What `plan_layout` allocates from unless a caller says otherwise: `PREFIX_FILLER` up to
+`MOVIE_BLOCK_RESERVE`."""
 
 SYSTEM_AREA_SECTORS = 16
 """LBA 0-15: the licence area, before the volume descriptors. In no directory record.
@@ -734,6 +745,7 @@ def check_disjoint(edits: Sequence[SectorEdit]) -> None:
 
 __all__ = [
     "DEFAULT_ARENA",
+    "MOVIE_BLOCK_RESERVE",
     "PREFIX_FILLER",
     "SECTOR_FIELD_MAX",
     "TAIL_FILLER",

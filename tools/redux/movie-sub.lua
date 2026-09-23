@@ -1,4 +1,5 @@
---[[ FMV-04: boot to the opening movie, do not skip it, and dump decoded frames from RAM.
+--[[ FMV-04: boot to the opening movie -- or another in its place, BOKU_PLAY_NAME below --
+     do not skip it, and dump decoded frames from RAM.
 
      The boot's presses are lib.lua's (L.BOOT_PRESSES, without the movie skip), which puts
      the memory-card screen up and then the movie at vsync ~3370. A frame is read where
@@ -12,7 +13,7 @@
 
        BOKU_SUB_FRAME_NO  REQUIRED: the RAM address of movie_sub_frame_no, decimal or 0x
                           hex. It is decided in asm/movie.asm and recorded by the build as
-                          manifest.json -> movie_subtitles.island.symbols.movie_sub_frame_no;
+                          edits.json -> movie_subtitles.islands[0].symbols.movie_sub_frame_no;
                           this script keeps no copy of it, so a rebuilt island cannot leave
                           it reading a stale address and reporting the words it finds there
                           as frame numbers
@@ -32,10 +33,19 @@
                           reuses and reports every hit -- on the STOCK image, where a hit
                           means the island is not dead. The count is printed at exit
                           ("ISLAND hits=N"). Needs BOKU_ISLAND_BYTES, the island's size
-                          (manifest.json -> movie_subtitles.island.bytes), watched from
+                          (edits.json -> movie_subtitles.islands[0].bytes), watched from
                           BOKU_SUB_FRAME_NO on; or BOKU_ISLAND_RANGE "start,length" (hex)
                           for another range entirely -- the red run, over a function the
                           boot is known to call
+       BOKU_PLAY_NAME, BOKU_PLAY_FRAMES
+                          play another movie where the boot plays the opening: at each
+                          movie_play_entry (0x80034594) the entry it was handed gets this
+                          name pointer (g_movie_table's word 0, decimal or 0x hex) and this
+                          stop frame (word 3) before the function reads them, so the
+                          player, the subtitle loader's select and everything after see
+                          that movie. Both come from the caller (boku.movie_block.
+                          movie_names, research/data/movies.tsv); none is restated here.
+                          "PLAY entry=<addr> name=<old>-><new>" is printed
        BOKU_FRAMES        give up at this vsync (default 6000): exit 3
 
      Exit 0 once the last dump is written.
@@ -48,12 +58,25 @@ local POLL_TO = POLLS and L.numenv('BOKU_POLL_TO', '340')
 local SLICE_BYTES, SLICES = 16 * 240 * 3, 20
 local LOADIMAGE, CALLBACK_RA = 0x80053684, 0x80034C1C
 local SUB_FRAME_NO = assert(tonumber(os.getenv('BOKU_SUB_FRAME_NO') or ''),
-    'BOKU_SUB_FRAME_NO must be the RAM address of movie_sub_frame_no (manifest.json -> ' ..
-    'movie_subtitles.island.symbols); this script keeps no copy of it')
+    'BOKU_SUB_FRAME_NO must be the RAM address of movie_sub_frame_no (edits.json -> ' ..
+    'movie_subtitles.islands[0].symbols); this script keeps no copy of it')
 local island_hits = nil
 
 local script = L.script(L.BOOT_PRESSES)
 local dump_wanted, remaining = L.numlist('BOKU_DUMP_INDEX', '59,199,399')
+
+local PLAY_NAME = os.getenv('BOKU_PLAY_NAME') and L.numenv('BOKU_PLAY_NAME')
+local PLAY_FRAMES = PLAY_NAME and L.numenv('BOKU_PLAY_FRAMES')
+if PLAY_NAME then
+    L.bp(0x80034594, 'Exec', 4, 'movie_play_entry', function()
+        local entry = PCSX.getRegisters().GPR.n.a0
+        L.say('PLAY entry=%08x name=%08x->%08x frames=%d->%d', entry, L.r32(entry), PLAY_NAME,
+            L.r32(entry + 12), PLAY_FRAMES)
+        L.w32(entry, PLAY_NAME)
+        L.w32(entry + 12, PLAY_FRAMES)
+        return true
+    end)
+end
 
 local polls, last_vsync = 0, nil
 local frames_seen, header_no = 0, -1
@@ -118,8 +141,8 @@ if os.getenv('BOKU_ISLAND_WATCH') == '1' then
         start, length = tonumber(s, 16), tonumber(n, 16)
     else
         length = assert(tonumber(os.getenv('BOKU_ISLAND_BYTES') or ''),
-            'BOKU_ISLAND_WATCH needs BOKU_ISLAND_BYTES (manifest.json -> ' ..
-            'movie_subtitles.island.bytes), watched from BOKU_SUB_FRAME_NO on, or ' ..
+            'BOKU_ISLAND_WATCH needs BOKU_ISLAND_BYTES (edits.json -> ' ..
+            'movie_subtitles.islands[0].bytes), watched from BOKU_SUB_FRAME_NO on, or ' ..
             'BOKU_ISLAND_RANGE "start,length" in hex; the island is not restated here')
     end
     island_hits = 0

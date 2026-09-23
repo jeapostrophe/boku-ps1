@@ -40,7 +40,7 @@ from boku.layout import (
 )
 from boku.lint import fit_page
 from boku.reinsert import MAP_WORK_AREA_END, ByteEdit
-from boku.relocate import SectorEdit
+from boku.relocate import MOVIE_BLOCK_RESERVE, SectorEdit
 from boku.translation import SampleScenes, TranslationEntry
 
 
@@ -151,6 +151,54 @@ def test_an_edit_set_this_build_could_not_apply_safely_is_refused(tmp_path, edit
     """Each row is a way a hand-edited or stale file could quietly corrupt an image."""
     path = write_edit_set(tmp_path / "edits.json", edits, **extra)
     with pytest.raises(Exception, match=message):
+        load_edit_set(path)
+
+
+def test_an_edit_sets_sectors_are_whole_sector_writes_over_filler_in_the_movie_reserve(tmp_path):
+    """`FMV-04`'s cue block belongs to no file, so the edit set carries it by LBA: into the
+    run the relocation allocator never hands out, expecting the zero filler that is there
+    on the retail disc (`boku.build.verify_sectors` reads it back before any write)."""
+    data = bytes(range(256)) * 16
+    path = write_edit_set(
+        tmp_path / "edits.json",
+        EXE_EDIT,
+        sectors=[{"lba": MOVIE_BLOCK_RESERVE.start, "new": data.hex(), "reason": "the block"}],
+    )
+    (sector,) = load_edit_set(path).sectors
+    assert sector == SectorEdit(MOVIE_BLOCK_RESERVE.start, bytes(len(data)), data, "the block")
+    assert load_edit_set(write_edit_set(tmp_path / "old.json", EXE_EDIT)).sectors == ()
+
+
+SECTOR = 2048
+EXE_EDIT = [{"file": "SCPS_100.88", "offset": 0, "old": "00", "new": "01"}]
+
+
+@pytest.mark.parametrize(
+    ("sectors", "message"),
+    [
+        ([{"lba": MOVIE_BLOCK_RESERVE.start - 1, "new": "01" * SECTOR}], "movie block's reserve"),
+        ([{"lba": MOVIE_BLOCK_RESERVE.end - 1, "new": "01" * 2 * SECTOR}], "movie block's reserve"),
+        ([{"lba": MOVIE_BLOCK_RESERVE.start + 1, "new": "01" * SECTOR}], "read from LBA"),
+        ([{"lba": MOVIE_BLOCK_RESERVE.start, "new": "01" * (SECTOR + 1)}], "whole number"),
+        ([{"lba": MOVIE_BLOCK_RESERVE.start, "new": ""}], "whole number"),
+        ([{"lba": MOVIE_BLOCK_RESERVE.start}], r"not an \(lba, new\)"),
+        ([{"lba": "x", "new": "01" * SECTOR}], "invalid literal"),
+        (
+            [
+                {"lba": MOVIE_BLOCK_RESERVE.start, "new": "01" * 2 * SECTOR},
+                {"lba": MOVIE_BLOCK_RESERVE.start, "new": "02" * SECTOR},
+            ],
+            "one of them would be lost",
+        ),
+    ],
+)
+def test_sectors_an_edit_set_could_not_write_safely_are_refused(tmp_path, sectors, message):
+    """The reserve's two edges are the narrowest misses: a sector just below it is the
+    arena a relocated member may be given, and one just past it is `BOKU.BIN`'s first. A
+    write one sector into the reserve is inside it and still wrong: the executable reads
+    the block from the reserve's first sector, so every movie would play without it."""
+    path = write_edit_set(tmp_path / "edits.json", EXE_EDIT, sectors=sectors)
+    with pytest.raises(BuildRefused, match=message):
         load_edit_set(path)
 
 
