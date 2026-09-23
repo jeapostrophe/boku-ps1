@@ -214,3 +214,25 @@ def test_no_antialiasing_of_the_japanese_is_left_on_a_plaque(inv, patched, textu
     left = {(x, y): after[y * width + x] for x, y in fringe}
     stray = {p: i for p, i in left.items() if i not in (ground, ink)}
     assert stray == {}, f"{len(stray)} pixels of neither ground nor ink, e.g. {list(stray)[:3]}"
+
+
+@pytest.mark.parametrize("texture_id", tt.BEACH_BACKGROUNDS)
+def test_the_beach_notice_is_the_tracked_english_painted_on_both_variants(inv, patched, texture_id):
+    """Each line's English, at the recipe's scale and cut at the atlas's edge as the board is
+    cut by the screen's, is found once in its line, and no other pale type is left there."""
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    english = tt.read_entries()
+    after = parse_exact(patched, inv.get(texture_id).occurrences[0].file_offset)
+    for n, box in enumerate(tt.BEACH_LINES):
+        marks = paint.pale_type(after, tt.BEACH_CLUT, box)
+        text = english[f"tex@M_C15.{n}"].text
+        ink = paint.normalised(paint.scaled(face.ink(text), tt.BEACH_SCALE))
+        right = box[0] + box[2]
+        # The line runs off the board, so it is located by its first letters, which are on it.
+        head = {p for p in ink if p[0] < box[2] // 2}
+        hx, hy, _, _ = paint.extent(head)
+        spots = placements(head, marks)
+        assert len(spots) == 1, f"line {n}: {text!r} found {len(spots)} times"
+        dx, dy = spots[0][0] - hx, spots[0][1] - hy
+        drawn = {(x + dx, y + dy) for x, y in ink if x + dx < right}
+        assert marks == drawn, f"line {n}: {len(marks ^ drawn)} pixels differ from the English"

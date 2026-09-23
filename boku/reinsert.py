@@ -61,6 +61,7 @@ raises `0x6400` to `0x7C00`, and a build over that raise was run on both emulato
 from __future__ import annotations
 
 import struct
+from bisect import bisect_left
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from itertools import pairwise
@@ -187,6 +188,8 @@ class Plan:
     sectors it vacated, zeroed (`boku.relocate`). Empty unless something had to move."""
     layout: Layout = field(default_factory=Layout)
     """What moved and what it cost. `Layout.unchanged` is the null re-layout."""
+    carried: tuple[ByteEdit, ...] = ()
+    """The `carry` edits now inside a rebuilt member's bytes (`plan`)."""
 
     @property
     def unchanged(self) -> bool:
@@ -432,6 +435,51 @@ def _rebuilt_map(
     return rebuilt
 
 
+def _with_carried(
+    member: Member, blob: bytes, edits: Sequence[ByteEdit], lines: tuple[str, ...]
+) -> bytes:
+    """The stored member `blob` with `edits` applied, ready to be rebuilt.
+
+    A map pack's rebuild copies every child but the pack table and child 1 byte for byte,
+    so a patch applied here goes wherever its child goes. A patch touching the pack table
+    or child 1 (the parts the rebuild rewrites), spanning two children or their padding, or
+    inside a bare `EV.BIN` block has no such place and is refused. A refusal names `lines`
+    -- the ones that made the rebuild -- so `--skip-unfitted` can leave them in Japanese.
+    """
+    where = f"{member.short_name} is rebuilt by the translation"
+    if member.dir_index == EV_DIR_INDEX:
+        raise ReinsertRefused(f"{where}, and a patch cannot follow text inside an EV block", lines)
+    pack = parse_pack(blob)
+    if pack is None:
+        raise ReinsertRefused(f"{where}, and it is not a pack a patch can follow", lines)
+    out = bytearray(blob)
+    for edit in edits:
+        start, end = edit.offset - member.offset, edit.end - member.offset
+        child = next(
+            (i for i, (at, size) in enumerate(pack.entries) if at <= start and end <= at + size),
+            None,
+        )
+        place = None
+        if child == MAP_PACK_BLOCK_TABLE:
+            place = "in its text table, which the rebuild rewrites"
+        elif child is None and start < min(at for at, size in pack.entries if size):
+            place = "in its pack table, which the rebuild rewrites"
+        elif child is None:
+            place = "across two of its children or in the padding between them"
+        if place:
+            raise ReinsertRefused(
+                f"{where}; the patch at {edit.offset:#x} ({edit.reason}) lies {place}", lines
+            )
+        if out[start:end] != edit.old:
+            raise ReinsertRefused(
+                f"{where}; the patch at {edit.offset:#x} ({edit.reason}) does not match the "
+                f"bytes it names",
+                lines,
+            )
+        out[start:end] = edit.new
+    return bytes(out)
+
+
 def _grown_member(member: Member, blob: bytes, rebuilt: bytes) -> ByteEdit:
     """The archive edit for one rebuilt member that stays where it is.
 
@@ -581,8 +629,14 @@ def plan(
     in_place: bool = False,
     arena: Sequence[Run] | None = None,
     work_area_end: int = MAP_WORK_AREA_END,
+    carry: Sequence[ByteEdit] = (),
 ) -> Plan:
     """Every byte range one set of new lines would change, with nothing written yet.
+
+    `carry` is the caller's own byte patches (textures typeset in English). One inside a
+    member this plan rebuilds is applied to the member before the rebuild
+    (`_with_carried`), so it goes wherever the member does, and is returned in
+    `Plan.carried`: the caller must not also write it.
 
     `replacements` maps a **logical line id** to its new words — control words included,
     already encoded. Every physical copy of each id is rewritten, because which copy the
@@ -643,9 +697,28 @@ def plan(
     for site in sites:
         by_member.setdefault(site.member, set()).add(site.line_id)
     blobs: dict[str, bytes] = {}
+    carried: list[ByteEdit] = []
+    in_archive = sorted((e for e in carry if e.file == ARCHIVE_NAME), key=lambda e: e.offset)
+    starts = [e.offset for e in in_archive]
     for short_name in sorted(structural):
         member = archive.member(short_name)
         blob = archive.blob(member)
+        lines = tuple(sorted(by_member.get(short_name, ())))
+        # Every carried patch that touches the member: the ones starting before it that
+        # run into it, and the ones starting inside it.
+        first = bisect_left(starts, member.offset)
+        touching = [e for e in in_archive[max(0, first - 1) : first] if e.end > member.offset]
+        touching += in_archive[first : bisect_left(starts, member.offset + member.size)]
+        for edit in touching:
+            if edit.offset < member.offset or edit.end > member.offset + member.size:
+                raise ReinsertRefused(
+                    f"a patch at {edit.offset:#x} ({edit.reason}) straddles {short_name}, "
+                    f"which the translation rebuilds",
+                    lines,
+                )
+        if touching:
+            blob = _with_carried(member, blob, touching, lines)
+            carried += touching
         if member.dir_index == EV_DIR_INDEX:
             rebuilt = _rebuilt_block(blob, structural[short_name][0], f"{short_name} (EV.BIN)")
         else:
@@ -699,6 +772,7 @@ def plan(
         growth=growth,
         sectors=tuple(sorted(sectors, key=lambda e: e.lba)),
         layout=layout,
+        carried=tuple(carried),
     )
 
 

@@ -519,6 +519,57 @@ def memory_album(archive: Archive, inv: Inventory, face: Face, entries: Sequence
     return album.patches()
 
 
+# --- M_C15: the notice board on the path to the beach --------------------------------------
+
+
+BEACH_BACKGROUNDS = (
+    "_DATA_M_FILES.BIN_M_C15000.BIN__00305c",
+    "_DATA_M_FILES.BIN_M_C15100.BIN__00305c",
+)
+"""The map's two variants' background atlases, 490x252 8bpp, 8 CLUTs each: the same scene
+in two lightings (different indices and palettes), the board in the top-right corner of
+both at the same place. `C15000` is the one day 1 loads."""
+BEACH_CLUT = 5
+"""The CLUT the board is drawn in (the others colour other regions of the atlas)."""
+BEACH_LINES = ((392, 18, 98, 30), (334, 50, 156, 28))
+"""The two painted lines' rows on the board. The first starts after the painted bird and
+wave on its left, which stay; both run on past the atlas's right edge, where the board
+leaves the screen, so the sign is cut mid-line in the game and the English is cut there
+too."""
+BEACH_SCALE = 2
+"""The Japanese is painted about 22 px high with 2 px strokes: the game's glyphs doubled."""
+
+
+def beach_notice(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Paint the notice's Japanese out of the wood and paint the English in its place."""
+    text = keyed("tex@M_C15", entries, [str(i) for i in range(len(BEACH_LINES))])
+    inks = [
+        paint.normalised(paint.scaled(ink_of(face, text[str(n)]), BEACH_SCALE))
+        for n in range(len(BEACH_LINES))
+    ]
+    edits: list[ByteEdit] = []
+    for texture_id in BEACH_BACKGROUNDS:
+        board = paint.Canvas(inv.get(texture_id))
+        for n, (box, ink) in enumerate(zip(BEACH_LINES, inks, strict=True)):
+            entry = text[str(n)]
+            what = f"line {n} of the beach notice in {texture_id}"
+            japanese, white = erase_type(board, BEACH_CLUT, box, "pale", what=what)
+            jx, jy, _, jh = paint.extent(japanese)
+            h = paint.extent(ink)[3]
+            at = (jx, jy + (jh - h) // 2)
+            if at[1] < box[1] or at[1] + h > box[1] + box[3]:
+                # A line may run off the board to the right, as the Japanese does; it may
+                # not leave the rows that were painted out.
+                raise TextureTextError(
+                    f"{entry.where}: {entry.text!r} is {h} px tall at {BEACH_SCALE}x and "
+                    f"{what} has rows {box[1]}-{box[1] + box[3] - 1}; nothing is cut to fit"
+                )
+            right = box[0] + box[2]
+            board.stamp(at, {(x, y) for x, y in ink if at[0] + x < right}, white)
+        edits += board.patches()
+    return edits
+
+
 # --- the build's entry point ---------------------------------------------------------------
 
 
@@ -528,6 +579,7 @@ FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
     "tex@T_MEMORY": memory_album,
+    "tex@M_C15": beach_notice,
 }
 
 
@@ -573,6 +625,7 @@ __all__ = [
     "Entry",
     "TextureEdits",
     "TextureTextError",
+    "beach_notice",
     "build_edits",
     "chart_rules",
     "config_screen",

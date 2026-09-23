@@ -163,3 +163,43 @@ def test_the_settings_screen_on_beetle_is_the_typeset_english(
     assert n > 100 and m > 100, "the build changed too few texels where the check looked"
     assert wrong == [], f"plate: {len(wrong)} of {n} texels differ, first {wrong[:5]}"
     assert wrong_label == [], f"label: {len(wrong_label)} of {m} differ, first {wrong_label[:5]}"
+
+
+BEACH_WARP = "5300:0x80036588=43313500"
+"""After a new game's opening movie the game enters the map named at `g_movie_return_map`
+(`0x80036588`, `research/movies.md`); poking the base `C15` into it during the movie lands day 1
+on the path to the beach (`C15000`). Shot at 6390, after the map has faded in."""
+BEACH_SHOT = 6390
+BEACH_BOARD = (330, 20, 159, 62)
+"""The board's part of the atlas that reaches the screen -- its last column, x 489, falls
+just past the screen's right edge -- and where it lands: measured on the
+stock image by matching every CLUT at every screen offset (`research/texture-recipes.md`
+§ `M_C15`)."""
+BEACH_ON_SCREEN = (161, 178)
+
+
+def test_the_beach_notice_on_beetle_is_the_painted_english(
+    beetle, texture_edits, texture_inventory, texture_patched, real_image, disc_dir,
+    tmp_path_factory,
+):  # fmt: skip
+    out = build(
+        source=real_image, out_dir=tmp_path_factory.mktemp("beach"), disc_dir=disc_dir,
+        binary_patches=texture_edits.edits, name="gfx09",
+    )  # fmt: skip
+    core, system = beetle
+    work = tmp_path_factory.mktemp("beach-beetle")
+    args = [
+        sys.executable, str(RUNNER), str(out.written.image.with_suffix(".cue")),
+        "--core", core, "--system", system, "--work", str(work),
+        "--frames", str(BEACH_SHOT), "--shot", f"{BEACH_SHOT}:beach",
+        "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
+        "--poke", BEACH_WARP,
+    ]  # fmt: skip
+    subprocess.run(args, check=True, capture_output=True, timeout=600)
+    shot = read_png((work / "beach.png").read_bytes())
+    n, wrong = compare(
+        shot, texture_inventory, texture_patched, tt.BEACH_BACKGROUNDS[0], tt.BEACH_CLUT,
+        BEACH_BOARD, BEACH_ON_SCREEN,
+    )  # fmt: skip
+    assert n > 500, "the build changed too few texels where the check looked"
+    assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"

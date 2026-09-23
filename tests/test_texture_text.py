@@ -396,3 +396,31 @@ class GlyphFace(BlockFace):
             out |= {(x + dx, dy) for dx in range(self.wide(ch)) for dy in range(9)}
             x += self.wide(ch) + 1
         return out
+
+
+def test_a_beach_line_taller_than_its_painted_rows_is_refused_not_stamped_above_them():
+    """A line may run off the board to the right, as the Japanese does, but it may not leave
+    the rows that were painted out -- above them is wood nobody cleaned."""
+    width, height = 490, 90
+    px = [2] * (width * height)
+    for x0, y0, w, _ in tt.BEACH_LINES:
+        for y in range(y0 + 4, y0 + 20):  # a 16-row line of "type", well inside its box
+            for x in range(x0 + 2, x0 + w - 2, 3):
+                px[y * width + x] = 1
+    palette = synth.ramp(256)
+    palette[1] = 31 | 31 << 5 | 31 << 10  # white type
+    palette[2] = 6 | 3 << 5 | 2 << 10  # dark wood
+    raw = synth.tim(
+        1, synth.pixel_block(width // 2, height, bytes(px)),
+        clut=synth.clut_block(256, tt.BEACH_CLUT + 1, palette * (tt.BEACH_CLUT + 1)),
+    )  # fmt: skip
+    board = Texture("board", "0" * 40, parse_exact(raw), ())
+
+    class TallFace(BlockFace):
+        def ink(self, text):  # 16 rows: doubled, 32 -- taller than a 30-row line box
+            return {(x, y) for x in range(4) for y in range(16)}
+
+    entries = [tt.Entry(f"tex@M_C15.{n}", "Go", f"signs.txt:{n}") for n in range(2)]
+    with pytest.raises(tt.TextureTextError, match=r"signs.txt:0: 'Go' is 32 px tall"):
+        tt.beach_notice(SimpleNamespace(), SimpleNamespace(get=lambda _id: board), TallFace(),
+                        entries)  # fmt: skip

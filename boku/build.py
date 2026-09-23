@@ -888,8 +888,11 @@ def build(
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
         the_plan, refused = _plan_what_fits(
-            archive, walk, words, in_place, skip_unfitted, work_area_end
+            archive, walk, words, in_place, skip_unfitted, work_area_end, binary_patches
         )
+        carried = set(the_plan.carried)  # already inside a rebuilt member (reinsert.plan)
+        binary_patches = [p for p in binary_patches if p not in carried]
+        edits = list(binary_patches)
         lines = [
             LineResult(line.line_id, line.laid_out, line.problems + refused.get(line.line_id, ()))
             for line in lines
@@ -897,10 +900,8 @@ def build(
         edits += list(the_plan.edits)
 
     edits.sort(key=lambda e: (e.file, e.offset))
-    # `plan` checks its own edits are disjoint; the caller's binary patches were not in
-    # that set. A rebuilt member's edit covers its whole byte range, so a patch aimed
-    # inside one would be applied over the rebuild at an offset the growth has already
-    # moved -- and would verify against the *source* first, so nothing would notice.
+    # `plan` checks its own edits are disjoint; the caller's binary patches (less the ones
+    # it carried) were not in that set.
     check_disjoint(edits)
     sectors = [*(the_plan.sectors if the_plan else ()), *sector_patches]
     check_sectors_disjoint(sectors)
@@ -938,6 +939,7 @@ def _plan_what_fits(
     in_place: bool,
     skip_unfitted: bool,
     work_area_end: int = MAP_WORK_AREA_END,
+    carry: Sequence[ByteEdit] = (),
 ) -> tuple[Plan, dict[str, tuple[str, ...]]]:
     """Plan the reinsertion, optionally dropping the lines that do not fit and retrying.
 
@@ -950,7 +952,14 @@ def _plan_what_fits(
     while True:
         try:
             return (
-                plan(archive, walk, words, in_place=in_place, work_area_end=work_area_end),
+                plan(
+                    archive,
+                    walk,
+                    words,
+                    in_place=in_place,
+                    work_area_end=work_area_end,
+                    carry=carry,
+                ),
                 refused,
             )
         except ReinsertRefused as error:
@@ -959,6 +968,16 @@ def _plan_what_fits(
             for line_id in error.lines:
                 words.pop(line_id, None)
                 refused[line_id] = (str(error),)
+
+
+def _patch_json(patch: ByteEdit) -> dict:
+    return {
+        "file": patch.file,
+        "offset": f"0x{patch.offset:x}",
+        "old": patch.old.hex(" "),
+        "new": patch.new.hex(" "),
+        "meaning": patch.reason,
+    }
 
 
 def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
@@ -996,15 +1015,10 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
         "rebased_containers": (
             {str(k): v for k, v in sorted(result.plan.layout.bases.items())} if result.plan else {}
         ),
-        "binary_patches": [
-            {
-                "file": patch.file,
-                "offset": f"0x{patch.offset:x}",
-                "old": patch.old.hex(" "),
-                "new": patch.new.hex(" "),
-                "meaning": patch.reason,
-            }
-            for patch in result.binary_patches
+        "binary_patches": [_patch_json(patch) for patch in result.binary_patches],
+        # Offsets are the member as stored; the bytes are inside its rebuild.
+        "carried_patches": [
+            _patch_json(patch) for patch in (result.plan.carried if result.plan else ())
         ],
         "sector_patches": [
             {

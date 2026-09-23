@@ -948,3 +948,107 @@ def test_a_line_id_that_is_not_on_the_disc_is_refused():
     archive = a_disc_with_one_line()
     with pytest.raises(ReinsertRefused, match="no text site is called"):
         plan(archive, walk(archive), {"E9999.0": (END_WORD,)})
+
+
+# --- a caller's patch inside a member the plan rebuilds (textures, GFX-09) ----------------------
+
+
+def a_map_with_a_background(background: bytes = bytes(range(1, 17))) -> Archive:
+    """One map whose child 6 -- the background a texture patch writes -- is `background`."""
+    block = a_block([text_bytes((0x100, 0x101, END_WORD)) + PAD])
+    pack = synth.pack(
+        [map_child0(), synth.child1([(171, block)]), b"\0\0\0\0", None, None, b"\0\0\0\0",
+         background]
+    )  # fmt: skip
+    return synthetic_disc(maps=[("A01000", pack)])
+
+
+def background_patch(archive: Archive, at: int, new: bytes) -> ByteEdit:
+    """A patch `at` bytes into child 6, addressed the way `boku.textures` addresses one:
+    by its offset in `BOKU.BIN` as the member is stored."""
+    member = archive.member("M_A01000.BIN")
+    child6 = parse_pack(archive.blob(member)).entries[6][0]
+    offset = member.offset + child6 + at
+    return ByteEdit("BOKU.BIN", offset, archive.boku[offset : offset + len(new)], new, "texture")
+
+
+def test_a_patch_in_a_rebuilt_maps_background_follows_the_background_when_the_text_grows():
+    archive = a_map_with_a_background()
+    patch = background_patch(archive, 5, b"\xaa\xbb")
+    longer = (0x100, 0x101, 0x102, 0x103, 0x104, 0x105, 0x106, END_WORD)
+    blob, the_plan = rebuilt(archive, {"E0171.0": longer}, carry=[patch])
+    assert the_plan.carried == (patch,)
+    assert the_plan.growth == {"M_A01000.BIN": 8}, "child 6 really moved"
+    after = Archive.from_bytes(archive.exe, blob, source="rebuilt")
+    background = parse_pack(after.blob(after.member("M_A01000.BIN"))).children[6]
+    assert background[5:7] == b"\xaa\xbb"
+    assert background[:5] + background[7:] == bytes(range(1, 17))[:5] + bytes(range(1, 17))[7:]
+
+
+def test_a_patch_in_a_relocated_maps_background_goes_with_it():
+    archive = a_map_with_a_background()
+    patch = background_patch(archive, 0, b"\xcc")
+    moves = smallest_that_moves(archive, walk(archive), "E0171.0")
+    after, the_plan = relocated(archive, {"E0171.0": (0x100,) * moves + (END_WORD,)}, carry=[patch])
+    assert the_plan.relocations, "the member did not move"
+    assert the_plan.carried == (patch,)
+    assert parse_pack(after.blob(after.member("M_A01000.BIN"))).children[6][0] == 0xCC
+
+
+def test_a_patch_in_a_member_the_plan_does_not_rebuild_is_left_to_the_caller():
+    archive = a_map_with_a_background()
+    patch = background_patch(archive, 0, b"\xcc")
+    _, the_plan = rebuilt(archive, {}, carry=[patch])
+    assert the_plan.carried == ()
+
+
+def test_a_patch_in_the_text_the_rebuild_rewrites_is_refused():
+    archive = a_map_with_a_background()
+    member = archive.member("M_A01000.BIN")
+    child1 = parse_pack(archive.blob(member)).entries[1][0]
+    offset = member.offset + child1
+    patch = ByteEdit("BOKU.BIN", offset, archive.boku[offset : offset + 1], b"\xee", "texture")
+    with pytest.raises(ReinsertRefused, match="in its text table"):
+        rebuilt(archive, {"E0171.0": (0x100, 0x101, 0x102, 0x103, END_WORD)}, carry=[patch])
+
+
+GROWS = {"E0171.0": (0x100, 0x101, 0x102, 0x103, END_WORD)}
+
+
+def test_a_patch_into_a_rebuilt_ev_block_is_refused_naming_the_lines():
+    block = a_block([text_bytes((0x100, END_WORD)) + PAD])
+    archive = synthetic_disc(events=[(6, block)])
+    member = archive.member("EV0006.BIN")
+    at = member.offset + member.size - 2
+    patch = ByteEdit("BOKU.BIN", at, archive.boku[at : at + 1], b"\xee", "texture")
+    with pytest.raises(ReinsertRefused, match="cannot follow text inside an EV block") as raised:
+        rebuilt(archive, {"E0006.0": (0x200, 0x201, END_WORD)}, carry=[patch])
+    assert raised.value.lines == ("E0006.0",), "--skip-unfitted can drop the line and go on"
+
+
+def test_a_patch_straddling_a_rebuilt_member_is_refused():
+    archive = a_map_with_a_background()
+    member = archive.member("M_A01000.BIN")
+    at = member.offset + member.size - 1  # its last byte and the first past it
+    patch = ByteEdit("BOKU.BIN", at, archive.boku[at : at + 2], b"\xee\xee", "texture")
+    with pytest.raises(ReinsertRefused, match=r"straddles M_A01000\.BIN") as raised:
+        rebuilt(archive, GROWS, carry=[patch])
+    assert raised.value.lines == ("E0171.0",)
+
+
+def test_a_patch_whose_old_bytes_are_not_the_members_is_refused():
+    archive = a_map_with_a_background()
+    stale = background_patch(archive, 3, b"\x77")
+    stale = ByteEdit(stale.file, stale.offset, b"\x99", stale.new, stale.reason)
+    with pytest.raises(ReinsertRefused, match="does not match the bytes it names"):
+        rebuilt(archive, GROWS, carry=[stale])
+
+
+def test_a_patch_across_two_children_is_refused_by_what_it_crosses():
+    archive = a_map_with_a_background()
+    member = archive.member("M_A01000.BIN")
+    child6 = parse_pack(archive.blob(member)).entries[6][0]
+    at = member.offset + child6 - 1  # the last byte before child 6 and its first
+    patch = ByteEdit("BOKU.BIN", at, archive.boku[at : at + 2], b"\xee\xee", "texture")
+    with pytest.raises(ReinsertRefused, match="across two of its children or in the padding"):
+        rebuilt(archive, GROWS, carry=[patch])

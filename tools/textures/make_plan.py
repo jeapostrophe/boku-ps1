@@ -153,13 +153,14 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     ),
     # ---- signage painted into backgrounds ----
     (
-        r"^_DATA_M_FILES\.BIN_M_C15100\.BIN__",
-        1,
-        "S",
-        "beach notice board about tides and the swimming season",
-        "new (2-3 lines)",
-        "painted into a map-background atlas at an angle; caption composited beside it at build "
-        "time, tracked as text + placement only (README principle 2)",
+        r"^_DATA_M_FILES\.BIN_M_C15[01]00\.BIN__",
+        2,
+        "P",
+        "beach notice board about high tides and swimming",
+        "new (2 lines)",
+        "frontal dark-wood board in the corner of both map variants' background atlas; the "
+        "white type is painted out along the grain and the English painted in 2x "
+        "(research/texture-recipes.md M_C15)",
     ),
     (
         r"^_DATA_M_FILES\.BIN_M_G08200\.BIN__",

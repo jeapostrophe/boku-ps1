@@ -3,8 +3,9 @@
 `REC-08` counted the Japanese in the pixels ([textures.md](textures.md),
 [data/texture-census.tsv](data/texture-census.tsv)): **180 distinct images `yes` + 17 `maybe`
 = 197**. (Ruling 2026-09-22, Jay: the model-kit box `M_I19000` stays Japanese — the narrator
-says what it is — so the counts below are now **138 P, 27 R, 1 S, 31 N**; the tables keep the
-audit's original split.) This file assigns each of those 197 a **path**, and says where the English comes from.
+says what it is — and 2026-09-23, `GFX-09`: the beach notice is frontal, not at an angle, and is
+in both variants of its map, so it is **P** twice — the counts below are now **140 P, 27 R, 0 S,
+31 N** of 198; the tables keep the audit's original split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
 written record of what was looked at, so a census row can never silently lose its decision. The
@@ -38,7 +39,7 @@ panel.
 |---|---:|---|
 | **P** programmatic | **138** | 94 diary pages, 26 encyclopedia spreads, 1 item card, 17 UI atlases/plates |
 | **R** redraw | **28** | 21 book-cover animation frames, 4 close-up signs, the result badges, a notebook cover, a brush-lettered button set |
-| **S** subtitle | **1** | the beach notice board |
+| **S** subtitle | **1** | the beach notice board (now **P** in both map variants — see its section) |
 | **N** none | **30** | scenery signage, packaging, calligraphy, the glyph sheet, the publisher credit |
 | | **197** | |
 
@@ -185,13 +186,17 @@ Leaving them Japanese would be leaving untranslated the thing the player just as
   specification line that is **already Latin**, on a flat frontal box face. The parody brand
   mark stays.
 
-### The one subtitle — `M_C15100`, **S**
+### The beach notice — `M_C15000` and `M_C15100`, **P** (was **S**)
 
-The beach notice board about tides and the swimming season is painted into a **map-background
-atlas**, at an angle, across a region whose CLUT differs from the atlas's CLUT 0. Repainting it
-means repainting the board inside a background that also carries the cliff, the path and the sea.
-A caption composited beside it at build time is the honest option; per README principle 2 only
-the caption text and its placement are tracked.
+The notice board about high tides and swimming is painted into the **map-background atlas** of
+the path down to the beach, drawn through CLUT 5 where the atlas's CLUT 0 shows noise. The audit
+put it at an angle and chose a caption beside it (**S**). Seen on Beetle (2026-09-23,
+[texture-recipes.md](texture-recipes.md) § `M_C15`) that is wrong: the board is **frontal** dark
+wood with white painted type, in the screen's bottom-right corner and cut off by the screen's
+right edge, and it is in **both** variants of the map (`C15000`, the one day 1 loads, and
+`C15100`; the census now has both). With the grain running horizontally,
+the type paints out cleanly along its rows, so it is **P**: the English is painted onto the
+board, and only the text is tracked.
 
 ### The 22 that stay Japanese — **N**
 
@@ -382,7 +387,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 7 | `tex@M_I23000.*` | hunting-association warning board | 4 short strings |
 | 8 | `tex@M_I18000.0` | "keep out!" sign | 1 line |
 | 9 | `tex@M_I19000.0` | model-kit product name | 1 line |
-| 10 | `tex@M_C15100.0` | beach notice board — **as a subtitle caption** | 2–3 lines |
+| 10 | `tex@M_C15.0`, `.1` | beach notice board, painted onto the board in both map variants | 2 lines |
 | 11 | `tex@T_TITLE.*` | title menu: new game / continue / summer memories / settings | 4 lines |
 | 12 | `tex@T_CONFIG.*` | settings value plates | ~6 plates |
 | 13 | `tex@SUB.*` | action-button words, deduplicated across the 8 atlas images in 6 files | ~12 words |

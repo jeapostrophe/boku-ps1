@@ -370,13 +370,14 @@ RULES: list[tuple[str, str, str, str, str, str, str]] = [
         "shaved ice on a table with a strawberry-syrup bottle; the label is two kana",
     ),
     (
-        r"^_DATA_M_FILES\.BIN_M_C1510?0\.BIN__",
+        r"^_DATA_M_FILES\.BIN_M_C15[01]00\.BIN__",
         "yes",
         "signage or label",
         "several lines",
-        "print on a board",
-        "hard (over artwork)",
-        "beach notice board about tides and the swimming season",
+        "paint on a board",
+        "medium (frontal board, wood grain)",
+        "beach notice board about high tides and swimming; the same board in both variants "
+        "of the map (C15000, C15100)",
     ),
     (
         r"^_DATA_M_FILES\.BIN_M_H261?0\d\.BIN__",

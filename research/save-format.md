@@ -193,6 +193,7 @@ BOKU_INPUT="2430:START:5;2590:DOWN:5;2660:CIRCLE:5;3050:CIRCLE:5;3150:CIRCLE:5" 
 | the insect box | in play, **△ opens the desk** (the "sub screen": net, cage, items, fishing gear, kites); the cage is the green box. From the item cursor, RIGHT ×2 reaches the net | desk measured; the cursor path to the cage not |
 | bug sumo | a morning card from a day it runs, then walk there; the cage contents live at `0x80046F28` (`--poke`) | not reached |
 | the well on the shortcut path | the story bible puts "the secret shortcut" on days 17–18 (`E1754`); a `day19`-or-later card, with its flags set by `--flag` from `scenes.tsv` | not reached |
+| any map, day 1 | during a new game's opening movie, poke a three-character map base into `g_movie_return_map` (`0x80036588`): the movie ends in that map, its variant chosen by the clock as usual. `run_core.py --poke 5300:0x80036588=43313500` with `boot-to-dialogue.press` is `C15`, the path to the beach, by frame ~6000 ([texture-recipes.md](texture-recipes.md) § `M_C15`) | measured for `C15` |
 | bedtime, end of day 1 | only by playing day 1 from a new game (`boot-to-dialogue.press`). Poking `g_clock.hour` does not skip ahead: set to 20:50 after breakfast on day 3 (`run_core.py --poke`), 50 s later it read 17:00 and the map was still its morning variant — the clock is driven from elsewhere | not reached |
 
 ## Open

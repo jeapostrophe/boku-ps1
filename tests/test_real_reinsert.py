@@ -14,6 +14,7 @@ game.
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Mapping
 from pathlib import Path
@@ -731,13 +732,9 @@ def test_the_arena_is_the_two_runs_the_disc_recon_measured(real_image: Path):
 def test_a_binary_patch_inside_a_rebuilt_member_is_refused_rather_than_silently_lost(
     real_image: Path, disc_dir: Path, original_words, walk_reader, tmp_path_factory
 ):
-    """Two writes over one byte would make the image depend on the order they were applied.
-
-    `plan` checks its own edits are disjoint; a caller's binary patches were not in that
-    set. A rebuilt member's edit covers the member's whole byte range, so a patch aimed
-    inside one verifies against the *source* image, is applied after the rebuild because
-    its offset is larger, and lands where the growth has already moved things.
-    """
+    """A caller's patch into the pack table of a member the translation rebuilds has nowhere
+    to go -- the rebuild rewrites that table -- so it is refused. (A patch into a child the
+    rebuild copies is carried into it: the carry test below.)"""
     site = walk_reader.by_line[GROWN_LINE][0]
     member_start = site.absolute - site.offset
     inside = ByteEdit(
@@ -749,7 +746,7 @@ def test_a_binary_patch_inside_a_rebuilt_member_is_refused_rather_than_silently_
     )
     words = dict(original_words)
     words[GROWN_LINE] = (*original_words[GROWN_LINE][:-1], 0x100, 0x100, END_WORD)
-    with pytest.raises(ReinsertRefused, match="would be lost"):
+    with pytest.raises(ReinsertRefused, match="in its pack table, which the rebuild rewrites"):
         build(
             source=real_image,
             out_dir=tmp_path_factory.mktemp("overlap"),
@@ -894,3 +891,39 @@ def test_the_blank_cell_after_a_newline_is_the_authoring_tools_indent_not_a_guar
                 total += 1
                 followed += words[index + 1] == PAD_WORD
     assert (followed, total) == (NEWLINES_ON_THE_DISC, NEWLINES_ON_THE_DISC)
+
+
+def test_a_texture_patch_inside_a_rebuilt_map_is_carried_by_the_build_and_recorded(
+    real_image: Path, disc_dir: Path, archive: Archive, original_words, walk_reader,
+    tmp_path_factory,
+):  # fmt: skip
+    """`GFX-09`: a patch in a map's background (child 6) while the map's text grows. The
+    build must hand it to the plan, which writes it inside the rebuilt member; the build
+    must not also write it at the old offset, and the manifest must still name it."""
+    from types import SimpleNamespace
+
+    from boku.archive import parse_pack
+    from boku.build import manifest_json
+
+    site = walk_reader.by_line[GROWN_LINE][0]
+    member = archive.member(site.member)
+    child6 = parse_pack(archive.blob(member)).entries[6][0]
+    at = member.offset + child6 + 64
+    patch = ByteEdit(
+        "BOKU.BIN", at, archive.boku[at : at + 2],
+        bytes(b ^ 0xFF for b in archive.boku[at : at + 2]),
+        "a background patch in a member about to be rebuilt",
+    )  # fmt: skip
+    words = dict(original_words)
+    words[GROWN_LINE] = (*original_words[GROWN_LINE][:-1], 0x100, 0x100, END_WORD)
+    result = build(
+        source=real_image, out_dir=tmp_path_factory.mktemp("carry"), disc_dir=disc_dir,
+        translation=PreEncoded(words), binary_patches=[patch], dry_run=True,
+    )  # fmt: skip
+    assert member.short_name in result.plan.members_rebuilt
+    assert result.plan.carried == (patch,)
+    assert patch not in result.binary_patches
+    document = json.loads(
+        manifest_json(SimpleNamespace(source_sha1="", result_sha1="", sectors=()), result, "t")
+    )
+    assert [p["offset"] for p in document["carried_patches"]] == [f"0x{at:x}"]

@@ -1,4 +1,4 @@
-# Texture recipes — English typeset into textures at build time (PLAN `GFX-07`)
+# Texture recipes — English typeset into textures at build time (PLAN `GFX-07`, `GFX-09`)
 
 [textures-plan.md](textures-plan.md) chose a path for every image with Japanese in its
 pixels. This file is the **P** path as built: how `boku build --textures` turns the tracked
@@ -147,6 +147,48 @@ carries — measured on Beetle, 2026-09-22: a day-5 morning; the summary's unkno
 marks a finished file is not decoded. The proof here is the rebuilt texture
 (`tests/test_real_texture_text.py`: each line found once, in order, and nothing else on the
 plaque).
+
+## `M_C15` — the notice board on the path to the beach (PLAN `GFX-09`)
+
+The audit had this as the one **subtitle** image: a notice "painted into a background at an
+angle", so a caption beside it. Seen on Beetle it is neither angled nor alone:
+
+* **The board is frontal**, dark wood with two lines of white painted type, in the
+  bottom-right corner of the screen, and it runs off the screen's right edge — in the game the
+  sign is cut mid-line (the first line after four characters, the second after six). A bird
+  and a wave are painted at its left.
+* **It is in both variants of the map.** `M_C15000` (the one day 1 loads) and `M_C15100` each
+  carry a 490×252 8bpp background atlas with the board in its top-right corner at the same
+  place, in two lightings (different indices and palettes). The census missed `C15000` — its
+  rule's regex read `M_C1510?0` (corrected; the census and plan tables regenerated, 198 rows).
+* The board is drawn through **CLUT 5**; atlas (330, 20) lands at screen (161, 178), so atlas
+  x 489 is just past the right edge.
+
+So it is programmatic, like the plates: the type (pale, through CLUT 5) is painted out along
+the wood's horizontal grain, and the English painted in the white the Japanese used most, at
+2× the game's glyphs (the Japanese is ~22 px with 2 px strokes). Line boxes: x 392–489 rows
+18–47 (starting after the bird) and x 334–489 rows 50–77. Each English line starts where its
+Japanese did and runs off the board exactly as the Japanese does; nothing is shortened.
+`beach_notice` does this to both atlases.
+
+**Reaching it.** After a new game's opening movie the game enters the map named at
+`g_movie_return_map` ([movies.md](movies.md)); poking `C15` into it during the movie
+(`run_core.py --poke 5300:0x80036588=43313500` with `boot-to-dialogue.press`) lands day 1 on
+this screen at frame ~6000. `C15100` is not reached that way on day 1; its board is checked
+at the texture level.
+
+**Proof.** `tests/test_real_texture_text.py` finds each line in both atlases, at 2×, cut at
+the atlas edge, and no other pale type in the line boxes. `tests/test_real_texture_text_beetle.py`
+warps a texture-only image there and requires every texel the build changed on the visible
+board to show its CLUT-5 colour exactly.
+
+**When a translation rebuilds the map.** The board lives in child 6 of a map pack that also
+carries event text. If a later day's translation grows `C15`'s text, the pack is rebuilt (and
+perhaps relocated), and a patch at the board's old offset would land on the rebuild. The
+build hands its texture patches to the reinserter (`boku.reinsert.plan(carry=…)`), which
+applies each one that falls inside a rebuilt member to the rebuilt bytes, in the same child at
+the same distance, and the build drops it from its own patches (`Plan.carried`). A patch into
+the text table itself, or into a bare `EV.BIN` block, is refused.
 
 ## Measured while looking at the rest of `GFX-07`
 
