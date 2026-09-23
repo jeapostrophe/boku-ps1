@@ -1,0 +1,106 @@
+# day21 (translation/days/README.md)
+# --- E2160: D07 -- Saori's camp
+E2160.0	Boku	If you read so many books all the time, won't your eyes go bad?
+E2160.1	Saori	Better than your brain going bad!
+
+# --- E2101: G02 -- breakfast
+E2101.0	Shirabe	Hey, you know what?
+E2101.1	Aunt	Hm? What is it?
+E2101.2	Shirabe	Yesterday you were all bothered that the Bath Lady was in the bath, weren't you... // ...Pervert!
+E2101.3	Boku	Huh? No, I wasn't.
+E2101.4	Aunt	Shirabe-chan, what makes you think so?
+E2101.5	Shirabe	A woman's intuition!
+E2101.6	Aunt	Oh my!
+E2101.7	Uncle	Well then, itadakimaasu.
+E2101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+
+# --- E2120: H11 -- outside the workshop
+E2120.0	Aunt	Auntie's got 4.0, you know.
+E2120.1	Boku	Got what?
+E2120.2	Aunt	Eyesight, in both eyes...
+E2120.3	Aunt	Oh? Are those migrating birds...
+# NOTE E2120.0: eyesight on the Japanese decimal scale, where 1.0 is normal; 4.0 is impossible,
+#   which is the joke (style guide § 11).
+
+# --- E2112: G01 -- living room
+E2112.0	Uncle	Kaoru, beer... ah, never mind. I don't want one after all.
+E2112.1	Uncle	Somehow I haven't been getting enough sleep lately...
+
+# --- E2105: G13 -- Boku's room, after the bath
+E2105.0	Moe	Are you okay? // That was kind of the episode called "Moe-neechan's Big Blunder"... // Is your head still spinning?
+E2105.1	Boku	...Mm-hm.
+E2105.2	Moe	Dad got angry at me. He said I'm being reckless right now.
+E2105.3	Boku	...Onee-chan, are you really not going to high school?
+E2105.4	Moe	Nope.
+E2105.5	Boku	......
+E2105.6	Moe	Hey, are boys your age interested in girls' naked bodies too?
+E2105.7	Boku	......
+E2105.8	Moe	Hmm, I guess not... // Ahh, I had a cute little brother too, once...
+E2105.9	Boku	Huh?
+E2105.10	Moe	Mm, no, it's nothing.
+
+# --- E2109: G15 -- the sisters' room
+E2109.0	Moe	Sorry to you, Boku-kun, but somehow, thanks to the shock in the bath... // the fog in my heart cleared a little, and I feel easier.
+E2109.1	Boku	......
+E2109.2	Moe	But studying and youth and all that... // the troublesome stuff, I still don't feel like doing any of it...
+E2109.3	Moe	Ahh, I really don't feel like doing anything at aaall.
+
+# --- E2113: G01 -- living room
+E2113.0	Uncle	Boku-kun, are you all right?
+E2113.1	Boku	Yeah, I'm fine.
+E2113.2	Uncle	Is that so? That's a relief.
+E2113.3	Uncle	Girls are better at long soaks, after all.
+
+# --- E2122: G01 -- living room
+E2122.0	Boku	Auntie, does your heart ever pound too?
+E2122.1	Aunt	Hm-hm... // Hmm, let's see. Even now it does, sometimes...
+E2122.2	Boku	When?
+E2122.3	Aunt	Ahaha... that's a secret.
+
+# --- E2130: G16 -- Moe's bed
+E2130.0	Moe	In my past life, I was probably a slug. // Or maybe an earthworm or something... // Oh! A jellyfish drifting quietly on the waves... // that'd suit me nicely, hopeless enough...
+E2130.1	Moe	What on earth is it that I'm missing right now?
+E2130.2	Boku	...Nutrition.
+
+# --- E2140: H09 -- garden corner where Shirabe watches ants
+E2140.0	Shirabe	Pervert!
+E2140.1	Boku	Nyaah! Your mom's got an outie belly button!
+E2140.2	Shirabe	Ah! I'm telling Mom on you!
+E2140.3	Boku	Ah! Don't! Auntie looks scary when she's mad...
+E2140.4	Shirabe	Hehe, when our mom gets mad, // even Dad gets locked in the storeroom.
+# NOTE E2140.1: the stock playground taunt; "your mom" here is his own aunt.
+
+# --- E2141: G06 -- TV room
+E2141.0	Shirabe	You're so pathetic.
+E2141.1	Boku	Sorry.
+E2141.2	Shirabe	Did your nose go spurting blood?
+# NOTE E2141.2: hanaji-buu, the cartoon gushing nosebleed of a boy who has seen something he
+#   should not.
+
+# --- E2104: G02 -- after dinner
+E2104.0	Uncle	Gochisosama deshita.
+E2104.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2104.2	Moe	Hey.
+E2104.3	Boku	What, Moe-neechan?
+E2104.4	Moe	Let's take a bath together.
+E2104.5	Boku	...Huh? Why?
+E2104.6	Moe	Let's get in together... I'll wash your back for you.
+E2104.7	(voice only)
+
+# --- E2106: G07 -- foot of the stairs ("what your heart is for")
+E2106.0	Aunt	Boku-kun, getting in the bath with Moe made your heart pound, didn't it?
+E2106.1	Boku	......
+E2106.2	Aunt	Hm-hm... you're more grown-up than you look.
+E2106.3	Boku	But you know, Auntie, // when I saw a pretty sunset going down behind the mountains, // or when I caught a butterfly with a strange pattern, too... // my heart pounded a little bit, kind of... // Deep inside my chest, it went squeeze...
+E2106.4	Boku	...Am I sick?
+E2106.5	Aunt	Ahaha... Boku-kun, that's...
+E2106.6	Aunt	...people are terribly clumsy creatures, // so sometimes they lose track of where in their bodies their hearts are... // So when you see a beautiful sunset going down behind the faraway mountains, // or catch a butterfly of a very strange color, // your heart quietly trembles, shiver-shiver...
+E2106.7	Aunt	and tells you, "I'm right here, inside you!"
+E2106.8	Boku	Then it's something really, really important.
+E2106.9	Aunt	Hm-hm-hm... if you lost it, you might even die.
+
+# --- E2108: G05 -- the bath; G14 -- Boku's room
+E2108.0	Moe	Hey...
+E2108.1	Boku	What?
+E2108.2	Moe	Onee-chan... got her heart broken.
+E2108.3	Moe	Whoa!

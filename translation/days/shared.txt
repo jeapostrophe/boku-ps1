@@ -916,3 +916,31 @@ E2003.6	Shirabe, Moe, Boku, Aunt	Itadakimasu!
 # --- E2050: A18 -- the secret base
 E2050.0	Specs	The lady camping at Dragon God Pond is a really interesting person. // I want to be a lyrical grown-up like that too...
 E2050.1	Fat	What's that? Is lyrical tasty?
+
+# --- E2107: B15 -- water; the dragonfly swarm
+E2107.0	Narrator	"Autumn has already come. Hurry home to your own house..." // The swarm of dragonflies seemed to be telling me so...
+
+# --- E2161: B13 -- Saori's camera trap (the sugar water)
+E2161.0	Boku	Will this bring it here, the weird ghost...
+
+# --- E6001: D07 -- Saori's camp (the howl that saved her)
+E6001.0	Boku	I'm here.
+E6001.1	Saori	......
+E6001.2	Boku	What are you reading?
+E6001.3	Saori	...A book about the forest.
+E6001.4	Boku	Is it interesting?
+E6001.5	Saori	......
+E6001.6	Boku	From today on, it's a little bit autumn.
+E6001.7	Saori	Huh?
+E6001.8	Saori	What makes you think so?
+E6001.9	Boku	Dragonflies... there are lots of dragonflies flying.
+E6001.10	Saori	Huh, when did there get to be so many...
+E6001.11	Saori	When I was little, I lived in the town at the foot of this mountain. // That day, too, there were lots of dragonflies flying, just like today...
+E6001.12	Saori	Back when I was still smaller than you are now, Boku-kun... // I came hiking around here with my family... // That day, before I knew it, I'd gotten lost... // Evening came, and I got scared... // I sat on a big rock on the riverbank and cried... // And then, that voice...
+E6001.13	Boku	What kind of voice?
+E6001.14	(voice only)
+E6001.15	Saori	I got scared, and I ran flat out down the mountain path in the evening glow... // and the next thing I knew, I'd been found by the youth association men who'd come up the mountain looking for me.
+E6001.16	Boku	So that voice saved you?
+E6001.17	Saori	Yeah, somehow I've come to think so.
+E6001.18	Boku	What was it that howled?
+E6001.19	Saori	A Japanese wolf... // the voice of a Japanese wolf, which should have died out long, long ago...
