@@ -428,7 +428,7 @@ def test_an_array_item_wider_than_its_measured_box_is_an_error(store, tmp_path):
     rows = [row for row in GOOD if row[0] != ARRAY]
 
     def lint(right: int) -> list:
-        boxes = {ARRAY: TextBox(ARRAY, 0, right, 0, "test", "a test frame")}
+        boxes = {ARRAY: TextBox(ARRAY, 0, right, 0, 1, "test", "a test frame")}
         path = write_translation(tmp_path / "day99.txt", [*rows, (ARRAY, "Boku", text)])
         parsed, _ = load_rows(translation_paths([path]))
         return lint_rows(store, parsed, Options(encoder=encoder, label=False, boxes=boxes))
@@ -437,6 +437,18 @@ def test_an_array_item_wider_than_its_measured_box_is_an_error(store, tmp_path):
     finding = only(lint(width - 1), "array-width")
     assert finding.severity == ERROR
     assert f"is {width} px" in finding.message and "1 over" in finding.message
+
+
+def test_a_description_wrapped_past_its_box_s_lines_is_array_lines(store, tmp_path):
+    """A box of several lines (an item description) wraps the English; more lines than it
+    holds is its own check, not a byte or width one."""
+    encoder = StockEncoder.load()
+    rows = [row for row in GOOD if row[0] != ARRAY]
+    boxes = {ARRAY: TextBox(ARRAY, 0, measure(encoder, "I"), 0, 2, "test", "a narrow frame")}
+    path = write_translation(tmp_path / "day99.txt", [*rows, (ARRAY, "Boku", "I I I")])
+    parsed, _ = load_rows(translation_paths([path]))
+    found = lint_rows(store, parsed, Options(encoder=encoder, label=False, boxes=boxes))
+    assert "array-lines" in checks(found), checks(found)
 
 
 def test_the_additive_word_heuristic_warns_and_only_warns(store, tmp_path):

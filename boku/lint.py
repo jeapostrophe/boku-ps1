@@ -38,7 +38,8 @@ What it checks, and where each rule comes from
   the build cannot place it until a code patch does (`PLAN TXT-05`).
 * **`array-width`** -- an array item wider, in pixels, than its surface's measured box
   (`boku.boxes`, `research/data/text-boxes.tsv`, `PLAN TXT-07`). A surface with no row has
-  not been measured and is held to its bytes alone.
+  not been measured and is held to its bytes alone. **`array-lines`**: an item whose box
+  holds several lines (descriptions) wrapped to more than it holds.
 * **`additive-word`** -- *a heuristic, and a warning only.* The pilot's recurring defect
   was English the Japanese does not have -- adverbs and intensifiers added for rhythm
   (`translation/days/README.md` § "Lessons from the pilot"). It fires when an English
@@ -612,6 +613,8 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
         severity = ERROR
         if " px and " in problem and problem.endswith(" over"):
             check = "array-width"
+        elif re.search(r" takes \d+ lines and .* holds \d+$", problem):
+            check = "array-lines"
         elif "drawn as a group" in problem:
             check, severity = "array-group", WARNING
         elif "draws no cell" in problem:

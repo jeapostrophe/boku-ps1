@@ -19,9 +19,9 @@ select geometry are build arguments, and the typeface is an input file.
 |---|---|
 | 1 dialogue (`dialog_draw`) | **done, proven on both emulators** |
 | 17 memory-card messages, 19 config labels (`TITLE.OVL` walkers) | **done, proven on both emulators** |
-| 20 extras labels (`TITLE.OVL`) | patched and assembled against the retail bytes; the screen needs a save file, so not shot |
+| 20 summer-memories labels (`TITLE.OVL`) | **labels 0–4 done, proven on both emulators** (2026-09-23, a "finished" card: § "Screens behind a save"); label 5 (the dinner-quiz rate, walker 20a) assembled, not shot |
 | 5 the controls-help screen (START in free roam) | **done, proven on both emulators** (2026-09-22) |
-| 12 item names (the bag, △ then ○) | **done, proven on both emulators**; descriptions, captions, kite names and fishing ride the same two walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
+| 12 item names and descriptions (the bag, △ then ○) | **done, proven on both emulators** — descriptions wrapped to three lines in their box (2026-09-23, items poked into the bag: § "Screens behind a save"); captions, kite names and fishing ride the same two walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
 | 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
 | 3, 4 the insect book's two walkers (`HHON.OVL`) | **documented only**, not patched: § "The `HHON` walkers" |
 | the other fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
@@ -664,10 +664,12 @@ lines at (c1) widths (`work/txt05b/shots/`). Everything below was measured on th
 
 What an item of a menu array may hold is one row per line id (or `<array>.*`) in
 [`data/text-boxes.tsv`](data/text-boxes.tsv): the x its walker starts it at and the column
-`right` where its frame begins, so the English may advance `right − x` px on one line (none of
-these walkers wraps); a line's own row wins over its array's. `pitch` is the walker's stock
-step (12; 10 on `help_line_draw`), which is what the stock sheet — a font with no widths of
-its own — is measured at there. `boku.boxes` reads it; `boku lint` (`array-width`), `boku build` and this
+`right` where its frame begins, the walker's stock `pitch` and the `lines` an item may take;
+each line may advance `right − x` px, and a line's own row wins over its array's. `pitch`
+is what the stock sheet — a font with no widths of its own — is measured at there (12; 10
+on `help_line_draw`; 16 on the lines the stock walker letter-spaces). `lines` is more than 1
+only for an **E** item (`boku.layout.holds`): `text_draw_h` breaks at `0x8001`, so the build
+wraps the English to the box by pixels; every other walker draws one line. `boku.boxes` reads it; `boku lint` (`array-width`, `array-lines`), `boku build` and this
 prototype's fixtures all refuse an item past it. Measured 2026-09-22 on Beetle screenshots of
 the stock disc (frame edges) and read off the code (pens — `tests/test_real_boxes.py`
 re-derives every pen from the disc's bytes):
@@ -681,10 +683,32 @@ re-derives every pen from the disc's bytes):
   (`g_mc_msg`); the panel's inner edge is 299.
 * **Config labels** (surface 19): pen 40 (line 4 at 88); the left panel's frame at 149.
 * **Item names** (surface 12, the bag): pen 40; the list panel's frame at 155.
+* **Item descriptions** (surface 12, `text_draw_h`): pen (184, 126), **three lines** 16 px
+  apart, the picture panel's inner edge at 301 (below the third line is the frame). The
+  build wraps the English to the box by pixels (`boku.layout.lay_out_array`), a `0x8001` at
+  each break. Photo captions use the same drawer and pen, so the same box — not shot.
+* **Summer-memories labels 0–4** (surface 20): pen 40 (`extras_draw`'s `addiu s1,zero,0x28`),
+  the left panel's frame at 149, as the config screen's.
 
-Not measured, so held to their bytes alone: item descriptions and photo captions (no day-1
-item has one), kite names, fishing, the fish names, the extras labels (need a save), insect
-names and the `HHON`/`MUSI` surfaces.
+Not measured, so held to their bytes alone: kite names, fishing, the fish names, the
+summer-memories quiz rate (label 5), insect names and the `HHON`/`MUSI` surfaces.
+
+### Screens behind a save (2026-09-23)
+
+Reached on both emulators with generated cards (`./make.sh saves`,
+[save-format.md](save-format.md) § "Reaching the scenes other lanes asked for") and
+`tools/vwf/shoot-menus.sh`:
+
+* **"Load this file?"** (the day-5 card): the question is message 9 (surface 17, proportional
+  as fixtures allow), with the card screen's はい / いいえ below it — surface 18, still stock:
+  § "The fixed-pitch surfaces" row 18.
+* **Summer memories** (a card whose day reads 31): labels 1, 3, 4 as the fixtures
+  "Insects", "Item", "Ending", proportional at x 40; labels 0 and 2, untranslated, at the
+  stock 12. Line 0's stock 16-px letter-spacing is dropped with the rest.
+* **The bag with items** (free roam, △ then ○, then the list poked to items 1–3 once the bag
+  is open: `run_core.py --poke`, or `tools/vwf/bag-items.lua` on Redux — the bag rebuilds
+  the list as it opens, so a poke before that is lost): "Crackers", `斧`, "Bang" at 16-px
+  rows, and item 2's description "Sharp. / Not for / kids." in three lines at (184, 126).
 
 ## The fixed-pitch surfaces
 
@@ -709,7 +733,7 @@ specification.
 | 10 | EXE `mc_slot_labels_draw` `0x8003A7A4` — really the fortune result (`大吉！` …), three glyphs stacked vertically at x `0x9A` | rows, not a pen | — | **C** | table |
 | 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table |
 | 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
-| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | tested |
+| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | **proven** (descriptions) |
 | 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | tested |
 | 15 | `TITLE 0x8007BB60` (save date) | none: `0x3C` at `s1`, `0x1B8` at `+0xC`, digits, `0x157` at `+0x30` | — | **C** | table |
 | 16 | `TITLE 0x8007C8EC` (slot digits, `0x5B0`) | none | — | **C** | table |
@@ -717,7 +741,7 @@ specification.
 | 18 | `TITLE 0x8007CF7C` (card-screen yes/no, 5 raw glyphs at `0x80081480`) | `0x8007D050 addiu s1,s1,0xC`; after glyph index 1 (`0x8007D03C addiu v0,zero,1`) the step is `+0x30` (`0x8007D04C`) — the word gap | `s1` · `lh 2·s0(s4)` | **B** for now: "Yes"/"No" is 3 + 2 glyphs, so the split index and the gap literal change with the text; a hook would need the index-based id fetch | table |
 | 19 | `TITLE 0x8007FA94` (config) | `0x8007FBC4 addiu v1,s0,0xC` | `v1 = s0 +` · `-2(s1)` | **A** | **proven** |
 | 20a | `TITLE 0x800803D8` (extras label 5) | `0x80080468` in a branch delay slot; hook at `0x8008045C addiu s0,s0,2` | `s1` · `-2(s0)` | **A** | assembled |
-| 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | assembled |
+| 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | **proven** |
 | 21 | `TITLE 0x80080484` (extras numbers `／ 3 1 ％`) | none | — | **C** | table |
 | 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **C** | table |
 | 23 | `MUSI 0x8007C604` (button hint, 7 glyphs, bound `slti 7`) | x recomputed from the index: `0x8007C700 sll a1,a1,2` + `addiu a1,a1,0x78` | index | **B**: the glyph count is a code constant; hooking means recomputing x as a prefix sum | table |
@@ -726,7 +750,7 @@ specification.
 | 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | table |
 
 Counts: **A** 12 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 19, 20a, 20b, 25, 26; 13 and 14 ride on
-12), of which 4 proven (5a, 12a, 17, 19), 2 tested (5b, 12b), 2 assembled (20a, 20b); **B** 3
+12), of which 6 proven (5a, 12a, 12b, 17, 19, 20b), 1 tested (5b), 1 assembled (20a); **B** 3
 (18, 23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
 register-identical — pens `s3`, `s5`, `v1`+`s0`, `v1`+`s1`, `s1`, `s1`; id pointers `s0` or
 `s1` — so the bodies are per shape and per stock pitch (`asm/walkers.asm`, the walker island;
@@ -792,8 +816,8 @@ the bodies is § "The free space"'s next island.
 
 ## Not done
 
-* **The extras screen** (surface 20) needs a save file. **`HHON`** is documented, not
-  patched. **The A-decision surfaces marked "table"** in § "The fixed-pitch surfaces" (9, 11,
+* **Summer memories' label 5** (walker 20a) is not on the screen shot. **`HHON`** is
+  documented, not patched. **The A-decision surfaces marked "table"** in § "The fixed-pitch surfaces" (9, 11,
   25, 26) are not code yet. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
   route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the

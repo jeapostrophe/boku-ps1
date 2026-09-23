@@ -84,6 +84,18 @@ def test_the_card_messages_pens_are_the_ones_g_mc_msg_chooses(archive):
     assert pens(CARD, drawn) == {line: xs.pop() for line, xs in drawn.items()}
 
 
+def test_the_bag_and_extras_pens_are_their_drawers_literals(archive):
+    """Descriptions and captions: `bag_draw` hands `text_draw_h` x = 0xB8 (`addiu
+    a1,zero,0xb8`, 0x80041850); summer memories: `extras_draw` starts every label at
+    `addiu s1,zero,0x28` (TITLE 0x80080708)."""
+    desc = word(archive, 0x80041850)
+    extras = word(archive, 0x80080708, "TITLE.OVL")
+    assert desc >> 16 == 0x2405 and extras >> 16 == 0x2411, "not the literals these rows cite"
+    for prefix in ("exe@80046398", "exe@80046614"):
+        assert box_for(f"{prefix}.0").x == desc & 0xFFFF
+    assert set(pens("exe@8003DA00", range(5)).values()) == {extras & 0xFFFF}
+
+
 def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
     """`pitch` is what the stock sheet is measured at on that surface, so it is the literal
     the walker steps by -- read from the `addiu reg,reg,step` each walker holds."""
@@ -98,8 +110,21 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         CARD: step(0x8007CDD8, "TITLE.OVL"),  # mc_msg_draw
         "exe@8003D9BC": step(0x8007FBC4, "TITLE.OVL"),  # config_draw
         "exe@80046214": step(0x80043848),  # text_draw_line_h
+        "exe@80046398": step(0x800438B8),  # text_draw_h
+        "exe@80046614": step(0x800438B8),
+        "exe@8003DA00": step(0x80080790, "TITLE.OVL"),  # extras_draw
     }
     help_line = step(0x80035490)  # help_line_draw: lines 19, 20
+    # Letter-spaced lines add a second addiu after the step: config line 1, extras 0 and 3.
+    config_extra = step(0x8007FBD4, "TITLE.OVL")  # addiu s0,v1,4
+    extras_extra = step(0x800807A8, "TITLE.OVL")  # addiu s1,v1,4
+    special = {
+        f"{HELP}.19": help_line,
+        f"{HELP}.20": help_line,
+        "exe@8003D9BC.1": walkers["exe@8003D9BC"] + config_extra,
+        "exe@8003DA00.0": walkers["exe@8003DA00"] + extras_extra,
+        "exe@8003DA00.3": walkers["exe@8003DA00"] + extras_extra,
+    }
     for line_id, box in load_boxes().items():
-        tens = line_id in (f"{HELP}.19", f"{HELP}.20")
-        assert box.pitch == (help_line if tens else walkers[line_id.rpartition(".")[0]]), line_id
+        wanted = special.get(line_id, walkers.get(line_id.rpartition(".")[0]))
+        assert box.pitch == wanted, line_id

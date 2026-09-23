@@ -350,6 +350,25 @@ def test_the_stock_sheet_is_measured_at_the_surface_s_own_step():
     assert laid.widths == ((measure(cells, "mmm"),),)
 
 
+def test_an_item_whose_box_holds_lines_is_wrapped_to_it():
+    """An item description (`text_draw_h`: `0x8001` starts a line at the left edge, `0x8000`
+    ends the item) is laid out in its measured box: wrapped by pixels, one `0x8001` per
+    break, the item's own terminator last; more lines than the box holds is a problem."""
+    encoder = cell_encoder()
+    width = measure(encoder, "abc abc")
+    box = BoxSpec(width=width, lines=2, name="the description panel")
+    original = raw(*[0x100] * 10, NEWLINE_WORD, *[0x100] * 10, END_WORD)
+    laid = lay_out_array("exe@80046398.0", "abc abc abc", original, encoder, len(original), box)
+    assert laid.fits, laid.problems
+    assert laid.pages == (("abc abc", "abc"),)
+    cells = [CELLS[c][0] for c in "abc abc"]
+    assert laid.words == (*cells, NEWLINE_WORD, *cells[:3], END_WORD)
+    three = lay_out_array(
+        "exe@80046398.0", "abc abc abc abc abc", original, encoder, len(original), box
+    )
+    assert any("3 lines" in problem for problem in three.problems), three.problems
+
+
 def test_an_array_group_drawn_whole_is_left_alone_rather_than_divided_by_guesswork():
     """Several lines in one site: how English divides between them is nobody's decision yet."""
     original = raw(0x100, NEWLINE_WORD, 0x101, NEWLINE_WORD)

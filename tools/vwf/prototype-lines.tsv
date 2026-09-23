@@ -58,3 +58,8 @@ exe@80029B20.6	fixture	no	no	Skip VO
 exe@80029B20.11	fixture	no	no	Sub-screen: net /
 exe@80029B20.12	fixture	no	no	items, rod or kite
 exe@80046214.0	fixture	no	no	Exercise
+# Items 1 and 3 and item 2's description, shown by poking the bag's list (research/
+# vwf-prototype.md § "The bag with items"); a description's \n is its 0x8001.
+exe@80046214.1	fixture	no	no	Crackers
+exe@80046214.3	fixture	no	no	Bang
+exe@80046398.1	fixture	no	no	Sharp.\nNot for\nkids.

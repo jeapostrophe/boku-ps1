@@ -21,6 +21,7 @@ import argparse
 import importlib.util
 import json
 import re
+import struct
 import sys
 from functools import cache
 from pathlib import Path
@@ -124,6 +125,28 @@ def test_a_fixture_wider_than_its_surface_s_box_is_refused():
             cells,
             vwf_layout(),
         )
+
+
+def test_a_description_fixture_breaks_where_it_says_up_to_its_box_s_lines():
+    """An item description's box holds three lines (`text-boxes.tsv`); a fixture's `\\n` is a
+    `0x8001` there, and a fourth line or a one-line surface refuses it."""
+    tool = vwf_prototype()
+    blank = tuple([0] * tool.CELL)
+    font = {"a": tool.Glyph(blank, 6), " ": tool.Glyph(blank, 4)}
+    cells = {"a": 300, " ": 10}
+    raw = bytes(2 * 20) + b"\x00\x80"
+
+    def encode(site, text):
+        spec = tool.LineSpec(site, "fixture", False, False, text)
+        return tool.encode_array_item(spec, raw, font, cells, vwf_layout())[0]
+
+    words = list(struct.unpack("<21H", encode("exe@80046398.1", "aa\naa\na")))
+    assert words[:8] == [300, 300, 0x8001, 300, 300, 0x8001, 300, 10]
+    assert words[-1] == 0x8000
+    with pytest.raises(tool.BuildRefused, match="lines"):
+        encode("exe@80046398.1", "a\na\na\na")
+    with pytest.raises(tool.BuildRefused, match="holds 1"):
+        encode("exe@80046214.0", "a\na")
 
 
 @pytest.mark.parametrize("advance_model", ["c1", "c2"])

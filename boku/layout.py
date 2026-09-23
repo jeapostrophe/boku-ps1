@@ -472,6 +472,13 @@ def _paginate(
     )
 
 
+def holds(box: BoxSpec | None, words: Sequence[int]) -> int:
+    """Lines an item may take in `box`: the box's own count for an item ending in `0x8000`
+    -- an **E** item, which `text_nth` finds by that word, so a `0x8001` inside it moves
+    nothing and `text_draw_h` starts a line there -- and 1 for any other."""
+    return box.lines if box is not None and words and words[-1] == END_WORD else 1
+
+
 def lay_out_array(
     line_id: str,
     text: str,
@@ -488,22 +495,22 @@ def lay_out_array(
     (`research/text-format.md` § "Text arrays in code files"). Growth means relocating the
     array and patching the `lui`/`addiu` pairs that reach it, which is not this unit's.
 
-    Only an item with a single trailing control word is laid out. An item with a line
-    break inside it, or a raw row with no control word at all, is drawn by a fixed-pitch
-    surface whose width nobody has measured (`PLAN TXT-05`), so where English breaks is not
-    known yet -- it is reported rather than guessed at. A code-file menu (an **S** array)
-    is not this function's: it is a `[SEL]` row, `lay_out_array_select`.
-
     `box` is the surface's measured frame (`boku.boxes`, `research/data/text-boxes.tsv`,
     `PLAN TXT-07`); an item whose surface has no measured box yet is held to its bytes
-    alone. The item is one line: none of the walkers these arrays feed wraps.
+    alone. Where the box `holds` more than one line the English is wrapped to it by
+    pixels, a `0x8001` at each break, and the item keeps its own terminator. Any other
+    item with a control word inside it, or a raw row with none, is drawn by a surface
+    nobody has measured, so where English breaks is not known -- it is reported rather
+    than guessed at. A code-file menu (an **S** array)
+    is not this function's: it is a `[SEL]` row, `lay_out_array_select`.
     """
     words = words_of(original)
     controls = [index for index, word in enumerate(words) if word & 0x8000]
     problems: list[str] = []
     if box is not None and box.pitch and isinstance(encoder, StockEncoder):
         encoder = replace(encoder, fixed_advance=box.pitch)
-    if controls != [len(words) - 1]:
+    wraps = holds(box, words) > 1
+    if controls != [len(words) - 1] and not wraps:
         return LaidOut(
             line_id=line_id,
             words=words,
@@ -523,13 +530,24 @@ def lay_out_array(
     missing = unencodable(encoder, text)
     if missing:
         problems.append(f"{line_id}: the {encoder.name} draws no cell for {''.join(missing)!r}")
-    width = measure(encoder, text)
-    if box is not None and width > box.width:
+    lines = wrap(encoder, text, box) if wraps else [text]
+    widths = tuple(measure(encoder, line) for line in lines)
+    if box is not None and len(lines) > box.lines:
         problems.append(
-            f"{line_id}: {text!r} is {width} px and {box.name} holds {box.width}, "
-            f"{width - box.width} over"
+            f"{line_id}: {text!r} takes {len(lines)} lines and {box.name} holds {box.lines}"
         )
-    new = (*(_cell(encoder, character) for character in text), words[-1])
+    for line, width in zip(lines, widths, strict=True):
+        if box is not None and width > box.width:
+            problems.append(
+                f"{line_id}: {line!r} is {width} px and {box.name} holds {box.width}, "
+                f"{width - box.width} over"
+            )
+    cells: list[int] = []
+    for number, line in enumerate(lines):
+        if number:
+            cells.append(NEWLINE_WORD)
+        cells += [_cell(encoder, character) for character in line]
+    new = (*cells, words[-1])
     if 2 * len(new) > size:
         problems.append(
             f"{line_id}: {text!r} needs {2 * len(new)} bytes and the array item holds "
@@ -539,8 +557,8 @@ def lay_out_array(
     return LaidOut(
         line_id=line_id,
         words=new,
-        pages=((text,),),
-        widths=((width,),),
+        pages=(tuple(lines),),
+        widths=(widths,),
         problems=tuple(problems),
     )
 

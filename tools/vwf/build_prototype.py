@@ -70,7 +70,10 @@ from boku.build import verify_sectors  # noqa: E402
 from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
 from boku.importer import IMAGE_SHA1, sha1_of  # noqa: E402
-from boku.layout import CellMapEncoder  # noqa: E402
+from boku.layout import (  # noqa: E402
+    CellMapEncoder,
+    holds,
+)
 from boku.movie_block import (  # noqa: E402
     BLOCK_LBA,
     BLOCK_RAM,
@@ -698,25 +701,32 @@ def encode_array_item(
     find item n, so the item keeps its word count: spare words are English spaces before
     the terminator, not zeros after it (id 0 is the 14-px Japanese space, and drawn).
     """
-    if "\n" in spec.text or PAGE_BREAK in spec.text:
-        raise BuildRefused(f"{spec.site_id}: an array item is one line")
-    missing = sorted({c for c in spec.text if c not in cells})
+    box = box_for(spec.site_id)
+    lines = spec.text.split("\n")
+    stock = words_of(raw)
+    most = holds(box.spec if box else None, stock)
+    if PAGE_BREAK in spec.text:
+        raise BuildRefused(f"{spec.site_id}: an array item has no pages")
+    if len(lines) > most:
+        raise BuildRefused(f"{spec.site_id}: {len(lines)} lines and the box holds {most}")
+    missing = sorted({c for c in "".join(lines) if c not in cells})
     if missing:
         raise BuildRefused(f"{spec.site_id}: the font has no glyph for {''.join(missing)!r}")
-    box = box_for(spec.site_id)
-    width = sum(font[c].advance for c in spec.text)
-    if box is not None and width > box.spec.width:
-        raise BuildRefused(
-            f"{spec.site_id}: {spec.text!r} is {width} px and {box.spec.name} holds "
-            f"{box.spec.width} ({box.basis}, research/data/text-boxes.tsv)"
-        )
-    spare = len(raw) // 2 - 1 - len(spec.text)
+    for line in lines:
+        width = sum(font[c].advance for c in line)
+        if box is not None and width > box.spec.width:
+            raise BuildRefused(
+                f"{spec.site_id}: {line!r} is {width} px and {box.spec.name} holds "
+                f"{box.spec.width} ({box.basis}, research/data/text-boxes.tsv)"
+            )
+    glyphs = [NEWLINE_WORD if c == "\n" else cells[c] for c in spec.text]
+    spare = len(raw) // 2 - 1 - len(glyphs)
     if spare < 0:
         raise BuildRefused(
-            f"{spec.site_id}: {spec.text!r} needs {2 * (len(spec.text) + 1)} bytes and the "
+            f"{spec.site_id}: {spec.text!r} needs {2 * (len(glyphs) + 1)} bytes and the "
             f"site holds {len(raw)}; this prototype writes in place and nothing is cut to fit"
         )
-    words = [cells[c] for c in spec.text] + [cells[" "]] * spare + [words_of(raw)[-1]]
+    words = glyphs + [cells[" "]] * spare + [stock[-1]]
     return struct.pack(f"<{len(words)}H", *words), [spec.text]
 
 
