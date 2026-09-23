@@ -568,10 +568,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       **`T_CONFIG` DONE 2026-09-22**: heading, both value panels, the large selected values,
       the controller chart headings (`boku/texture_text.py` `config_screen`,
       `research/texture-recipes.md` § `T_CONFIG`), proven on Beetle by
-      `tests/test_real_texture_text_beetle.py`. Remaining: `T_MEMORY`'s heading, `FS/PK/TK_WAL`,
-      `PK_ITM 0x6c`; and the speech-balloon action buttons and stone back buttons (`SUB`,
-      `M_S01100`, `M_S02000`, `MZ00`, `MZ02`, `SAMP`, `TZICON`, `T_CONFIG`'s modoru) —
-      ovals ~20×35 px where the 12 px glyphs cannot fit: **[MINE: product]** (a) a ~5 px pixel
+      `tests/test_real_texture_text_beetle.py`. **`T_MEMORY` heading built 2026-09-22** ("Summer //
+      Memories", `memory_album`), proven at texture level only: seeing it on Beetle needs a
+      card holding a finished game, and the finished-file marker is not decoded
+      (`research/save-format.md`). Remaining: `FS_WAL` (labels laid out against the numbers
+      drawn at run time — needs a card that owns the rod); and the small-type pieces — the
+      speech-balloon action buttons and stone back buttons (`SUB`, `M_S01100`, `M_S02000`,
+      `MZ00`, `MZ02`, `SAMP`, `TZICON`, `T_CONFIG`'s modoru, and `PK_WAL`/`TK_WAL`, which
+      hold only such buttons), and the attendance card `PK_ITM 0x6c` (~65 px beside the
+      picture, ~6 px footer type) — where the 12 px glyphs cannot fit: **[MINE: product]** (a) a ~5 px pixel
       font of our own, (b) redraw as art (`GFX-08`), (c) widen the sprites in the drawing code
       where the texture has room; recommended (a)+(c).
 - [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
