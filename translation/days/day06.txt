@@ -57,7 +57,7 @@ E0620.14	Aunt	But a firefly, when you see it in the daytime, is just a longhorn 
 # NOTE E0620.7, page 3: "obachan" is the subject of both verbs, so "she", not "I".
 
 # --- E0606: the television room (G06), examined, before 18:00. Voice only.
-E0606.0	(voice only)
+E0606.0	(voice only)	At today's Peace Memorial Ceremony, a great many people have gathered in Hiroshima's Peace Park.
 
 # --- E0640: a corner of the garden (H09), before 18:00, Shirabe watching ants. .9 on a repeat.
 E0640.0	Shirabe	Shirabe, you see... // loves little ants.

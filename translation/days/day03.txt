@@ -106,11 +106,22 @@ E0340.11	Shirabe	I said, leave me alooone.
 # --- E0305: the television (G06), examine the set. Five voice-only programme clips chosen by
 #     the hour: .0 before 11:00, .1 11:00-13:00, .2 13:00-16:00, .3 16:00-19:00, .4 from 19:00.
 #     No text on the disc (voice-only.md, "Television programmes").
-E0305.0	(voice only)
-E0305.1	(voice only)
-E0305.2	(voice only)
-E0305.3	(voice only)
-E0305.4	(voice only)
+E0305.0	(voice only)	The Summer National High School Baseball Championship. // Today's first game: representing Kumamoto, Asosan Minami High, // and representing Miyagi, Chigi Agricultural High. // Top of the second inning, Asosan Minami at bat. // Chigi Agricultural leads 2 to 1, and their ace, Hoshigaki, delivers! // Ah, a big curveball... just misses. // Three straight balls to Satsuma, the left fielder batting sixth. A jam for Chigi!
+E0305.1	(voice only)	The Summer National High School Baseball Championship. // Today's second game: representing Hiroshima, Hiroshima Maritime High, // and representing Niigata, Niigata Inekari Agricultural High. // Bottom of the third, Niigata Inekari at bat. // Hiroshima Maritime's first-year pitcher, Otafuku. // His elbow injury had people worried, but he's pitching so well you'd never know it, // and Hiroshima Maritime now holds a big lead over Niigata Inekari, 3 to 0.
+E0305.2	(voice only)	The Summer National High School Baseball Championship. // Today's third game: representing North Hokkaido, Nemuro Ryuhyo High, // and representing Toyama, Toyama Pharmaceutical College High. // We're in the bottom of the seventh, with Toyama Pharmaceutical at bat. // Now, Nemuro Ryuhyo's ace, Hanasaki, gave up a flood of runs when Toyama batted around in a furious first inning, // but from the second on, he seems to have managed to keep Toyama's bats in check. // Even so, it's 8 to 2, and Toyama's big lead holds.
+E0305.3	(voice only)	The Summer National High School Baseball Championship. // Today's fourth game: representing Aichi, Nagoya Daimyo Technical High, // and representing Okinawa, Okinawa Kaisen High. // The third game dragged on, so play began about an hour behind schedule. // Okinawa Kaisen's pitcher, Gushiken. The first pitch... there it goes, and it's hit! // But Daimyo Tech's Tokugawa seems to have skied it. // Oh! It's carrying farther than you'd think... carrying, carrying... it's gone! A home run on the very first pitch!
+E0305.4	(voice only)	The Summer National High School Baseball Championship: today's results. // Game one: representing Kumamoto, Aso Minami High, // and representing Miyagi, Chigi Agricultural High. // In the top of the second, Aso Minami made the most of a wobble in Chigi ace Hoshigaki's pitch selection, // scored a flood of runs, and won easily, 7 to 2. // Game two: representing Hiroshima, Hiroshima Maritime High, // and representing Niigata, Niigata Inekari Agricultural High. // Hiroshima Maritime's first-year pitcher Otafuku saw the elbow injury everyone feared flare up again, // and in the end it seems to have called the goddess of victory over to Niigata Inekari's side. // The teams traded runs one at a time, and after a close game Niigata Inekari Agricultural won, 4 to 3. // Game three: representing North Hokkaido, Nemuro Ryuhyo High, // and representing Toyama, Toyama Pharmaceutical College High. // In the first inning, Toyama batted around in a furious rally, and Nemuro Ryuhyo gave up all of eight runs, // then closed the gap in the third and the eighth, and in extra innings, top of the eleventh, their ace Hanasaki... // ...hit a triple himself, and Nemuro came from behind to take the win, 9 to 8. // Game four: representing Aichi, Nagoya Daimyo Technical High, // and representing Okinawa, Okinawa Kaisen High. // Daimyo Tech's Tokugawa homered off the very first pitch of the first inning, and that decided the game: // Nagoya Daimyo Technical High won, 1 to 0. // This has been Yoshimoto of NHN Osaka, reporting from Koshien Stadium.
+# NOTE E0305.0-.4: a school name translates its type (Agricultural, Maritime, Technical,
+#   Pharmaceutical College) and keeps the rest as a name, gag words included: Inekari (rice
+#   harvest), Kaisen (seafood), Ryuhyo (Nemuro's drift ice), Daimyo, Asosan (Mount Aso). The
+#   people are gag names kept as sounds: Hoshigaki (dried persimmon), Satsuma (sweet potato),
+#   Otafuku (the Hiroshima sauce), Hanasaki (Nemuro's crab), Gushiken (an Okinawan name, the
+#   boxer Yoko Gushiken's), Tokugawa (the Owari Tokugawa, lords of Nagoya), Yoshimoto of Osaka
+#   (the comedy agency), NHN (NHK).
+# UNSURE E0305.0-.4: readings taken from the ASR, not confirmed by ear: Asosan Minami in .0,
+#   Aso Minami in .4 (what each clip's ASR heard; one school, so one of them is likely wrong);
+#   Chigi; Otafuku (one pass heard Tafuku); Ryuhyo (the live clip's pass heard Ryuhei); Kaisen
+#   (seafood per the results clip; the live clip's passes heard the homophone "naval battle").
 
 # --- E0312: the living room (G01), 16:00-18:00, talking to the uncle. .1 the first time, if the
 #     field work is done (flag 15); .0 otherwise, and on every repeat.

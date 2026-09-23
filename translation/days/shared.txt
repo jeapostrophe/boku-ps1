@@ -164,10 +164,10 @@ E4014.0	(voice only)
 #     E8052: the other thing in the television room.
 E4052.0	(voice only)
 E4052.1	(voice only)
-E4052.2	(voice only)
-E4052.3	(voice only)
-E4052.4	(voice only)
-E4052.5	(voice only)
+E4052.2	(voice only)	Today, at a nursery school in Toyohashi, Aichi Prefecture, // the huge stock of toilet paper the school had been hoarding was all eaten by the goat it keeps.
+E4052.3	(voice only)	Since the year began, with the explosive vinyl-kite craze, // accidents with kite strings tangled in power lines have surged nationwide.
+E4052.4	(voice only)	Today, in Koto Ward, Tokyo, Japan's first convenience store opened its doors.
+E4052.5	(voice only)	What will fate bring?
 E4052.6	(voice only)
 E4052.7	(voice only)
 E8052.0	(unlabelled)	Its big mouth wide open... oink.

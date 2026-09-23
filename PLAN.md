@@ -676,7 +676,8 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       character speaking. Japanese transcripts under `work/voice/` only.
 - [ ] **[VO-05]** **Listen to what ASR could not settle.** `E2330.11` (Moe reading the English
       letter? no speech found), the words marked `?` in the `M27`/`M28` and potter/dam
-      transcripts, the well narration Jay heard (not an `XA`/`XCH` clip; `E8062` is text), and
+      transcripts, the school and place names in `E0305` (the baseball commentary — "Asosan
+      Minami" vs "Aso Minami"), the well narration Jay heard (not an `XA`/`XCH` clip; `E8062` is text), and
       whether any of the 12 unreferenced `BOKU_XA.XAM` runs with words is played. Needs an ear
       — the model cannot hear. Harmed: the player (a wrong or missing subtitle); the
       translator, working from a guessed word.
@@ -704,7 +705,11 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
 - [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
       translated like a day file — the `(voice only)` rows gain English in place, and the
       epilogues get their own file keyed by ending and time — reviewed against the
-      Japanese, then checked in the game through `VO-02`/`VO-03`. Harmed: the player.
+      Japanese, then checked in the game through `VO-02`/`VO-03`. **Done 2026-09-22** for the worded clips that have rows in
+      the day files so far — `E0305.0`–`.4`, `E0606.0`, `E4052.2`–`.5`, reviewed against the
+      transcripts, laid out by the build. Left: the other worded event clips as their days
+      are translated (`E0905`, `E1505`, `E1861.30`–`.32`, `E2305.0`), and the `XCH` clips
+      (bedtime, epilogues — `VO-03`; bug sumo — `VO-06`). Harmed: the player.
 
 ## Release
 
