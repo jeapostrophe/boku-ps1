@@ -1,0 +1,113 @@
+# day14 (translation/days/README.md)
+# --- E1405: C14 -- the beach
+E1405.0	Shirabe	Ahh, it's been ages since I've been to the sea. // Hey, can you swim?
+E1405.1	Boku	......
+E1405.2	(unlabelled)	What about you, Pipsqueak?
+E1405.3	Shirabe	Shirabe asked first. Answer properly!
+E1405.4	Boku	Aww, you say first.
+E1405.5	Shirabe	No, you!
+E1405.6	Boku	......Could it be that neither of us can swim?
+E1405.7	Shirabe	......
+E1405.8	Shirabe	Now, the Cape of Winds is almost here. // Full of pep, doing our best, let's go!
+# NOTE E1405.1-.2: one utterance across two messages: a silent beat, then Boku's question
+#   (style guide § 9).
+
+# --- E1406: C18 -- the Cape of Winds
+E1406.0	Shirabe	We've arrived, arrived... You're second, and Shirabe's first place!
+E1406.1	Boku	Phew... so it was this far away.
+E1406.2	Shirabe	We used to come here for picnics all together, a long time ago.
+E1406.3	Boku	Hmm, I see.
+E1406.4	Shirabe	Yaaawn... // The sun's blazing, and it feels so nice I'm getting kind of sleepy...
+E1406.5	Boku	Yaaawn, me too...
+E1406.6	Boku	Aaah!
+E1406.7	Shirabe	Huh, what... whassamatter?
+E1406.8	Boku	Huh?
+E1406.9	Shirabe	Hm? What's up?
+E1406.10	Boku	...Nothing.
+E1406.11	Boku	Aww... I dozed off.
+E1406.12	Shirabe	Aww... I dozed off.
+E1406.13	Boku	Hey! Don't copy me!
+E1406.14	Shirabe	Oh, look, look! The sun's going down into the sea...
+
+# --- E1402: G02 -- after breakfast
+E1402.0	Uncle	Gochisosama deshita.
+E1402.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1402.2	Uncle	Mmm, lovely weather again today.
+E1402.3	Aunt	So, the two of you are going to the Cape of Winds after all, right?
+E1402.4	Shirabe	Yeah, we're going!
+E1402.5	Uncle	Anyway, it's a long way, so no dawdling on the way, all right? // If you don't get there before evening and end up half in tears, don't come crying to Dad.
+E1402.6	Shirabe	Okay, got it.
+E1402.7	Shirabe	Well then, follow Shirabe properly. // For now, Shirabe will go on ahead as far as the new bridge.
+
+# --- E1420: H06 -- garden off the veranda; H08 -- the yard (the aunt's war story)
+E1420.0	Aunt	Tomorrow's the grave visit already... // Boku's summer vacation is already half over, isn't it?
+E1420.1	Boku	Hey, the war that ended on tomorrow's date, which war was it?
+E1420.2	Aunt	Well, tomorrow's anniversary of the end of the war... // it's the day the Pacific War ended, when Auntie was just about as old as you are now. // Auntie grew up in a port town in Hokkaido called Otaru, // and one morning, when she climbed the hill near our house, // all of a sudden, there were lots and lots of big American warships floating in the harbor. // Auntie got such a fright that she hurried back and hid in the house.
+E1420.3	Boku	Were you scared of meeting Americans?
+E1420.4	Aunt	Yes, because we'd been taught that if the American soldiers caught us, // they'd sprinkle us with salt and crunch us up, head first. // But, you know, one of the American soldiers who came ashore // picked up a little stray kitten in the alley in front of our house, // and when I secretly watched him through a crack in the window, going "Meow... meow..." to it, // Auntie thought, "Why, he's a human being, the same as us."
+E1420.5	Aunt	It's been thirty years since that day...
+# NOTE E1420.0: the game's title phrase in dialogue: "Boku's summer vacation" (style guide § 1).
+
+# --- E1412: G01 -- living room
+E1412.0	Uncle	It's muggy tonight...
+E1412.1	Uncle	Maybe it's time I got the electric fan out, at least.
+
+# --- E1403: C04 -- far end of the log bridge
+E1403.0	Shirabe	Ah, here he comes, here he comes.
+E1403.1	Shirabe	Well, well, good work, good work.
+E1403.2	Shirabe	Hey, it feels like being deep in the mountains around here, a bit scary, doesn't it?
+E1403.3	Boku	Huh? Why? Not at aaall. I'm fine.
+E1403.4	Shirabe	Oh, is that so. Honestly, after all my trouble...
+E1403.5	Shirabe	Well, I'll go on ahead again. // Next stop, the sunflower field!
+
+# --- E1430: G15 -- the sisters' room
+E1430.0	Moe	Ahh... it's about time the reply came...
+E1430.1	Boku	What reply?
+E1430.2	Moe	Ehehe... well, what could it be?
+E1430.3	Moe	Don't tell me... I wrote the address wrong?
+
+# --- E1431: G15 -- the sisters' room
+E1431.0	Moe	Tomorrow it'll be August 15th already... // Ahh, I'd like to go to the sea or somewhere...
+E1431.1	Moe	But I can't swim at all... // I once nearly drowned washing my face.
+E1431.2	Moe	How was the Cape of Winds?
+E1431.3	Boku	Good! The sunset went into the sea with a sizzle.
+E1431.4	Moe	Ahaha... that sounds fun.
+E1431.5	Boku	But I... thought about my mom, out on the cape.
+
+# --- E1440: H10 -- garden corner where Shirabe watches ants
+E1440.0	Shirabe	Ahh, I'd like to go to the Cape of Winds again. It's been ages.
+E1440.1	Boku	What's that?
+E1440.2	Shirabe	A place where the sunset is really pretty... // But the bridge on the way has fallen down, so you can't get there. // You! Do something about it!
+E1440.3	Shirabe	The Cape of Winds is a really pretty place, you know.
+
+# --- E1441: G06 -- TV room
+E1441.0	Shirabe	Summer vacation's already half over. // There are still so many things I want to do during vacation. How perfectly dreadful.
+E1441.1	Boku	What do you want to do?
+E1441.2	Shirabe	Things you can only do in summer...
+E1441.3	Shirabe	Like picking the fuzz balls off my thick winter socks...
+E1441.4	Shirabe	Shirabe waited for you properly, so where on earth did you go?
+E1441.5	Boku	But it turned into evening before I knew it.
+E1441.6	Boku	Hey, did you find any latest-model clouds?
+E1441.7	Shirabe	Nuh-uh.
+E1441.8	Shirabe	Because, you see, Shirabe... was asleep, drooling.
+
+# --- E1404: C07 -- the sunflower fields
+E1404.0	Shirabe	We've arriiived.
+E1404.1	Shirabe	From here all the way to near the sea, it's one long, bironcho sunflower field.
+E1404.2	Boku	Bironcho?
+E1404.3	Shirabe	Amazing, isn't it! // Our Onii-chan...
+E1404.4	Shirabe	died when Shirabe was in kindergarten, but...
+E1404.5	Shirabe	he loooved sunflowers.
+E1404.6	Boku	Huh? Why?
+E1404.7	Shirabe	He won a sunflower T-shirt in the Tanabata raffle.
+E1404.8	Shirabe	But, but, he once won... // a great big music box too.
+E1404.9	Boku	Oh, so he liked them because he won one.
+E1404.10	Shirabe	So what? Got a problem with that?
+E1404.11	Boku	Nooo, none! // But...
+E1404.12	Shirabe	What?
+E1404.13	Boku	But I love sunflowers too!
+E1404.14	Shirabe	Huh, you do... // Hehe, I knew it, I knew it.
+E1404.15	Boku	So what? Got a problem with that?
+E1404.16	Shirabe	None! Well then, next we meet at the beach! // Oh! Partway along, the road splits, // but go straight on to the right, toward the Great Oak, and that's the beach. // Bye, Bayoyooon!
+# NOTE E1404.1: bironcho, Shirabe's coinage for something that stretches on and on; kept as a
+#   sound (style guide § 7).

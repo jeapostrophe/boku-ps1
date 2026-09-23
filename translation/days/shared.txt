@@ -677,3 +677,18 @@ E1305.0	Narrator	The morning glories had withered...
 # --- E1306: C05 -- on the sunflower road (the howl)
 E1306.0	(voice only)
 E1306.1	(voice only)
+
+# --- E1451: A18 -- the secret base
+E1451.0	Guts	My very earliest memory is a real weird one. // I think it was on TV or something... // some clumsy-looking guy in a big helmet // standing in a pitch-black desert, holding a flag.
+E1451.1	Specs	Wasn't that... // Commander Armstrong of Apollo?
+
+# --- E1452: A18 -- the secret base
+E1452.0	Fat	How many albums of Rider cards have you got?
+E1452.1	Boku	Seven!
+E1452.2	Fat	Ugh, how come?
+E1452.3	Boku	At my house... my dad used to collect them.
+
+# --- E1453: A18 -- the secret base
+E1453.0	Specs	Yesterday I touched a snake for the first time in my life.
+E1453.1	Boku	Huh? S-snakes...
+E1453.2	Specs	Gacchan and Fat can touch them no problem, but I was the only one... too scared to touch it.
