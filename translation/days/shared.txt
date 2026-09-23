@@ -583,3 +583,39 @@ E0853.0	Specs	In the picture book Miffy... // why is her mouth an X?
 
 # --- E4001: G12 -- upstairs landing
 E4001.0	Narrator	That was the first time I had set foot in the sisters' room...
+
+# --- E0906: A01 -- the pond below the expressway
+E0906.0	Boku	Huh, what's that?
+E0906.1	Boku	Whoa! What the heck is that?
+
+# --- E0923: B07 -- a beetle tree (the aunt's second photograph)
+E0923.0	Boku	Huh? It's Auntie.
+E0923.1	Aunt	Hm-hm, hello, Boku-kun!
+E0923.2	Boku	Auntie, were you taking pictures?
+E0923.3	Aunt	Yes, I was taking pictures of you flying your kite.
+E0923.4	Boku	Oh, is that all.
+E0923.5	Aunt	Well then, a souvenir photo.
+E0923.6	Aunt	And what does Uncle like best?
+E0923.7	Boku	Huh?
+E0923.8	(voice only)
+E0923.9	Aunt	Well, I'll head home ahead of you.
+# NOTE E0923.6-.7: her "what does Dad like best?" of day 4, which Shirabe answered "Cheese!"; Boku,
+#   alone, does not know the game (glossary § 8).
+
+# --- E0950: A18 -- the secret base
+E0950.0	Fat	They don't sell replacement strings for Coca-Cola yo-yos at the toy shop, do they?
+E0950.1	Guts	But our village doesn't even have a toy shop.
+
+# --- E0904: G02 -- after dinner (the master of the pond)
+E0904.0	Uncle	Gochisosama deshita.
+E0904.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E0904.2	Boku	Oh yeah, a really, really, really big fish // jumped in the pond with a big splash.
+E0904.3	Uncle	That must have been the master of the pond, coming to say hello to you, Boku-kun.
+E0904.4	Boku	Hey, Uncle... // could even I catch a fish that big?
+E0904.5	Uncle	Hmm, you'd have to make a really big tenkara fly.
+E0904.6	Boku	What should I do?
+E0904.7	Uncle	Let's see... // then go and find something in the mountains that could be material for a fly. // Then Uncle will make you a handmade, extra-large fly.
+E0904.8	Boku	What kind of material is good?
+E0904.9	Uncle	Hmm... for example, our doggy... // something like Ken-bo's fur, or a bird's feather that's a bit stiff...
+E0904.10	Boku	Oh, that's easy.
+E0904.11	Uncle	Is it? Well then, good luck...
