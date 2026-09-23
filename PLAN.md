@@ -260,8 +260,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       untranslated text on every hooked menu keeps its original 12/10-px spacing (the
       card-check screen had been drawn at 14); step code in the `dbg_font_init` space, shared
       with the movie loader (`asm/walkers.asm`; `tests/mips.py` runs the game's walkers on the
-      patched EXE). **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
-      surfaces 9 (with its return-value change), 11, 25, 26 and the card-screen yes/no (18);
+      patched EXE). **Done 2026-09-23:** summer-memories labels 0–4 and item descriptions (wrapped
+      to their box by the build) proven on both emulators, reached with generated cards /
+      pokes. **Left to do:** the two `HHON.OVL` walkers; the remaining fixed-pitch
+      surfaces 9 (with its return-value change), 11, 25, 26, summer-memories label 5, and the
+      card-screen yes/no (18: 5 raw glyphs, the gap hard-coded after glyph 1 — the build
+      rewrites the split point from the translator's `Yes | No`, keeping the translation
+      files the only interface, README § "How the translation is made");
       the 23 computed-id `glyph_draw` sites (probably covered by the site index plus
       `code_glyph_ids` — needs a test that proves it); watching the heap gap and stack under
       the four overlays / a save / menus, sumo and fishing. (Round 3, 2026-09-21: the
@@ -312,8 +317,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `--advance-model c1`.** **Measured 2026-09-22**
       (`research/data/text-boxes.tsv`, enforced by build and lint): controls help,
       memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
-      code-file menus use the drawn 248-px row. Still to measure: descriptions and captions,
-      kite names, fishing, fish names, extras, insect names, the insect box and bug sumo. Original row — for every box geometry the game uses:
+      code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, three
+      lines, wrapped by the build), summer-memories labels. Still to measure: kite names,
+      fishing, fish names, insect names, the insect box and bug sumo. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
       minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
@@ -630,7 +636,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       in the relocation arena, keyed by frame. Original row: find the per-frame path
       or the burn cost (Jay, 2026-09-20: the opening "definitely needs subtitles", reversing
       README row 3; split into three rows 2026-09-21).
-- [ ] **[FMV-04]** **Subtitles in the movie player (E2).** `research/movies.md` § 3 E2: hook
+- [x] **[FMV-04]** **Subtitles in the movie player (E2).** `research/movies.md` § 3 E2: hook
       `movie_dctout_cb` before its `LoadImage` and blit the current cue's glyph pixels into
       the 24-bit slice buffer (white on the glyph mask, dark on the outline mask); 1-bit
       masks derived at build time from the same PNG the sheet is built from; the frame
@@ -655,7 +661,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       prototype's one cue is mistimed by construction). Note `build/vwf/image.cue` is the
       renderer prototype — sample lines and fixtures (`tools/vwf/prototype-lines.tsv`, the
       "quick brown fox" overflow probe) over real scenes — not a playable build; play
-      `build/days/days-*.cue`. (3) The ending. Harmed: the player, who misses the narration
+      `build/days/days-*.cue`. (3) DONE 2026-09-23 — the ending `M28` plays in-game with the hook: cues pixel-exact
+      on Beetle, length unchanged, the epilogue follows; the block's RAM is rebuilt by the
+      game after an in-game movie (`M21` fill test, 1,601 of 1,601 shots identical); Redux
+      boots anchored to the title (`research/movies.md` § 9). The Japanese credits scroll
+      through the subtitle rows from `M28` frame ~1085 on (`translation/README.md` warns).
+      Harmed: the player, who misses the narration
       that frames the whole game.
 - [ ] **[FMV-02]** **Translate the movies' narration.** DONE for the narration 2026-09-22:
       `translation/movies.txt` — `M27` 16 cues, `M28` 1, `M60` 2, `M120` 2, `M260` 4, from the
