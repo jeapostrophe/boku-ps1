@@ -80,10 +80,19 @@ usage: ./make.sh <verb> [arguments]
                                 a translator) or not-event (a menu, book or title-screen
                                 line no day file covers)
                                 (./make.sh coverage --help for the switches)
+  save --base B --out CARD [..] write one memory-card save from parameters: the morning it
+                                wakes on, the stars that pick the ending, any flag or saved
+                                byte (./make.sh save --help; research/save-format.md)
+  saves                         the save corpus into work/saves/corpus/ -- every morning
+                                from August 2 to 31 and one card per ending -- starting
+                                from a new game's RAM, dumped once on Beetle
+  boot-save CARD [arguments]    boot CARD's slot-1 save on Beetle to the morning it wakes
+                                on; shoot it, save a state to resume from, and check the
+                                clock (tools/libretro/boot_save.py --help)
   test [pytest arguments]       run the test suite
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
-                                `test`): the movie-subtitle gate on PCSX-Redux and
-                                the English title menu on Beetle PSX
+                                `test`): the movie-subtitle gate on PCSX-Redux, the
+                                English title menu and the generated-save boot on Beetle PSX
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
@@ -193,6 +202,23 @@ cmd_build_days() {
     echo "== build id $id: load build/days/days-$id.cue =="
 }
 
+# ENV-06: the corpus's base is a new game's RAM at the first dialogue, dumped once from your own
+# import; what that base can and cannot reach is research/save-format.md's.
+cmd_saves() {
+    local dir="work/saves"
+    if [ ! -f "$dir/newgame.ram" ]; then
+        echo "== 1/2: a new game's RAM, from a Beetle boot to the first dialogue -> $dir/newgame.ram =="
+        uv run python tools/libretro/run_core.py disc/image.cue --work "$dir/base" \
+            --frames 5850 --press-file tools/libretro/boot-to-dialogue.press \
+            --ram-out 5850:newgame --quiet
+        mv "$dir/base/newgame.ram" "$dir/newgame.ram"
+    else
+        echo "== 1/2: $dir/newgame.ram is already there (delete it to dump it again) =="
+    fi
+    echo "== 2/2: the corpus -> $dir/corpus/ =="
+    uv run boku save --base "$dir/newgame.ram" --corpus --out "$dir/corpus" "$@"
+}
+
 verb="${1:-}"
 shift || true
 
@@ -255,12 +281,21 @@ case "$verb" in
     coverage)
         exec uv run boku coverage "$@"
         ;;
+    save)
+        exec uv run boku save "$@"
+        ;;
+    saves)
+        cmd_saves "$@"
+        ;;
+    boot-save)
+        exec uv run python tools/libretro/boot_save.py "$@"
+        ;;
     test)
         exec uv run pytest "$@"
         ;;
     emu-test)
         BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
-            tests/test_real_title_menu_beetle.py "$@"
+            tests/test_real_title_menu_beetle.py tests/test_real_save_boot.py "$@"
         ;;
     lint)
         uv run ruff check .

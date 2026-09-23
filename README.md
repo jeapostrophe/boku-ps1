@@ -167,9 +167,9 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, packet, save-event, mockup, build-days, patch, apply-patch, test, emu-test, lint, smoke
+make.sh              every recurring command: import, extract, movies, packet, save-event, mockup, build-days, patch, apply-patch, save(s), boot-save, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, trial, build (text and
-                     texture recipes), patch, apply-patch
+                     texture recipes), patch, apply-patch, save
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
 tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
@@ -185,7 +185,8 @@ research/data/       the tables a note would otherwise have to list: the script 
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects, translator
-                        packets (work/packets/), page mock-ups (work/mockup/)
+                        packets (work/packets/), page mock-ups (work/mockup/); saves/ the
+                        generated memory-card corpus (research/save-format.md)
 build/       (ignored)  patched files, patched image, the patch
 ```
 

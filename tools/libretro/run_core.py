@@ -17,8 +17,13 @@ Frame numbering: frame N is the state after the N-th `retro_run` call, so the fi
 1. Beetle counts a frame per `retro_run`; PCSX-Redux counts GPU vsyncs, so the two disagree on
 the same boot (`research/tooling-setup.md`).
 
-Exit codes: 0 ran to the end, 2 usage, 3 core did not load, 4 the core could not read the
-disc, 5 a save state failed, 6 an --assert-drawn frame was blank, 7 the system directory held
+Memory card 1 is the core's SAVE_RAM: `--memcard CARD` copies a raw 128 KB card in before the
+first frame and `--memcard-out` writes it back out after the last; the card file itself is
+never written. `--ram-out` dumps main RAM and `--poke` writes it (`research/save-format.md`).
+
+Exit codes: 0 ran to the end, 2 usage (including a --memcard the core's card does not fit),
+3 core did not load, 4 the core could not read the disc, 5 a save state, RAM dump or card
+write-out failed, 6 an --assert-drawn frame was blank, 7 the system directory held
 no BIOS so the core fell back to its own HLE one (`--allow-hle-bios` runs anyway; that boot is
 not the machine Mode One runs), 8 a frame that was asked for was never reached.
 """
@@ -55,6 +60,12 @@ EXIT_STATE = 5
 EXIT_ASSERT = 6
 EXIT_FIRMWARE = 7
 EXIT_INCOMPLETE = 8
+
+# libretro.h's retro_get_memory_data ids. Beetle hands memory card 1 to the frontend as
+# SAVE_RAM (its `use_mednafen_memcard0_method` option, default "libretro"); SYSTEM_RAM is the
+# 2 MB of main RAM, so RAM address 0x80000000 + n is byte n.
+MEMORY_SAVE_RAM = 0
+MEMORY_SYSTEM_RAM = 2
 
 # --- the parts of libretro.h this frontend implements -------------------------------------
 # Values are from ~/Dev/retro-trainer/dist/libretro.h. Only the calls answered below are
@@ -405,6 +416,10 @@ class Frontend:
             lib.retro_serialize.restype = c_bool
             lib.retro_unserialize.argtypes = [c_void_p, c_size_t]
             lib.retro_unserialize.restype = c_bool
+            lib.retro_get_memory_data.argtypes = [c_uint]
+            lib.retro_get_memory_data.restype = c_void_p
+            lib.retro_get_memory_size.argtypes = [c_uint]
+            lib.retro_get_memory_size.restype = c_size_t
         except AttributeError as exc:
             raise CoreError(f"core is missing a libretro entry point: {exc}") from exc
 
@@ -585,6 +600,14 @@ class Frontend:
         buf = ctypes.create_string_buffer(blob, len(blob))
         return bool(self.lib.retro_unserialize(ctypes.addressof(buf), len(blob)))
 
+    def memory(self, kind: int) -> ctypes.Array | None:
+        """The core's own buffer for RETRO_MEMORY_SAVE_RAM or _SYSTEM_RAM, writable in place;
+        None if the core exposes none."""
+        ptr, size = self.lib.retro_get_memory_data(kind), self.lib.retro_get_memory_size(kind)
+        if not ptr or not size:
+            return None
+        return (ctypes.c_char * size).from_address(ptr)
+
     def distinct_colours(self) -> int:
         """How many different pixel values the last frame holds -- what a headless gate can
         assert on without eyes. DEFAULT_ASSERT_COLOURS records the measured spread."""
@@ -681,6 +704,33 @@ def parse_assert(spec: str) -> tuple[int, int]:
         raise UsageError(f"--assert-drawn wants FRAME[:COLOURS], got {spec!r}") from exc
 
 
+RAM_BYTES = 0x200000
+
+
+def ram_offset(addr: int, n: int) -> int:
+    """Byte offset into main RAM of a KUSEG, KSEG0 or KSEG1 address (0x0/0x8/0xA...)."""
+    if addr >> 28 not in (0x0, 0x8, 0xA) or (addr & 0x1FFFFFFF) + n > RAM_BYTES:
+        raise UsageError(f"0x{addr:08X}+{n} is not main RAM")
+    return addr & 0x1FFFFFFF
+
+
+def parse_poke(spec: str) -> tuple[int, int, bytes]:
+    """FRAME:ADDR=HEX -> (frame, RAM address, bytes), the address checked against main RAM."""
+    at, sep, rest = spec.partition(":")
+    addr_text, eq, hex_text = rest.partition("=")
+    if not sep or not eq:
+        raise UsageError(f"--poke wants FRAME:ADDR=HEX, got {spec!r}")
+    frame = parse_frame(at, "--poke", spec, "FRAME:ADDR=HEX")
+    try:
+        addr, value = int(addr_text, 16), bytes.fromhex(hex_text)
+    except ValueError as exc:
+        raise UsageError(f"--poke {spec!r}: {exc}") from exc
+    if not value:
+        raise UsageError(f"--poke {spec!r}: no bytes to write")
+    ram_offset(addr, len(value))
+    return frame, addr, value
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         description="Run a disc image on a libretro core headlessly and screenshot it.",
@@ -733,6 +783,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="write work-dir/NAME.state after that frame",
     )
     p.add_argument("--state-in", type=Path, help="restore this state before the first frame")
+    p.add_argument(
+        "--memcard",
+        type=Path,
+        help="put this raw 128 KB card image (.mcd/.mcr) in slot 1 before the first frame; "
+        "the file itself is never written",
+    )
+    p.add_argument(
+        "--memcard-out",
+        type=Path,
+        help="write slot 1's card to this file after the last frame (whatever the game saved)",
+    )
+    p.add_argument(
+        "--ram-out",
+        action="append",
+        default=[],
+        metavar="FRAME[:NAME]",
+        help="write main RAM (2 MB; byte n is RAM 0x80000000+n) to work-dir/NAME.ram after "
+        "that frame",
+    )
+    p.add_argument(
+        "--poke",
+        action="append",
+        default=[],
+        metavar="FRAME:ADDR=HEX",
+        help="write these bytes at RAM address ADDR (hex) just before FRAME runs; repeatable",
+    )
     p.add_argument(
         "--assert-drawn",
         action="append",
@@ -810,10 +886,20 @@ def shot_frames(args) -> dict[int, str]:
 def main(argv: list[str]) -> int:
     args = build_parser().parse_args(argv)
     try:
+        if args.memcard and args.state_in:
+            # A Beetle state carries the card it was saved with (frontio.c's memcard
+            # StateAction), so restoring one after --memcard would silently swap the card back.
+            raise UsageError("--memcard and --state-in conflict: the state brings its own card")
         core, system, content = resolve_paths(args)
         presses = schedule_presses(args)
         shots = shot_frames(args)
         states = dict(parse_at(spec, "--state-out") for spec in args.state_out)
+        rams = dict(parse_at(spec, "--ram-out") for spec in args.ram_out)
+        pokes: dict[int, list[tuple[int, bytes]]] = {}
+        for spec in args.poke:
+            at, addr, value = parse_poke(spec)
+            pokes.setdefault(at, []).append((addr, value))
+        card = args.memcard.expanduser().read_bytes() if args.memcard else None
         asserts = dict(parse_assert(spec) for spec in args.assert_drawn)
         # Nothing is forced by default: the software renderer is not a core option here, it is
         # what refusing SET_HW_RENDER leaves the core with.
@@ -877,6 +963,27 @@ def main(argv: list[str]) -> int:
         f"@ {av.timing.fps:.4f} Hz, pixel format {PIXEL_FORMATS[fe.pixel_format][0]}"
     )
 
+    if card is not None:
+        slot = fe.memory(MEMORY_SAVE_RAM)
+        if slot is None or len(slot) != len(card):
+            have = "no card buffer" if slot is None else f"a {len(slot)}-byte card"
+            print(
+                f"run_core: --memcard {args.memcard} is {len(card)} bytes but the core exposes "
+                f"{have} as SAVE_RAM (is beetle_psx_use_mednafen_memcard0_method forced to "
+                "'mednafen'?)",
+                file=sys.stderr,
+            )
+            fe.close()
+            return EXIT_USAGE
+        slot[:] = card
+        say(f"memcard: slot 1 <- {args.memcard}")
+
+    ram = fe.memory(MEMORY_SYSTEM_RAM) if pokes or rams else None
+    if (pokes or rams) and ram is None:
+        print("run_core: the core exposes no SYSTEM_RAM for --poke/--ram-out", file=sys.stderr)
+        fe.close()
+        return EXIT_STATE
+
     status = EXIT_OK
     if args.state_in:
         if not fe.load_state(args.state_in):
@@ -889,6 +996,10 @@ def main(argv: list[str]) -> int:
     frame = 0
     for frame in range(1, args.frames + 1):
         fe.buttons = presses.get(frame, frozenset())
+        for addr, value in pokes.get(frame, ()):
+            at = ram_offset(addr, len(value))
+            ram[at : at + len(value)] = value
+            say(f"poke: frame {frame} 0x{addr:08X} <- {value.hex()}")
         fe.lib.retro_run()
         if frame in shots:
             out = work / f"{shots[frame]}.png"
@@ -920,6 +1031,11 @@ def main(argv: list[str]) -> int:
                 status = EXIT_STATE
                 break
             say(f"state: frame {frame} -> {out} ({out.stat().st_size} bytes)")
+        if frame in rams:
+            out = work / f"{rams[frame]}.ram"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(ram.raw)
+            say(f"ram: frame {frame} -> {out}")
         if fe.shutdown_requested:
             say(f"core asked to shut down at frame {frame}")
             break
@@ -928,13 +1044,25 @@ def main(argv: list[str]) -> int:
     # A frame that was asked for and never happened is a failure, not a note: the core can ask
     # to shut down early, and a gate whose --assert-drawn frame never arrived would otherwise
     # report success for a run that never tested anything.
-    missed = sorted(f for f in set(shots) | set(states) | set(asserts) if f > frame)
+    missed = sorted(
+        f for f in set(shots) | set(states) | set(asserts) | set(rams) | set(pokes) if f > frame
+    )
     if missed:
         print(
             f"run_core: never reached frame(s) {missed} -- stopped at {frame} of {args.frames}",
             file=sys.stderr,
         )
         status = status or EXIT_INCOMPLETE
+
+    if args.memcard_out:
+        slot = fe.memory(MEMORY_SAVE_RAM)
+        if slot is None:
+            print("run_core: the core exposes no SAVE_RAM to write out", file=sys.stderr)
+            status = status or EXIT_STATE
+        else:
+            args.memcard_out.parent.mkdir(parents=True, exist_ok=True)
+            args.memcard_out.write_bytes(slot.raw)
+            say(f"memcard: slot 1 -> {args.memcard_out}")
 
     def env_name(cmd: int) -> str:
         return ENV_NAMES.get(cmd, f"env{cmd}")

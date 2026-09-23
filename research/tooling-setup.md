@@ -410,10 +410,12 @@ uv run python tools/libretro/run_core.py disc/image.cue --work work/beetle/resum
 Neither path has a default in a tracked file — pass `--core`/`--system` or set the two
 variables. Everything written goes under `--work` (default `work/beetle/`, gitignored):
 screenshots, states, and `saves/`, which is what the core is given as its save directory, so
-memory cards can never land next to the image. A boot to the first dialogue leaves `saves/`
-empty — the game only reads the card there — but once something saves, reusing that `--work`
-carries the card into the next boot, so a run that must be reproducible gets a fresh one. Two
-such runs are byte-identical: the frame-5850 PNG from two cold boots has the same sha256.
+nothing the core writes can land next to the image. Memory card 1 is **not** a file there: with
+the core's default `use_mednafen_memcard0_method = libretro` it is the frontend's `SAVE_RAM`,
+which starts formatted and empty on every run and is thrown away at the end unless
+`--memcard-out` writes it; `--memcard CARD` puts a card in. That, `--ram-out` and `--poke`
+are [save-format.md](save-format.md)'s § "Loading a card headlessly". Two cold boots are
+byte-identical: the frame-5850 PNG has the same sha256.
 
 **The trap that matters: Beetle boots without a BIOS and does not stop you.** With an empty
 system directory the core logs `Firmware is missing` at INFO and runs the game on its own HLE

@@ -99,22 +99,11 @@ All card I/O is in `TITLE.OVL` through `libmcrd` (`MemCardReadFile` / `MemCardWr
 `MemCardCreateFile` / `MemCardGetDirentry` / `MemCardFormat`); the EXE's only card call is
 `MemCardStart`. File name: `BISCPS-10088-` + slot number (`sprintf "%s%d"`).
 
-`save_build` (`0x8007B100`) writes, into the mode arena:
-
-| offset | content |
-|---|---|
-| `0x000` | `"SC"`, `0x13` (3 icon frames), `1` block |
-| `0x004` | title, Shift-JIS, built by `save_title_build` (`0x8007AEF4`) — see [text-outside-events.md](text-outside-events.md) |
-| `0x060` | icon CLUT (0x20) and `0x080` three icon frames (0x180), copied from `0x80028C64` |
-| `0x200` | 12-byte slot summary `{u32 sum, u32 play counter, u8 day, u8 flag, …}`, `sum` = `bytesum` of the 12 bytes with `sum` zeroed (`save_summary_build` `0x8007B044`) |
-| `0x280` | body: `{u32 sum, u32 size, data[size]}` |
-
-The body is gathered by `save_gather` (`0x8007B95C`) from a linked list of `{ptr, len, next}`
-records starting at `g_save_regions` (`0x80081410`, continuing through the EXE's data): **21
-regions, 3,717 bytes** of game state. `sum` is `bytesum` (`0x8007B014`, a plain `u8` add) over
-`size` bytes from the start of the body with the `sum` field zeroed. `save_verify`
-(`0x8007A9D4`) requires `size` to equal the list's total and `sum` to match; otherwise it
-re-reads, and after four tries reports a load failure.
+The layout — header, slot summary, the 21 saved regions (3,717 bytes) — is
+[save-format.md](save-format.md)'s. The check: the slot summary and the body each carry a
+`bytesum` (`0x8007B014`, a plain `u8` add) computed with their own `sum` field zeroed, and
+`save_verify` (`0x8007A9D4`) requires the body's `size` to equal the region list's total and
+its `sum` to match; otherwise it re-reads, and after four tries reports a load failure.
 
 Consequences:
 
@@ -125,6 +114,5 @@ Consequences:
   no text, so Japanese and patched saves are interchangeable as far as text goes.
 * The `size` test means a patch must not add, remove or resize a saved region — relocating a
   *saved* variable would need its list record updated, and would still load old saves, since
-  the file stores values, not addresses. *Hypothesis, not checked:* none of the 21 regions
-  holds a RAM pointer that a relocation could invalidate; they are small counters, flag arrays
-  and the 31-byte diary page list.
+  the file stores values, not addresses. One saved value *is* an address — `g_clock.map_name`,
+  [save-format.md](save-format.md) § The body — so the buffer it points at must not move.

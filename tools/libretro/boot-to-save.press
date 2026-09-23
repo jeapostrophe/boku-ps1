@@ -1,0 +1,22 @@
+# Cold boot -> title -> "continue" -> the save in slot 1 -> the morning it wakes on, on Beetle
+# PSX (mednafen_psx) with the retail JP BIOS scph5500.bin, a card in slot 1 (run_core.py
+# --memcard) and the core's own option defaults. Frames are retro_run calls counted from 1;
+# measured 2026-09-22 against disc/image.cue.
+#
+#   ~3200  the title screen is up
+#    3300  START   -> the menu; the hand sits on the first item, "start from the beginning"
+#    3610  DOWN    -> the second item, "continue"
+#    3680  CIRCLE  -> "checking the memory card", then ~4100 the file list, slot 1 selected
+#    4180  CIRCLE  -> "load this file?" with the hand on "yes"
+#    4300  CIRCLE  -> "load finished", then the game runs by itself: the dawn cut-in (~5000),
+#                     the rooster, Boku waking, radio exercises in front of the house (~5800)
+#   ~7400  breakfast in the kitchen
+#
+# The same schedule loads any card whose save is in slot 1: the file list opens on slot 1
+# whatever the save holds. PCSX-Redux needs its own numbers (research/save-format.md).
+
+3300:START
+3610:DOWN
+3680:CIRCLE
+4180:CIRCLE
+4300:CIRCLE

@@ -20,6 +20,7 @@ from boku.packets import add_arguments as add_packet_arguments
 from boku.packets import add_save_arguments as add_save_event_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
+from boku.save import add_arguments as add_save_arguments
 from boku.textures import DEFAULT_OUT_DIR as TEXTURES_OUT_DIR
 from boku.textures import INDEX_NAME as TEXTURES_INDEX_NAME
 from boku.textures import main_export as main_textures_export
@@ -528,6 +529,20 @@ def build_parser() -> argparse.ArgumentParser:
                 "not-event (a menu, book or title-screen line no day file covers). The "
                 "day files answer 'is what we wrote correct?'; this answers 'that line "
                 "was still in Japanese -- why?'"
+            ),
+        )
+    )
+
+    add_save_arguments(
+        subcommands.add_parser(
+            "save",
+            help="write a memory-card save generated from parameters, or the whole corpus",
+            description=(
+                "PLAN ENV-06: build a raw 128 KB card (.mcd) holding one save of this game, "
+                "from a base state (a card or a main-RAM dump) with the day, the stars and "
+                "any flag or saved byte changed, summed so the game accepts it. The layout, "
+                "the saved regions, the title and the icon are read from your import "
+                "(research/save-format.md)."
             ),
         )
     )

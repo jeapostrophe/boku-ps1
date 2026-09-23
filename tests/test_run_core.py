@@ -206,6 +206,34 @@ def test_parse_assert_malformed(spec):
         run_core.parse_assert(spec)
 
 
+# --- parse_poke: RAM addresses in any of the three mirrors (PLAN ENV-06) -----------------
+
+
+def test_parse_poke_accepts_every_ram_mirror_at_the_same_offset():
+    # The PS1 maps its 2 MB of RAM at 0x00000000 (KUSEG), 0x80000000 (KSEG0) and 0xA0000000
+    # (KSEG1); byte 0x28FA0 of the SYSTEM_RAM buffer is all three.
+    for addr in (0x00028FA0, 0x80028FA0, 0xA0028FA0):
+        assert run_core.parse_poke(f"7:{addr:08X}=1432") == (7, addr, b"\x14\x32")
+        assert run_core.ram_offset(addr, 2) == 0x28FA0
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [
+        "7:80028FA0",  # no bytes
+        "7:80028FA0=",  # empty bytes
+        "7:80028FA0=1",  # odd hex
+        "0:80028FA0=00",  # frame 0
+        "7:801FFFFF=0000",  # runs one byte past the end of RAM
+        "7:1F801070=00",  # an I/O register, not RAM
+        "7:C0000000=00",  # KSEG2
+    ],
+)
+def test_parse_poke_malformed(spec):
+    with pytest.raises(run_core.UsageError):
+        run_core.parse_poke(spec)
+
+
 # --- schedule_presses: out-of-order frames merge correctly -------------------------------
 
 
@@ -320,3 +348,10 @@ def test_png_round_trips_output_of_to_rgb_rows():
     assert (decoded_width, decoded_height) == (4, 1)
     assert decoded_rows == rows
     assert decoded_rows == [bytes([255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255])]
+
+
+def test_memcard_beside_state_in_is_refused_before_anything_loads(tmp_path, capsys):
+    # A Beetle state carries its own card, so the pair would silently swap the card back.
+    status = run_core.main([str(tmp_path / "x.cue"), "--memcard", "c.mcd", "--state-in", "s.state"])
+    assert status == run_core.EXIT_USAGE
+    assert "--state-in" in capsys.readouterr().err
