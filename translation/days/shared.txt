@@ -670,3 +670,10 @@ E1252.1	Boku	Yeah! But I'm... // lousy at bending the bamboo strips and cutting 
 
 # --- E1253: A18 -- the secret base
 E1253.0	Specs	When I grow up, I'm going to be an important person and build a big library in this village.
+
+# --- E1305: H05 -- the morning-glory trellis; I03 -- close-up
+E1305.0	Narrator	The morning glories had withered...
+
+# --- E1306: C05 -- on the sunflower road (the howl)
+E1306.0	(voice only)
+E1306.1	(voice only)

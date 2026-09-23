@@ -1,0 +1,54 @@
+# day13 (translation/days/README.md)
+# --- E1302: G02 -- after breakfast
+E1302.0	Uncle	Gochisosama deshita.
+E1302.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1302.2	Uncle	Boku-kun, have you caught enough creepy-crawlies by now to become a professor of insects?
+E1302.3	[SEL]	Yes | No
+E1302.4	Uncle	Then, when you want to catch even rarer insects, // there's the insect field guide on the bookshelf in the living room! Read it carefully, // find out where the bugs live, and lie in wait for them.
+E1302.5	Boku	Okay, got it. The insect field guide in the living room.
+
+# --- E1320: H08 -- the yard
+E1320.0	Aunt	Boku-kun, are you fine with any kind of insect?
+E1320.1	Boku	Yeah! // Except for spiders and cockroaches, I'm pretty much okay.
+E1320.2	Aunt	I see. Then you're the same as Auntie.
+E1320.3	Boku	Yeah! And any other bug... // I've never felt sick pulling off their arms and legs, or taking them apart.
+E1320.4	Aunt	...Oh, that kind of fine.
+E1320.5	Aunt	Boys just take everything apart, don't they, whether it's bugs or dolls.
+
+# --- E1312: G01 -- living room
+E1312.0	Uncle	Boku-kun, how's the fishing going lately?
+E1312.1	[SEL]	Excellent | Not so great
+E1312.2	Uncle	With yamame especially, it's best to set the hook early, early. // That fish can tell in an instant that the bait is a fake, and it spits it out. // So they say that setting the hook before it's even taken it is just about right.
+E1312.3	Uncle	But hardly any anglers come to the rivers around here, // so the fish aren't used to people, and they're really easy to catch.
+
+# --- E1331: G15 -- the sisters' room
+E1331.0	Moe	Huh...? Today's Friday the 13th...
+E1331.1	Moe	Aww, the bargain sale at Yahaba-ya is over.
+
+# --- E1340: H04 -- garden corner where Shirabe watches ants
+E1340.0	Boku	After Uri Geller got popular, // weren't there loads of sporks with marks where they'd been bent by force?
+E1340.1	Shirabe	At our school even the teachers were practicing their mind power.
+E1340.2	Shirabe	Still, why is it that you get scolded for eating rice with a spoon at home, // but at school it's allowed?
+
+# --- E1341: G06 -- TV room
+E1341.0	Shirabe	Huh... today's Friday the 13th.
+E1341.1	Shirabe	But this is Japan, so it doesn't count.
+
+# --- E1304: G02 -- after dinner (clouds)
+E1304.0	Uncle	Gochisosama deshita.
+E1304.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1304.2	Uncle	There were some fine summery-shaped clouds again today.
+E1304.3	Shirabe	...You know, I happened to overhear something... // are sardine clouds... shaped like sardines?
+E1304.4	Uncle	Huh? ...Well, you see...
+E1304.5	Shirabe	Then are there doughnut clouds and soft-serve clouds too?
+E1304.6	Boku	What about anmitsu?
+E1304.7	Shirabe	Waffles!
+E1304.8	Boku	Then mine's croissants!
+E1304.9	Uncle	In that case, the two of you go out to the Cape of Winds and look for new cloud shapes.
+E1304.10	Boku, Shirabe	New clouds?
+E1304.11	Shirabe	At the Cape of Winds...
+E1304.12	Boku	The latest model of cloud!
+E1304.13	Aunt	But it's a long way to the Cape of Winds, so be careful. // Go straight there, and don't stop off anywhere if you can help it.
+# NOTE E1304.3: sardine clouds (iwashi-gumo), the fleecy cirrocumulus of late summer; the talk
+#   depends on the literal name (glossary § 7).
+# NOTE E1304.10: the one line the two speak together, under a joint label (style guide § 9).
