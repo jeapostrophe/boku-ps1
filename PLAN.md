@@ -523,14 +523,18 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `translation/days/arrays.txt` — 308 rows, reviewed against the Japanese (16 findings,
       all applied). What reaches the screen is `PIPE-07`'s and `TXT-05`'s: the build places
       only what fits each item's own bytes, and `boku lint` names every line it cannot place.
-- [ ] **[PIPE-07]** **Array English on screen.** `boku lint --encoder cellmap` over
-      `arrays.txt` (2026-09-23, after the glyph passthrough and the build's multi-line
-      wrapping): 209 `array-bytes` (an item's English outgrows its bytes — code-file arrays
-      have no slack: relocate the array and patch its `lui`/`addiu` pairs; the regions each
-      lane owns are `research/text-renderer.md` § 6), 24 `array-lines`, 12 `array-width`,
-      74 `array-group` and 7 `not-placeable` warnings (lines drawn as groups; code labels and
-      the save title with no text site); `unencodable` is 0 (`{G:n}` and ○ × ↓ draw the
-      sheet's own cells, `boku.layout.sheet_cells`). The insect-book entries (`hhon@5328`, in `HHON.OVL`) need ~2.5× their bytes. Done when the lint shows none of these errors and the build refuses no array line.
+- [ ] **[PIPE-07]** **Array English on screen.** Grown code-file arrays move whole
+      (`boku.array_relocate`, every `lui`/`addiu` pair found by a control-flow scan in
+      `boku.pointers`; regions in `research/text-renderer.md` § 6) — 23 arrays moved, seen in
+      English on Beetle (card check, extras, START help, item names and description).
+      `boku lint --encoder cellmap` over `arrays.txt` (2026-09-23): 0 `array-bytes`; left —
+      1 `array-room`, the insect book `hhon@5328` (5,454 bytes, too big for resident RAM:
+      a `HHON.OVL` extension, ~60 KB of room, once `TXT-05`'s insect-box layout is chosen);
+      12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
+      surfaces); 74 `array-group` and 7 `not-placeable` warnings (lines drawn as groups;
+      code labels and the save title with no text site); and `exe@80029920.0`, the uncle's
+      daily 18:00 call, an event block held in the executable (132 bytes into 82; its
+      pairs at `0x80019E3C`, `0x800356A4`). build-days: 960 lines laid out, 119 refused. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
