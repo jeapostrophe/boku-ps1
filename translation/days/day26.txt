@@ -1,0 +1,102 @@
+# day26 (translation/days/README.md)
+# --- E2615: H15 -- the climbing kiln
+E2615.0	Uncle	Now, we're almost at the target temperature!
+E2615.1	Boku	What is it now?
+E2615.2	Uncle	Over ninety percent of the target, I'd say.
+E2615.3	Uncle	Phew... just a little more...
+
+# --- E2616: H15 -- the climbing kiln
+E2616.0	Uncle	I did it! It's finally reached the target temperature. // Now if I can just work hard and hold it there for two hours, we're okay!
+E2616.1	Uncle	All right, one last big push. Keep at it!
+E2616.2	Uncle	Phew... come to think of it, that rain just now stopped in an instant, but it sure came down hard, didn't it?
+
+# --- E2617: H13 -- behind the workshop
+E2617.0	Uncle	Phew, it's finally over.
+E2617.1	Boku	Thank you for your hard work.
+E2617.2	Uncle	Tomorrow night I'll open the kiln and show you what's been fired.
+E2617.3	Uncle	Phew... nothing in the world beats this feeling...
+
+# --- E2624: H15 -- the climbing kiln
+E2624.0	Aunt	Go for it, Yusaku! Our first cash income in ages is almost here!
+E2624.1	Aunt	Somehow I'm getting tired too.
+
+# --- E2660: D07 -- Saori's camp
+E2660.0	Saori	This world's just about coming to an end...
+E2660.1	Boku	What! Why?
+E2660.2	Saori	Autumn's almost here, so there's no use struggling!
+E2660.3	Boku	......
+E2660.4	Boku	Lady, you don't come for baths much.
+E2660.5	Saori	Nah, it's not that cold yet, so I wash in the pond in the daytime.
+
+# --- E2614: H13 -- behind the workshop (the morning after the night's firing)
+E2614.0	Boku	Uncle, what did you do all night?
+E2614.1	Uncle	I was here the whole time. Split the firewood, feed the firewood... over and over.
+E2614.2	Boku	How hot is it inside now?
+E2614.3	Uncle	...About seventy percent of the target, I'd say. // Right now, anyway, Uncle's working hard at feeding the wood in faster // to bring the temperature up.
+E2614.4	Uncle	Yaaawn... but when you haven't done it in a while, it really does make you sleepy.
+
+# --- E2623: H13 -- behind the workshop
+E2623.0	Aunt	Go for it, Yusaku! Our first cash income in ages is almost here!
+E2623.1	Aunt	Somehow I'm getting tired too.
+
+# --- E2613: G01 -- living room
+E2613.0	Uncle	ZzZzz......
+
+# --- E2630: G15 -- the sisters' room
+E2630.0	Moe	Hey, hey, come to think of it, have you ever gone into the air-raid shelter on the edge of Dragon God Pond? // It's already half caved in, so you mustn't go in there. // It's really dangerous.
+E2630.1	Moe	Onee-chan's a scaredy-cat, so I'm too scared to go in there.
+E2630.2	Moe	Oh man, last night while I was studying for my exams... // how can I put it, I really dozed off, and my textbook's a total mess.
+E2630.3	Boku	How come?
+E2630.4	Moe	Drool.
+E2630.5	Moe	If my grades aren't bad when the new term starts, // maybe I'll study a bit more at my own pace.
+E2630.6	Moe	Oh, what's this?
+E2630.7	Boku	This... ana-ana-bobon.
+E2630.8	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+E2630.9	Boku	So it is a book from outer space.
+E2630.10	Moe	Dummy, this is English. En-glish!
+E2630.11	Boku	Onee-chan, can you understand English?
+E2630.12	Moe	Of course I can't. It's the class of the teacher I hate most.
+E2630.13	Moe	I'll try reading the letter a little.
+E2630.14	Boku	Yeah, let me hear it, let me hear it!
+E2630.15	(voice only)
+E2630.16	Moe	...The letter was in English too, I'm afraid.
+E2630.17	Boku	Aww, man...
+E2630.18	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
+E2630.19	Boku	...Onee-chan, are you doing that on purpose?
+E2630.20	Moe	Huh? What? Whaaat? What do you mean?
+E2630.21	Moe	I'll have that letter translated by dinner.
+E2630.22	Boku	Can you?
+E2630.23	Moe	Oh, be quiet! // When I think someone's secret is packed in here, my heart pounds with excitement... // and somehow my own misery feels lighter.
+
+# --- E2632: G17 -- the veranda; H06 -- the garden (twenty years from now)
+E2632.0	Moe	Sigh... what on earth will I be doing twenty years from now?
+E2632.1	Moe	What kind of world will it be by then, I wonder?
+E2632.2	Boku	Twenty years from now?
+E2632.3	Moe	A little before the twenty-first century... // maybe... people will be living on the moon, // hm-hm, and cars will be flying through the sky, don't you think?
+E2632.4	Boku	And robots will do our homework for us...
+E2632.5	Moe	Right, right... // But mandarins at the kotatsu and the New Year's Eve song contest might be gone...
+E2632.6	Boku	I wonder what summer vacation will be like twenty years from now...?
+E2632.7	Moe	Hmm...
+E2632.8	Boku	Hey, I picked up something strange, deep in the cave.
+E2632.9	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
+E2632.10	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2632.11	Boku	But whose is it?
+E2632.12	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
+E2632.13	Moe	From tomorrow...
+E2632.14	Boku	What?
+E2632.15	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+
+# --- E2640: H17 -- the woodshed
+E2640.0	Shirabe	When they fire the climbing kiln, the firewood they spent days splitting // gets used up in no time...
+E2640.1	Shirabe	Shirabe's glad she wasn't born a boy. // I'd definitely have been made to help split the firewood!
+E2640.2	Shirabe	Do people live up by the antennas on Mt. Teppen?
+E2640.3	Shirabe	I wonder if you can see the smoke from the climbing kiln from Mt. Teppen?
+
+# --- E2641: G06 -- TV room
+E2641.0	Boku	It really is nothing but sunny days, isn't it?
+E2641.1	Shirabe	Yeah, it's strange. It was supposed to rain today.
+E2641.2	Shirabe	Maybe it didn't come true because it was a sandal and not a geta?
+E2641.3	Shirabe	Today's rain... I hope the little ants didn't drown.
+E2641.4	Shirabe	Shirabe can't take a breath when she does the crawl...
+# NOTE E2641.1-.2: children tell tomorrow's weather by kicking off a geta: face up, fine; face
+#   down, rain. Shirabe used a sandal.

@@ -1173,3 +1173,17 @@ E2504.12	Aunt	Come on, let's hurry up and say gochisosama.
 E2504.13	Uncle	Gochisosama deshita.
 E2504.14	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 # NOTE E2504.10: "Onii-chan" as a name, the name the dead son had (style guide § 2).
+
+# --- E2605: A05 -- under the expressway (the sun shower)
+E2605.0	Narrator	All at once the air felt cold, and I stopped where I stood...
+
+# --- E2651: A18 -- the secret base
+E2651.0	Guts	Hey, did you see the free gift with this month's Kagaku?
+E2651.1	Boku	Huh? What, what?
+E2651.2	Guts	Whaaat! You don't know? It's a lunar rover!
+
+# --- E2652: A18 -- the secret base
+E2652.0	Fat	With Super Balls, there's the kind with lots of colors mixed in, right? // I don't approve of those! // Why? I don't need a reason!
+
+# --- E2653: A18 -- the secret base
+E2653.0	Specs	Guri and Gura, the mice who are best friends... // was the blue one Guri?
