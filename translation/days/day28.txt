@@ -1,0 +1,80 @@
+# day28 (translation/days/README.md)
+# --- E2820: H06 -- garden off the veranda
+E2820.0	Aunt	Oh! A contrail!
+E2820.1	Boku	Huh? Where, where?
+E2820.2	Aunt	If Auntie is ever born again, // I'd like to try being a jumbo jet pilot.
+E2820.3	Boku	Huh? But... // don't women usually want to be stewardesses?
+E2820.4	Aunt	No... if I'm going to be anything, it's a pilot, hands down.
+
+# --- E2812: G01 -- living room
+E2812.0	Uncle	The wind on your skin is an autumn wind now...
+E2812.1	Uncle	The autumn wind... somehow it's sad.
+
+# --- E2803: G02 -- dinner (the fever)
+E2803.0	Aunt	What's the matter?
+E2803.1	Boku	I just... don't want to eat.
+E2803.2	Uncle	You too, Boku-kun?
+E2803.3	Boku	Huh...?
+E2803.4	Uncle	Just kidding, just kidding.
+E2803.5	Shirabe	That just now... I didn't get it.
+E2803.6	Aunt	Don't tell me... maybe you've got a fever?
+
+# --- E2830: G15 -- the sisters' room
+E2830.0	Boku	Onee-chan, I... // really wish I could stay in this house a little longer.
+E2830.1	Moe	I see... Then you made lots of good memories, Boku-kun.
+E2830.2	Boku	Yeah. I'm sure they'll be my treasure.
+E2830.3	Moe	I see...
+E2830.4	Boku	Onee-chan, I found something strange in the cave.
+E2830.5	Moe	Ohh, something strange? Good for you. // It might turn into your treasure for life, Boku-kun, // so keep it very, very carefully.
+E2830.6	Moe	I'm going to try hard too... and find a treasure for life, for sure.
+
+# --- E2840: H08 -- the yard with the swing tree
+E2840.0	Shirabe	Ahh, how boring. // Shirabe wants to turn into a butterfly and fly in the sky...
+E2840.1	Boku	Auntie says she wants to be a pilot.
+E2840.2	Shirabe	Then Shirabe wants to be a stewardess.
+E2840.3	Shirabe	Everyone in our family seems to like high places, somehow. Why is that, I wonder?
+E2840.4	Boku	......
+
+# --- E2850: A18 -- the secret base ("when do you go home?")
+E2850.0	Specs	Hey, summer vacation's almost over... // when are you going back to your house, Boku-kun?
+E2850.1	Boku	Probably on the thirty-first, I think.
+E2850.2	Fat	Heh, hurry on home and suck on your mommy's boobies.
+E2850.3	Guts	I see, that's right... // you've got to go back sometime, huh.
+E2850.4	Boku	Yeah......
+
+# --- E2851: A18 -- the secret base
+E2851.0	Guts	Right, of course... you go home when vacation's over...
+E2851.1	Boku	Yeah, of course.
+E2851.2	Guts	I... no, never mind.
+E2851.3	Boku	Aww, what is it?
+E2851.4	Guts	I said never mind.
+
+# --- E2852: A18 -- the secret base
+E2852.0	Fat	Hey, Boku-chan, before you go back to the city, let me meet Moe-san, won't you?
+E2852.1	Boku	I won't.
+
+# --- E2853: A18 -- the secret base
+E2853.0	Specs	Has the baby at your house been born yet, Boku-kun?
+E2853.1	Specs	Then tomorrow's a good day. My fortune-telling book says the stars are in the best position tomorrow.
+
+# --- E2805: G14 -- Boku's room; I30 -- close-up (the fever night)
+E2805.0	Aunt	You do have a fever, don't you? Hey, Boku-kun, do you feel bad right now?
+E2805.1	Boku	Yeah... a little... sort of hohe-hohe.
+E2805.2	Aunt	Two hohes, huh. Excuse me a moment...
+E2805.3	Aunt	Your fever's gone up quite a bit. I'm sorry I didn't notice sooner... // Anyway, you've already had your medicine today, so let's get you straight to sleep.
+E2805.4	Boku	Hey, Auntie.
+E2805.5	Aunt	Hm? What is it?
+E2805.6	Boku	The boy who was at your house, Auntie... I think he must have been really happy.
+E2805.7	Aunt	Hm-hm... what makes you think so?
+E2805.8	Boku	Could I... take that boy's place?
+E2805.9	Aunt	...Huh? Hm-hm... // Onii-chan is Onii-chan, and Boku-kun is Boku-kun. // But Auntie loves you very much too, Boku-kun.
+E2805.10	Boku	I love you too, Auntie.
+E2805.11	Aunt	Hm-hm... thank you. Well then, good night.
+E2805.12	Narrator	At that moment, for some reason, I was seized by an overwhelming longing... // like a cat in love with a patch of spring sunlight, to curl up into a ball... // and be held gently in my aunt's arms...
+E2805.13	Boku	Auntie.
+E2805.14	Aunt	Hm? What is it?
+E2805.15	Boku	...Good night.
+E2805.16	Aunt	Okay...... good night.
+E2805.17	Aunt	By the way, tonight's dinner was cabbage rolls.
+# NOTE E2805.1: hohe-hohe, Boku's own sound for feeling feverish, kept as a sound (style guide § 7).
+# NOTE E2805.17: the bathos after the tender moment is the script's (bible § 5).
