@@ -761,10 +761,13 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       `xa_play_indexed` that every native clip passes. Proven on Redux
       (`tests/test_real_clip_subtitle.py`) and Beetle. The credits are `OTI0n`'s 276×33
       production/copyright strip, ruled N by `research/textures-plan.md`.
-- [ ] **[VO-06]** **Subtitles for the bug-sumo voices.** The boys' 39 bug-sumo lines
-      (`XCH.00`–`.40`, `research/data/voice-only.tsv`) pass `VO-03`'s `xa_play_indexed` hook
-      already; left: whether the movie-subtitle block survives bug sumo (mode 7) — allow that
-      mode in `clip_sub_block`, re-reading the block if needed — and a proof on both
+- [ ] **[VO-06]** **Subtitles for the bug-sumo voices.** The boys' 39 lines (`XCH.00`–`.40`,
+      English in `translation/clips.txt`) pass `VO-03`'s `xa_play_indexed` hook already. Bug
+      sumo (mode 7) is entered only by `E4025`; `tools/redux/to-sumo.lua` reaches its desk
+      from a cold boot (`research/save-format.md`). Measured 2026-09-23: the movie-subtitle
+      block at `0x801C0000` is overwritten by the `A18` load and by mode 7, and that memory
+      is mode 7's own, so the text needs another home there. Left: that home; a bout, which
+      needs a correct beetle record in Boku's cage (`0x80045A10`); a proof on both
       emulators. Harmed: the player, who hears the boys' taunts and reads nothing.
 - [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
       translated like a day file — the `(voice only)` rows gain English in place, and the
