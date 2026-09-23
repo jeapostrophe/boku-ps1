@@ -90,10 +90,9 @@ def texture_edits(archive: Archive, texture_inventory: Inventory):
 @pytest.fixture(scope="session")
 def texture_patched(archive: Archive, texture_edits) -> bytes:
     """`BOKU.BIN` with those edits applied, in memory."""
-    blob = bytearray(archive.boku)
-    for edit in texture_edits.edits:
-        blob[edit.offset : edit.offset + len(edit.new)] = edit.new
-    return bytes(blob)
+    from boku.texture_text import patched_archive
+
+    return patched_archive(archive, texture_edits.edits)
 
 
 @pytest.fixture(scope="session")

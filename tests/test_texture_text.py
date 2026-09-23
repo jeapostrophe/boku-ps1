@@ -424,3 +424,9 @@ def test_a_beach_line_taller_than_its_painted_rows_is_refused_not_stamped_above_
     with pytest.raises(tt.TextureTextError, match=r"signs.txt:0: 'Go' is 32 px tall"):
         tt.beach_notice(SimpleNamespace(), SimpleNamespace(get=lambda _id: board), TallFace(),
                         entries)  # fmt: skip
+
+
+def test_a_diary_entry_belongs_to_the_diary_family_whatever_its_page():
+    assert tt.Entry("nikki@NIKKI_072", "x", "d:1").family == "nikki@"
+    assert tt.Entry("tex@T_TITLE.0", "x", "u:1").family == "tex@T_TITLE"
+    assert tt.Entry("tex@M_C15.1", "x", "s:1").family == "tex@M_C15"

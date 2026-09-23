@@ -1,0 +1,18 @@
+# The picture diary (PLAN GFX-04): Boku's entry on each page, keyed by page id, not by day --
+# the game picks a page for each day at run time (g_diary_pages), and a page can serve more
+# than one day. Format: translation/textures/README.md. Style: translation/style-guide.md
+# section 14 -- a third-grader's sentences, short and declarative, correctly spelled.
+#
+# Each entry is set in the game's own glyphs on five ruled lines of about 32 characters;
+# the build refuses an entry that does not fit rather than shortening it. The date strip
+# at the right of the page stays as it is (Jay, 2026-09-21). NIKKI_000 is the unused dummy
+# page and takes no entry. The rest of the 94 entries are PLAN TRN-04's to translate.
+
+# --- NIKKI_001: the first night (August 1).
+nikki@NIKKI_001	Mom is having a baby, so it's a big fuss! I'm staying at Uncle's house. I wonder if there will be lots of fun things?
+
+# --- NIKKI_002: the bugs got away.
+nikki@NIKKI_002	The bugs are fast. I am slow. I only have 2 legs. They have lots. I lost.
+
+# --- NIKKI_072: one of the pages for a day when nothing in particular happened.
+nikki@NIKKI_072	Today nothing happened at all. It was a wonderful day.

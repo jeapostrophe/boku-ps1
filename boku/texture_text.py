@@ -6,10 +6,13 @@ the English, keyed by string id in `translation/textures/*.txt`, and this module
 geometry and the recipe — which rebuilds each image from the contributor's own import and
 hands it to the image build as verified byte edits (`boku.textures.patches_for`).
 
-A texture is handled by a *family*: the id before the last dot (`tex@T_TITLE`), mapped in
-`FAMILIES` to the function that knows that image. A family takes all of its strings or none,
-so a half-translated menu is refused rather than built, and an id no family owns is refused
-rather than ignored — a translator's typo must not silently leave a texture in Japanese.
+A texture is handled by a *family*, mapped in `FAMILIES` to the function that knows it: the
+id before the last dot for a single texture's strings (`tex@T_TITLE`), or the namespace of a
+bulk family whose ids name a page (`nikki@` for `nikki@NIKKI_072`, keyed so in `FAMILIES`). A
+single texture takes all of its strings or none, so a half-translated menu is refused rather
+than built; a bulk family builds the pages it is given, since its entries are translated a
+few at a time. An id no family owns is refused rather than ignored -- a translator's typo
+must not silently leave a texture in Japanese.
 """
 
 from __future__ import annotations
@@ -22,10 +25,11 @@ from itertools import pairwise
 from pathlib import Path
 
 from boku import REPO_ROOT
+from boku import diary as diary_mod
 from boku import texture_paint as paint
 from boku.archive import ARCHIVE_NAME, Archive
 from boku.reinsert import ByteEdit
-from boku.textures import Inventory, inventory, patches_for
+from boku.textures import Inventory, Texture, inventory, patches_for, to_png
 from boku.tim import Tim, luminance
 from boku.typeset import CELL, FONT_SHEET_ID, Face, GameFace, TypesetError
 
@@ -48,7 +52,9 @@ class Entry:
 
     @property
     def family(self) -> str:
-        return self.id.rsplit(".", 1)[0]
+        """`tex@T_TITLE` for `tex@T_TITLE.0`; a bulk family is its namespace (`mzkan@`)."""
+        namespace = self.id.split("@", 1)[0] + "@"
+        return namespace if namespace in FAMILIES else self.id.rsplit(".", 1)[0]
 
 
 def read_entries(directory: Path = TEXTURE_TEXT_DIR) -> dict[str, Entry]:
@@ -570,6 +576,70 @@ def beach_notice(archive: Archive, inv: Inventory, face: Face, entries: Sequence
     return edits
 
 
+# --- NIKKI: the picture diary --------------------------------------------------------------------
+
+
+def diary(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Each entry's page, re-measured on this import and redrawn with its English."""
+    pages = diary_mod.diary_pages(inv)
+    edits: list[ByteEdit] = []
+    problems: list[str] = []
+    for entry in sorted(entries, key=lambda e: e.id):
+        try:
+            edits += _diary_page(pages, entry, face)
+        except TextureTextError as error:
+            problems.append(str(error))
+    if problems:
+        raise TextureTextError(
+            f"{len(problems)} diary page(s) refused:\n  " + "\n  ".join(problems)
+        )
+    return edits
+
+
+def _diary_page(pages: dict[str, Texture], entry: Entry, face: Face) -> list[ByteEdit]:
+    page = entry.id.split("@", 1)[1]
+    number = page.removeprefix("NIKKI_")
+    if number == diary_mod.DUMMY_PAGE:
+        raise TextureTextError(
+            f"{entry.where}: {page} is the unused dummy page -- no day shows it, so it "
+            f"gets no entry"
+        )
+    if page == number or number not in pages:
+        raise TextureTextError(f"{entry.where}: there is no diary page {page}")
+    texture = pages[number]
+    measured = diary_mod.measure_page(texture)
+    notes = measured.notes
+    if notes:
+        raise TextureTextError(
+            f"{entry.where}: {page}'s panel is not the one the diary recipe was measured "
+            f"on -- {'; '.join(notes)}"
+        )
+    if LINE_BREAK in entry.text:
+        raise TextureTextError(
+            f"{entry.where}: a diary entry is one paragraph; `{LINE_BREAK.strip()}` would be "
+            f"drawn as slashes"
+        )
+    width = diary_mod.PANEL.text_width
+    for word in entry.text.split():
+        if face.measure(word) > width:
+            raise TextureTextError(
+                f"{entry.where}: {word!r} is {face.measure(word)} px, wider than a line of "
+                f"the page ({width}); nothing is cut to fit (README)"
+            )
+    redrawn = diary_mod.redraw_page(texture, entry.text, face, colours=measured.colours)
+    if redrawn.missing:
+        raise TextureTextError(
+            f"{entry.where}: the game's glyph sheet has no drawing for {''.join(redrawn.missing)!r}"
+        )
+    if redrawn.overflow:
+        lines = len(redrawn.lines) + len(redrawn.overflow)
+        raise TextureTextError(
+            f"{entry.where}: {page}'s entry wraps to {lines} lines and the page holds "
+            f"{len(redrawn.lines)}; nothing is cut to fit (README)"
+        )
+    return patches_for(texture, redrawn.tim)
+
+
 # --- the build's entry point ---------------------------------------------------------------
 
 
@@ -580,6 +650,7 @@ FAMILIES: Mapping[str, Family] = {
     "tex@T_CONFIG": config_screen,
     "tex@T_MEMORY": memory_album,
     "tex@M_C15": beach_notice,
+    "nikki@": diary,
 }
 
 
@@ -619,6 +690,57 @@ def build_edits(
     return TextureEdits(tuple(edits), tuple(built))
 
 
+# --- the check a translator runs ---------------------------------------------------------------
+
+
+def patched_archive(archive: Archive, edits: Sequence[ByteEdit]) -> bytes:
+    """`BOKU.BIN` with the `edits` addressed to it applied, in memory, `old` bytes checked."""
+    blob = bytearray(archive.boku)
+    for edit in edits:
+        if edit.file == ARCHIVE_NAME:
+            if blob[edit.offset : edit.end] != edit.old:
+                raise TextureTextError(f"{edit.reason}: the bytes at {edit.offset:#x} differ")
+            blob[edit.offset : edit.end] = edit.new
+    return bytes(blob)
+
+
+def main_check(disc_dir: Path, directory: Path, out_dir: Path | None) -> int:
+    """`boku textures check`: build every texture edit the English implies, report what each
+    family made or why it refused, and optionally write each rebuilt image for a look."""
+    from boku.archive import ArchiveError
+    from boku.textures import TextureError
+    from boku.tim import TimError, parse_exact
+
+    try:
+        archive = Archive(disc_dir)
+        inv = inventory(archive)
+        result = build_edits(archive, directory, inv=inv)
+    except (
+        TextureTextError, TextureError, TimError, TypesetError, ArchiveError, OSError,
+    ) as error:  # fmt: skip
+        print(f"boku textures check: {error}")
+        return 1
+    print(
+        f"{len(result.families)} famil{'y' if len(result.families) == 1 else 'ies'} built from "
+        f"{directory}: {', '.join(result.families) or 'none'} ({len(result.edits)} byte edits)"
+    )
+    if out_dir is not None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        blob = patched_archive(archive, result.edits)
+        touched = [
+            t for t in inv.textures
+            for o in t.occurrences[:1]
+            if o.file == ARCHIVE_NAME
+            and blob[o.file_offset : o.file_offset + o.length]
+            != archive.boku[o.file_offset : o.file_offset + o.length]
+        ]  # fmt: skip
+        for texture in touched:
+            after = parse_exact(blob, texture.occurrences[0].file_offset)
+            (out_dir / f"{texture.id}.png").write_bytes(to_png(after))
+        print(f"{len(touched)} rebuilt image(s), through CLUT 0 -> {out_dir}/")
+    return 0
+
+
 __all__ = [
     "FAMILIES",
     "TEXTURE_TEXT_DIR",
@@ -629,9 +751,11 @@ __all__ = [
     "build_edits",
     "chart_rules",
     "config_screen",
+    "diary",
     "erase_type",
     "ink_roles",
     "outlined",
+    "patched_archive",
     "read_entries",
     "set_line",
     "stacked",

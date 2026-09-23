@@ -21,6 +21,8 @@ from boku.packets import add_save_arguments as add_save_event_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
 from boku.save import add_arguments as add_save_arguments
+from boku.texture_text import TEXTURE_TEXT_DIR
+from boku.texture_text import main_check as main_texture_check
 from boku.textures import DEFAULT_OUT_DIR as TEXTURES_OUT_DIR
 from boku.textures import INDEX_NAME as TEXTURES_INDEX_NAME
 from boku.textures import main_export as main_textures_export
@@ -430,6 +432,30 @@ def build_parser() -> argparse.ArgumentParser:
         run=lambda args: main_textures_export(args.disc, args.out, args.only_text, args.clut)
     )
 
+    texture_check = texture_verbs.add_parser(
+        "check",
+        help="build the English textures and report what each recipe made or refused",
+        description=(
+            "Every string in DIR (translation/textures/ by default) is typeset into its "
+            "texture from your import, as `boku build --textures` does, and nothing is "
+            "written to an image. A string that does not fit, or a character the glyph sheet "
+            "cannot draw, is refused with its file and line. --out writes each rebuilt "
+            "image as a PNG to look at (the game's own pixels: keep it under work/)."
+        ),
+    )
+    texture_check.add_argument(
+        "dir", type=Path, nargs="?", default=TEXTURE_TEXT_DIR, metavar="DIR",
+        help="a directory of texture strings (default: translation/textures/)",
+    )  # fmt: skip
+    texture_check.add_argument(
+        "--disc", type=Path, default=DEFAULT_DISC_DIR, metavar="DIR",
+        help=f"the import to read (default: {DEFAULT_DISC_DIR}/)",
+    )  # fmt: skip
+    texture_check.add_argument(
+        "--out", type=Path, default=None, metavar="DIR",
+        help="write each rebuilt image here, e.g. work/textures-en",
+    )  # fmt: skip
+    texture_check.set_defaults(run=lambda args: main_texture_check(args.disc, args.dir, args.out))
     texture_import = texture_verbs.add_parser(
         "import",
         help="read edited PNGs and report the patches they imply at every occurrence",

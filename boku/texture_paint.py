@@ -41,10 +41,13 @@ def pale_type(tim: Tim, clut: int, box: Box, *, spread: int = 60, lightest: int 
     )  # fmt: skip
 
 
-def dark_type(tim: Tim, clut: int, box: Box, *, darkest: int = 100) -> Ink:
+def dark_type(tim: Tim, clut: int, box: Box, *, darkest: int = 100, spread: int = 256) -> Ink:
     """The pixels of `box` darker than `darkest` through CLUT `clut`: dark type on a pale
-    plate."""
-    return _where(tim, clut, box, lambda c: c[3] and luminance(c) < darkest)
+    plate. A `spread` keeps only near-grey ones, leaving a dark crayon or photo out."""
+    return _where(
+        tim, clut, box,
+        lambda c: c[3] and luminance(c) < darkest and max(c[:3]) - min(c[:3]) < spread,
+    )  # fmt: skip
 
 
 def grown(ink: Iterable[tuple[int, int]], left: int, up: int, right: int, down: int) -> Ink:

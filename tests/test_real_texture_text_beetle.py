@@ -203,3 +203,67 @@ def test_the_beach_notice_on_beetle_is_the_painted_english(
     )  # fmt: skip
     assert n > 500, "the build changed too few texels where the check looked"
     assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"
+
+
+DIARY_MODE = [
+    "6500:0x800237E5=05", "6500:0x800237E0=0b", "6500:0x800237E4=0b",
+    "6500:0x80024728=01000000", "6500:0x800258E0=f4791180",
+]  # fmt: skip
+"""After the first dialogue, `mode_set(11)` done by hand (`tools/redux/book-pokes.lua`
+documents the five words): the desk with the diary open, the cursor on its good-night
+button. Level A's arena base is `0x801179F4` (`research/loading-and-memory.md`)."""
+DIARY_PAGE_ID = 0x8004612C
+"""`g_diary_today`: the page tonight opens (`research/text-outside-events.md`)."""
+DIARY_PAGE = "072"
+DIARY_PRESSES = [(7020, "CIRCLE"), (7320, "CIRCLE")]
+"""Good night -> "write the diary and sleep?" -> yes: tonight's page opens."""
+DIARY_SHOT = 7590
+DIARY_ON_SCREEN = (53, 16)
+"""Where the page lands (measured on this screen by matching the page's texels)."""
+DIARY_TOLERANCE = 24
+"""The book is lit: the page is drawn colour-modulated, a few levels off its CLUT. Every
+changed texel is required within this much luminance; a texel of the wrong kind (ink where
+paper is, or paper where ink is) is ~200 off."""
+
+
+def test_a_diary_page_on_beetle_is_the_english_entry(
+    beetle, texture_edits, texture_inventory, texture_patched, real_image, disc_dir,
+    tmp_path_factory,
+):  # fmt: skip
+    from boku import diary
+    from boku.tim import luminance
+
+    out = build(
+        source=real_image, out_dir=tmp_path_factory.mktemp("diary"), disc_dir=disc_dir,
+        binary_patches=texture_edits.edits, name="gfx04",
+    )  # fmt: skip
+    core, system = beetle
+    work = tmp_path_factory.mktemp("diary-beetle")
+    args = [
+        sys.executable, str(RUNNER), str(out.written.image.with_suffix(".cue")),
+        "--core", core, "--system", system, "--work", str(work),
+        "--frames", str(DIARY_SHOT), "--shot", f"{DIARY_SHOT}:diary",
+        "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
+        "--poke", f"7000:{DIARY_PAGE_ID:#x}={int(DIARY_PAGE):02x}",
+    ]  # fmt: skip
+    for poke in DIARY_MODE:
+        args += ["--poke", poke]
+    for at, button in DIARY_PRESSES:
+        args += ["--press", f"{at}:{button}"]
+    subprocess.run(args, check=True, capture_output=True, timeout=600)
+    shot = read_png((work / "diary.png").read_bytes())
+
+    stock = diary.diary_pages(texture_inventory)[DIARY_PAGE]
+    after = parse_exact(texture_patched, stock.occurrences[0].file_offset)
+    before, now, palette = stock.tim.indices(), after.indices(), after.palette_rgba(0)
+    ox, oy = DIARY_ON_SCREEN
+    far = []
+    changed = [i for i in range(len(now)) if now[i] != before[i]]
+    for i in changed:
+        x, y = i % after.width, i // after.width
+        at = ((oy + y) * shot.width + ox + x) * 4
+        seen = luminance(tuple(shot.rgba[at : at + 3]))
+        if abs(seen - luminance(palette[now[i]])) > DIARY_TOLERANCE:
+            far.append((x, y))
+    assert len(changed) > 1000, "the page was not rebuilt"
+    assert far == [], f"{len(far)} of {len(changed)} changed texels are off, first {far[:5]}"

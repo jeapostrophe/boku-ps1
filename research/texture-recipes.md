@@ -12,11 +12,14 @@ number here was measured on the dump of [disc-recon.md](disc-recon.md) and on Be
   `tex@<member>.<n>` namespace [textures-plan.md](textures-plan.md) § "The new English text
   this creates" proposed.
 * **The recipe** for each image is a function in `boku/texture_text.py`, registered in
-  `FAMILIES` under the id before the last dot (`tex@T_TITLE`). It reads the image out of the
+  `FAMILIES` under the id before the last dot (`tex@T_TITLE`), or under the namespace of a
+  bulk family whose ids name a page (`nikki@` — the picture diary, whose recipe and
+  measurements are [diary-redraw.md](diary-redraw.md) § "The build"); a bulk family builds
+  the pages it is given. It reads the image out of the
   contributor's import, checks the image is the one it was measured on, blanks and typesets
   in the image's own palette indices, and returns `ByteEdit`s — the texture's changed bytes
   at every occurrence (`boku.textures.patches_for`) plus any code or data word the screen
-  needs changed to show the English. A family takes all its strings or refuses; an id no
+  needs changed to show the English. A single texture's family takes all its strings or refuses; an id no
   recipe owns is refused, so a typo cannot leave a texture in Japanese silently.
 * **The type** is the game's own 12×12 dialogue glyphs, decoded from the one glyph sheet in
   the import (`boku/typeset.py`; the sheet is [font.md](font.md)'s), re-aligned to their ink

@@ -21,7 +21,7 @@ from boku import texture_paint as paint
 from boku import texture_text as tt
 from boku.textures import Inventory
 from boku.tim import parse_exact
-from boku.typeset import FONT_SHEET_ID, GameFace
+from boku.typeset import FONT_SHEET_ID, GameFace, wrap
 
 
 @pytest.fixture(scope="module")
@@ -236,3 +236,115 @@ def test_the_beach_notice_is_the_tracked_english_painted_on_both_variants(inv, p
         dx, dy = spots[0][0] - hx, spots[0][1] - hy
         drawn = {(x + dx, y + dy) for x, y in ink if x + dx < right}
         assert marks == drawn, f"line {n}: {len(marks ^ drawn)} pixels differ from the English"
+
+
+# --- the picture diary (GFX-04) -------------------------------------------------------------------
+
+
+def diary_entries():
+    return {k: e for k, e in tt.read_entries().items() if k.startswith("nikki@")}
+
+
+@pytest.mark.parametrize("key", sorted(diary_entries()))
+def test_each_diary_page_carries_its_entry_and_no_japanese(inv, patched, key):
+    """Every line the entry wraps to (in the page's width, the game's glyphs) is found once
+    on the rebuilt panel, and the panel's dark type is exactly those lines."""
+    from boku import diary
+
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    entry = diary_entries()[key]
+    texture = diary.diary_pages(inv)[key.removeprefix("nikki@NIKKI_")]
+    after = parse_exact(patched, texture.occurrences[0].file_offset)
+    panel = diary.PANEL
+    box = (panel.left, panel.repaint_top, panel.width, panel.bottom - panel.repaint_top + 1)
+    marks = paint.dark_type(after, 0, box, spread=40)
+    covered: set = set()
+    for line in wrap(entry.text, face, panel.text_width):
+        ink = face.ink(line)
+        spots = placements(ink, marks)
+        assert len(spots) == 1, f"{key}: {line!r} found {len(spots)} times"
+        covered |= {(x + spots[0][0], y + spots[0][1]) for x, y in paint.normalised(ink)}
+    assert marks == covered, f"{key}: {len(marks - covered)} dark pixels are not the English"
+
+
+def diary_check(archive, inv, tmp_path, rows: str):
+    (tmp_path / "diary.txt").write_text(rows, encoding="utf-8")
+    return tt.build_edits(archive, tmp_path, inv=inv)
+
+
+def test_the_dummy_page_and_an_unknown_page_are_refused_together(archive, inv, tmp_path):
+    with pytest.raises(tt.TextureTextError) as raised:
+        diary_check(
+            archive, inv, tmp_path,
+            "nikki@NIKKI_000\tHello.\nnikki@NIKKI_999\tHello.\nnikki@NIKKI_001\tHello.\n",
+        )  # fmt: skip
+    message = str(raised.value)
+    assert message.startswith("2 diary page(s) refused")
+    assert "NIKKI_000 is the unused dummy page" in message
+    assert "there is no diary page NIKKI_999" in message
+
+
+def test_an_entry_one_line_too_long_is_refused_with_its_numbers(archive, inv, tmp_path):
+    """Built from the page's own capacity: five lines fit, six are refused."""
+    from boku import diary
+
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    width = diary.PANEL.text_width
+    lines = len(diary.line_tops())
+    word = "abcde"
+    text = word
+    while len(wrap(text + " " + word, face, width)) <= lines:
+        text += " " + word
+    diary_check(archive, inv, tmp_path, f"nikki@NIKKI_001\t{text}\n")
+    with pytest.raises(
+        tt.TextureTextError, match=rf"wraps to {lines + 1} lines and the page holds {lines}"
+    ):
+        diary_check(archive, inv, tmp_path, f"nikki@NIKKI_001\t{text} {word}\n")
+
+
+def test_a_hyphen_in_an_entry_is_refused(archive, inv, tmp_path):
+    with pytest.raises(tt.TextureTextError, match="no drawing for '-'"):
+        diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\tA well-known bug.\n")
+
+
+def test_a_word_wider_than_a_line_is_refused_not_clipped(archive, inv, tmp_path):
+    with pytest.raises(tt.TextureTextError, match="wider than a line of the page"):
+        diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\t" + "WOW" * 20 + "!\n")
+
+
+def test_a_line_break_in_a_diary_entry_is_refused(archive, inv, tmp_path):
+    with pytest.raises(tt.TextureTextError, match="one paragraph"):
+        diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\tThe bugs are fast. // I lost.\n")
+
+
+def test_the_shaded_page_047_is_measured_and_accepted(archive, inv, tmp_path):
+    result = diary_check(archive, inv, tmp_path, "nikki@NIKKI_047\tA quiet day.\n")
+    assert result.families == ("nikki@",) and result.edits
+
+
+def test_a_page_whose_panel_measures_differently_is_refused(archive, inv, tmp_path, monkeypatch):
+    """The recipe re-measures every page it draws on; a disagreement (as a contributor's
+    different dump would give) stops it before English lands on a drawing. Only NIKKI_047's
+    known shading is let through, and only on NIKKI_047."""
+    from boku import diary
+
+    known = diary.SHADED_PAGES["047"]
+    monkeypatch.setattr(diary, "SHADED_PAGES", {"047": known[:-1]})  # one column fewer
+    with pytest.raises(tt.TextureTextError, match="NIKKI_047's panel is not the one"):
+        diary_check(archive, inv, tmp_path, "nikki@NIKKI_047\tHello.\n")
+    monkeypatch.setattr(diary, "SHADED_PAGES", {"001": known})  # the wrong page
+    with pytest.raises(tt.TextureTextError, match="NIKKI_047's panel is not the one"):
+        diary_check(archive, inv, tmp_path, "nikki@NIKKI_047\tHello.\n")
+
+
+def test_textures_check_reports_writes_the_images_and_fails_on_a_refusal(
+    disc_dir, tmp_path, capsys
+):
+    out = tmp_path / "look"
+    assert tt.main_check(disc_dir, tt.TEXTURE_TEXT_DIR, out) == 0
+    assert (out / "_DATA_NIKKI.BIN_NIKKI_072__000000.png").is_file()
+    bad = tmp_path / "bad"
+    bad.mkdir()
+    (bad / "diary.txt").write_text("nikki@NIKKI_000\tHello.\n", encoding="utf-8")
+    assert tt.main_check(disc_dir, bad, None) == 1
+    assert "NIKKI_000 is the unused dummy page" in capsys.readouterr().out

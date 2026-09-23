@@ -1,4 +1,4 @@
-# Redrawing the picture diary programmatically (PLAN `GFX-02`, prototype)
+# Redrawing the picture diary programmatically (PLAN `GFX-02`, `GFX-04`)
 
 `GFX-02` asks which path translates each texture category. This file is the measured case for
 the **programmatic** path on the 94 `NIKKI.BIN` pages — the third option that row names, and
@@ -244,49 +244,43 @@ The image boots. On Beetle PSX (`tools/libretro/run_core.py`, `boot-to-dialogue.
 patched image's frame 5850 is **byte-identical** to the stock boot's
 (`work/beetle/stock/first-dialogue.png`, sha-256 `e35ec1d5…`).
 
-## In game: the page was not seen, and here is exactly how far it got
+## In game: reached by setting the mode (2026-09-23, `GFX-04`)
 
-**The redrawn page was not seen in the game.** The diary is a mode (`ZUKAN.OVL`, overlay 265,
-loaded by modes 11–13), reached at the desk in Boku's room at night. Arrival is 14:00, the desk
-scene wants 19:00, and [event-scripts.md](event-scripts.md) has the clock moving when Boku
-changes screen. What this pass added is a way to *see* the clock, which turns blind pad-driving
-into a search with feedback:
+Walking to the desk at night was never managed (the clock and navigation searches of the
+first pass are in git history, `research/diary-redraw.md` before `GFX-04`). What works is
+entering the diary mode directly: after any in-game frame, the five words `mode_set` writes
+(`tools/redux/book-pokes.lua` names them — previous mode `0x800237E5`, mode `0x800237E0` and
+`0x800237E4` = 11, change flag `0x80024728` = 1, arena base `0x800258E0` = level A's
+`0x801179F4`) put the desk up with the diary open and the cursor on its good-night button.
+○ asks "write the diary and sleep?", ○ again opens **tonight's page**, which is
+`g_diary_today` (`0x8004612C`) — so poking that first chooses the page. Measured on Beetle
+from `boot-to-dialogue.press`: pokes at frame 6500, the page id at 7000, ○ at 7020 and 7320,
+the page up by 7590, drawn at screen (53, 16), with the day numeral composited as expected.
 
-* **Main RAM is at offset `0x7f` of a Beetle (mednafen_psx) libretro save state.** Found by
-  searching the 16 MB state for a 64-byte run of `SCPS_100.88`'s text segment (`t_addr`
-  `0x80010000`), so the offset is derived, not guessed. `g_clock` (`0x80028FA0`, event-scripts.md)
-  then reads directly out of any `.state` file: day, hour, minute, and the map name through its
-  `char *`.
-* Driving from the other session's free-roam state (`work/txt05/recon/beetle/room-free.state`,
-  15:34, `G14100`) by bouncing between the two halves of Boku's room, 120 screen changes moved
-  the clock 15:34 → 16:40, then stalled because Boku ended up pinned against the desk.
-* **Poking `g_clock.hour` inside the save state works** — the state loads and the game acts on
-  it. Set to 19:30 from that room state, the 18:00 dinner event fired: the patched image
-  reached the dinner table (`work/diary/dinner/`, 「いただきます！」), and CIRCLE-mashing ran the
-  scene out to free roam at **19:04, map `G02200`**, with `g_clock.meal[3] = 104` recorded.
-  That is past every gate the earlier attempt died on.
-* From there, a directed walk (holding each of 8 directions for ~1000 frames and reading the
-  resulting map) and then a 79,000-frame random walk visited `G01200`, `G03200`, `G01103`,
-  `G11100`, `G06100`, `G17100`, `G07100`, `G02119`, `G10100`, `G11200`, `G10200` — the whole
-  ground floor and the kitchen and stairs — but **never `G13100`/`G14100`, Boku's own room**,
-  so the desk was never reached. Poking the clock to 20:00 directly, with and without the
-  clock-dirty byte at `0x80036345`, did not stick: the game put it back to 17:00, so something
-  else holds the authoritative time and finding it is reverse engineering this row did not do.
+**The page is drawn lit**, colour-modulated a few levels off its CLUT (165 → 168), unlike the
+title and settings sprites, which show their CLUT colours exactly. A pixel check has to allow
+for it: measured, every texel the build changed lands within 15 levels of luminance of its CLUT
+colour at the right offset, and ~200 off at an offset one pixel wrong
+(`tests/test_real_texture_text_beetle.py` gates at 24).
 
-Useful states left behind, all on `build/diary/image.cue`:
-`work/diary/states/first-dialogue.state`, `room-1640.state` (Boku's room, at the desk),
-`dinner-start.state`, `after-dinner.state` (19:04, dinner done), `g01200-1908.state`.
+## The build (`GFX-04`)
 
-What is still missing is one artefact: **a save state or memory card sitting at the diary**. It
-is not specific to this work — `TXT-01` needs the same thing for the pause menu, the item menu,
-the insect book and sumo — and it is the whole of what stands between this prototype and a
-screenshot. With the clock oracle above, the remaining problem is navigation to `G14100`, which
-is a bounded search rather than a mystery.
+The recipe is in the package now: `boku/diary.py` holds the panel geometry, `measure_page`
+and `redraw_page` (the prototype imports them), and `boku/texture_text.py`'s `diary` family
+builds every page `translation/textures/diary.txt` has an entry for, keyed by **page id**
+(`nikki@NIKKI_072`) because the page is chosen at run time from `g_diary_pages[day]` and can
+serve more than one day. For each entry it:
 
-## What a full run of 94 pages needs
+* refuses `NIKKI_000`, the unused dummy page, and an id that names no page;
+* **re-measures the page on the contributor's import** (`measure_page`) and refuses one whose
+  panel disagrees with the geometry above — `NIKKI_047`'s shading columns
+  (`diary.SHADED_PAGES`) are expected there and nowhere else, and any other extra column is
+  refused; the redraw keeps them because each column keeps its own background;
+* redraws it (`redraw_page`) and refuses an entry that wraps past the five lines, has a word
+  wider than a line, uses a character the glyph sheet cannot draw, or a ` // ` — every refused
+  page reported at once.
 
-That list is work, so it lives in `PLAN.md` `GFX-04` (PLN-11), not here. The two facts of it
-that are measurements stay in this file: the page is chosen at run time from `g_diary_pages[day]`
-(so entries are keyed by page id), and `NIKKI_047` is the one page whose panel differs. The date
-strip stays as it is — Jay, 2026-09-21: keep the Japanese month/day symbols with the composited
-numeral.
+`./make.sh textures check` runs the same build without writing an image (`--out DIR` writes
+each rebuilt page as a PNG to look at) — the per-page lint a translator runs; `boku build
+--textures` runs it too, and refuses the same way. The date strip stays as it is — Jay,
+2026-09-21: keep the Japanese month/day symbols with the composited numeral.

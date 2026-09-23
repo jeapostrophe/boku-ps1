@@ -23,6 +23,10 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh textures export --help for the switches)
   textures import DIR           read edited PNGs and report the patches they imply
                                 at every place each image is stored
+  textures check [DIR]          typeset translation/textures/ (or DIR) into its textures
+                                from your import and report what each recipe made or
+                                refused -- the diary's per-page lint; --out DIR writes
+                                the rebuilt images
   movies [arguments]            decode every movie on your import into work/movies/*.avi --
                                 one file VLC plays per __STR/*.IKI, the XA narration muxed
                                 in -- and regenerate research/data/movies.tsv, the list of
