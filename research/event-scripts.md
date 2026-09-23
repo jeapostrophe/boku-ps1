@@ -338,9 +338,16 @@ of the movie-subtitle block (`boku.movie_block`), which `movie_sub_load` reads t
   the switch to movie mode (frames 4352–4404) reaches `XCH.34` with both pages over black and
   a clean black frame after.
 
-The bug-sumo voices (`XCH.00`–`.40`) go through the same hook. Whether the block is still in
-memory in bug sumo (mode 7, arena level B from `0x801B3DF4`, [loading-and-memory.md](loading-and-memory.md))
-is not measured: PLAN `VO-06`.
+**Bug sumo (`VO-06`).** The boys' voices (`XCH.00`–`.40`) go through the same hook, but mode 7
+stays off in `clip_sub_block`, measured on PCSX-Redux by `tools/redux/to-sumo.lua` (the route
+is [save-format.md](save-format.md) § Reaching the scenes other lanes asked for). In one run —
+hand-over to the field at vsync 3617, `E4025`'s mode 7 at 3921 — the block's first word changed
+at 3638, 3681 and 3816, while the field loaded `A18`, and again at 3974 and 4033, in mode 7: the
+block is gone before bug sumo starts, and mode 7 writes there too. That RAM is mode 7's own (arena level B from `0x801B3DF4`,
+[loading-and-memory.md](loading-and-memory.md); the game prints its cage work buffer at
+`0x801E7AA0`), so re-reading the block there, as `ENDOTI` does, would write over bug sumo's
+data. The subtitles need a home mode 7 does not use, and a bout to be proven in — neither is
+found yet.
 
 ## Speakers
 
