@@ -692,3 +692,41 @@ E1452.3	Boku	At my house... my dad used to collect them.
 E1453.0	Specs	Yesterday I touched a snake for the first time in my life.
 E1453.1	Boku	Huh? S-snakes...
 E1453.2	Specs	Gacchan and Fat can touch them no problem, but I was the only one... too scared to touch it.
+
+# --- E1506: C15 -- the beach, its right end (the ear bone)
+E1506.0	Boku	What could it be, I wonder?
+
+# --- E4058: A13 -- the beehive; G17 -- the veranda (day 15, the house empty)
+E4058.0	Boku	Whoa-oa-oa......
+E4058.1	(voice only)
+E4058.2	Boku	Aaagh!
+
+# --- E4059: C04 -- far end of the log bridge; G17 -- the veranda (day 15)
+E4059.0	Boku	Whoa-oa-oa......
+E4059.1	(voice only)
+E4059.2	Boku	Aaagh!
+
+# --- E4060: D10; G17 -- the veranda (day 15)
+E4060.0	Boku	Whoa-oa-oa......
+E4060.1	(voice only)
+E4060.2	Boku	Aaagh!
+
+# --- E1504: G02 -- after dinner (the whale's ear bone)
+E1504.0	Uncle	Gochisosama deshita.
+E1504.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1504.2	Boku	Oh yeah, I found something strange near the sea.
+E1504.3	Aunt	Something strange? Why, what on earth did you find?
+E1504.4	Shirabe	Tell me, tell me.
+E1504.5	Boku	It's a stone shaped like a thunderhead, like nothing I've ever seen, // and it suddenly came rolling up to my feet.
+E1504.6	Uncle	Ahh, is it that? Is it that?
+E1504.7	Shirabe	Tell me, tell me.
+E1504.8	Uncle	Yes! When Uncle was still smaller than you are now, // it's a story his grandpa told him... // Once in a long while, on the rocks along the shore, you find // a stone with a strange shape, like a big bald octopus.
+E1504.9	Boku	Yeah, yeah, that's it.
+E1504.10	Uncle	And that, you see...
+E1504.11	Uncle	is actually a whale's ear bone!
+E1504.12	Boku	Huh? A whale!
+E1504.13	Uncle	That's right. // Whales and dolphins, the mammals that live in the sea... // after they die, their bodies sink to the sea floor, // but the ear bones aren't joined to the other bones, // so they come away from the body first and wash up on the shore, they say.
+E1504.14	Boku	But can you really find something like that?
+E1504.15	Uncle	Well, the chances probably aren't very high, // but if you walk along the shore and look carefully, // with luck you can find two or three in a single day, they say. // Maybe the whales, who went back from the land to the sea as they evolved, // come to miss this land again, and come back.
+E1504.16	Boku	Hmm, I see.
+# NOTE E1504.8: tako-nyuudou, an octopus pictured as a bald, big-headed goblin.
