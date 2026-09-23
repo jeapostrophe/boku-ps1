@@ -40,7 +40,9 @@ What it checks, and where each rule comes from
   (`translation/days/README.md` § "Lessons from the pilot"). It fires when an English
   intensifier is present and the source line carries none of a matching set. It is
   word-list matching, it has no idea what the sentence means, and it is right often
-  enough to be worth a look and wrong often enough that it may never fail a build.
+  enough to be worth a look and wrong often enough that it may never fail a build. A
+  settled rendering that holds such a word (`SETTLED_PHRASES`: Fat's "yours truly",
+  glossary § 1 and style guide § 5) is taken out first.
 * **`em-dash`** -- *a warning only*, on every em dash (style guide § 18): the dash is a
   habit of machine-written English and is used only where the Japanese breaks or trails
   the line with a dash-like mark. A warning is a prompt to check the source, not a ban.
@@ -180,6 +182,11 @@ addition. Written as escapes because this file is tracked and the repo holds no 
 
 EM_DASH = "\u2014"
 """What `em-dash` looks for."""
+
+
+SETTLED_PHRASES = ("yours truly",)
+"""Settled renderings that hold a word of `ADDITIVE_WORDS`: Fat's *ore-sama* is "yours
+truly" (style guide § 5). Taken out of a line before the words are counted."""
 
 
 def read_word_list(path: Path) -> tuple[str, ...]:
@@ -686,7 +693,10 @@ def _check_additive(context: _Context, row: Row, record: dict) -> None:
     source = context.store.japanese[record["id"]].plain()
     if any(marker in source for marker in SOURCE_INTENSIFIERS):
         return
-    words = set(_WORD.findall(row.text.lower()))
+    text = row.text.lower()
+    for phrase in SETTLED_PHRASES:
+        text = text.replace(phrase, " ")
+    words = set(_WORD.findall(text))
     added = [word for word in context.options.additive_words if word in words]
     if added:
         context.say(

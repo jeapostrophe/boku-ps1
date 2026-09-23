@@ -174,9 +174,10 @@ asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
 tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
                      and the page mock-ups drawn with its font (tools/vwf/mockup.py)
-translation/         the English: story bible, style guide, open questions, samples, the day
-                     files, movies.txt, the movie subtitles (translation/README.md), and
-                     textures/, the strings the build typesets into textures
+translation/         the English: story bible, style guide, glossary, the translator's checklist,
+                     open questions, samples, the day files, movies.txt, the movie subtitles
+                     (translation/README.md), and textures/, the strings the build typesets
+                     into textures
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
 research/data/       the tables a note would otherwise have to list: the script walk, the

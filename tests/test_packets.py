@@ -22,10 +22,10 @@ from boku.layout import Marks
 from boku.lint import load_rows, parse_file, translation_paths
 from boku.packets import (
     ARRAYS_NAME,
+    CHECKLIST_NAME,
     DAYS_DIR,
     EVENT_HEADER,
     ORDER_NAME,
-    SOURCE_COLUMN,
     SYSTEM_NAME,
     DayFile,
     PacketBuilder,
@@ -40,19 +40,15 @@ from boku.packets import (
     japanese_text,
     main_packet,
     parse_day_rows,
-    parse_glossary,
     parse_places,
-    parse_rulings,
     part_file,
     save_event,
     scene_line_ids,
-    table_rows,
     unit_like,
     unit_of_day,
     unit_of_surfaces,
     untranslated_reachable,
     without_line_citations,
-    without_plan_citations,
     write_unit,
 )
 from boku.script_store import Japanese, load_store, scene_day
@@ -120,30 +116,37 @@ def template_rows(part: str) -> list[str]:
 # --- the system part -----------------------------------------------------------------------------
 
 
-def test_the_system_part_carries_the_format_the_rulings_the_glossary_and_the_day(store, builder):
+def test_the_system_part_carries_the_format_and_the_day(store, builder):
     """Jay's four (`TRN-08`), each checked by a fact read out of its own home."""
     system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
     readme = (DAYS_DIR / "README.md").read_text(encoding="utf-8")
     first_bullet = format_section(readme).splitlines()[0]
     assert first_bullet in system, "the day-file format is not the README's § Format"
-    for heading, _ in Policy.load().rulings:
-        assert f"### {heading}" in system
     what = Policy.load().day_row(1)
     assert without_line_citations(what) in system
 
 
-def test_the_system_part_carries_the_glossary_rows_of_the_unit_s_japanese(store):
-    """The glossary is narrowed to the unit: a row whose term occurs is in, one whose
-    term does not is out. The term is taken from the glossary and put into the store."""
-    policy = Policy.load()
-    wanted, unwanted = policy.glossary[0], policy.glossary[-1]
-    assert not set(wanted.terms) & set(unwanted.terms)
-    store.japanese[VOICED] = Japanese(pages=((tuple(wanted.terms[0]),),))
-    system = PacketBuilder.build(store, policy, [], False).system_part(
-        Unit("day01", "day 1", 1, tuple(store.scenes))
-    )
-    assert wanted.markdown() in system
-    assert unwanted.markdown() not in system
+@pytest.mark.parametrize("name", ["glossary.md", "style-guide.md"])
+def test_the_system_part_carries_the_whole_glossary_and_the_whole_style_guide(store, builder, name):
+    """Jay, 2026-09-22: the glossary and the style guide go in whole. A glossary narrowed to
+    rows whose Japanese a matcher found dropped rows with alternatives, brackets and
+    running text, and five translation errors traced to it."""
+    system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
+    body = (REPO_ROOT / "translation" / name).read_text(encoding="utf-8").split("\n", 1)[1]
+    assert body.strip() in system
+
+
+def test_the_checklist_closes_the_system_part(store, builder):
+    system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
+    checklist = (REPO_ROOT / "translation" / CHECKLIST_NAME).read_text(encoding="utf-8")
+    last = [line for line in checklist.splitlines() if line.strip()][-1]
+    assert system.rstrip().endswith(last)
+
+
+def test_a_unit_with_no_day_says_it_has_no_day_summary(store, builder):
+    """A shared unit was promised the day's story and got none."""
+    system = builder.system_part(Unit("shared", "the shared events", None, tuple(store.scenes)))
+    assert "no day summary" in system
 
 
 def test_the_format_section_stops_at_its_own_section():
@@ -174,15 +177,6 @@ def test_nothing_on_jay_s_drop_list_reaches_the_translator(store, builder):
     assert "boku lint" not in text
 
 
-def test_a_plan_citation_is_cut_with_its_parenthesis():
-    assert without_plan_citations("the band's decision (PLAN § *Text renderer*).") == (
-        "the band's decision."
-    )
-    assert without_plan_citations("The lint warns (`TRN-08`); a warning") == (
-        "The lint warns; a warning"
-    )
-
-
 def test_the_day_summary_carries_no_line_citations():
     assert without_line_citations("the relay `E0171`\u2013`E0186`, then the kit (`E0107`)") == (
         "the relay, then the kit"
@@ -193,7 +187,7 @@ def test_the_day_summary_carries_no_line_citations():
 
 
 def test_the_template_is_the_event_s_ids_in_the_day_file_shape(store, builder):
-    """Every id the event carries, voice-only included, once, in play order, as a row."""
+    """Every id the event carries, voice-only included, once, in message order, as a row."""
     scene = event(store, "E9001")
     rows = template_rows(builder.event_part(scene, 1, 2))
     assert rows[0].startswith(f"{EVENT_HEADER}E9001")
@@ -577,6 +571,162 @@ def test_a_surface_answer_saves_into_the_arrays_file(surfaces, tmp_path):
     assert [(row.line_id, row.text) for row in rows] == [(MENU, "Release it? | Yes | No")]
 
 
+# --- what the day-1..7 re-translation found in the event parts -----------------------------------
+
+
+def test_a_scene_s_lines_come_in_message_order_whatever_the_flow_walk_says(store, builder):
+    """`E0107`: the extract's walk gives `.0, .2, .1` (the game re-enters after a map change)
+    and the packet showed them so; the lines are in message order."""
+    scene = event(store, "E9001")
+    scene["play_order"] = list(reversed(scene["play_order"]))
+    ids = [row.split("\t", 1)[0] for row in builder.template(scene)[1:]]
+    assert ids == sorted(ids, key=lambda line_id: int(line_id.rsplit(".", 1)[1]))
+
+
+def test_the_neighbours_are_the_file_s_not_the_project_s_sort(store, tmp_path):
+    """`E0405` was shown a breakfast chorus as the scene before it: undated events sort by
+    hour alone. The file that holds a scene is in the order its day plays."""
+    write_translation(
+        tmp_path / "day01.txt", [(NEXT, "Boku", "Three."), (VOICED, "Uncle", "One. // Two.")]
+    )
+    builder = PacketBuilder.build(store, Policy.load(), [tmp_path / "day01.txt"], False)
+    before, after = builder.neighbours(event(store, "E9001"))
+    assert before["event"] == "E9002" and after is None
+
+
+def test_shared_txt_is_no_order_to_take_neighbours_from(store, tmp_path):
+    """`shared.txt` is ordered by place, not play: a neighbour from it is the next room."""
+    event(store, "E9002")["when"]["day"] = None
+    event(store, "E9001")["when"]["day"] = None
+    write_translation(
+        tmp_path / "shared.txt", [(NEXT, "Boku", "Three."), (VOICED, "Uncle", "One. // Two.")]
+    )
+    builder = PacketBuilder.build(store, Policy.load(), [tmp_path / "shared.txt"], False)
+    assert builder.neighbours(event(store, "E9001")) == (None, None)
+
+
+def test_a_dated_event_with_no_text_still_has_a_place_among_its_day(store, builder):
+    silent = event(store, "E9002")
+    silent["lines"], silent["nodes"] = [], []
+    assert builder.neighbours(silent) == (event(store, "E9001"), None)
+
+
+def test_an_undated_event_no_file_holds_has_no_neighbours(store, builder):
+    scene = event(store, "E9002")
+    scene["when"]["day"] = None
+    assert builder.neighbours(scene) == (None, None)
+
+
+def test_a_fork_from_a_step_with_no_text_names_the_step_not_none(store, builder):
+    """`E4028` printed "After `None`": the fork's source was a step with no line."""
+    scene = event(store, "E9001")
+    silent = {"node": "E9001.P16@99", "pc": 99, "opcode": "PROG"}
+    scene["nodes"].append(silent)
+    scene["edges"] += [
+        {"from": silent["node"], "to": "END", "condition": "opt0"},
+        {"from": silent["node"], "to": "END", "condition": "opt1"},
+    ]
+    scene["play_order"].append(silent["node"])
+    part = builder.event_part(scene, 1, 1)
+    assert "None" not in part
+    assert "After a PROG step with no text" in part
+
+
+def test_a_move_is_named_as_a_move_and_the_map_has_a_legend(store, builder):
+    policy = Policy.load()
+    base, place = policy.places[0]
+    scene = event(store, "E9001")
+    move = {"node": f"E9001.MAP:{base}@90", "pc": 144, "opcode": "MAP"}
+    first = scene["nodes"][0]["node"]
+    scene["nodes"].append(move)
+    scene["edges"] += [
+        {"from": first, "to": move["node"], "condition": f"map=={base}"},
+        {"from": first, "to": "END", "condition": f"map!={base}"},
+    ]
+    part = PacketBuilder.build(store, policy, [], False).event_part(scene, 1, 1)
+    assert f"the move to map {base} comes next when the player is on map {base}" in part
+    assert f"* {base} -- {place}" in part
+    assert part.count(place) == 1, "the place is named once, in the legend"
+    scene["where"]["bases"] = [base]
+    part = PacketBuilder.build(store, policy, [], False).event_part(scene, 1, 1)
+    context = part.split("## Your answer")[0]
+    assert context.count(place) == 1, "a base **Where** describes is not in the legend again"
+
+
+def test_a_hand_over_to_itself_or_twice_is_one_line_or_none(store, builder):
+    scene = event(store, "E9001")
+    scene["handovers"] = [
+        {"kind": "MAP", "map": "G01", "event": "E9001", "reachable": True},
+        {"kind": "MAP", "map": "G02", "event": "E9002", "reachable": True},
+        {"kind": "MAP", "map": "G03", "event": "E9002", "reachable": True},
+    ]
+    part = builder.event_part(scene, 1, 1)
+    assert part.count("**Then**") == 1
+    assert "`E9002`" in part.split("**Then**")[1].splitlines()[0]
+    assert "`E9001`" not in part.split("**Then**")[1].splitlines()[0]
+
+
+def test_a_glyph_code_is_explained_not_replaced(store, builder):
+    """`E0650.11` showed a raw `{G:22}` with no word on it. The token names the exact cell
+    -- `{G:22}` and `{G:1456}` both draw a closing parenthesis, `{G:47}` is the triangle
+    button -- so it stays, and the part says what the glyph table says it draws."""
+    table = builder.table
+    cells = sorted(n for n in table.characters if n not in table.unambiguous)[:2]
+    record = store.lines[NEXT]
+    tokens = "".join(f"{{G:{n}}}" for n in cells)
+    record["text"] = record["text"].replace("{END}", f"{tokens}{{END}}")
+    store.__dict__.pop("japanese", None)
+    part = builder.event_part(event(store, "E9002"), 1, 1)
+    for n in cells:
+        assert f"{{G:{n}}}" in part.split("## Your answer")[1]
+        assert (
+            f"`{{G:{n}}}` is one cell of the game's font that draws {table.characters[n]}" in part
+        )
+
+
+def test_a_bible_entry_for_several_slots_says_which_slot_is_who(tmp_path):
+    """ "The three boys, slots 6-8" named no one; and a speaker the scene does not place
+    (`E0512.1`'s aunt) was missing from "Who is here"."""
+    synth = SynthStore.new(tmp_path)
+    synth.message("E9003.0", [[3]], voiced=False, speaker="FAT", slot=7)
+    synth.message("E9003.1", [[3]], voiced=False, speaker="OBA", slot=2)
+    scene = synth.scene("E9003", ["E9003.0", "E9003.1"])
+    scene["cast"] = [{"slot": 7, "model": 1}]
+    store = load_store(synth.write())
+    policy = Policy.load()
+    boys = next(entry for entry in policy.cast if 7 in entry.slots)
+    aunt = next(entry for entry in policy.cast if entry.slots == (2,))
+    part = PacketBuilder.build(store, policy, [], False).event_part(store.scenes[0], 1, 1)
+    who = next(line for line in part.splitlines() if line.startswith("* **Who is here**"))
+    assert "slot 7 is Fat" in who and len(boys.slots) > 1
+    assert aunt.heading.split(",")[0] in who
+
+
+def test_lines_that_share_a_recording_say_so(tmp_path):
+    """`E0173.0` and `E0174.0` are one line with one clip, played in two events. A shared
+    Japanese text alone says nothing: a bare "Huh?" is forty different lines."""
+    synth = SynthStore.new(tmp_path)
+    synth.message("E9003.0", [[3]], voiced=True)
+    synth.message("E9004.0", [[3]], voiced=True)
+    synth.scene("E9003", ["E9003.0"])
+    synth.scene("E9004", ["E9004.0"])
+    store = load_store(synth.write())
+    part = PacketBuilder.build(store, Policy.load(), [], False).event_part(
+        store.scenes_by_event["E9004"], 1, 1
+    )
+    assert "the same recording as `E9003.0`: keep the English identical" in part
+    assert "word for word" not in part, "a shared text alone is no reason to match the English"
+
+
+def test_a_quiz_message_no_day_asks_is_named(store, builder):
+    """`E0221.16`: day 15 opens message 0, so nothing points at `.16` -- the packet says so
+    rather than leaving a translator to wonder which day it belongs to."""
+    scene = event(store, "E9001")
+    scene["dinner_quiz"]["quiz"] = [{"day": 1, "message": 0, "answer": 2}]
+    part = builder.event_part(scene, 1, 1)
+    assert f"No day's row names `{CHOICE}`" in part
+
+
 # --- the destination a packet may never be written to ---------------------------------------------
 
 
@@ -614,13 +764,13 @@ def test_the_cli_refuses_both_or_neither_selector(tmp_path, capsys):
     ],
 )
 def test_a_condition_reads_as_a_sentence(condition, expected):
-    assert condition_in_words(condition, Policy()) == expected
+    assert condition_in_words(condition) == expected
 
 
 def test_a_parenthesised_conjunction_is_read_term_by_term():
     """`E0121`'s entry condition: the group's parentheses sit on its first and last terms,
     and a term that kept one was printed in its symbols -- `(hour>=14` -- not in words."""
-    words = condition_in_words("(hour>=14 & hour<=17 & lflag==0)", Policy())
+    words = condition_in_words("(hour>=14 & hour<=17 & lflag==0)")
     assert words == (
         "the hour is at least 14 and the hour is at most 17 and "
         "this event's own progress counter is 0"
@@ -630,23 +780,16 @@ def test_a_parenthesised_conjunction_is_read_term_by_term():
 def test_a_group_inside_a_clause_stays_a_group():
     """`a & (b | c)` split on every `|` read as two clauses, `a and b -- or -- c`: another
     condition. Split at depth 0 only, the group keeps its parentheses in words."""
-    words = condition_in_words("hour>=14 & (opt0 | opt1)", Policy())
+    words = condition_in_words("hour>=14 & (opt0 | opt1)")
     assert words == (
         "the hour is at least 14 and (the player chose option 1 or the player chose option 2)"
     )
 
 
 def test_a_compound_condition_keeps_its_structure():
-    words = condition_in_words("flag[43]>=1 & lflag==0 | opt1", Policy())
+    words = condition_in_words("flag[43]>=1 & lflag==0 | opt1")
     assert " and " in words
     assert " -- or -- " in words
-
-
-def test_a_map_condition_names_the_place_when_the_bible_knows_it():
-    policy = Policy.load()
-    base, place = policy.places[0]
-    assert place in condition_in_words(f"map=={base}", policy)
-    assert "not" in condition_in_words(f"map!={base}", policy)
 
 
 # --- the policy documents, as they are committed ------------------------------------------------
@@ -678,59 +821,6 @@ def test_the_bible_s_places_parse_to_one_base_each():
     assert places, "no base -> place rows were parsed; every packet would lose its place names"
     assert all(len(base) >= 3 and base[0].isupper() for base, _ in places)
     assert len({base for base, _ in places}) == len(places), "a base was parsed twice"
-
-
-def test_the_glossary_matches_on_its_own_source_column():
-    policy = Policy.load()
-    assert policy.glossary, "no glossary rows parsed"
-    row = policy.glossary[0]
-    assert row in policy.glossary_for(f"...{row.terms[0]}...")
-    assert policy.glossary_for("English only, no source term here") == []
-
-
-def test_no_table_header_is_parsed_as_a_glossary_row():
-    """A header read as data is a row whose "source term" is the word *source* itself."""
-    text = (REPO_ROOT / "translation" / "glossary.md").read_text(encoding="utf-8")
-    headers = {header for _, header, _ in table_rows(text)}
-    assert headers, "no Markdown tables were found in the glossary"
-    parsed = parse_glossary(text)
-    assert [row.cells for row in parsed if row.cells in headers] == []
-    assert all(any(name.lower() == SOURCE_COLUMN for name in header) for header in headers), (
-        f"a glossary table has no {SOURCE_COLUMN} column, so its rows are dropped in silence"
-    )
-
-
-def test_a_table_that_does_not_lead_with_source_is_keyed_on_it_anyway():
-    """§ 4a leads with the insect's array index; keyed on it, a digit pulls in insects."""
-    text = (REPO_ROOT / "translation" / "glossary.md").read_text(encoding="utf-8")
-    insects = [row for row in parse_glossary(text) if row.section.startswith("4a.")]
-    assert insects, "the 57 insect names did not parse"
-    assert insects[0].header[0].lower() != SOURCE_COLUMN, "4a no longer leads with its index"
-    assert [term for row in insects for term in row.terms if term.isdigit()] == []
-
-
-def test_a_settled_heading_carries_its_text_not_an_empty_section():
-    """§ 17's shape: SETTLED in the heading, one paragraph under it, no bullet at all.
-
-    The first parser took a SETTLED heading as a ruling with no text and then looked only
-    at bullets for the text, so the packet printed § 17 as a bare heading with nothing
-    under it -- the translator was told a ruling exists and not what it is.
-    """
-    heading = "17. Speech with no text on the disc — SETTLED (Q11, 2026-09-20)"
-    body = "The opening monologue is translated into tracked files."
-    rulings = dict(parse_rulings(f"## {heading}\n\n{body}\n\n## 18. Next\n\n* A bullet.\n"))
-    assert body in rulings[heading]
-
-
-def test_every_section_of_the_style_guide_reaches_the_packet_with_its_text():
-    """The guide is in force as a whole (its own status line), so every numbered section is
-    a ruling; the headings are read off the committed file, not listed here."""
-    guide = (REPO_ROOT / "translation" / "style-guide.md").read_text(encoding="utf-8")
-    headings = [line[3:].strip() for line in guide.splitlines() if line.startswith("## ")]
-    rulings = parse_rulings(guide)
-    assert [heading for heading, _ in rulings] == headings
-    empty = [heading for heading, text in rulings if not text.strip()]
-    assert empty == [], f"sections with no text would print as bare headings: {empty}"
 
 
 def test_the_packet_reads_the_committed_day_files_by_default():

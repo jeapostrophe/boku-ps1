@@ -465,6 +465,15 @@ def test_a_code_immediate_label_warns_that_the_build_cannot_place_it(surfaces, t
     assert findings[0].severity == WARNING
 
 
+def test_a_settled_phrase_holding_an_intensifier_is_not_an_addition(store, tmp_path):
+    """Fat's *ore-sama* is "yours truly" (style guide § 5); the word list's "truly" fired on
+    it every time he spoke of himself."""
+    assert "truly" in ADDITIVE_WORDS
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    findings = run(store, tmp_path, [*rows, (UNVOICED, "Fat", "Leave it to yours truly.")])
+    assert "additive-word" not in checks(findings)
+
+
 def test_the_heuristic_is_silent_when_the_source_has_an_intensifier(tmp_path):
     """The same English, over a line whose Japanese carries one. No finding."""
     synth = SynthStore.new(tmp_path)

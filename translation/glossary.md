@@ -111,7 +111,7 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | …きます / …でした | | ...kimasu / ...deshita | | day 1 only: Boku trails the chorus | `E0103.2`, `E0104.2` |
 | お粗末さまでした | osomatsusama | It was nothing fancy. | | | `E0406.8` |
 | よろしく（ね／お願いします） | yoroshiku | by context, one of three: **"please look after him"** (a parent handing a child over); **"Nice to meet you"** (a self-introduction to a stranger); **"We'll get along fine, all right?"** (someone who already knows him) | Let's get along; Please treat me well | style guide § 4. Day 1 uses all three; pick from this list rather than coining a fourth | `E0171.1`, `E0177.0`, `E0182.0` |
-| ご苦労さま（でした） | gokurōsama | by context: **"That was a long trip — you did well."** for 長旅、ご苦労さま; otherwise "Good work" / "Thank you for your hard work" | Well done, after such a long trip | style guide § 4; it acknowledges effort spent, not an achievement | `E0174.1` |
+| ご苦労さま（でした） | gokurōsama | by context: **"That was a long trip. You did well."** for 長旅、ご苦労さま (a full stop, not a dash: style guide § 18, the Japanese has a comma); otherwise "Good work" / "Thank you for your hard work" | Well done, after such a long trip | style guide § 4; it acknowledges effort spent, not an achievement | `E0174.1` |
 | ねえ（ボクくん） | nē | Hey(, Boku-kun) | Say | the attention-getting opener, 10 lines begin with it; one word every time | `E0202.2`, `E0302.2`, `E0541.1`, `E1904.2` |
 | これは おじさんち／おばちゃんち の決まりなんだから | | That's the rule at Uncle's house. / ...at Auntie's house. | | **fixed frame**, 4 uses, the last on the final day | `E0002.1`, `E0185.0`, `E0303.3`, `E3180.0` |
 | 当番に決定！ | | You are hereby appointed ... captain! | | mock-official: morning-glory captain (Jay, 2026-09-22: "monitor" is the literal school title; "captain" is normal English and funny for so small a job), field helper | `E0202.5`, `E0302.5` |
@@ -131,7 +131,7 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | お風呂 | ofuro | the bath | | | `E0020.0` |
 | 居候 | isōrō | freeloader | lodger | Moe teasing; also in the day-1 diary page | `E0832.2` |
 | なぜでしょう？ / なんでしょう？ | | Why is that, I wonder? / What could it be, I wonder? | | **Boku's tic**, quiz-show deadpan; Moe echoes it | `E0832.8`, `E1506.0`, `E1632.13`, `E6000.4` |
-| ヒック！ | hikku | *Hic!* | | he hiccups when afraid; the narrator calls it "my usual habit" | `E0405.1`, `E6004.18` |
+| ヒック！ | hikku | Hic! | | he hiccups when afraid; the narrator calls it "my usual habit" | `E0405.1`, `E6004.18` |
 | バヨヨ〜ン！ | bayoyōn | Bayoyooon! | | Shirabe's exit line | `E0402.12`, `E1404.16` |
 | ブイブイ言わせるの…ベンツ！ | | "I'll make it go vroom-vroom." "Make what?" "My Benz!" | | Shirabe's ambition, twice | `E0640.6`–`.8`, `E2401.14`–`.16` |
 | あなあなぼぼん | ana-ana-bobon | Ana-ana-bobon | | Boku's meaningless word for the unreadable book; item 6 | `E1706.1`, `exe@80046214.6` |
@@ -143,6 +143,9 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | 〜を手に入れた / 〜を見つけた | | Got the ... / Found ... | | system messages | `E0307.0`, `E0670.0` |
 | 鍵がかかっている | | It's locked. | | | `E8026.1` |
 | ランドセル | randoseru | school backpack | | not *randoseru*: § 0 test 4 — English has the word; the red, sticker-covered one is Shirabe's | `E8014.0` |
+| ジャージ | jāji | tracksuit | jersey | the Japanese loanword is a tracksuit, not a knitted top | `E0504.1` |
+| 家畜小屋 | kachiku-goya | the animal shed | | behind the house, by the path to Firefly Creek | `E0303.0` |
+| 帝王学 | teiōgaku | kingship; Boku's echo "...King... ship?" | statecraft; "Skate-craft?" | style guide § 8 kind 1: he repeats the syllables he caught, so the translated word is the one mangled (review of 2026-09-20) | `E0640.2`–`.3` |
 
 ## 4. Play: insects, sumo, fishing, kites
 
@@ -243,7 +246,7 @@ probably debug-only — *whether the player ever sees them is not established*.
 
 イワナ **Iwana** (alt. Char) · ニジマス **Rainbow Trout** · ヤマメ **Yamame** (alt. Masu Trout; Q10.11, ruled) ·
 テンカラ毛バリ tenkara fly · 毛バリ fly · エサ bait · ウキ float · アタリ a bite · 合わせ setting
-the hook · しかけ Tackle · 夏休みの釣果 Summer's Catch · 釣竿 fishing rod · 池の主 the master of
+the hook · しかけ Tackle · 夏休みの釣果 Summer's Catch · 釣竿 / 竿 fishing rod / the rod (`E0205.1`) · 池の主 the master of
 the pond. Iwana and yamame are what English-speaking tenkara anglers call them.
 
 ### 4d. Kites (`exe@800461CC.0`–`.7`, `E0710.16`–`.38`)
@@ -288,7 +291,7 @@ Japanese sense — ハンバーグ is a **Hamburg steak**, never a hamburger.
 | ハンバーグ / サイコロステーキ / メンチカツ | Hamburg steak / diced steak / menchi-katsu | d 2, 9, 14, 21, 22 |
 | チキンカツ / トンカツ / カツ丼 | chicken katsu / tonkatsu / katsudon | d 1, 3, 8, 12, 20, 24 |
 | 鶏の唐揚げ / イワシの唐揚げ | chicken karaage / fried sardines | d 3, 5, 11, 20, 30 |
-| サケのムニエル / スズキのムニエル / サケフライ / エビフライ | salmon meunière / sea bass meunière / fried salmon / fried shrimp | d 1, 6, 7, 11, 19, 21, 30 |
+| サケのムニエル / スズキのムニエル / サケフライ / エビフライ | salmon meuniere / sea bass meuniere / fried salmon / fried shrimp (no accents: the font has no accented letters) | d 1, 6, 7, 11, 19, 21, 30 |
 | サンマの塩焼き / サンマの蒲焼き / ほっけの開き | salt-grilled sanma / sanma kabayaki / grilled hokke | d 5, 11, 23 |
 | アジの南蛮漬け / アジのたたき | horse mackerel nanban-zuke / horse mackerel tataki | d 8, 21, 27 |
 | お刺身と天ぷら / お寿司 / いなりずし | sashimi and tempura / sushi / inari-zushi | d 5, 13, 17, 22, 23 |
@@ -296,9 +299,9 @@ Japanese sense — ハンバーグ is a **Hamburg steak**, never a hamburger.
 | 冷やし中華 / 冷麦 / スパゲティ | hiyashi chuka / hiyamugi / spaghetti | d 4, 10, 16, 26 |
 | 春巻と八宝菜 / チャーハンと酢豚 / チャーハンと八宝菜 / ギョウザ | spring rolls and happosai / fried rice and sweet-and-sour pork / fried rice and happosai / gyoza | d 4, 9, 13, 14, 15, 19, 20, 24, 27 |
 | 肉ジャガ / ロールキャベツ / コロッケ / オムライス / グラタン | nikujaga / cabbage rolls / korokke / omurice / gratin | d 6, 7, 10, 12, 15, 17, 18, 25–29 |
-| チキンソテー / 鶏のトマト煮 / ピーマンのひき肉詰め / れんこんはさみ揚げ | chicken sauté / chicken stewed in tomato / stuffed green peppers / stuffed fried lotus root | d 7, 13, 18, 23–25, 28 |
+| チキンソテー / 鶏のトマト煮 / ピーマンのひき肉詰め / れんこんはさみ揚げ | chicken saute / chicken stewed in tomato / stuffed green peppers / stuffed fried lotus root | d 7, 13, 18, 23–25, 28 |
 | 親子丼 / イクラとサケの親子丼 | oyakodon / salmon-and-roe oyakodon | d 14, 16 — "parent and child" bowl; the salmon one is a play on the name |
-| ジンギスカン | jingisukan (grilled mutton) | d 22, 30 — a Hokkaido dish, as is hokke: the aunt is from Otaru |
+| ジンギスカン | Jingisukan (on screen the word alone, as the menu shows it; "grilled mutton" is its meaning, for the translator) | d 22, 30 — a Hokkaido dish, as is hokke: the aunt is from Otaru |
 | かき氷; メロン / イチゴ / レモン / みぞれ / 虹色スペシャル | shaved ice; Melon / Strawberry / Lemon / Mizore (alt. Plain; Q10.7, ruled) / Rainbow Special | `E0404.3`–`.7` |
 | 麦茶 / 自家製 / 味瓜 / トウモロコシ / スイカ | barley tea / homemade / *ajiuri* (a small sweet melon — the line explains it) / corn / watermelon | `E0122.0`, `E0213.3` |
 | おせんべい / サビ抜き / カッパ巻き / ハマチ / マグロ | rice crackers / without wasabi / kappa-maki / hamachi / tuna | `E1503.1`, `E2203.4`–`.13` |
@@ -336,8 +339,8 @@ adulthood — Moe uses it of herself, `E2532.4`).
 
 ## 7. Nature and landscape
 
-里山 *satoyama* → "the village hills" on first use by the father (`E0171.1`), then "the hills";
-alt. keep *satoyama* (Q10.8, ruled) · 沢 creek · 谷 the valley · 麓 the foot of the mountain · 入道雲
+里山 *satoyama* → by sense: "somewhere this rural" on the father's first use (`E0171.1`; Jay,
+2026-09-21, replacing Q10.8's "the village hills"), then "the hills" · 沢 creek · 谷 the valley · 麓 the foot of the mountain · 入道雲
 thunderheads · イワシ雲 sardine clouds (the dinner conversation of day 13 depends on the literal
 name) · ひとり雲 a lone cloud · 糠星 star-dust (*nukaboshi*, "bran stars") · クヌギ / サイカチ
 sawtooth oak / honey locust — the beetle trees; "oak" after first mention · キンバイソウ

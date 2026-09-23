@@ -217,11 +217,11 @@ ending events [xneo].
 | day | what happens | ids |
 |---:|---|---|
 | 1 | Arrival; introductions in a relay of close-ups; the room upstairs and the sunned futon; the uncle promises, then leaves on the desk, a hand-me-down insect kit in a model-aeroplane box | `E0171`–`E0186`, `E0114`, `E0107` |
-| 2 | Appointed morning-glory monitor ★(nine days of bloom); finds the secret base and the wrecked watermelon — and says nothing at dinner | `E0202`, `E0254`, `E0255`, `E0204` |
+| 2 | Appointed morning-glory captain ★(nine days of bloom); finds the secret base and the wrecked watermelon — and says nothing at dinner | `E0202`, `E0254`, `E0255`, `E0204` |
 | 3 | Fishing rod; corn harvest ★; Firefly Creek forbidden after dark | `E0301`, `E0306`, `E0384`, `E0303` |
 | 4 | Shirabe's guided tour ★ — river, Jizō, nectar flowers, the photograph; the watermelon thief and the howl; shaved ice | `E0401`, `E0442`–`E0445`, `E0405`, `E0406` |
 | 5 | Guts and the pact; the uncle is out: the one chance to see the fireflies ★ | `E0551`, `E0502` |
-| 6 | Oversleeps (no calisthenics stamp); the aunt found a firefly in his futon; the hive comes down; Fat and Megane; sugar bait | `E0605`, `E0620`, `E0205`, `E0650`, `E0604` |
+| 6 | Oversleeps (no calisthenics stamp); the aunt found a firefly in his futon; the hive can come down (any day once he has the rod — `E0205` has no day of its own, and this is when it usually happens); Fat and Megane; sugar bait | `E0605`, `E0620`, `E0205`, `E0650`, `E0604` |
 | 7 | The hill → kites; Moe's flowers in the forest ★ | `E0701`, `E0733`–`E0786` |
 | 8 | The old axe; "Boku-kun unbanned" from the sisters' room; fireworks from his window | `E0814`, `E0830`, `E0805` |
 | 9– | The giant fish, Ken-bō's fur, the fly ★(catch it); the satellite; the log bridge (five days of chopping) | `E0906`, `E0904`, `E1006`, `E1008`, `E0807` |

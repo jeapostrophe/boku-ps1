@@ -6,9 +6,10 @@ directed through it by a parent (Jay, 2026-09-21: agent shape (b)). So a packet 
 directory:
 
 * `system.md` -- given **once**: the day-file format (`translation/days/README.md`
-  § Format, quoted whole), the style guide's rulings, the glossary rows whose Japanese
-  term occurs anywhere in the unit, and the story bible's summary of the day with its line
-  citations taken out.
+  § Format), the style guide and the glossary, each whole (Jay, 2026-09-22: narrowing the
+  glossary to rows a matcher found in the unit dropped rows and caused errors), the story
+  bible's summary of the day with its line citations taken out, and
+  `translation/checklist.md` last.
 * one part per event (`E0121.md`) or surface (`exe@8003D2E0.md`; `part_file` turns a
   key's `:` into `_`), given **one at a time** in `order.txt`'s order: where and who (or
   what the surface is), the branches if the scene has any, the neighbouring scenes'
@@ -44,7 +45,7 @@ import argparse
 import re
 import sys
 from collections import Counter
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import dropwhile
@@ -52,7 +53,7 @@ from pathlib import Path
 
 from boku import REPO_ROOT
 from boku.archive import DEFAULT_DISC_DIR
-from boku.events import LABEL_NAMES
+from boku.events import CHARACTERS, LABEL_NAMES
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import Marks, menu_lines, original_marks, speaker_label
@@ -87,6 +88,17 @@ SYSTEM_NAME = "system.md"
 ORDER_NAME = "order.txt"
 ARRAYS_NAME = "arrays.txt"
 """The day file the surfaces' English lives in (`translation/days/README.md`)."""
+
+POLICY_DOCUMENTS = (
+    ("The style guide (translation/style-guide.md, whole)", "style-guide.md"),
+    ("The glossary (translation/glossary.md, whole)", "glossary.md"),
+)
+"""What `system.md` carries whole, in order (Jay, 2026-09-22: the glossary and the style
+guide whole, not narrowed to the unit)."""
+
+CHECKLIST_NAME = "checklist.md"
+"""`translation/checklist.md`, put at the end of `system.md`: the settled renderings the
+re-translation of days 1-7 got wrong most often, each citing its home."""
 
 SURFACE_KINDS = {
     "array-E": "one entry of a list the code picks by number",
@@ -183,21 +195,6 @@ def _table_cells(line: str) -> list[str] | None:
 
 
 @dataclass(frozen=True)
-class GlossaryRow:
-    """One glossary row, with the source terms its table's `source` column names."""
-
-    section: str
-    terms: tuple[str, ...]
-    cells: tuple[str, ...]
-    header: tuple[str, ...] = ()
-    """The column names of the table this row came from, so a packet prints that table's
-    own header rather than a copy of it kept here (`DOC-3`)."""
-
-    def markdown(self) -> str:
-        return "| " + " | ".join(self.cells) + " |"
-
-
-@dataclass(frozen=True)
 class CastEntry:
     """One `### ` entry of the bible's § 3, and the slots its heading names."""
 
@@ -214,9 +211,6 @@ class Policy:
     places: tuple[tuple[str, str], ...] = ()
     """The bible's § 7 map base -> place table, one row per base."""
     cast: tuple[CastEntry, ...] = ()
-    glossary: tuple[GlossaryRow, ...] = ()
-    rulings: tuple[tuple[str, str], ...] = ()
-    """`(style guide section heading, its text)`, every numbered section (`parse_rulings`)."""
 
     @classmethod
     def load(cls, directory: Path = TRANSLATION_DIR) -> Policy:
@@ -226,8 +220,6 @@ class Policy:
             day_rows=parse_day_rows(bible),
             places=parse_places(bible),
             cast=parse_cast(bible),
-            glossary=parse_glossary(_read(directory / "glossary.md")),
-            rulings=parse_rulings(_read(directory / "style-guide.md")),
         )
 
     def day_row(self, day: int) -> str | None:
@@ -241,9 +233,13 @@ class Policy:
         wanted = set(slots)
         return [entry for entry in self.cast if wanted.intersection(entry.slots)]
 
-    def glossary_for(self, source: str) -> list[GlossaryRow]:
-        """The rows whose source column occurs in this scene's Japanese, in file order."""
-        return [row for row in self.glossary if any(term and term in source for term in row.terms)]
+
+def _required(path: Path) -> str:
+    """A policy document the packet hands over whole: a missing one is a refusal, never an
+    empty section."""
+    if not path.is_file():
+        raise PacketRefused(f"{path} is missing; the translator's packet carries it whole")
+    return path.read_text(encoding="utf-8")
 
 
 def _read(path: Path) -> str:
@@ -332,71 +328,6 @@ def parse_cast(bible: str) -> tuple[CastEntry, ...]:
     return tuple(out)
 
 
-SOURCE_COLUMN = "source"
-"""The glossary column a row is matched on. Every table in `translation/glossary.md` has
-one, but not always first: \u00a7 4a's tables lead with the insect's array index."""
-
-
-def table_rows(text: str) -> Iterator[tuple[str, tuple[str, ...], tuple[str, ...]]]:
-    """`(section, header cells, body cells)` for every body row of every Markdown table.
-
-    A table is a header row, the `|---|` rule, then its body, so the header is asked which
-    column is which rather than the columns being counted. Without that, the header row is
-    itself read as data -- a glossary row whose "source term" is the word *source*, which
-    matches any text containing it -- and a table that does not lead with its source column
-    is keyed on whatever it does lead with (\u00a7 4a's `#`, so on the digits of an index).
-    """
-    section = ""
-    candidate: tuple[str, ...] | None = None
-    header: tuple[str, ...] | None = None
-    for line in text.splitlines():
-        heading = _HEADING.match(line)
-        if heading:
-            section, candidate, header = heading.group(2).strip(), None, None
-            continue
-        match = _TABLE_ROW.match(line.strip())
-        if match is None:
-            candidate = header = None
-            continue
-        cells = tuple(cell.strip() for cell in match.group(1).split("|"))
-        if all(cell and set(cell) <= set("-: ") for cell in cells):
-            header, candidate = candidate, None
-            continue
-        if header is None:
-            candidate = cells
-            continue
-        yield section, header, cells
-
-
-def parse_glossary(glossary: str) -> tuple[GlossaryRow, ...]:
-    """Every table row of every section, keyed by the terms its `source` column names."""
-    out: list[GlossaryRow] = []
-    for section, header, cells in table_rows(glossary):
-        column = next(
-            (index for index, name in enumerate(header) if name.lower() == SOURCE_COLUMN), None
-        )
-        if column is None or column >= len(cells):
-            continue
-        terms = tuple(
-            term.strip()
-            for term in re.split(r"[/\uff0f]", re.sub(r"\(.*?\)", "", cells[column]))
-            if term.strip() and term.strip() not in {"-", "\u2014"}
-        )
-        if terms:
-            out.append(GlossaryRow(section, terms, cells, header))
-    return tuple(out)
-
-
-def parse_rulings(style_guide: str) -> tuple[tuple[str, str], ...]:
-    """Every numbered section of the style guide, as `(heading, its text)`.
-
-    The guide is in force as a whole (its status line), so a section with no SETTLED mark
-    -- § 13, pages -- binds as much as one with it. The preamble is about the document and
-    is left out.
-    """
-    return tuple((heading, "\n".join(body).strip()) for heading, body in _sections(style_guide, 2))
-
-
 # --- the flow graph, in words -------------------------------------------------------------------
 
 _CONDITION = re.compile(
@@ -406,9 +337,9 @@ _CONDITION = re.compile(
 _COMPARISON = {"==": "is", ">=": "is at least", "<=": "is at most", "!=": "is not"}
 
 
-def condition_in_words(condition: str, policy: Policy) -> str:
+def condition_in_words(condition: str) -> str:
     """One edge condition as a sentence. The symbolic form is always shown beside it."""
-    return _in_words(condition, policy, " -- or -- ") if condition else ""
+    return _in_words(condition, " -- or -- ") if condition else ""
 
 
 def _split_top(text: str, separator: str) -> list[str]:
@@ -440,25 +371,23 @@ def _closing(text: str) -> int:
     return -1
 
 
-def _in_words(expression: str, policy: Policy, either: str = " or ") -> str:
+def _in_words(expression: str, either: str = " or ") -> str:
     """`|` over `&` over terms, each split only at its own depth: a group inside a clause
     reads as a parenthesised group, `a and (b or c)`, never as a third clause."""
     expression = _unwrap(expression)
     clauses = _split_top(expression, "|")
     if len(clauses) > 1:
-        return either.join(_in_words(clause, policy) for clause in clauses)
+        return either.join(_in_words(clause) for clause in clauses)
     terms = _split_top(expression, "&")
     if len(terms) == 1:
-        return _term_in_words(expression, policy)
+        return _term_in_words(expression)
     return " and ".join(
-        f"({_in_words(term, policy)})"
-        if len(_split_top(_unwrap(term), "|")) > 1
-        else _in_words(term, policy)
+        f"({_in_words(term)})" if len(_split_top(_unwrap(term), "|")) > 1 else _in_words(term)
         for term in terms
     )
 
 
-def _term_in_words(term: str, policy: Policy) -> str:
+def _term_in_words(term: str) -> str:
     match = _CONDITION.fullmatch(term)
     if match is None:
         return term
@@ -471,10 +400,9 @@ def _term_in_words(term: str, policy: Policy) -> str:
     if match.group(4):
         return f"story flag {match.group(4)} {_COMPARISON[match.group(5)]} {match.group(6)}"
     if match.group(7):
-        base = match.group(8)
-        place = policy.place(base)
-        where = f"{base}{f' ({place})' if place else ''}"
-        return f"the player is{'' if match.group(7) == '==' else ' not'} on map {where}"
+        # The place is in the event's map legend, not here: `E0710` tests eight maps in
+        # three hundred conditions, and naming each place in each was 45 KB of packet.
+        return f"the player is{'' if match.group(7) == '==' else ' not'} on map {match.group(8)}"
     if match.group(9):
         return f"the day {_COMPARISON.get(match.group(9), match.group(9))} {match.group(10)}"
     if match.group(11):
@@ -486,23 +414,20 @@ def _term_in_words(term: str, policy: Policy) -> str:
 
 # --- the policy text a translator is handed -------------------------------------------------------
 
-_PLAN_CITATION = re.compile(r"\s*\([^()]*(?:\bPLAN\b|`[A-Z]{2,5}-\d{2}`)[^()]*\)")
 _LINE_CITATION = re.compile(r"\s*\(?`E\d{4}[^`]*`(?:\s*[-\u2013\u2014]\s*`E\d{4}[^`]*`)?\)?")
-
-
-def without_plan_citations(text: str) -> str:
-    """Drop every parenthesis that cites the plan: `(PLAN § ...)`, `(`TRN-08`)`.
-
-    The policy documents are written for the project and cite its rows; a translator has
-    no use for them (Jay's list, `TRN-08`), and a row id reads as an instruction to go and
-    look something up.
-    """
-    return _PLAN_CITATION.sub("", text)
 
 
 def without_line_citations(text: str) -> str:
     """The bible's day summary without the event ids it cites (Jay, `TRN-08`)."""
     return re.sub(r"\s{2,}", " ", _LINE_CITATION.sub("", text)).strip()
+
+
+def document_body(text: str) -> str:
+    """A policy document as the translator is handed it: whole, less its own title line."""
+    lines = text.splitlines()
+    if lines and lines[0].startswith("# "):
+        lines = lines[1:]
+    return "\n".join(lines).strip()
 
 
 def format_section(readme: str) -> str:
@@ -520,13 +445,17 @@ the labels they would have had."""
 
 
 def scene_line_ids(scene: dict) -> list[str]:
-    """Every line id the scene carries, in play order, then any the flow never reaches.
+    """Every line id the scene carries, voice-only ones included, in message order.
 
-    One list for the packet's template and for the check on a translator's answer, so the
-    two cannot disagree about which ids an event is.
+    Message order, not the extract's `play_order`: that walks one visit's flow graph, and a
+    scene the game re-enters after a map change (`E0107`: `.0`, a move, then `.1` on the
+    new map and `.2` on a later visit) comes out `.0, .2, .1`. The branch section says
+    which way the flow goes. One list for the packet's template and for the check on a
+    translator's answer, so the two cannot disagree about which ids an event is.
     """
-    played = (node["line"] for node in iter_play_order(scene) if node.get("line"))
-    return list(dict.fromkeys([*played, *scene["lines"]]))
+    named = (node["line"] for node in scene["nodes"] if node.get("line"))
+    ids = dict.fromkeys([*scene["lines"], *named])
+    return sorted(ids, key=lambda line_id: int(line_id.rsplit(".", 1)[1]))
 
 
 def _unindent(column: Sequence[str]) -> list[str]:
@@ -563,6 +492,9 @@ def japanese_speaker(record: dict, japanese: Japanese, marks: Marks) -> str:
     return "(unlabelled)"
 
 
+_GLYPH_TOKEN = re.compile(r"\{G:(\d+)\}")
+
+
 def japanese_text(japanese: Japanese, marks: Marks) -> str:
     """The line with only its page breaks marked: ` // ` between pages, as the day file.
 
@@ -594,6 +526,20 @@ def select_text(japanese: Japanese, shape: tuple[int, int]) -> str:
     return SampleScenes.OPTION.join(fields)
 
 
+_MAP_NAMED = re.compile(r"(?:map[=!]=|MAP:)([A-Z]\d+)")
+
+
+def _step(node: dict) -> str:
+    """One node of the flow as the translator can place it: the line it shows, or what it
+    does -- a move to another map, or another step with no text."""
+    if node.get("line"):
+        return f"`{node['line']}`"
+    move = re.search(r"MAP:([A-Z]\d+)", node["node"])
+    if move:
+        return f"the move to map {move.group(1)}"
+    return f"a {node.get('opcode', 'silent')} step with no text"
+
+
 def _day_text(scene: dict) -> str:
     """The day the data fixes the scene to, or that none does.
 
@@ -622,6 +568,11 @@ class PacketBuilder:
     english: dict[str, list[Row]] = field(default_factory=dict)
     for_review: bool = False
     format_text: str = ""
+    documents: tuple[tuple[str, str], ...] = ()
+    """`(heading, text)` of each policy document handed over whole, in order."""
+    checklist: str = ""
+    file_order: dict[str, list[str]] = field(default_factory=dict)
+    """Each translation file's events, in its order: where a scene's neighbours are."""
     table: GlyphTable = field(default_factory=GlyphTable.load)
 
     @classmethod
@@ -630,15 +581,26 @@ class PacketBuilder:
     ) -> PacketBuilder:
         rows, _ = load_rows(translation_paths(translations))
         english: dict[str, list[Row]] = {}
+        file_order: dict[str, list[str]] = {}
         for row in rows:
             if row.has_english:
                 english.setdefault(row.line_id, []).append(row)
+            event = store.event_of_line.get(row.line_id)
+            events = file_order.setdefault(row.file, [])
+            if event and event not in events:
+                events.append(event)
         return cls(
             store=store,
             policy=policy,
             english=english,
             for_review=for_review,
             format_text=format_section(_read(DAYS_DIR / "README.md")),
+            documents=tuple(
+                (heading, document_body(_required(TRANSLATION_DIR / name)))
+                for heading, name in POLICY_DOCUMENTS
+            ),
+            checklist=document_body(_required(TRANSLATION_DIR / CHECKLIST_NAME)),
+            file_order=file_order,
         )
 
     # --- the template: what the translator returns ------------------------------------------
@@ -705,11 +667,6 @@ class PacketBuilder:
                 "* The brackets in these lines are part of the text, not speech marks the "
                 "program adds: keep them."
             )
-        if any("{G:" in self.store.lines[i]["text"] for i in surface.line_ids):
-            out.append(
-                "* `{G:n}` is a picture the game draws inside the text (a button, an icon); "
-                "keep it where the meaning puts it."
-            )
         out += [
             "",
             "## Your answer",
@@ -720,18 +677,54 @@ class PacketBuilder:
             *block,
             "```",
             "",
+            *self.glyph_notes(block),
         ]
         if self.for_review:
             out += self._current(surface.line_ids)
         return "\n".join(out).rstrip() + "\n"
 
-    def clips(self, scene: dict) -> list[str]:
-        """`E0121.0 0121_00` for each voiced line: which recording each line is."""
+    def glyph_notes(self, rows: Iterable[str]) -> list[str]:
+        """What each `{G:n}` in these rows draws, from the glyph table. The token names the
+        exact cell -- two cells can draw one character (`{G:22}` and `{G:1456}` are both a
+        closing parenthesis), and a button is a picture -- so it is explained, not replaced."""
+        cells = sorted({int(n) for row in rows for n in _GLYPH_TOKEN.findall(row)})
         return [
-            f"`{line_id}` {clip}"
-            for line_id in scene_line_ids(scene)
-            if (clip := (self.store.lines.get(line_id) or {}).get("voice", {}).get("clip"))
+            f"* `{{G:{n}}}` is one cell of the game's font that draws "
+            f"{self.table.characters.get(n) or 'something undescribed'} "
+            f"(`research/data/glyph-table.tsv`): punctuation becomes the English mark; a "
+            f"button or a picture stays as the token."
+            for n in cells
         ]
+
+    @cached_property
+    def _by_clip(self) -> dict[str, list[str]]:
+        """Clip -> every line that plays it. Two events that play one recording are one line
+        seen twice (`E0173.0` / `E0174.0`, a camera cut), so their English is one."""
+        clips: dict[str, list[str]] = {}
+        for line_id, record in self.store.lines.items():
+            clip = (record.get("voice") or {}).get("clip")
+            if clip:
+                clips.setdefault(clip, []).append(line_id)
+        return clips
+
+    def clips(self, scene: dict) -> list[str]:
+        """`E0121.0 0121_00` for each voiced line: which recording each line is, and the
+        other lines that play the same one."""
+        by_clip = self._by_clip
+        out = []
+        for line_id in scene_line_ids(scene):
+            clip = ((self.store.lines.get(line_id) or {}).get("voice") or {}).get("clip")
+            if not clip:
+                continue
+            others = [other for other in by_clip[clip] if other != line_id]
+            same = (
+                f" (the same recording as {', '.join(f'`{o}`' for o in others)}: keep the "
+                f"English identical)"
+                if others
+                else ""
+            )
+            out.append(f"`{line_id}` {clip}{same}")
+        return out
 
     # --- the system part ------------------------------------------------------------------
 
@@ -748,56 +741,28 @@ class PacketBuilder:
             f"Japanese replaced by English and the speaker column in English, in the "
             f"day-file format below, and nothing else. The Japanese speaker labels become "
             f"the English labels of the glossary and style guide § 9. Your earlier answers "
-            f"stay in view: keep a voice, a recurring phrase and a name the same across them.",
+            f"stay in view: keep a voice, a recurring phrase and a name the same across "
+            f"them. The documents below are the project's own, whole: the style guide and "
+            f"the glossary are settled and binding.",
             "",
-            "## The day-file format",
+            "# The day-file format",
             "",
-            without_plan_citations(self.format_text),
-            "",
-            "## The style guide",
-            "",
-            "The whole of `translation/style-guide.md` is in force; these are its sections.",
+            self.format_text,
             "",
         ]
-        for heading, text in self.policy.rulings:
-            out += [f"### {heading}", "", without_plan_citations(text), ""]
-        source = "\n".join(
-            self.store.japanese[line_id].plain()
-            for line_id in unit.line_ids
-            if line_id in self.store.japanese
-        )
-        rows = self.policy.glossary_for(source)
-        if rows:
-            out += [
-                "## The glossary",
-                "",
-                f"Every row of `translation/glossary.md` whose Japanese occurs in these "
-                f"{noun}s. "
-                "These renderings are settled; use them.",
-                "",
-            ]
-            section = ""
-            for glossary_row in rows:
-                if glossary_row.section != section:
-                    section = glossary_row.section
-                    header = glossary_row.header or ("source", "English")
-                    out += [
-                        "",
-                        f"**{section}**",
-                        "",
-                        "| " + " | ".join(header) + " |",
-                        "|" + "---|" * len(header),
-                    ]
-                out.append(glossary_row.markdown())
-            out.append("")
+        for heading, text in self.documents:
+            out += [f"# {heading}", "", text, ""]
         row = self.policy.day_row(day) if day is not None else None
+        out += ["# The day, from the story bible", ""]
         if row is not None:
+            out += [f"**Day {day}**: {without_line_citations(row)}", ""]
+        else:
             out += [
-                "## The day, from the story bible",
-                "",
-                f"**Day {day}**: {without_line_citations(row)}",
+                f"These {noun}s belong to no single day, so there is no day summary.",
                 "",
             ]
+        if self.checklist:
+            out += ["# Before you answer: the renderings most often got wrong", "", self.checklist]
         return "\n".join(out).rstrip() + "\n"
 
     # --- one event --------------------------------------------------------------------------
@@ -810,9 +775,11 @@ class PacketBuilder:
         them is not shown -- and in a re-translation its English as it stands is the draft
         being replaced."""
         event = scene["event"]
+        template = self.template(scene)
         out = [f"# {event} -- event {position} of {total}", ""]
         out += self._where(scene)
         out += self._branches(scene)
+        out += self._maps(scene)
         out += self._quiz(scene, scene_dated_day(scene))
         out += self._neighbours(scene, unit_events)
         out += [
@@ -822,9 +789,10 @@ class PacketBuilder:
             "English. Add `# NOTE` or `# UNSURE` lines where you need them.",
             "",
             "```text",
-            *self.template(scene),
+            *template,
             "```",
             "",
+            *self.glyph_notes(template),
         ]
         if self.for_review:
             out += self._current(scene_line_ids(scene))
@@ -840,11 +808,24 @@ class PacketBuilder:
             when.append(f"time slot(s) {slots}")
         condition = scene["when"]["condition"]
         if condition:
-            when.append(f"when {condition_in_words(condition, self.policy)}")
+            when.append(f"when {condition_in_words(condition)}")
         places = self.places(scene)
+        slots = {member["slot"] for member in scene["cast"]} | {
+            speaker["slot"]
+            for line_id in scene_line_ids(scene)
+            if (speaker := (self.store.lines.get(line_id) or {}).get("speaker") or {}).get("slot")
+            is not None
+        }
         who = [
             re.sub(r",\s*\d[\d,]* lines$", "", entry.heading)
-            for entry in self.policy.cast_for(member["slot"] for member in scene["cast"])
+            + (
+                " ("
+                + ", ".join(f"slot {slot} is {CHARACTERS[slot].title()}" for slot in entry.slots)
+                + ")"
+                if len(entry.slots) > 1 and all(slot in CHARACTERS for slot in entry.slots)
+                else ""
+            )
+            for entry in self.policy.cast_for(slots)
         ]
         out = [
             f"* **Where**: {places or 'unknown'}",
@@ -855,9 +836,14 @@ class PacketBuilder:
         clips = self.clips(scene)
         if clips:
             out.append(f"* **Voice clips**: {', '.join(clips)}")
-        for handover in scene.get("handovers") or []:
-            if handover.get("event") and handover.get("reachable", True):
-                out.append(f"* **Then**: the game moves on to `{handover['event']}`")
+        onward = dict.fromkeys(
+            handover["event"]
+            for handover in scene.get("handovers") or []
+            if handover.get("event") not in (None, scene["event"])
+            and handover.get("reachable", True)
+        )
+        if onward:
+            out.append(f"* **Then**: the game moves on to {', '.join(f'`{e}`' for e in onward)}")
         out.append("")
         return out
 
@@ -868,7 +854,7 @@ class PacketBuilder:
         that test a condition. Each target is named by the line it opens, which is how
         the translator sees the scene in the block below.
         """
-        line_of = {node["node"]: node.get("line") for node in scene["nodes"]}
+        nodes = {node["node"]: node for node in scene["nodes"]}
         edges: dict[str, list[dict]] = {}
         for edge in scene["edges"]:
             edges.setdefault(edge["from"], []).append(edge)
@@ -877,20 +863,33 @@ class PacketBuilder:
             outgoing = edges.get(source, [])
             if len(outgoing) < 2:
                 continue
-            where = "At the start" if source == "ENTRY" else f"After `{line_of.get(source)}`"
+            where = "At the start" if source == "ENTRY" else f"After {_step(nodes[source])}"
             forks.append(f"* {where}:")
             for edge in outgoing:
                 target = edge["to"]
                 goes = (
                     "the event ends"
                     if target == "END"
-                    else f"`{line_of.get(target) or target}` comes next"
+                    else f"{_step(nodes[target])} comes next"
+                    if target in nodes
+                    else f"`{target}` comes next"
                 )
-                words = condition_in_words(edge["condition"], self.policy)
+                words = condition_in_words(edge["condition"])
                 forks.append(f"  * {goes}" + (f" when {words}" if words else ""))
         if not forks:
             return []
         return ["## Where the scene branches", "", *forks, ""]
+
+    def _maps(self, scene: dict) -> list[str]:
+        """The places behind every map a condition or a move in this event names, less
+        the ones **Where** already describes."""
+        text = " ".join(
+            [scene["when"]["condition"] or "", *(e["condition"] or "" for e in scene["edges"])]
+            + [node["node"] for node in scene["nodes"]]
+        )
+        bases = sorted(set(_MAP_NAMED.findall(text)) - set(scene["where"]["bases"]))
+        legend = [f"* {base} -- {place}" for base in bases if (place := self.policy.place(base))]
+        return ["## The maps named above", "", *legend, ""] if legend else []
 
     def _quiz(self, scene: dict, day: int | None) -> list[str]:
         quiz = scene.get("dinner_quiz")
@@ -919,6 +918,19 @@ class PacketBuilder:
         for row in rows:
             cells = " | ".join(str(row.get(column, "")) for column in rows[0])
             out.append(f"| {cells} | `{event}.{row.get('message')}` |")
+        asked = {row.get("message") for row in rows}
+        unasked = [
+            line_id
+            for line_id in scene_line_ids(scene)
+            if int(line_id.rsplit(".", 1)[1]) not in asked
+            and select_shape(self.store.lines.get(line_id) or {"kind": ""}) is not None
+        ]
+        if unasked:
+            out += [
+                "",
+                f"No day's row names {', '.join(f'`{u}`' for u in unasked)}: the table in the "
+                f"program never asks it, so it is translated for completeness only.",
+            ]
         if day is not None:
             mine = [row for row in rows if row.get("day") == day]
             if mine:
@@ -936,21 +948,38 @@ class PacketBuilder:
         return out
 
     @cached_property
-    def _order(self) -> tuple[list[dict], dict[str, int]]:
-        """Every scene with any text in the project's order, and each one's place in it."""
-        order = [scene for scene in ordered_scenes(self.store) if has_text(scene)]
-        return order, {scene["event"]: index for index, scene in enumerate(order)}
+    def _dated(self) -> dict[int, list[str]]:
+        """Day -> the events the data dates to it, in the project's order."""
+        out: dict[int, list[str]] = {}
+        for scene in ordered_scenes(self.store):
+            day = scene_dated_day(scene)
+            if day is not None:
+                out.setdefault(day, []).append(scene["event"])
+        return out
 
     def neighbours(self, scene: dict) -> tuple[dict | None, dict | None]:
-        """The scenes either side of this one with any text, in the project's order."""
-        order, index_of = self._order
-        index = index_of.get(scene["event"])
-        if index is None:
+        """The events either side of this one: in the day file that already holds it, in
+        that file's order (a day file is in the order its day plays); else, for an event the
+        data dates, the events dated to that day in the project's order. Anything else has
+        none: the project's order sorts undated events by hour alone, which put a breakfast
+        chorus beside the watermelon thief (`E0405`), and `shared.txt` is ordered by place."""
+        event, by_event = scene["event"], self.store.scenes_by_event
+        held = [
+            events
+            for name, events in sorted(self.file_order.items())
+            if _DAY_FILE.fullmatch(Path(name).stem) and event in events
+        ]
+        if held:
+            events = held[0]
+        elif (day := scene_dated_day(scene)) is not None:
+            events = self._dated[day]
+        else:
             return None, None
-        return (
-            order[index - 1] if index else None,
-            order[index + 1] if index + 1 < len(order) else None,
-        )
+        others = [e for e in events if e == event or has_text(by_event[e])]
+        index = others.index(event)
+        before = by_event[others[index - 1]] if index else None
+        after = by_event[others[index + 1]] if index + 1 < len(others) else None
+        return before, after
 
     def settled(self, scene: dict) -> list[str]:
         """A scene's English as it stands, as day-file rows."""

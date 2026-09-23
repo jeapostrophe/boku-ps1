@@ -465,7 +465,7 @@ def build_parser() -> argparse.ArgumentParser:
             help="assemble the local translator packet for a day, a day file or events",
             description=(
                 "PLAN TRN-08: a directory per unit -- system.md (the day-file format, the "
-                "style guide, the glossary rows the unit's Japanese uses, the bible's day "
+                "style guide and the glossary whole, the bible's day "
                 "summary), one <EVENT>.md per event holding its lines in the day-file shape "
                 "with the Japanese where the English goes, and order.txt, the order to give "
                 "them in. A packet is the game's own text, so it is written under the "

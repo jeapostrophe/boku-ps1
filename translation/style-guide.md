@@ -7,8 +7,7 @@ ruled by Jay on 2026-09-20; the question as put, the options and his words are r
 change to it is made here with a dated note. One ruling (Q7, § 9) is an early default that Jay
 marked revisitable; nothing else is open. The story, the cast and how each person talks are
 in [bible.md](bible.md); every term that must be rendered one way is in
-[glossary.md](glossary.md); three scenes translated under these rules are in
-[samples/](samples/); the speech that has no text on the disc is listed in
+[glossary.md](glossary.md); the one sample scene left is in [samples/](samples/); the speech that has no text on the disc is listed in
 [voice-only.md](voice-only.md). Licence: CC BY-SA 4.0 (`LICENSE-translation`).
 
 Line ids (`E0406.2`, `hhon@5328.13`) are the ones defined in `research/text-format.md` and
@@ -75,8 +74,9 @@ as names stay as heard:
 | Saori's *kā-san* for the aunt | Kaa-san | she is not her mother; "Mom" would mislead. Glossary |
 
 The rejected alternatives — every kin term in English, or every one as heard — are set out
-with the same lines rendered each way in Q1 and in the notes of
-[samples/family-E0404-E0406.txt](samples/family-E0404-E0406.txt).
+with the same lines rendered each way in Q1 ([QUESTIONS.md](QUESTIONS.md)); the sample that
+showed them in full was deleted once day 4 held its lines, and survives in the history as
+`translation/samples/family-E0404-E0406.txt` at commit `6a21426`.
 
 **Self-reference by role stays.** Adults talking to Boku call themselves "Uncle" and "Auntie"
 ("Auntie does the washing first thing every morning", `E0121.0`), Moe calls herself
@@ -224,7 +224,7 @@ bible § Wordplay). Three kinds, three treatments:
   quotes is 4 characters in Japanese and much more in English, so it is expensive. I think we
   may need to default to something early but be willing to go back to it."* Whether the marks
   are the 「 」 glyphs or English quotation marks, and whether the label sits inside the box, is
-  the dialogue band's decision (PLAN § *Text renderer*). Narration (『 』 in the Japanese) is
+  the dialogue band's decision. Narration (『 』 in the Japanese) is
   unlabelled and set apart by the renderer; system messages ("Got the fishing rod.") plain.
 * **One utterance is sometimes split across two messages** with the closing bracket in the
   second (`E1405.1`–`.2`, `E2231.1`–`.2`, `E2303.3`–`.4`): a silent beat, then the speech. The
@@ -319,10 +319,10 @@ by their Japanese names, while butterflies, beetles and dragonflies are English 
 by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi, omurice,
 nikujaga, korokke*); *tanuki, tengu, oni, kappa* (as in *kappa-maki*), *jizō*, *yukata, futon,
 kotatsu, tanabata, tenkara*; invented words. Everything else is English — including
-*satoyama* → "the village hills" (Q10.8). All SETTLED 2026-09-20.
+*satoyama*, rendered by sense (Q10.8; Jay, 2026-09-21: "somewhere this rural" where the father
+says it, glossary § 7). All SETTLED 2026-09-20.
 In-line glosses are allowed only for § 8 kind 3; there are no translator's footnotes on screen.
-A glossary screen or booklet for the player is an idea, not a plan (it would be a PLAN row,
-and is not proposed here).
+A glossary screen or booklet for the player is an idea, not a plan.
 
 ## 16. English inside the Japanese
 
@@ -356,5 +356,5 @@ sequences and their ids is [voice-only.md](voice-only.md).
   where the Japanese itself breaks or trails the line with a dash-like mark (a `――`, a cut-off
   utterance the original marks), never for an aside, a pivot or emphasis the Japanese carries
   with a particle or a comma. When in doubt, a comma, a full stop or an ellipsis the source has.
-  The lint warns on every em dash (`TRN-08`); a warning is a prompt to check the source, not a
+  The lint warns on every em dash; a warning is a prompt to check the source, not a
   ban.
