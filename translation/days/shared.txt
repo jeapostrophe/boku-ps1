@@ -898,3 +898,21 @@ E1952.0	Fat	The ice creams with a winner marked on the lid... // I once won thre
 
 # --- E1953: A18 -- the secret base
 E1953.0	Specs	The Chronicles of Narnia... which story did you read first?
+
+# --- E2005: A12 -- the tyre pile
+E2005.0	Boku	I dropped the sugar water.
+E2005.1	Boku	Do you like sweet things?
+E2005.2	(voice only)
+
+# --- E2003: G02 -- dinner
+E2003.0	Uncle	Boku-kun, have you been to see the Wolf Girl yet?
+E2003.1	Boku	Yeah, I went. She gave me a photo.
+E2003.2	Shirabe	A photo of what?
+E2003.3	Boku	Huh? Of me.
+E2003.4	Shirabe	My... you two are awfully chummy, aren't you?
+E2003.5	Uncle	Well then, itadakimasu!
+E2003.6	Shirabe, Moe, Boku, Aunt	Itadakimasu!
+
+# --- E2050: A18 -- the secret base
+E2050.0	Specs	The lady camping at Dragon God Pond is a really interesting person. // I want to be a lyrical grown-up like that too...
+E2050.1	Fat	What's that? Is lyrical tasty?

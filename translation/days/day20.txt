@@ -1,0 +1,87 @@
+# day20 (translation/days/README.md)
+# --- E2006: G01 -- living room; G06 -- TV room (the family argument, overheard)
+E2006.0	Moe	I've decided! // I'm not going to high school or university. I'm going to live here my whole life...
+E2006.1	Aunt	Then you can come back to Tsukiyono after you finish high school, can't you? // There's plenty of work in Sagi-no-sato, too.
+E2006.2	Moe	It's just... honestly, I don't have any confidence left! // No confidence, no drive, no hope, none at all... // ...Dad, you always used to say that people can live the way their hearts want, // that if your feelings are strong enough, you can become the person you want to be... // that people who keep failing like themselves that way, // and people who keep agonizing like agonizing... // So if you live believing in a strong self, people really can become strong, // and whatever you wish for, you can make it come true someday.
+E2006.3	Uncle	But that doesn't mean you think Dad's a liar, does it, Moe?
+E2006.4	Moe	Of course I don't! // But... a dream you've chased and chased can break surprisingly easily, I've found... // and after it breaks, it's all just too sad... // You know what?! Just breathing makes me gloomy, and my joints ache, and...
+E2006.5	Aunt	With your grades, getting into high school // isn't such a hard dream, is it?
+E2006.6	Uncle	Huh? Now, I take exception to that.
+E2006.7	Moe	Because the things I'm worrying about, in the grown-up world of you and Mom, Dad, // have all been settled long ago, haven't they?
+E2006.8	Uncle	Is it the entrance exams you don't want?
+E2006.9	Moe	......
+E2006.10	Uncle	Won't you... tell me why?
+E2006.11	Uncle	J-joints?
+E2006.12	Uncle	Mm-hm, and besides... // an education isn't something you absolutely need to go out into the world, // and a girl like you, Moe, could pick up learning naturally without going on to higher schools, I think. // But if you don't take some time to sort out a bit more what you're thinking now, // I suspect it'll end in something you regret.
+E2006.13	Moe	But you and Mom are so unfair!
+
+# --- E2060: D07 -- Saori's camp
+E2060.0	Boku	You like painting, lady.
+E2060.1	Saori	......Yeah, I like it.
+E2060.2	Boku	Why?
+E2060.3	Saori	Huh? Asking me why puts me on the spot, but... // hmm... painting is about training your eye to see things. // That leads to knowing yourself, too... // and besides, looking at something long and hard makes your brain happy, see.
+E2060.4	Boku	Is that so?
+E2060.5	Saori	Hmph. Kids fall for anything.
+E2060.6	Saori	Oh... I forgot to go and buy more of the paints I'm running out of.
+
+# --- E2002: G02 -- breakfast
+E2002.0	Uncle	Who'd have thought she'd give up even on going to high school... // I thought Moe was a little more grown-up than that...
+
+# --- E2020: H07 -- outside the dining room
+E2020.0	Aunt	Our daughter has gotten so tough.
+E2020.1	Aunt	It must be because her parents are so excellent.
+
+# --- E2012: G01 -- living room
+E2012.0	Uncle	Phew......
+E2012.1	Boku	What's wrong?
+E2012.2	Uncle	At your age, // your dad and mom are still perfect beings, right?
+E2012.3	Boku	I don't really get what you mean.
+E2012.4	Uncle	For Uncle, his parents... // at least until Uncle was past thirty, // he never could find any human flaws in them, or any big deceptions... // In a way, they were close to perfect... // But now it's Uncle's turn to be the parent, // and what do you know, his fifteen-year-old daughter broke straight through his front line...
+E2012.5	Boku	...You lost?
+E2012.6	Uncle	Maybe so... // But maybe parents are like this in every age.
+E2012.7	Uncle	Even the breeze blowing through the veranda feels kind of halfhearted today...
+
+# --- E2010: H26 -- the workshop
+E2010.0	Uncle	Say... Boku-kun, what kind of job do you think you'd like to do when you grow up?
+E2010.1	Boku	Huh? // Me... // I'm thinking about it...
+
+# --- E2031: G16 -- Moe's bed
+E2031.0	Moe	Onee-chan has a terribly cruel personality...
+E2031.1	Boku	Why?
+E2031.2	Moe	Sigh... I'm too honest.
+E2031.3	Moe	...What should I do?
+
+# --- E2040: H09 -- garden corner where Shirabe watches ants
+E2040.0	Shirabe	Why do the worker ants, without a word of complaint, // keep working day after day for the queen ant?
+E2040.1	Boku	How would I know?
+E2040.2	Shirabe	Hehe... Shirabe knows.
+E2040.3	Boku	......
+E2040.4	Shirabe	It's because the queen ant is the only girl in the whole nest!
+
+# --- E2041: G06 -- TV room
+E2041.0	Boku	Hey, does the TV... really only have three channels?
+E2041.1	Shirabe	Huh? Do you have more where you live?
+E2041.2	Shirabe	Even this is more channels than we used to have...
+
+# --- E2004: G02 -- after dinner (Saori comes for a bath)
+E2004.0	Uncle	Gochisosama deshita.
+E2004.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2004.2	Saori	Yusaku-san, Kaa-san, I've come to borrow the bath.
+E2004.3	Saori	Kaa-san, I'm sorry to intrude so late.
+E2004.4	Aunt	That's all right. Think of it as your own home, and take your time in the bath.
+E2004.5	Saori	Thank you very much.
+E2004.6	Saori	Oh? Nice to meet you...
+E2004.7	Aunt	This boy is my big brother's child. His mother's about to give birth, so we're looking after him...
+E2004.8	Boku	...I-I'm Boku.
+E2004.9	Saori	Oh, I'm Saori. Good evening! Hehe... what a little cutie.
+E2004.10	Boku	Cutie?
+E2004.11	Shirabe	Hehe, what a little cutie.
+E2004.12	Saori	Hey, Boku-kun, you're sitting in the birthday seat! Way to go!
+E2004.13	Boku	Way to go?
+E2004.14	Shirabe	Somebody's all fiiidgety...
+# NOTE E2004.12: the "birthday seat" is the place at the head of the table, where the birthday
+#   child sits.
+
+# --- E2061: G04 -- washroom / bath
+E2061.0	(voice only)
+E2061.1	Saori	Oh my, who's that? I'm sorry, someone's in here.
