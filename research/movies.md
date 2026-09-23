@@ -536,3 +536,45 @@ cards anyway, since Redux writes the shared ones back. `boot-to-dialogue.lua` an
 load-sensitive is the wall clock: `run-headless.sh` kills a run after `REDUX_TIMEOUT`
 (300 s), and at load ~150 the voice gate's 16,000-vsync boot needed `REDUX_TIMEOUT=1500`
 to pass (it then did, 4 of 4).
+
+## 10. The real cues, reviewed (`FMV-03`, 2026-09-23)
+
+`translation/movies.txt` holds 25 cues on the five voiced movies. Two commands make them
+reviewable; both write only under `work/`:
+
+* `./make.sh movie-timing [--write]` (`boku/movie_timing.py`) checks every cue against the
+  narration segments of the voice lane's reviewed transcripts (`work/voice/reviewed/
+  <movie>.ja.tsv`, their frame columns only): a segment's first cue starts within 7 frames
+  (0.5 s) of the speech, its last cue does not end more than a frame before the speech does
+  (abutting segments share that frame), no cue is on screen under 23 frames (1.5 s), and none
+  asks more than 17 characters a second (the translator's `|` counts as one space). `--write`
+  moves boundaries -- never text -- to pass where the rules leave room (`retime`, whose
+  docstring states the order it minimises in), and writes only the frame columns back.
+* `./make.sh movie-review` (`tools/libretro/movie_review.py`) plays each movie on Beetle
+  from the days build (a non-opening movie by the table-entry poke of § 8), shoots every cue
+  one frame inside its first frame, at its middle and one frame inside its last, labels each
+  shot with the STR frame on screen by the hook's own number, and writes a 15 fps MP4 of the
+  cued stretch with the movie's narration (`boku.voice`'s WAV, same t = 0) and
+  `work/movie-review/index.html`. Two facts it had to measure: the picture on screen is the
+  frame *before* the one the hook's number names, and a movie's last two frames before its
+  stop frame are the last on screen -- the player ends as the number reaches the stop frame,
+  so a cue's frames past that are never seen (harmless: the cue simply runs to the end).
+
+On 2026-09-23 `--write` retimed 14 of the 25 cues (the commit lists them), and every one of
+the review's 75 shots shows its cue's text, labelled inside the cue.
+
+**Left: four M27 cues read faster than 17 a second with every boundary as far as the rules
+allow** -- 1221 ("and somewhere in this world a god at his wits' end, unable to manage them
+any longer," 18.8), 1332 (the dreams line, 21.3), 1629 ("and from that day until the end of
+summer vacation," 17.8) and 1672 (the mother's burden line, 21.1). The narration there is
+continuous, so no timing gives them more frames; what would is fewer words, and whether a
+subtitle may be shorter than the line it translates (README: "nothing is cut to fit") is the
+translation's and Jay's call, not this tool's.
+
+**The song under the credits.** The transcript marks ten `M28` segments as the sung theme,
+frames 1044-2787. The credits scroll through the subtitle rows from about frame 1085 (§ 9),
+so if the song is subtitled, every one of them but the first's opening 40 frames is drawn
+over the credits: 1044-1159 (from 1085), 1159-1285, 1285-1435, 1525-1630, 1630-1753,
+1753-1915, 2080-2389, 2389-2514, 2514-2668, 2703-2787. A cue position per row (the top of
+the frame) is what would keep them apart.
+

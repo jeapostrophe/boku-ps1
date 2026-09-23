@@ -14,20 +14,20 @@
 M27	1050	1104	It was a very, very hot summer day.
 #   Start estimated from the line's length (the transcript's note).
 M27	1105	1220	The heat of that day was as if all the workings | of life on earth had become tangled and snarled,
-M27	1221	1281	and somewhere in this world a god at his wits' end, | unable to manage them any longer,
-M27	1282	1331	were melting everything down in the heat
-M27	1332	1386	and, with a child's innocence, sketching his dreams | of the world that would come next...
-M27	1387	1460	...it was that kind of strange, dizzying heat.
+M27	1221	1288	and somewhere in this world a god at his wits' end, | unable to manage them any longer,
+M27	1289	1331	were melting everything down in the heat
+M27	1332	1393	and, with a child's innocence, sketching his dreams | of the world that would come next...
+M27	1394	1460	...it was that kind of strange, dizzying heat.
 M27	1461	1592	That day was the first of August | in the year my little brother was born,
 M27	1593	1628	and I, who had then just turned nine,
-M27	1629	1664	and from that day until the end of summer vacation,
-M27	1665	1718	to ease the burden on my mother, | who was in the last month of her pregnancy,
-M27	1719	1790	I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.
+M27	1629	1671	and from that day until the end of summer vacation,
+M27	1672	1725	to ease the burden on my mother, | who was in the last month of her pregnancy,
+M27	1726	1803	I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.
 M27	2080	2151	At that moment, the thunderheads | were billowing up in the strong August sun,
 #   The transcript's reading of this segment was corrected by hand (the ASR heard nonsense for
 #   nyudogumo, hachigatsu and wakitachi); the corrected reading is what is translated.
 M27	2152	2217	glittering white, and somehow the sight made me glad,
-M27	2218	2290	and I leaned just a little out of the car window, | not so far as to startle my father.
+M27	2218	2292	and I leaned just a little out of the car window, | not so far as to startle my father.
 M27	2545	2631	When I sank back into the car seat | and took a deep breath, just a small one,
 M27	2632	2735	I had a strange feeling, as if specks of light | were flickering on and off in the middle of my head.
 #   DOUBT: the noun after "hikari no" is heard as togi / tougi / toki / tori by every ASR pass
@@ -39,19 +39,19 @@ M27	2632	2735	I had a strange feeling, as if specks of light | were flickering o
 M28	961	1043	I shall never, ever forget | the things that happened that summer.
 
 # --- M60, the fireworks from Boku's window (E0805, day 8).
-M60	133	213	At that moment, I was thinking that perhaps | I had seen this same sight from this window before...
-M60	214	300	...which was, somehow, a rather strange thing to think.
+M60	133	218	At that moment, I was thinking that perhaps | I had seen this same sight from this window before...
+M60	219	300	...which was, somehow, a rather strange thing to think.
 
 # --- M120, the satellite (E1008, day 10). The sentence runs on past the movie's end: E1008.0
 #   finishes it ("...a satellite, flying quietly on, as if gliding"), so the last cue ends on
 #   "it was..." and E1008.0's English must pick the sentence up as "...a satellite".
-M120	21	109	Crossing a sky so blue and clear | that I felt somehow dizzy gazing into it,
-M120	110	152	wrapped in a single-minded sense of mission | and in solitude, it was...
+M120	21	90	Crossing a sky so blue and clear | that I felt somehow dizzy gazing into it,
+M120	91	152	wrapped in a single-minded sense of mission | and in solitude, it was...
 
 # --- M260, the sunflower dream (day 29).
 M260	79	150	It was, somehow, a very, very sad dream.
-M260	166	211	The sound of the cold winter wind in that dream | seemed to me, for some reason,
-M260	212	285	just like the lonely howl | of that Japanese wolf...
+M260	166	234	The sound of the cold winter wind in that dream | seemed to me, for some reason,
+M260	235	285	just like the lonely howl | of that Japanese wolf...
 #   "Cold winter wind" is kogarashi (the ASR's kanji for it was wrong, the reading right); "howl" is
 #   toboe, which the ASR misheard. "That Japanese wolf" is the one of Saori's camera (bible § 3).
 M260	294	347	It was a very, very sad dream.

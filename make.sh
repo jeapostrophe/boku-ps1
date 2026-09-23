@@ -102,6 +102,13 @@ usage: ./make.sh <verb> [arguments]
   boot-save CARD [arguments]    boot CARD's slot-1 save on Beetle to the morning it wakes
                                 on; shoot it, save a state to resume from, and check the
                                 clock (tools/libretro/boot_save.py --help)
+  movie-timing [--write]        every movie cue's timing against the reviewed transcripts
+                                in work/voice/reviewed (onset, end, 1.5 s, 17 cps); --write
+                                moves the frames of translation/movies.txt to pass where
+                                they can, never the English (boku/movie_timing.py)
+  movie-review [MOVIE...]       every cue at its first, middle and last frame on Beetle, and an
+                                MP4 with the narration, from build/days -> work/movie-review/
+                                index.html (tools/libretro/movie_review.py --help)
   test [pytest arguments]       run the test suite
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
                                 `test`): the movie-subtitle and voice-only-subtitle gates on
@@ -308,6 +315,12 @@ case "$verb" in
         ;;
     boot-save)
         exec uv run python tools/libretro/boot_save.py "$@"
+        ;;
+    movie-timing)
+        exec uv run python -m boku.movie_timing "$@"
+        ;;
+    movie-review)
+        exec uv run python tools/libretro/movie_review.py "$@"
         ;;
     test)
         exec uv run pytest "$@"

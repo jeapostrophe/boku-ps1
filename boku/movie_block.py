@@ -64,6 +64,8 @@ MOVIE_TABLE = 0x80029604
 first (`research/movies.md` § 1)."""
 MOVIE_ENTRIES = 27
 MOVIE_ENTRY_SIZE = 0x18
+MOVIE_ENTRY_FRAMES = 12
+"""Offset in an entry of `u32 frames`, the stop frame (`research/movies.md` § 1)."""
 MOVIE_NAME_PREFIX = "\\__STR\\"
 MOVIE_NAME_SUFFIX = ".IKI;1"
 SCREEN_WIDTH = 320

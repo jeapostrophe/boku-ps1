@@ -36,6 +36,9 @@ M27	120	300	Far away, I could see the village | of Sagi-no-sato at the foot of t
 * `#` lines and blank lines are notes. There is no Japanese in this file, as in the day
   files: the transcripts of the narration stay under `work/`.
 
+`./make.sh movie-timing` checks each cue's timing against the reviewed transcripts of the
+narration (and `--write` fixes what moving its frames can fix); `./make.sh movie-review`
+shows every cue on Beetle, with a video of it over the voice (`research/movies.md` § 10).
 `./make.sh lint-translation` checks every row — a known movie, frames inside it (the last
 frame any id playing the file shows), no two cues of one movie overlapping, no more than two
 lines, no line wider than the band, every character in the font — measured in the font the
