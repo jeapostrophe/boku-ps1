@@ -536,13 +536,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       1 `array-room`, the insect book `hhon@5328` (5,454 bytes, too big for resident RAM:
       a `HHON.OVL` extension, ~60 KB of room, once `TXT-05`'s insect-box layout is chosen);
       12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
-      surfaces); 74 `array-group` warnings (lines drawn as groups) and 3 `not-placeable`:
-      code labels are placed by rewriting their immediates and the save title by
-      `boku.code_text` (2026-09-23), leaving the two date labels (`caught_label_draw`,
-      `save_date_draw` — "Caught 8/5" needs each drawer to draw a VWF string and move its digit
-      sprites) and the dead specimen label. Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
-      uncle's daily 18:00 call), seen in English on Beetle. build-days: 961 lines laid out,
-      118 refused. Done when the lint shows none of these errors and the build refuses no array line.
+      surfaces); 74 `array-group` warnings (lines drawn as groups) and 1 `not-placeable` (the
+      specimen label, dead code): code labels are placed by rewriting their immediates, the
+      save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
+      the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
+      uncle's daily 18:00 call), seen in English on Beetle. build-days: 966 lines laid out,
+      113 refused. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
