@@ -278,9 +278,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       and the grid panel 12: a tighter row pitch (ink is 10 px; 10–11 px pitch), a second
       page, or the grid panel on both screens; untranslated entries keep their columns; the remaining fixed-pitch
       surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
-      the 23 computed-id `glyph_draw` sites (probably covered by the site index plus
-      `code_glyph_ids` — needs a test that proves it); watching the stack under the four
-      overlays / a save / menus, sumo and fishing. Step routines share one width lookup;
+      the stack under a real save, a sumo bout and fishing (measured 2026-09-23 on Beetle:
+      free roam 0x228, item menu 0x298, insect box 0x350, kite 0x348, sumo setup 0x320,
+      forced mode 15 0xFB0 — none past the 4,016 bytes the map-area raise was sized for).
+      Done 2026-09-23: the computed-id `glyph_draw` sites — 59 draw sites, 25 ids proven by
+      a path-following scan, the 24 unresolved each named with what it walks
+      (`tests/test_real_glyph_sites.py`). Step routines share one width lookup;
       walker island 276/424 bytes used. (Round 3, 2026-09-21: the
       "head drawn over the band" was a misread of a zoom — measured, the head is behind
       the band and the ordering table is stock; the select box now derives from the row
@@ -330,7 +333,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       (`research/data/text-boxes.tsv`, enforced by build and lint): controls help,
       memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
       code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, three
-      lines, wrapped by the build), summer-memories labels. Widest English per surface (2026-09-23):
+      lines, wrapped by the build), summer-memories labels 0–5. Widest English per surface (2026-09-23):
       insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Still to
       measure: kite names and the cage HUD, fishing and sumo boxes. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
