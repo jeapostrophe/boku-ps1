@@ -68,10 +68,14 @@ G_FLAGS = 0x80035E48
 PLAY_TIMER = 0x80025910
 """u32 inside the first region; the file list's PLAYTIME."""
 SUMMARY_FLAG = 0x80025914
-"""The byte `save_summary_build` stores beside the day (*purpose unknown*)."""
+"""The second-playthrough byte: 1 once a new game starts from a card holding a finished save
+(`FINISHED_DAY`); `save_summary_build` stores it beside the day."""
 STAR_FLAGS = (237, 238)
 """The ★ bits: `star_set(n)` (`0x800336B8`, PROG 57) ORs bit n into `g_flags[237]` for n < 8,
 bit n - 8 into `g_flags[238]` otherwise."""
+EPILOGUE_FLAG = 250
+"""`ending_pick` writes the epilogue here; `ENDOTI` plays `OTI0n` for n = this flag, and a
+finished save keeps it -- Summer Memories' "ending" replays it."""
 STAR_BITS = range(1, 16)
 """The bits the game sets: PROG 57 with 2-6 and 8-15, and bits 1 and 7 from `ending_prepare`.
 Bit 0 is never set, so there are fifteen stars."""
@@ -413,45 +417,105 @@ def body_of(save_file: bytes, tables: GameTables) -> SaveBody:
 # --- a corpus -----------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class CorpusEntry:
-    name: str
-    wake_day: int
-    stars: int | None = None
-    flags: tuple[tuple[int, int], ...] = ()
-
-    def why(self) -> str:
-        if self.stars is None:
-            return f"wakes on the morning of August {self.wake_day}"
-        return (
-            f"wakes on August {self.wake_day} with {bin(self.stars).count('1')} stars "
-            f"(mask 0x{self.stars:04X}): the ending picks epilogue OTI0{epilogue_for(self.stars)}"
-        )
-
-
 LAST_DAY = 31
+FINISHED_DAY = 31
+"""A save whose summary day is at least this is a finished game: the card scan in `TITLE.OVL`
+(`mc_summary_scan` `0x8007B65C`) lists it in red, Summer Memories opens it, and a New Game
+started from that card sets `SUMMARY_FLAG` (research/save-format.md § A finished game)."""
 ENDING_STAR_COUNTS = (0, 5, 8, 11, 15)
 """One count inside each of `ending_pick`'s five bands."""
+TICKS_PER_SECOND = 60
+"""`PLAY_TIMER` and the file list's PLAYTIME count 60 a second (measured on Beetle)."""
+
+
+@dataclass(frozen=True)
+class CorpusEntry:
+    """One save: the evening it is saved on (it wakes the next morning), and its edits.
+    `play_hours` sets the play timer, which the file list shows -- a way to tell apart saves
+    that share a day on one card."""
+
+    name: str
+    saved_day: int
+    kind: str = "morning"
+    """`morning`, `ending` or `finished`: which card of `card_sets` it goes on."""
+    stars: int | None = None
+    flags: tuple[tuple[int, int], ...] = ()
+    play_hours: int | None = None
+
+    @property
+    def finished(self) -> bool:
+        return self.saved_day >= FINISHED_DAY
+
+    def why(self) -> str:
+        wake = f"wakes on the morning of August {self.saved_day + 1}"
+        if self.stars is None and not self.finished:
+            return wake
+        stars = self.stars or 0
+        count, epilogue = stars.bit_count(), f"epilogue OTI0{epilogue_for(stars)}"
+        if self.finished:
+            return (
+                f"a finished game with {count} stars: Summer Memories opens, and its "
+                f"ending replays {epilogue}"
+            )
+        return f"{wake} with {count} stars (mask 0x{stars:04X}): the ending picks {epilogue}"
 
 
 def corpus() -> list[CorpusEntry]:
-    entries = [CorpusEntry(f"day{d:02d}", d) for d in range(2, LAST_DAY + 1)]
-    for count in ENDING_STAR_COUNTS:
-        mask = star_mask(count)
-        entries.append(
-            CorpusEntry(f"ending-oti{epilogue_for(mask)}-{count:02d}stars", LAST_DAY, mask)
-        )
+    entries = [CorpusEntry(f"day{d:02d}", d - 1) for d in range(2, LAST_DAY + 1)]
+    for kind, day in (("ending", LAST_DAY - 1), ("finished", FINISHED_DAY)):
+        for count in ENDING_STAR_COUNTS:
+            mask = star_mask(count)
+            name = f"{kind}-oti{epilogue_for(mask)}-{count:02d}stars"
+            entries.append(CorpusEntry(name, day, kind, mask, play_hours=count))
     return entries
 
 
 def edited_body(base: SaveBody, entry: CorpusEntry) -> SaveBody:
     body = SaveBody(base.regions, bytes(base.data))
-    body.set_clock(entry.wake_day - 1, *BEDTIME)
+    body.set_clock(entry.saved_day, *BEDTIME)
     if entry.stars is not None:
         body.set_stars(entry.stars)
+    if entry.finished:
+        finish(body)
     for n, v in entry.flags:
         body.set_flag(n, v)
+    if entry.play_hours is not None:
+        body.write(PLAY_TIMER, struct.pack("<I", entry.play_hours * 3600 * TICKS_PER_SECOND))
     return body
+
+
+def finish(body: SaveBody) -> None:
+    """What the ending leaves in a save besides the day: `ending_pick`'s epilogue."""
+    body.set_flag(EPILOGUE_FLAG, epilogue_for(body.stars))
+
+
+def card_sets() -> dict[str, list[CorpusEntry]]:
+    """The corpus packed for a player: `{file name: saves}`, save n in slot n -- the order the
+    game's file list shows them. Mornings fill two cards in day order; the five ending bands
+    share one (PLAYTIME shows the star count in hours); the finished games get a card of their
+    own, because a New Game started from a card holding one is a second playthrough."""
+    entries = corpus()
+    mornings = [e for e in entries if e.kind == "morning"]
+    sets = {}
+    for i in range(0, len(mornings), BLOCKS - 1):
+        chunk = mornings[i : i + BLOCKS - 1]
+        first, last = chunk[0].saved_day + 1, chunk[-1].saved_day + 1
+        sets[f"boku-mornings-aug{first:02d}-aug{last:02d}.mcd"] = chunk
+    sets["boku-endings-by-stars.mcd"] = [e for e in entries if e.kind == "ending"]
+    sets["boku-finished-game.mcd"] = [e for e in entries if e.kind == "finished"]
+    return sets
+
+
+def corpus_sets() -> dict[str, list[CorpusEntry]]:
+    """The corpus a save per card, for the headless tools (each boots slot 1)."""
+    return {f"{e.name}.mcd": [e] for e in corpus()}
+
+
+def write_set(base: SaveBody, tables: GameTables, entries: list[CorpusEntry]) -> bytes:
+    return write_card(
+        {n: build_save_file(tables, edited_body(base, e), n) for n, e in enumerate(entries, 1)},
+        tables,
+    )
 
 
 def load_base(path: Path, tables: GameTables, slot: int) -> SaveBody:
@@ -494,45 +558,53 @@ def _poke(text: str) -> tuple[int, bytes]:
 
 def main_save(args: argparse.Namespace) -> int:
     try:
-        edits = [args.day, args.stars, args.stars_mask, args.flag or None, args.poke or None]
-        if args.corpus and any(e is not None for e in edits):
+        edited = args.day is not None or args.finished or args.stars is not None
+        edited = edited or args.stars_mask is not None or args.flag or args.poke
+        whole = "--corpus" if args.corpus else "--cards" if args.cards else None
+        if whole and edited:
             raise SaveError(
-                "--corpus writes its own day and stars and takes no --day, --stars, "
-                "--stars-mask, --flag or --poke; build a single card for an edited state"
+                f"{whole} writes its own days and stars and takes no --day, --finished, "
+                "--stars, --stars-mask, --flag or --poke; build a single card for an edited state"
             )
         tables = GameTables.read(Archive(args.disc))
         base = load_base(args.base, tables, args.slot)
-        if args.corpus:
+        if whole:
+            sets = corpus_sets() if args.corpus else card_sets()
             args.out.mkdir(parents=True, exist_ok=True)
             index = []
-            for entry in corpus():
-                body = edited_body(base, entry)
-                card = write_card({1: build_save_file(tables, body, 1)}, tables)
-                (args.out / f"{entry.name}.mcd").write_bytes(card)
-                index.append(f"{entry.name}.mcd\t{entry.wake_day}\t{entry.why()}")
+            for name, entries in sets.items():
+                (args.out / name).write_bytes(write_set(base, tables, entries))
+                index += [
+                    f"{name}\t{slot}\t{e.saved_day}\t{e.why()}" for slot, e in enumerate(entries, 1)
+                ]
             (args.out / "INDEX.tsv").write_text(
-                "card\twakes_on_august\twhat\n" + "\n".join(index) + "\n"
+                "card\tslot\tsaved_on_august\twhat\n" + "\n".join(index) + "\n"
             )
-            print(f"save: {len(index)} cards in {args.out}/ (INDEX.tsv lists them)")
+            print(f"save: {len(sets)} cards in {args.out}/ (INDEX.tsv lists them)")
             return 0
+        if args.finished:
+            saved = FINISHED_DAY
+        elif args.day is not None:
+            saved = args.day - 1
+        else:
+            saved = base.clock[0]
         entry = CorpusEntry(
             args.out.stem,
-            args.day if args.day is not None else base.clock[0] + 1,
-            None if args.stars is None else star_mask(args.stars),
-            tuple(args.flag),
+            saved,
+            stars=star_mask(args.stars) if args.stars is not None else args.stars_mask,
+            flags=tuple(args.flag),
         )
         body = edited_body(base, entry)
-        if args.stars_mask is not None:
-            body.set_stars(args.stars_mask)
         for addr, value in args.poke:
             body.write(addr, value)
         card = write_card({args.slot: build_save_file(tables, body, args.slot)}, tables)
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_bytes(card)
         day, hour, minute = body.clock
+        what = "a finished game" if day >= FINISHED_DAY else f"wakes on August {day + 1}"
         print(
             f"save: {args.out} -- slot {args.slot}, saved on August {day} at {hour:02d}:"
-            f"{minute:02d}, wakes on August {day + 1}; stars 0x{body.stars:04X} "
+            f"{minute:02d}, {what}; stars 0x{body.stars:04X} "
             f"(epilogue OTI0{epilogue_for(body.stars)})"
         )
         return 0
@@ -561,12 +633,26 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         default=DEFAULT_DISC_DIR,
         help="the import to read the game's tables from (default disc/)",
     )
-    parser.add_argument(
+    whole = parser.add_mutually_exclusive_group()
+    whole.add_argument(
         "--corpus",
         action="store_true",
-        help="write the whole corpus into --out: every morning and the five ending preconditions",
+        help="write the whole corpus into --out, a save per card: every morning, the five ending "
+        "bands, and the same five as finished games",
     )
-    parser.add_argument(
+    whole.add_argument(
+        "--cards",
+        action="store_true",
+        help="write the corpus packed for a player into --out: a few cards of up to 15 saves "
+        "(research/save-format.md § Playing a generated save in DuckStation)",
+    )
+    when = parser.add_mutually_exclusive_group()
+    when.add_argument(
+        "--finished",
+        action="store_true",
+        help="save after the ending (August 31): a finished game, which opens Summer Memories",
+    )
+    when.add_argument(
         "--day",
         type=int,
         choices=range(2, LAST_DAY + 1),

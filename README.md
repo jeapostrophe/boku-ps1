@@ -159,6 +159,14 @@ under `disc/files/`. `./make.sh extract` then writes the decoded script and per-
 in the repo works without it, and nothing it writes is ever committed. It needs `uv`, and
 `chdman` (from MAME) for CHD input.
 
+## Starting from any day
+
+`./make.sh duckstation-cards` writes memory cards, generated from your import, that start the
+game on any morning from August 2 to 31, on August 31 with the stars for each of the five
+endings, or as a finished game (Summer Memories). `INDEX.tsv` beside them lists every slot;
+[research/save-format.md](research/save-format.md) § "Playing a generated save in
+DuckStation" says how to put one in slot 1 without touching your own card.
+
 ## Layout
 
 ```
@@ -167,7 +175,7 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), boot-save, test, emu-test, lint, smoke
+make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), duckstation-cards, boot-save, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, voice-only, trial, build (text,
                      texture recipes, code-file arrays moved whole when they grow, labels
                      drawn from code immediates, the memory-card save title), patch,
@@ -193,7 +201,8 @@ disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects, translator
                         packets (work/packets/), page mock-ups (work/mockup/); saves/ the
-                        generated memory-card corpus (research/save-format.md)
+                        generated memory-card corpus and saves/duckstation/ the same packed
+                        to play (research/save-format.md)
 build/       (ignored)  patched files, patched image, the patch
 ```
 

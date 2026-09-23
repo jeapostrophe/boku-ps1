@@ -48,7 +48,7 @@ The file name is `"BISCPS-10088-"` (`TITLE.OVL` `0x80081400`) followed by the sl
 | `0x004` | title, Shift-JIS, NUL-terminated, ≤ 64 bytes: `save_title_build` (`0x8007AEF4`) = part 0 + slot + part 1 + day + part 2, numbers in full-width digits with no leading zero (`g_save_title_parts` `0x80081444`, `g_save_title_digits` `0x8008141C`; the parts are listed in [text-outside-events.md](text-outside-events.md)) |
 | `0x060` | icon CLUT, `0x20` bytes from `0x80028C64` |
 | `0x080` | icon frames, `0x180` bytes from `0x80028C64 + *(u32 *)0x80028C58` (= `0x80028C90` on this disc) |
-| `0x200` | slot summary, 12 bytes: `{u32 sum, u32 play counter, u8 day, u8 flag, 2 × pad}`; `sum` = byte sum of the 12 with `sum` zeroed (`save_summary_build` `0x8007B044`). `day` is `g_clock.day`, `flag` the byte at `0x80025914` (*purpose unknown*); the counter comes from a `TITLE.OVL` variable (`0x80081C18`), one less than the body's own play timer in Jay's save; `boku save` writes the body's. The file list ("1) 8月 1日 PLAYTIME …") is drawn from this |
+| `0x200` | slot summary, 12 bytes: `{u32 sum, u32 play counter, u8 day, u8 flag, 2 × pad}`; `sum` = byte sum of the 12 with `sum` zeroed (`save_summary_build` `0x8007B044`). `day` is `g_clock.day`, `flag` the byte at `0x80025914` (§ A finished game); the counter comes from a `TITLE.OVL` variable (`0x80081C18`), one less than the body's own play timer in Jay's save; `boku save` writes the body's. The file list ("1) 8月 1日 PLAYTIME …") is drawn from this; the timer counts 60 a second (a timer of 5 × 3600 × 60 lists as `5:00:00`, Beetle) |
 | `0x280` | body: the 21 regions below end to end, **3,717 bytes**. Its first 8 bytes are overwritten with `{u32 sum, u32 size}`; `sum` = byte sum of all `size` bytes with `sum` zeroed. What `save_verify` does with them is [integrity.md](integrity.md)'s |
 
 Neither sum covers the header, so the title and icon can change freely. `bytesum`
@@ -62,7 +62,7 @@ is 0; that last record is not copied. Restoring (`0x8007B8E8`) copies them back.
 
 | body offset | RAM | bytes | what (measured unless marked) |
 |---:|---|---:|---|
-| 0 | `0x80025908` | 20 | `+0` scratch the body's sum and size overwrite; `+8` u32 **play timer**; `+0xC` the summary's `flag` byte |
+| 0 | `0x80025908` | 20 | `+0` scratch the body's sum and size overwrite; `+8` u32 **play timer**; `+0xC` the **second-playthrough** byte, the summary's `flag` (§ A finished game) |
 | 20 | `0x8003DC28` | 240 | *unknown*; with the next two, differs in most of its bytes between a new game's first dialogue and the end of Jay's day 1 — *inferred:* tables re-rolled each day (insect spawns?) |
 | 260 | `0x8003DB38` | 240 | *unknown*, as above |
 | 500 | `0x8003DD20` | 240 | *unknown*, as above |
@@ -99,6 +99,32 @@ rod and the corn harvest; day 31: the uncle's sore back). The game only saves at
 save's resolution is a morning — reaching later in a day is a matter of playing on from the
 morning's save state.
 
+## A finished game
+
+After the ending (`ENDOTI`) the game asks which file to save to, and writes a save whose
+`g_clock.day` — so the summary's `day` — is **31** (measured: the game's own clear save,
+written on Beetle after a generated day-31 morning was played through, reads August 31 09:04,
+`g_flags[250]` = its epilogue). That day is the whole marker:
+
+* The file lists show a finished file's date **in red**. **Continue** loads it and goes back
+  to the title — a finished summer cannot be continued (Beetle).
+* **Summer Memories** (the title menu's third item) lists the finished files and opens the
+  album for the one chosen: picture diary, insect specimens and cage, kites, items, and
+  **エンディング**, which replays `MOVIE 24` and the epilogue of the file's `g_flags[250]`
+  (Beetle, a generated finished save with `g_flags[250]` = 2: mode `0x10` with `OTI02`).
+  With no finished file it says none has finished the game.
+* **New Game** with a finished file on the card sets `0x80025914` = 1 (Beetle): the card
+  scan `mc_summary_scan` (`TITLE.OVL` `0x8007B65C`) reads each summary's day and, for one
+  ≥ 31 (`sltiu v0, day, 0x1F`), stores 1 there. The byte is saved (body region 0, the
+  summary's `flag`), and `PROG 14` copies it into the scripts' result register, where two
+  events branch on it — `E0404` and `E1503`: the **second playthrough**. So a finished save
+  on a card changes every new game started from that card, and `boku save --cards` never
+  puts one beside an unfinished save.
+
+`boku save --finished` writes one (day 31, and `g_flags[250]` from the stars, as
+`ending_pick` would have left it); `tests/test_save.py` reads the threshold out of
+`mc_summary_scan` and checks the generated epilogue against the game's own clear save.
+
 ## Which ending plays
 
 Day 31's `E3182` (`day == 31 & flag[251] == 12`, `flag[251]` being day 31's running scene
@@ -123,16 +149,19 @@ sisters' marriages, `OTI01` the potter, `OTI03` the novelist.
 
 ## The generator and the corpus
 
-`./make.sh save --base BASE --out CARD [--day N] [--stars K | --stars-mask M] [--flag N=V]
-[--poke ADDR=HEX] [--slot S]` writes one card. `BASE` is a card (its save in `--slot`) or a
-2 MB main-RAM dump; `--day N` makes the save the evening before (`g_clock` = N − 1, 20:00),
-so it wakes on August N; `--stars K` sets star bits 1…K. Every byte it writes is summed as the
-game sums it; `tests/test_save.py` rebuilds Jay's save from its parsed body and gets the
-game's own bytes back for the header, title, icon and body.
+`./make.sh save --base BASE --out CARD [--day N | --finished] [--stars K | --stars-mask M]
+[--flag N=V] [--poke ADDR=HEX] [--slot S]` writes one card. `BASE` is a card (its save in
+`--slot`) or a 2 MB main-RAM dump; `--day N` makes the save the evening before (`g_clock` =
+N − 1, 20:00), so it wakes on August N; `--finished` makes it a finished game (§ A finished
+game); `--stars K` sets star bits 1…K. Every byte it writes is summed as the game sums it;
+`tests/test_save.py` rebuilds a save the game wrote from its parsed body and gets the game's
+own bytes back for the header, title, icon and body.
 
-`./make.sh saves` writes the **corpus** into `work/saves/corpus/` (with `INDEX.tsv`):
-`day02` … `day31` — every morning from August 2 — and `ending-oti{4,2,0,1,3}-{00,05,08,11,15}stars`,
-the morning of August 31 with a star count inside each of `ending_pick`'s five bands. Its base
+`./make.sh saves` writes the **corpus** into `work/saves/corpus/` (with `INDEX.tsv`), one
+save per card in slot 1: `day02` … `day31` — every morning from August 2 —,
+`ending-oti{4,2,0,1,3}-{00,05,08,11,15}stars`, the morning of August 31 with a star count
+inside each of `ending_pick`'s five bands, and `finished-oti…` the same five as finished
+games. The ending and finished saves' play timers read the star count in hours. Its base
 is a **new game's RAM** at the first dialogue (`work/saves/newgame.ram`, dumped once on
 Beetle from your own import by `run_core.py --ram-out`).
 
@@ -143,8 +172,39 @@ until the lane sets those flags with `--flag` (the conditions are in
 [`data/scenes.tsv`](data/scenes.tsv)). No flag set of a real playthrough by day N has been
 decoded — Jay's day-1 card differs from the new-game base in flags 0, 2, 3, 213 and the diary
 page for day 1, which is all one played day showed. The ending cards set the stars that
-decide the epilogue, but reaching the epilogue still means playing day 31 until `flag[251]`
-reaches 12.
+decide the epilogue, and August 31 is the ending: every scene that day is an automatic link
+in `flag[251]`'s chain (`E3171`–`E3182`, 1 → 12), so from the morning the ending comes by
+itself. Measured on Beetle with `ending-oti3-15stars`, ○ pressed every 30 frames: loaded at
+frame 4300, the chain began 6932, `MOVIE 24` at 13853, `ENDOTI` (`OTI03`) at 30651, the
+save-your-file screen at 33608. There is no evening on August 31 to save at, so the morning
+is the latest a save can start before the ending.
+
+## Playing a generated save in DuckStation
+
+`./make.sh duckstation-cards` writes the corpus packed for a player into
+`work/saves/duckstation/`, from your own import like every save here, with an `INDEX.tsv`
+naming each card's slots:
+
+| card | slots |
+|---|---|
+| `boku-mornings-aug02-aug16.mcd` | 1–15: wake on August 2 … 16 |
+| `boku-mornings-aug17-aug31.mcd` | 1–15: wake on August 17 … 31 |
+| `boku-endings-by-stars.mcd` | 1–5: the morning of August 31 with 0, 5, 8, 11, 15 stars — one per epilogue band; PLAYTIME reads the stars in hours |
+| `boku-finished-game.mcd` | 1–5: the same five as finished games — Summer Memories, and its "ending" replays that band's epilogue |
+
+The file list shows the day a save was **made**, the evening before the morning it wakes
+on (`8月16日` wakes on August 17), two files at a time; ↓ walks it.
+
+The game reads **memory card 1 only** — every `MemCard*` call in `TITLE.OVL` passes channel 0
+— so a card in slot 2 is never seen. The least fiddly way, which never touches the card you
+play on: in DuckStation, right-click the game → **Properties** → **Memory Cards** → Memory
+Card 1: **Shared Between All Games**, and **Browse** the shared-card path to one of these
+files. That override is this game's only (its own ini under DuckStation's `gamesettings/`);
+set Memory Card 1 back to **Use Global Setting** to return to your own card. Change the
+setting with the game closed, so the card the game boots with is the one you chose. A game saved
+while a test card is in writes to that test card — `./make.sh duckstation-cards` rewrites all
+four. (DuckStation keeps a path under its `memcards` folder relative to it —
+`MemoryCardSettingsWidget`, which the per-game Properties page reuses.)
 
 ## Loading a card headlessly
 
@@ -191,7 +251,8 @@ BOKU_INPUT="2430:START:5;2590:DOWN:5;2660:CIRCLE:5;3050:CIRCLE:5;3150:CIRCLE:5" 
 | memory-card screens | continue with any card: "checking the memory card" ~3950, file list ~4100, "load this file?" after ○, "load finished" | measured. With no `--memcard` Beetle's card is formatted and empty (`InputDevice_Memcard_Format`), so the no-card and unformatted-card messages need a card made that way on purpose — not shot |
 | START in play | after breakfast, START shows the controls help. Day 3: resume `boot-save`'s `morning.state`, breakfast ends ~6000 frames later | measured |
 | the insect box | in play, **△ opens the desk** (the "sub screen": net, cage, items, fishing gear, kites); the cage is the green box. From the item cursor, RIGHT ×2 reaches the net | desk measured; the cursor path to the cage not |
-| summer memories (the title menu's third item) | a card whose day reads 31: `./make.sh save --day 31 --poke 0x80028FA0=1F` (`g_clock.day` = 31, which `boku save` also writes as the summary's day; which of the two the screen reads is not settled). With 30 the screen says no file has finished the game; setting the summary's `flag` byte alone did not change that. Then START, DOWN ×2, ○, ○ on the file, ○ on "yes" | measured on both emulators (`tools/vwf/shoot-menus.sh`) |
+| summer memories (the title menu's third item) | a finished save (§ A finished game): `boku-finished-game.mcd` or `./make.sh save --finished`. START, DOWN ×2, ○, ○ on the file, ○ on "yes"; the album is up ~1300 frames after the file is chosen | measured on both emulators (`tools/vwf/shoot-menus.sh`), and Beetle 2026-09-23 |
+| the ending | `ending-oti*` (a morning of August 31; ~9,500 frames of ○ to `MOVIE 24`, § The generator and the corpus), or at once from a finished save's Summer Memories → エンディング (DOWN ×4, ○) | measured on Beetle 2026-09-23 |
 | bug sumo | **no card needed, PCSX-Redux**: `tools/redux/to-sumo.lua` points the intro's return to the field at `E4025` with that event's flags met (the script's header lists the pokes), and the event enters mode 7 itself ~300 vsyncs later; the script saves the state `sumo-desk`. It reaches the **desk** (insect notebook and Boku's cage, ○ opens it), empty on a new game. A **bout** needs a beetle in Boku's cage (`0x80045A10`, the table above), and a record poked by hand (type 30, the rhinoceros beetle, with guessed fields) hung the game when the cage opened. Beetle PSX has no breakpoint to redirect at, so the same route there needs `--poke` timed into the intro movie | desk measured; bout not reached |
 | the well on the shortcut path | the story bible puts "the secret shortcut" on days 17–18 (`E1754`); a `day19`-or-later card, with its flags set by `--flag` from `scenes.tsv` | not reached |
 | any map, day 1 | during a new game's opening movie, poke a three-character map base into `g_movie_return_map` (`0x80036588`): the movie ends in that map, its variant chosen by the clock as usual. `run_core.py --poke 5300:0x80036588=43313500` with `boot-to-dialogue.press` is `C15`, the path to the beach, by frame ~6000 ([texture-recipes.md](texture-recipes.md) § `M_C15`) | measured for `C15` |
@@ -202,5 +263,5 @@ BOKU_INPUT="2430:START:5;2590:DOWN:5;2660:CIRCLE:5;3050:CIRCLE:5;3150:CIRCLE:5" 
 
 * The unnamed regions above, and a real playthrough's flag set by day — what would make the
   corpus story-correct. Not needed for reaching a day.
-* `0x80025914` (the summary's `flag`) and `0x80028FD0`'s bits.
+* `0x80028FD0`'s bits; what `E0404` and `E1503` do differently on a second playthrough.
 * Which in-game clock drives `g_clock` (the poke result above).

@@ -97,8 +97,11 @@ usage: ./make.sh <verb> [arguments]
                                 wakes on, the stars that pick the ending, any flag or saved
                                 byte (./make.sh save --help; research/save-format.md)
   saves                         the save corpus into work/saves/corpus/ -- every morning
-                                from August 2 to 31 and one card per ending -- starting
-                                from a new game's RAM, dumped once on Beetle
+                                from August 2 to 31, one card per ending and a finished
+                                game -- starting from a new game's RAM, dumped once on Beetle
+  duckstation-cards             the same saves packed a few to a card for playing them in
+                                DuckStation -> work/saves/duckstation/ (research/save-format.md
+                                § "Playing a generated save in DuckStation")
   boot-save CARD [arguments]    boot CARD's slot-1 save on Beetle to the morning it wakes
                                 on; shoot it, save a state to resume from, and check the
                                 clock (tools/libretro/boot_save.py --help)
@@ -225,8 +228,11 @@ cmd_build_days() {
 
 # ENV-06: the corpus's base is a new game's RAM at the first dialogue, dumped once from your own
 # import; what that base can and cannot reach is research/save-format.md's.
-cmd_saves() {
-    local dir="work/saves"
+# `saves` writes a save per card for the headless tools; ENV-07's `duckstation-cards` packs the
+# same saves a card per purpose, to play in DuckStation.
+saves_run() {
+    local dir="work/saves" mode="$1" out="$2"
+    shift 2
     if [ ! -f "$dir/newgame.ram" ]; then
         echo "== 1/2: a new game's RAM, from a Beetle boot to the first dialogue -> $dir/newgame.ram =="
         uv run python tools/libretro/run_core.py disc/image.cue --work "$dir/base" \
@@ -236,8 +242,8 @@ cmd_saves() {
     else
         echo "== 1/2: $dir/newgame.ram is already there (delete it to dump it again) =="
     fi
-    echo "== 2/2: the corpus -> $dir/corpus/ =="
-    uv run boku save --base "$dir/newgame.ram" --corpus --out "$dir/corpus" "$@"
+    echo "== 2/2: the saves -> $dir/$out/ =="
+    uv run boku save --base "$dir/newgame.ram" "$mode" --out "$dir/$out" "$@"
 }
 
 verb="${1:-}"
@@ -311,7 +317,10 @@ case "$verb" in
         exec uv run boku save "$@"
         ;;
     saves)
-        cmd_saves "$@"
+        saves_run --corpus corpus "$@"
+        ;;
+    duckstation-cards)
+        saves_run --cards duckstation "$@"
         ;;
     boot-save)
         exec uv run python tools/libretro/boot_save.py "$@"

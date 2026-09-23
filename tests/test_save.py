@@ -203,7 +203,7 @@ def test_the_card_frames_match_the_games_card(archive, sample_card):
 def test_an_edited_save_reads_back_with_the_edit(archive, sample_card):
     tables = S.GameTables.read(archive)
     base = S.body_of(S.read_card(sample_card, tables)[1], tables)
-    entry = S.CorpusEntry("x", 31, S.star_mask(8), ((42, 7),))
+    entry = S.CorpusEntry("x", 30, stars=S.star_mask(8), flags=((42, 7),))
     card = S.write_card({1: S.build_save_file(tables, S.edited_body(base, entry), 1)}, tables)
     back = S.body_of(S.read_card(card, tables)[1], tables)
     assert back.clock == (30, *S.BEDTIME)
@@ -267,17 +267,164 @@ def test_load_base_refuses_a_file_that_is_neither_card_nor_ram(tmp_path):
         S.load_base(odd, tables, 1)
 
 
+def _synthetic_tables() -> S.GameTables:
+    regions = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16))
+    return S.GameTables(regions, "P-", b"", ("a", "b", "c"), tuple("0123456789"))
+
+
+def _stub_disc(monkeypatch) -> S.GameTables:
+    """`main_save` reads the synthetic tables instead of an import."""
+    tables = _synthetic_tables()
+    monkeypatch.setattr(S.GameTables, "read", classmethod(lambda cls, archive: tables))
+    monkeypatch.setattr(S, "Archive", lambda disc: None)
+    return tables
+
+
+def _cards() -> tuple[S.GameTables, dict[str, bytes]]:
+    tables = _synthetic_tables()
+    base = S.SaveBody(tables.regions, bytes(tables.body_size))
+    return tables, {n: S.write_set(base, tables, e) for n, e in S.card_sets().items()}
+
+
 def test_corpus_refuses_edit_switches_it_would_ignore(tmp_path, capsys, monkeypatch):
     base = tmp_path / "b.ram"
     base.write_bytes(bytes(S.RAM_BYTES))
-    # Regions a corpus can be built over, so that without the refusal it would succeed.
-    regions = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16))
-    tables = S.GameTables(regions, "P-", b"", ("a", "b", "c"), tuple("0123456789"))
-    monkeypatch.setattr(S.GameTables, "read", classmethod(lambda cls, archive: tables))
-    monkeypatch.setattr(S, "Archive", lambda disc: None)
+    _stub_disc(monkeypatch)  # tables a corpus can be built over, so only the refusal stops it
     args = _parser().parse_args(
         ["--base", str(base), "--out", str(tmp_path / "c"), "--corpus", "--flag", "75=9"]
     )
     assert S.main_save(args) == 1
     assert "--corpus" in capsys.readouterr().out
     assert not (tmp_path / "c").exists()
+
+
+# --- the finished-game marker and the DuckStation card set (PLAN ENV-07) -------------------
+
+SUMMARY_SCAN = 0x8007B65C
+SUMMARY_SCAN_BYTES = 0xD0
+
+
+def _summary_scan(archive) -> tuple[int, int]:
+    """(the day threshold, the RAM address it sets) from the card scan's own instructions:
+    `lbu v, 8(summary)` (the summary's day), `sltiu v, v, K`, then `sb` of 1 at `0x8002 << 16
+    + off` -- a summary whose day is >= K marks the card as holding a finished game."""
+    words = struct.unpack(
+        f"<{SUMMARY_SCAN_BYTES // 4}I",
+        archive.overlay_bytes("TITLE.OVL", SUMMARY_SCAN, SUMMARY_SCAN_BYTES),
+    )
+    decoded = [_mips(w) for w in words]
+    for i, (op, _rs, _rt, imm) in enumerate(decoded):
+        if op == 0x24 and imm == 8 and decoded[i + 2][0] == 0x0B:  # lbu; nop; sltiu
+            threshold, hi, one = decoded[i + 2][3], {}, {}
+            for op2, rs2, rt2, imm2 in decoded[i + 3 : i + 9]:
+                if op2 == 0x0F:  # lui rt, hi
+                    hi[rt2] = imm2 & 0xFFFF
+                elif op2 == 0x09 and rs2 == 0:  # addiu rt, zero, k
+                    one[rt2] = imm2
+                elif op2 == 0x28 and rs2 in hi and one.get(rt2) == 1:  # sb 1, off(lui)
+                    return threshold, (hi[rs2] << 16) + imm2
+    raise AssertionError("no day test in the summary scan")
+
+
+def test_finished_day_is_the_one_the_card_scan_tests(archive):
+    threshold, marks = _summary_scan(archive)
+    assert threshold == S.FINISHED_DAY
+    assert marks == S.SUMMARY_FLAG
+
+
+def test_duckstation_cards_hold_every_corpus_morning_once(tmp_path):
+    tables, written = _cards()
+    corpus_mornings = [e.saved_day for e in S.corpus() if e.kind == "morning"]
+    seen = []
+    for name, card in written.items():
+        if "morning" not in name:
+            continue
+        days = [
+            S.body_of(save, tables).clock[0]
+            for _, save in sorted(S.read_card(card, tables).items())
+        ]
+        assert days == sorted(days), f"{name}: the file list should read in day order"
+        seen += days
+    assert sorted(seen) == sorted(corpus_mornings)
+
+
+def test_duckstation_endings_card_shows_each_star_count_as_playtime_hours():
+    tables, cards = _cards()
+    (endings,) = [card for name, card in cards.items() if "ending" in name]
+    bands = set()
+    for save in S.read_card(endings, tables).values():
+        body = S.body_of(save, tables)
+        counter = struct.unpack_from("<I", save, S.SUMMARY + 4)[0]
+        # The file list's PLAYTIME: 60 ticks a second (measured, research/save-format.md).
+        assert counter // (60 * 3600) == bin(body.stars).count("1")
+        bands.add(S.epilogue_for(body.stars))
+    assert bands == {0, 1, 2, 3, 4}
+
+
+def test_a_finished_save_never_shares_a_card_with_an_unfinished_one():
+    """A New Game started from a card holding a finished save is a second playthrough
+    (research/save-format.md § A finished game), so mornings must not share one."""
+    tables, cards = _cards()
+    finished_cards = 0
+    for card in cards.values():
+        days = [save[S.SUMMARY + 8] for save in S.read_card(card, tables).values()]
+        done = [d >= S.FINISHED_DAY for d in days]
+        assert all(done) or not any(done), days
+        finished_cards += all(done)
+    assert finished_cards == 1
+
+
+def test_cards_switch_writes_the_duckstation_set(tmp_path, capsys, monkeypatch):
+    base = tmp_path / "b.ram"
+    base.write_bytes(bytes(S.RAM_BYTES))
+    _stub_disc(monkeypatch)
+    args = _parser().parse_args(["--base", str(base), "--out", str(tmp_path / "ds"), "--cards"])
+    assert S.main_save(args) == 0, capsys.readouterr().out
+    names = sorted(p.name for p in (tmp_path / "ds").glob("*.mcd"))
+    assert names == sorted(S.card_sets())
+    assert (tmp_path / "ds" / "INDEX.tsv").is_file()
+
+
+def test_finished_saves_carry_their_epilogue_as_the_games_clear_save_does(archive, sample_card):
+    """The game's own clear save (written after the ending) holds `ending_prepare`'s pick in
+    g_flags[250], which Summer Memories' "ending" replays; a generated finished save must too."""
+    tables = S.GameTables.read(archive)
+    theirs = S.body_of(S.read_card(sample_card, tables)[1], tables)
+    if theirs.clock[0] < S.FINISHED_DAY:
+        pytest.skip("the sample card is not a finished game")
+    assert theirs.flag(S.EPILOGUE_FLAG) == S.epilogue_for(theirs.stars)
+    finished = [e for e in S.corpus() if e.finished]
+    assert {S.epilogue_for(e.stars) for e in finished} == {0, 1, 2, 3, 4}
+    base = S.SaveBody(tables.regions, bytes(tables.body_size))
+    for e in finished:
+        body = S.edited_body(base, e)
+        assert body.flag(S.EPILOGUE_FLAG) == S.epilogue_for(body.stars), e.name
+
+
+def test_an_explicit_epilogue_flag_survives_finishing():
+    """An entry's own flags are applied after what finishing sets."""
+    tables = _synthetic_tables()
+    base = S.SaveBody(tables.regions, bytes(tables.body_size))
+    mask = S.star_mask(15)
+    other = (S.epilogue_for(mask) + 1) % 5
+    entry = S.CorpusEntry("x", S.FINISHED_DAY, stars=mask, flags=((S.EPILOGUE_FLAG, other),))
+    assert S.edited_body(base, entry).flag(S.EPILOGUE_FLAG) == other
+
+
+def test_a_finished_base_with_a_new_star_mask_gets_that_masks_epilogue(tmp_path, monkeypatch):
+    """A finished base re-edited with a new mask ends on that mask's epilogue."""
+    tables = _stub_disc(monkeypatch)
+    finished = tmp_path / "f.mcd"
+    body = S.edited_body(
+        S.SaveBody(tables.regions, bytes(tables.body_size)),
+        S.CorpusEntry("f", S.FINISHED_DAY, stars=S.star_mask(15)),
+    )
+    finished.write_bytes(S.write_card({1: S.build_save_file(tables, body, 1)}, tables))
+    out = tmp_path / "x.mcd"
+    mask = S.star_mask(5)
+    args = _parser().parse_args(
+        ["--base", str(finished), "--out", str(out), "--stars-mask", hex(mask)]
+    )
+    assert S.main_save(args) == 0
+    back = S.body_of(S.read_card(out.read_bytes(), tables)[1], tables)
+    assert back.flag(S.EPILOGUE_FLAG) == S.epilogue_for(mask)
