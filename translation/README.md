@@ -30,7 +30,9 @@ M27	120	300	Far away, I could see the village | of Sagi-no-sato at the foot of t
 * **English** is drawn centred near the bottom of the picture, white with a dark outline,
   in the same proportional font as the dialogue, at most **two lines** of at most 318
   pixels each. ` | ` breaks the line where you put it; without one the text is wrapped at
-  the width. A literal `|` cannot be drawn.
+  the width. A literal `|` cannot be drawn. In the ending (`M28`) the Japanese credits scroll
+  up through those rows from about frame 1085 to the end, so a cue there is drawn over them
+  (`research/movies.md` § 9).
 * `#` lines and blank lines are notes. There is no Japanese in this file, as in the day
   files: the transcripts of the narration stay under `work/`.
 

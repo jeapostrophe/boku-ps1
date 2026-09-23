@@ -470,9 +470,69 @@ on `M27`, 83 on `M60` — is that stock shot plus exactly its own movie's text, 
 the other's; the patched run is 25 frames behind the stock one, the block's read (§ 7 says
 22–25).
 
-**Observed, not chased:** two of eleven headless Redux boots that night never reached the
-opening by vsync 6000 (`strframes=0`), one on the stock image and one on a patched one, and
-the same command passed on a rerun. Other lanes were running Redux at the same time.
-*Hypothesis*, unchecked: the runs share Redux's memory cards (`run_core.py` keeps Beetle's
-per work directory; where Redux keeps its own was not looked at), and the card check read
-another run's save.
+**Observed:** two of eleven headless Redux boots that night never reached the opening by
+vsync 6000. The cause is § 9's: the boot's presses were timed from process start.
+
+## 9. In-game movies and the ending (`FMV-04` milestone 3, 2026-09-23)
+
+Measured on Beetle from a day-31 morning (`./make.sh saves`, `./make.sh boot-save
+work/saves/corpus/day31.mcd`; `research/save-format.md`), on the stock image and on a
+fixture build with cues on `M28` (frames 100–400 and 4000–4194) and `M250`, through
+`build_prototype.py --edits-only` and `boku build --vwf`. Scratch: `work/fmv04/m3/`
+(`timeline.py` dumps RAM every N frames; `compare.py` matches each patched shot to the stock
+shot equal to it outside the subtitle rows, then requires the rest to be that shot exactly or
+plus exactly one cue).
+
+**Every morning is an in-game movie.** `boot-save`'s morning state, the radio exercises, is
+mode `0x0E` playing `MOVIE` id 16 (`M21`, `g_movie_queue` = {1, 16}) — the player returns to
+the field (mode 5, map `G02001`) about 1,200 frames later. On the patched image the block is
+in RAM with its magic and the hook's frame number counts through all 527 frames, so a days
+build reads the block at every morning, not only at the opening.
+
+**The block's RAM during an in-game movie.** `0x801C0000…` lies inside `g_bg_clut_save`
+(`0x801BA1F4`, the other map's saved CLUT rows; `loading-and-memory.md` § the fixed arena),
+above the movie arena's end, so the block overwrites what the field left there. Measured on
+the stock image, where timing is identical run to run: the same morning state with
+`0x801C0000…0x801C1800` filled with `0xEE` mid-movie (`state_poke.py --fill`; the region held
+6,126 non-sentinel bytes) against the untouched state, through the return to the field and
+two map changes (`G02001` → `G02000` → `H02001`, 8,000 frames, a shot every 5): **all 1,601
+shots byte-identical**; 400 frames after the movie the region holds exactly the untouched
+run's bytes again, and no other RAM byte differs. The game regenerates that range after a
+movie before anything reads it — on this path (a field movie with a map reload after it).
+The patched run agrees: every patched shot of the same window that matches a stock shot
+outside the subtitle rows (244) matches it whole.
+
+**The ending, `M28` (id 24), in the game.** `E3182` fires with `g_flags[251]` poked to 12
+(`0x80035F43`) before the day's walk reaches `H02`; the game resets that flag at 08:00, so it
+is poked at frame 5450, after the reset (`run_core.py --poke`). The hook fires: the loader
+selects `M28`'s row (`g_movie_name` = `0x8002A174`), the frame number counts to 4194, and the
+Beetle shots inside the cues are the stock shots plus exactly the predicted text — 23 on the
+first cue, 117 on the last — with none wrong. Differences from the opening:
+
+* **Length is unchanged by the hook**: 16,770–16,775 frames from mode `0x0E` to mode `0x10`
+  on both images (stock ~7,740 → 24,505, patched ~6,555 → 23,325). The patched run reaches
+  the movie ~1,180 frames sooner; the gap opens in the field after `M21`, where no movie code
+  runs, so it is the rest of the patch (the text renderer), not the subtitles.
+* **After it** the game switches to mode `0x10` (`ENDOTI`, the epilogue), then `0x0F`, on both;
+  the shots of the whole window after the movie match stock exactly where they align (613 of
+  901 matched, all of them right). The block is not re-read there: no movie runs.
+* **Unskippable** (skip mask 0, § 2.1) — nothing in the hook depends on it.
+* **The credits.** From about STR frame 1085 to the end the picture is Japanese credits
+  scrolling up over black, with photographs, and they cross the subtitle rows (200–226): a
+  cue after frame ~1085 is drawn over them. The one `M28` cue in `translation/movies.txt`
+  (961–1043) ends before them, over the sky.
+
+**The Redux boot flake.** The two misses of § 8 reproduce under load: the game mode trace
+(`movie-sub.lua` prints every change) shows the title (`g_mode` 2) at vsync 2088 on a quiet
+host and at **3287** — exactly 1,200 vsyncs later — on a loaded one, so the fixed presses at
+2430/2600 land on the bumper, and one run went to the field (mode 5) instead of the card check
+(logged "game mode 5"). Private memory cards did not change it (a formatted card
+whose write-test frame is still zero made the boot miss the opening both times it was tried; with the
+frame as the BIOS leaves it, 1 of 4 still missed under load). **Fixed** by anchoring the
+presses to the title (`lib.lua` `after_title`: wait for mode 2, keep the measured 342/512-vsync
+gaps) and the vsync budget likewise: seven concurrent boots at load average ~140, one of them
+with its title at 3287, all reached the opening. `run-headless.sh` gives every run its own
+cards anyway, since Redux writes the shared ones back. `boot-to-dialogue.lua` and `voice-sub.lua` replay the same presses the same way. What stays
+load-sensitive is the wall clock: `run-headless.sh` kills a run after `REDUX_TIMEOUT`
+(300 s), and at load ~150 the voice gate's 16,000-vsync boot needed `REDUX_TIMEOUT=1500`
+to pass (it then did, 4 of 4).

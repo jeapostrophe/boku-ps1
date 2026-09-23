@@ -17,11 +17,14 @@
 
      Exit 0 when dialog_open fires with the expected literals; saves state
      "first-dialogue" 8 frames later (the text is on screen) and a shot of it.
-     Exit 3 if it has not fired by BOKU_FRAMES (default 4600), 4 if the arguments differ.
+     Exit 3 if it has not fired by BOKU_FRAMES (default 4600, moved later by however late
+     the title came: the presses are anchored to it, lib.lua after_title), 4 if the
+     arguments differ.
 --]]
 local L = dofile(os.getenv('BOKU_REDUX_DIR') .. '/lib.lua')
 local LIMIT = L.numenv('BOKU_FRAMES', '4600')
-local script = L.script(L.BOOT_PRESSES, L.SKIP_MOVIE)
+-- Anchored to the title (lib.lua after_title): fixed vsyncs miss it under load.
+local boot = L.after_title(L.BOOT_PRESSES, L.SKIP_MOVIE)
 
 local opened_at, bad
 L.bp(0x8002BD30, 'Exec', 4, 'dialog_open', function()
@@ -35,12 +38,12 @@ L.bp(0x8002BD30, 'Exec', 4, 'dialog_open', function()
 end)
 
 L.on_frame(function(f)
-    if script[f] then script[f]() end
+    local shift = boot(f)
     if opened_at and f == opened_at + 8 then
         L.shot('first-dialogue')
         L.say('BOOT saved %s', L.save_state('first-dialogue'))
         if bad then L.finish(4, 'dialog_open arguments are not (297, 22, 1) from msg_open') else L.finish(0, 'ok') end
-    elseif f >= LIMIT then
+    elseif f >= LIMIT + shift then
         L.shot('boot-to-dialogue-timeout')
         L.finish(3, 'no dialogue by frame ' .. f)
     end

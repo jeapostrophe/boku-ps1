@@ -125,6 +125,34 @@ M.HOLD = 5
 M.BOOT_PRESSES = { { 2430, 'START' }, { 2600, 'CIRCLE' } }
 M.SKIP_MOVIE = { { 3600, 'START' } }
 
+-- The same presses anchored to the title instead of to process start. Measured 2026-09-23
+-- (research/movies.md § 9): the boot reaches the title (g_mode 0x800237E0 = 2) at vsync
+-- 2088 on a quiet machine and at 3287 under load -- the bumper's CD reads are slower in
+-- vsyncs when the host is busy -- and then the fixed 2430/2600 presses land on the bumper
+-- and the boot never reaches the opening. M.after_title(list, ...) returns a function to
+-- call every vsync: it waits for mode 2 and replays the lists shifted by (that frame -
+-- TITLE_AT), so the measured gap between the title and each press is kept whatever the
+-- load. It returns that shift (0 until the title), for a vsync budget to move with it.
+M.TITLE_AT = 2088
+M.MODE = 0x800237E0
+function M.after_title(...)
+    local lists, script, shift = { ... }, nil, nil
+    return function(f)
+        if not shift and M.r8(M.MODE) == 2 then
+            shift = f - M.TITLE_AT
+            local shifted = {}
+            for _, list in ipairs(lists) do
+                for _, press in ipairs(list) do
+                    shifted[#shifted + 1] = { press[1] + shift, press[2] }
+                end
+            end
+            script = M.script(shifted)
+        end
+        if script and script[f] then script[f]() end
+        return shift or 0
+    end
+end
+
 -- M.script(list, ...) turns {frame, button name} pairs into the frame -> function table an
 -- M.on_frame body indexes: each press is held M.HOLD vsyncs and then released.
 function M.script(...)

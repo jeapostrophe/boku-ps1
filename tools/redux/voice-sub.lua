@@ -18,7 +18,8 @@
        BOKU_EVENT, BOKU_MSG  the clip to watch (default 184, 2)
        BOKU_AFTER            vsyncs to watch after it starts (default 400)
        BOKU_SHOTS            also shoot every N vsyncs from the start (default 0: none)
-       BOKU_FRAMES           give up at this vsync (default 16000): exit 3
+       BOKU_FRAMES           give up at this vsync, moved later by however late the
+                             title came (lib.lua after_title; default 16000): exit 3
        BOKU_SAVE             1: save the state "voice-start" (under BOKU_WORK/states) the
                              tick the clip starts
        BOKU_LOAD             a state name: load it instead of booting, and watch from there
@@ -36,7 +37,8 @@ local SHOTS = L.numenv('BOKU_SHOTS', '0')
 local SAVE = os.getenv('BOKU_SAVE') == '1'
 local LOAD = os.getenv('BOKU_LOAD')
 local CLEAR_AT = L.numenv('BOKU_CLEAR_AT', '-1')
-local script = LOAD and {} or L.script(L.BOOT_PRESSES, L.SKIP_MOVIE)
+-- Anchored to the title (lib.lua after_title): fixed vsyncs miss it under load.
+local boot = LOAD and function() return 0 end or L.after_title(L.BOOT_PRESSES, L.SKIP_MOVIE)
 
 local XA_HANDLER, G_EV = 0x8002F588, 0x80036368
 local TEXT_PAGE, TEXT_FLAGS = 0x800359EC, 0x800359E4
@@ -64,7 +66,7 @@ end)
 
 local last
 L.on_frame(function(f)
-    if script[f] then script[f]() end
+    local shift = boot(f)
     if LOAD and f == 2 then
         L.load_state(LOAD)
         started = f
@@ -84,7 +86,7 @@ L.on_frame(function(f)
         end
         if SHOTS > 0 and (f - started) % SHOTS == 0 then L.shot(string.format('voice-%05d', f)) end
         if f >= started + AFTER then L.finish(0, 'watched') end
-    elseif f >= LIMIT then
+    elseif f >= LIMIT + shift then
         L.finish(3, 'no XA for the clip by vsync ' .. f)
     end
 end)

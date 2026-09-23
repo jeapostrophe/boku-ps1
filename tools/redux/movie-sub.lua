@@ -1,8 +1,10 @@
 --[[ FMV-04: boot to the opening movie -- or another in its place, BOKU_PLAY_NAME below --
      do not skip it, and dump decoded frames from RAM.
 
-     The boot's presses are lib.lua's (L.BOOT_PRESSES, without the movie skip), which puts
-     the memory-card screen up and then the movie at vsync ~3370. A frame is read where
+     The boot's presses are lib.lua's (L.BOOT_PRESSES, without the movie skip), replayed
+     from the frame the title comes up (L.after_title), which puts the memory-card screen up
+     and then the movie ~1270 vsyncs after the title. Every change of the game mode is
+     printed ("MODE f=<vsync> mode=<hex>"), so a boot that went elsewhere says where. A frame is read where
      design E2 writes it: the twenty 16 x 240 x 3-byte slice buffers, each copied at the
      LoadImage call in movie_dctout_cb (0x80034C14, ra 0x80034C1C -- the same site once
      asm/movie.asm's movie_sub_blit tail-jumps there). Decoded frames are counted from the
@@ -46,7 +48,8 @@
                           that movie. Both come from the caller (boku.movie_block.
                           movie_names, research/data/movies.tsv); none is restated here.
                           "PLAY entry=<addr> name=<old>-><new>" is printed
-       BOKU_FRAMES        give up at this vsync (default 6000): exit 3
+       BOKU_FRAMES        give up at this vsync, moved later by however late the title
+                          came (default 6000): exit 3
 
      Exit 0 once the last dump is written.
 --]]
@@ -62,7 +65,7 @@ local SUB_FRAME_NO = assert(tonumber(os.getenv('BOKU_SUB_FRAME_NO') or ''),
     'movie_subtitles.islands[0].symbols); this script keeps no copy of it')
 local island_hits = nil
 
-local script = L.script(L.BOOT_PRESSES)
+local boot = L.after_title(L.BOOT_PRESSES)
 local dump_wanted, remaining = L.numlist('BOKU_DUMP_INDEX', '59,199,399')
 
 local PLAY_NAME = os.getenv('BOKU_PLAY_NAME') and L.numenv('BOKU_PLAY_NAME')
@@ -80,6 +83,7 @@ end
 
 local polls, last_vsync = 0, nil
 local frames_seen, header_no = 0, -1
+local last_mode = nil
 
 L.bp(0x800350F8, 'Exec', 4, 'movie_frame_volume', function()
     local n = PCSX.getRegisters().GPR.n.a0
@@ -163,7 +167,12 @@ local function finish(code, why)
 end
 
 L.on_frame(function(f)
-    if script[f] then script[f]() end
+    local shift = boot(f)
+    local mode = L.r8(L.MODE)
+    if mode ~= last_mode then L.say('MODE f=%d mode=%02x', f, mode); last_mode = mode end
     if remaining == 0 then finish(0, 'done strframes=' .. frames_seen .. ' decoded=' .. index) end
-    if f >= LIMIT then finish(3, 'dumps still due at vsync ' .. f .. ', strframes=' .. frames_seen) end
+    if f >= LIMIT + shift then
+        finish(3, 'dumps still due at vsync ' .. f .. ', strframes=' .. frames_seen ..
+            ', title ' .. shift .. ' vsyncs late, game mode ' .. mode)
+    end
 end)

@@ -107,6 +107,28 @@ else
 	echo "         not reach this game's entry point. Expect the gate to report exit 5." >&2
 fi
 
+# Memory cards of this run's own. Redux otherwise opens ~/.config/pcsx-redux/memcard1.mcd
+# and memcard2.mcd, one pair for every run on the machine, and writes them back, so
+# concurrent runs read a file another run may be writing. (Suspected of the boot flake in
+# research/movies.md § 8; measured not to be its cause, § 9.) Each run gets two empty cards,
+# deleted afterwards: boku.save.format_card with its write-test frame (63) a copy of
+# frame 0, which is what the shared cards held. Measured: with frame 63 zero, as
+# format_card leaves it, the boot writes it and then misses the opening at vsync 6000
+# both times it was tried. A caller who passes -memcard1 or -memcard2 gets no private
+# cards at all, so pass both.
+cards=
+case " $extra_flags " in
+*" -memcard1 "* | *" -memcard2 "*) ;;
+*)
+	cards=$(mktemp -d "${TMPDIR:-/tmp}/boku-redux-cards.XXXXXX")
+	trap 'rm -rf "$cards"' EXIT
+	(cd "$repo" && uv run --quiet python -c "import sys; from boku.save import format_card; card = format_card(); card[0x1F80:0x2000] = card[:0x80]; [open(p, 'wb').write(card) for p in sys.argv[1:]]" \
+		"$cards/memcard1.mcd" "$cards/memcard2.mcd") ||
+		{ echo "could not write this run's memory cards" >&2; exit 127; }
+	set -- "$@" -memcard1 "$cards/memcard1.mcd" -memcard2 "$cards/memcard2.mcd"
+	;;
+esac
+
 # The wall clock lives here, not in the Lua. A watchdog inside the emulator cannot be
 # trusted to fire when the emulator is what has gone wrong, and measured 2026-09-20,
 # calling PCSX.quit() from a PCSX.nextTick callback segfaults the process (exit 139)
