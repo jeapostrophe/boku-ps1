@@ -1,0 +1,175 @@
+# day30 (translation/days/README.md)
+# --- E3006: G17 -- the veranda (the ribbon)
+E3006.0	(unlabelled)	Found Shirabe's ribbon.
+
+# --- E3007: C04 -- far end of the log bridge
+E3007.0	Uncle	All right! Playtime is over for today! // Dinner is reeeady!
+
+# --- E3023: H06 -- garden off the veranda (day 30: where is Shirabe? the quiz)
+E3023.0	Aunt	Hey, Boku-kun, have you seen Shirabe? // She's been gone for a while now... // I've looked everywhere I could think of, one after another. What could have happened to her...
+E3023.1	Aunt	I think she should be back any time now...
+E3023.2	[SEL]	Curry rice | Chicken katsu | Salmon meuniere
+E3023.3	[SEL]	Hayashi rice | Hamburg steak | Diced steak
+E3023.4	[SEL]	Stir-fried meat and vegetables | Chicken karaage | Tonkatsu
+E3023.5	[SEL]	Hiyashi chuka | Pork and cabbage in oyster sauce | Spring rolls and happosai
+E3023.6	[SEL]	Salt-grilled sanma | Sashimi and tempura | Fried sardines
+E3023.7	[SEL]	Fried shrimp | Nikujaga | Cabbage rolls
+E3023.8	[SEL]	Omurice | Fried salmon | Chicken saute
+E3023.9	[SEL]	Katsudon | Horse mackerel nanban-zuke | Curry rice
+E3023.10	[SEL]	Menchi-katsu | Fried rice and sweet-and-sour pork | Hamburg steak
+E3023.11	[SEL]	Spaghetti | Miso-marinated grilled pork | Omurice
+E3023.12	[SEL]	Sea bass meuniere | Sanma kabayaki | Fried sardines
+E3023.13	[SEL]	Cabbage rolls | Tonkatsu | Korokke
+E3023.14	[SEL]	Sashimi and tempura | Spring rolls and happosai | Stuffed fried lotus root
+E3023.15	[SEL]	Gyoza | Oyakodon | Hamburg steak
+E3023.16	[SEL]	Fried rice and sweet-and-sour pork | Curry rice | Korokke
+E3023.17	[SEL]	Spaghetti | Hiyamugi | Salmon-and-roe oyakodon
+E3023.18	[SEL]	Katsu curry | Inari-zushi | Omurice
+E3023.19	[SEL]	Cabbage rolls | Chicken stewed in tomato | Stuffed green peppers
+E3023.20	[SEL]	Ginger pork | Fried rice and sweet-and-sour pork | Sea bass meuniere
+E3023.21	[SEL]	Tonkatsu | Spring rolls and happosai | Chicken karaage
+E3023.22	[SEL]	Fried shrimp | Horse mackerel tataki | Hamburg steak
+E3023.23	[SEL]	Jingisukan | Sushi | Diced steak
+E3023.24	[SEL]	Sashimi and tempura | Grilled hokke | Stuffed fried lotus root
+E3023.25	[SEL]	Chicken saute | Katsudon | Spring rolls and happosai
+E3023.26	[SEL]	Dry curry | Chicken stewed in tomato | Omurice
+E3023.27	[SEL]	Spaghetti | Curry rice | Gratin
+E3023.28	[SEL]	Horse mackerel nanban-zuke | Fried rice and happosai | Nikujaga
+E3023.29	[SEL]	Cabbage rolls | Stuffed green peppers | Hayashi rice
+E3023.30	[SEL]	Curry rice | Ginger pork | Korokke
+E3023.31	[SEL]	Chicken karaage | Sea bass meuniere | Jingisukan
+E3023.32	Aunt	Boku-kun! What do you think tonight's dinner is?
+E3023.33	Aunt	Well then, look forward to tonight's dinner.
+
+# --- E3024: A06 -- the bridge over the Yukino River
+E3024.0	Aunt	Where on earth has that child gone?
+E3024.1	Aunt	Shirabe... Shirabe-chaaan...
+E3024.2	Boku	Hey, Auntie.
+E3024.3	Aunt	Hm...... what is it?
+E3024.4	Boku	Maybe Shirabe went away... // because I'm going home tomorrow?
+E3024.5	Aunt	Yes, that might be it. At first glance she seems strong-willed, that girl, but... // deep down she's a very gentle, sensitive child...
+E3024.6	Boku	I'll try my best to find her.
+E3024.7	Aunt	All right. Then, Boku-kun, you look over toward the sea... // But don't go anywhere dangerous.
+E3024.8	Boku	Okay, I know.
+E3024.9	Aunt	Shirabe... Shirabe-chaaan...
+
+# --- E3034: B05 -- just beyond the beehive
+E3034.0	Moe	Have you found Shirabe yet?
+E3034.1	Moe	I see...
+E3034.2	Moe	Honestly... making everyone worry like this. She's such an idiot.
+
+# --- E3050: A18 -- the empty secret base; A07 -- the tool store
+E3050.0	Narrator	On the day before I went home, there was no one at the secret base under the expressway... // Naturally, that was a lonely thing for me, // but children know the cruelty of children, // and so I persuaded myself: these things happen...
+E3050.1	Narrator	And yet the cool wind coming across the pond made me feel // that of the short summer in these hills, // not much time was left to me... // These things happen... I thought so, and yet // somehow my chest ached...
+
+# --- E3001: G02 -- breakfast
+E3001.0	Uncle	Eating breakfast together with you like this, Boku-kun... // tomorrow is the last time, isn't it?
+E3001.1	Boku	Yeah, it is. // I can't wait to see the baby...
+E3001.2	Aunt	When you get home, give Yuzuki-san my love. // Tomorrow your dad's coming in the morning, it seems, // so anything you have to do while you're here, // make sure you finish it all today.
+E3001.3	Boku	Okaaay!
+E3001.4	Shirabe	Um...
+E3001.5	Aunt	What is it?
+E3001.6	Shirabe	...Never mind. It's nothing.
+E3001.7	Aunt	Hm-hm-hm, what a funny girl.
+E3001.8	Shirabe	...I said it's nothing.
+E3001.9	Boku	Weirdooo.
+E3001.10	Shirabe	......
+E3001.11	Uncle	Well then, itadakimaasu.
+E3001.12	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+
+# --- E3002: G02 -- after breakfast (Shirabe gone)
+E3002.0	Uncle	Gochisosama deshita.
+E3002.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E3002.2	Aunt	Shirabe-chan... huh? She's not here... // Where did that girl go without even saying gochisosama?
+
+# --- E3014: A15 -- the nectar flowers
+E3014.0	Uncle	Shirabe... Heeey, Shirabe...
+E3014.1	Uncle	Oh! Have you seen Shirabe? // Kaoru says she hasn't seen her since this morning, so I'm out looking for her...
+E3014.2	Boku	Come to think of it, after breakfast... I found a red ribbon on the veranda.
+E3014.3	Uncle	Shirabe's, I wonder?
+E3014.4	Boku	I think so.
+E3014.5	Uncle	......
+E3014.6	Uncle	She's not the kind of child to do anything reckless, so I'm sure she's all right, but...
+
+# --- E3033: H12
+E3033.0	Moe	Where on earth has that girl gone? // Hey, have you seen Shirabe? She seems to have gone off somewhere. // Honestly, what a troublemaker she is!
+E3033.1	Moe	When I find her, I'm going to clobber her. Honestly...
+
+# --- E3030: G15 -- the sisters' room
+E3030.0	Moe	Are you packing to go home already?
+E3030.1	Boku	Not at all... I only brought one little bag, after all.
+E3030.2	Moe	...Oh, so that's why you wore the same clothes every day.
+
+# --- E3042: C02 -- the sunflower field (Shirabe found)
+E3042.0	Shirabe	Even when you're gone, nobody's going to be lonely, you know! // Absolutely, absolutely nobody!
+E3042.1	Boku	...Everyone thinks you've disappeared, and they're all out looking.
+E3042.2	Shirabe	Huh! Who's disappeared?
+E3042.3	Boku	You, Pip... squeak...
+E3042.4	Shirabe	What's that supposed to mean?
+E3042.5	Boku	Anyway, why don't you go home?
+E3042.6	Shirabe	No! I've got something to do here. // More importantly, did you see my ribbon lying near the house? // I lost it this morning... I tie it on with a rubber band.
+E3042.7	Boku	...Everyone's worried.
+E3042.8	Shirabe	You're so persistent... Do something about it, you're my lackey, aren't you!
+E3042.9	Boku	...What's that supposed to mean?
+E3042.10	Shirabe	Stop pestering me! Nyaah!
+E3042.11	Boku	Nyaah yourself!
+E3042.12	Shirabe	You know...
+E3042.13	Boku	What?
+E3042.14	Shirabe	Oh, forget it. Do whatever you want!
+E3042.15	Boku	What's with her?
+# NOTE E3042.3: the nickname said syllable by syllable, as the English words said slowly (style
+#   guide § 7).
+
+# --- E3003: G01 -- living room; G02 -- dining room
+E3003.0	Moe	Mom! Shirabe's back!
+E3003.1	Aunt	...!
+
+# --- E3005: G17 -- the veranda (the bouquet)
+E3005.0	Uncle	Well, well, we were worried, but I'm so glad nothing was wrong. Good, good.
+E3005.1	Moe	Dummy.
+E3005.2	Aunt	Shirabe-chan... where did you go?
+E3005.3	Shirabe	Toward the sea...
+E3005.4	Uncle	You mustn't go that far on your own.
+E3005.5	Shirabe	I'm sorry...
+E3005.6	Moe	Huh? You're being unusually meek.
+E3005.7	Shirabe	This...... it's for you.
+E3005.8	Boku	Huh?
+E3005.9	Shirabe	I said it's for you!
+E3005.10	Boku	......
+
+# --- E3013: G01 -- living room
+E3013.0	Uncle	ZzZzz......
+
+# --- E3022: G01 -- living room
+E3022.0	Aunt	Auntie really wanted to become a proper professional photographer in Tokyo, // someone who'd leave work behind her even after she died... // But since I get to leave two such lovely children to the world, // maybe I've fulfilled my ambition after all, hm-hm... // Oh? Come to think of it, I've never told anyone this before... // so why did I tell you, Boku-kun... // Hmm... how strange...
+
+# --- E3031: G15 -- the sisters' room
+E3031.0	Moe	Today, Shirabe... when Dad found her, she was in the sunflower field, apparently. // Take good care of Shirabe's present, okay...
+E3031.1	Boku	Okay!
+E3031.2	Moe	Did Shirabe go out first thing in the morning // to pick sunflowers to give you, Boku-kun, I wonder?
+E3031.3	Boku	I wonder...
+E3031.4	Moe	I hear it was you who found Shirabe today, Boku-kun. // I'm sorry my little sister caused you trouble. Thank you...
+E3031.5	Moe	Oh, I know! I'll give you a reward, as a token of thanks.
+E3031.6	(unlabelled)	A new stamp on the radio-calisthenics card!
+E3031.7	Moe	Ehehe, it's a secret...
+E3031.8	Moe	Ahh, from the day after tomorrow, it's school again...
+
+# --- E3043: G07 -- foot of the stairs
+E3043.0	Shirabe	You should just hurry up and go home...
+E3043.1	Shirabe	I hate summer vacation...
+
+# --- E3004: G02 -- after dinner (the aunt's happiness)
+E3004.0	Uncle	Gochisosama deshita.
+E3004.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E3004.2	Aunt	Hey, Boku-kun... // don't you think the girls at Auntie's house are both really, really good kids?
+E3004.3	Boku	...Yeah.
+E3004.4	Aunt	You know, Auntie... just having those girls near me like this, // I think, ah, I'm glad I was born, // and I'm glad I got to be their mother... // that's how happy I am... // And I love Yusaku, too, for making such a happy family...
+E3004.5	Boku	......
+E3004.6	Aunt	This summer vacation, was Auntie able to share some of her happiness with you too, Boku-kun?
+E3004.7	[SEL]	Yeah! | Sort of
+E3004.8	Aunt	I'm so glad. Thank you, Boku-kun...
+E3004.9	Aunt	Hm-hm, I see. Sort of, huh... // But all of us had a really, really fun time with you here, Boku-kun. // It's been quite a long while since the house was this lively...
+E3004.10	Boku	...Was I that noisy a kid?
+E3004.11	Aunt	Hm-hm, not at all. You were a very good boy...
+E3004.12	Boku	Really? Thanks, Auntie!
+E3004.13	Aunt	You're welcome.
