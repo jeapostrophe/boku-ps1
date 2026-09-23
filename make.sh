@@ -107,6 +107,9 @@ usage: ./make.sh <verb> [arguments]
   boot-save CARD [arguments]    boot CARD's slot-1 save on Beetle to the morning it wakes
                                 on; shoot it, save a state to resume from, and check the
                                 clock (tools/libretro/boot_save.py --help)
+  sumo-bout CARD [arguments]    boot CARD on Beetle and play it into a bug-sumo bout with the
+                                first bug of its cage; check the fighter the game builds
+                                (tools/libretro/sumo_bout.py --help; research/sumo.md)
   movie-timing [--write]        every movie cue's timing against the reviewed transcripts
                                 in work/voice/reviewed (onset, end, 1.5 s, 17 cps); --write
                                 moves the frames of translation/movies.txt to pass where
@@ -118,7 +121,7 @@ usage: ./make.sh <verb> [arguments]
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
                                 `test`): the movie, voice-only and native-clip subtitle
                                 gates on PCSX-Redux, the English title menu and the
-                                generated-save boot on Beetle PSX
+                                generated-save boot and the bug-sumo bout on Beetle PSX
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
@@ -327,6 +330,9 @@ case "$verb" in
     boot-save)
         exec uv run python tools/libretro/boot_save.py "$@"
         ;;
+    sumo-bout)
+        exec uv run python tools/libretro/sumo_bout.py "$@"
+        ;;
     movie-timing)
         exec uv run python -m boku.movie_timing "$@"
         ;;
@@ -338,7 +344,7 @@ case "$verb" in
         ;;
     emu-test)
         BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
-            tests/test_real_texture_text_beetle.py tests/test_real_save_boot.py \
+            tests/test_real_texture_text_beetle.py tests/test_real_save_boot.py tests/test_real_sumo_bout.py \
             tests/test_real_voice_subtitle.py tests/test_real_clip_subtitle.py "$@"
         ;;
     lint)

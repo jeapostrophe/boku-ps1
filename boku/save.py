@@ -22,6 +22,7 @@ from pathlib import Path
 from boku.archive import DEFAULT_DISC_DIR, OVERLAY_LOAD_ADDRESS, Archive, ArchiveError
 from boku.arrays import SAVE_TITLE_BYTES as TITLE_BYTES
 from boku.arrays import ArrayError, read_save_title
+from boku.sumo import CAGE, TYPES, SumoTables, cage_bytes, maxed, parse_bug
 
 # --- the PS1 memory card (Sony's format; research/save-format.md § "The card") -----------
 
@@ -171,6 +172,8 @@ class GameTables:
     icon: bytes
     title_parts: tuple[str, ...]
     title_digits: tuple[str, ...]
+    sumo: SumoTables | None = None
+    """What a cage of bugs needs (`boku.sumo`)."""
 
     @classmethod
     def read(cls, archive: Archive) -> GameTables:
@@ -181,6 +184,7 @@ class GameTables:
             read_icon(archive),
             title.parts,
             title.digits,
+            SumoTables.read(archive),
         )
 
     @property
@@ -437,10 +441,13 @@ class CorpusEntry:
     name: str
     saved_day: int
     kind: str = "morning"
-    """`morning`, `ending` or `finished`: which card of `card_sets` it goes on."""
+    """`morning`, `ending`, `finished` or `sumo`: which card of `card_sets` it goes on."""
     stars: int | None = None
     flags: tuple[tuple[int, int], ...] = ()
     play_hours: int | None = None
+    cage: tuple[tuple[int, int | None], ...] = ()
+    """Boku's cage from its first slot, as (insect type, size or None for the largest); fully
+    trained, caught on the save's day (`boku.sumo.maxed`). The rest of the cage is emptied."""
 
     @property
     def finished(self) -> bool:
@@ -448,6 +455,8 @@ class CorpusEntry:
 
     def why(self) -> str:
         wake = f"wakes on the morning of August {self.saved_day + 1}"
+        if self.cage:
+            return f"{wake} with bug sumo open and {len(self.cage)} maxed bugs in the cage"
         if self.stars is None and not self.finished:
             return wake
         stars = self.stars or 0
@@ -460,6 +469,20 @@ class CorpusEntry:
         return f"{wake} with {count} stars (mask 0x{stars:04X}): the ending picks {epilogue}"
 
 
+SUMO_DAY = 10
+"""The morning the sumo save wakes on: `E4025`, the secret base's desk, wants a day before 28
+and not 15."""
+SUMO_FLAGS = ((25, 2), (30, 1))
+"""`E4025`'s flags: Guts's pact made, all three boys met."""
+SUMO_CAGE = tuple(
+    (TYPES[name], None)
+    for name in ("giant-f", "rhino", "giant", "rhino-f", "miyama-f", "oni", "red-legged",
+                 "miyama", "flat", "saw")
+)  # fmt: skip
+"""The ten beetles the sumo save's cage holds, each at its largest size (`boku.sumo.maxed`),
+roughly strongest first (research/sumo.md)."""
+
+
 def corpus() -> list[CorpusEntry]:
     entries = [CorpusEntry(f"day{d:02d}", d - 1) for d in range(2, LAST_DAY + 1)]
     for kind, day in (("ending", LAST_DAY - 1), ("finished", FINISHED_DAY)):
@@ -467,10 +490,16 @@ def corpus() -> list[CorpusEntry]:
             mask = star_mask(count)
             name = f"{kind}-oti{epilogue_for(mask)}-{count:02d}stars"
             entries.append(CorpusEntry(name, day, kind, mask, play_hours=count))
+    entries.append(
+        CorpusEntry(
+            "sumo-maxed-cage", SUMO_DAY - 1, "sumo", flags=SUMO_FLAGS,
+            cage=SUMO_CAGE,
+        )
+    )  # fmt: skip
     return entries
 
 
-def edited_body(base: SaveBody, entry: CorpusEntry) -> SaveBody:
+def edited_body(base: SaveBody, entry: CorpusEntry, sumo: SumoTables | None = None) -> SaveBody:
     body = SaveBody(base.regions, bytes(base.data))
     body.set_clock(entry.saved_day, *BEDTIME)
     if entry.stars is not None:
@@ -481,6 +510,17 @@ def edited_body(base: SaveBody, entry: CorpusEntry) -> SaveBody:
         body.set_flag(n, v)
     if entry.play_hours is not None:
         body.write(PLAY_TIMER, struct.pack("<I", entry.play_hours * 3600 * TICKS_PER_SECOND))
+    if entry.cage:
+        if sumo is None:
+            raise SaveError("a cage needs the sumo tables (GameTables.read gives them)")
+        bugs = [
+            maxed(sumo, kind, size, number=i, day=entry.saved_day)
+            for i, (kind, size) in enumerate(entry.cage, 1)
+        ]
+        try:
+            body.write(CAGE, cage_bytes(bugs))
+        except ValueError as exc:
+            raise SaveError(str(exc)) from exc
     return body
 
 
@@ -503,6 +543,7 @@ def card_sets() -> dict[str, list[CorpusEntry]]:
         sets[f"boku-mornings-aug{first:02d}-aug{last:02d}.mcd"] = chunk
     sets["boku-endings-by-stars.mcd"] = [e for e in entries if e.kind == "ending"]
     sets["boku-finished-game.mcd"] = [e for e in entries if e.kind == "finished"]
+    sets["boku-bug-sumo.mcd"] = [e for e in entries if e.kind == "sumo"]
     return sets
 
 
@@ -513,7 +554,10 @@ def corpus_sets() -> dict[str, list[CorpusEntry]]:
 
 def write_set(base: SaveBody, tables: GameTables, entries: list[CorpusEntry]) -> bytes:
     return write_card(
-        {n: build_save_file(tables, edited_body(base, e), n) for n, e in enumerate(entries, 1)},
+        {
+            n: build_save_file(tables, edited_body(base, e, tables.sumo), n)
+            for n, e in enumerate(entries, 1)
+        },
         tables,
     )
 
@@ -556,15 +600,23 @@ def _poke(text: str) -> tuple[int, bytes]:
     return addr, data
 
 
+def _bug(text: str) -> tuple[int, int | None]:
+    try:
+        return parse_bug(text)
+    except (KeyError, ValueError) as exc:
+        raise argparse.ArgumentTypeError(f"{text!r}: not a sumo insect ({exc})") from exc
+
+
 def main_save(args: argparse.Namespace) -> int:
     try:
         edited = args.day is not None or args.finished or args.stars is not None
-        edited = edited or args.stars_mask is not None or args.flag or args.poke
+        edited = edited or args.stars_mask is not None or args.flag or args.poke or args.bug
         whole = "--corpus" if args.corpus else "--cards" if args.cards else None
         if whole and edited:
             raise SaveError(
                 f"{whole} writes its own days and stars and takes no --day, --finished, "
-                "--stars, --stars-mask, --flag or --poke; build a single card for an edited state"
+                "--stars, --stars-mask, --flag, --poke or --bug; build a single card for an "
+                "edited state"
             )
         tables = GameTables.read(Archive(args.disc))
         base = load_base(args.base, tables, args.slot)
@@ -593,8 +645,9 @@ def main_save(args: argparse.Namespace) -> int:
             saved,
             stars=star_mask(args.stars) if args.stars is not None else args.stars_mask,
             flags=tuple(args.flag),
+            cage=tuple(args.bug),
         )
-        body = edited_body(base, entry)
+        body = edited_body(base, entry, tables.sumo)
         for addr, value in args.poke:
             body.write(addr, value)
         card = write_card({args.slot: build_save_file(tables, body, args.slot)}, tables)
@@ -688,6 +741,17 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         default=[],
         metavar="ADDR=HEX",
         help="write bytes at a saved RAM address; repeatable",
+    )
+    parser.add_argument(
+        "--bug",
+        type=_bug,
+        action="append",
+        default=[],
+        metavar="NAME[:SIZE]",
+        help="put a bug in Boku's cage, in order from its first slot: rhino, rhino-f, giant, "
+        "giant-f, miyama, miyama-f, saw, saw-f, flat, little, red-legged, oni, mantis (not "
+        "tried in a bout), or an insect type; at its largest size unless SIZE is given, and "
+        "fully trained either way (research/sumo.md); repeatable, up to 10",
     )
     parser.add_argument(
         "--slot",

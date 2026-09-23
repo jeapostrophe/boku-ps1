@@ -63,9 +63,9 @@ is 0; that last record is not copied. Restoring (`0x8007B8E8`) copies them back.
 | body offset | RAM | bytes | what (measured unless marked) |
 |---:|---|---:|---|
 | 0 | `0x80025908` | 20 | `+0` scratch the body's sum and size overwrite; `+8` u32 **play timer**; `+0xC` the **second-playthrough** byte, the summary's `flag` (§ A finished game) |
-| 20 | `0x8003DC28` | 240 | *unknown*; with the next two, differs in most of its bytes between a new game's first dialogue and the end of Jay's day 1 — *inferred:* tables re-rolled each day (insect spawns?) |
-| 260 | `0x8003DB38` | 240 | *unknown*, as above |
-| 500 | `0x8003DD20` | 240 | *unknown*, as above |
+| 20 | `0x8003DC28` | 240 | a boy's bug-sumo roster: 20 insect records ([sumo.md](sumo.md)) |
+| 260 | `0x8003DB38` | 240 | the second boy's roster |
+| 500 | `0x8003DD20` | 240 | the third boy's roster |
 | 740 | `0x8003DE18` | 360 | *unknown* |
 | 1100 | `0x8003DB18` | 30 | *unknown* |
 | 1130 | `0x8003E058` | 60 | *unknown*; changes during day 1 |
@@ -77,9 +77,9 @@ is 0; that last record is not copied. Restoring (`0x8007B8E8`) copies them back.
 | 1650 | `0x80028FA0` | 16 | **`g_clock`**: `{u8 day, u8 hour, u8 minute, u8, char *map_name, s16 meal[4]}` |
 | 1666 | `0x80028FD0` | 4 | a u32 bit set: PROG 44 (`0x80032E50`) sets bit `n − 1` (21 distinct `n` in the scripts; `ending_prepare` sets bit 22) — *meaning unknown* |
 | 1670 | `0x80028FD4` | 16 | *unknown* |
-| 1686 | `0x80045A10` | 120 | **Boku's cage** — what bug sumo lists: 10 × 12-byte records {u8 type (insect id), size, lost today, size class, catch number, catch day, wins, losses; s32 stat}, field names per boku1-reversing's HUD map (`bokuBugArray`), not decoded here. *Measured* only that sumo reads it: a record poked here changes what the cage does (it hung with guessed fields), one poked at `0x80046F28` does not show |
+| 1686 | `0x80045A10` | 120 | **Boku's cage** — what bug sumo lists and fights from: 10 insect records, decoded in [sumo.md](sumo.md); `boku save --bug` fills it |
 | 1806 | `0x80046130` | 31 | `g_diary_pages[day]` ([text-outside-events.md](text-outside-events.md) § The picture diary) |
-| 1837 | `0x80046F28` | 1800 | the insect **box** (mode 10, `HHON`'s "cage on the desk" — [text-outside-events.md](text-outside-events.md)): 12-byte slots, byte 0 = insect id, 99 = empty; 150 of them *inferred* from the length; the record is `0x80045A10`'s layout (boku1-reversing), not decoded here. Not the cage bug sumo lists |
+| 1837 | `0x80046F28` | 1800 | the insect **box** (mode 10, `HHON`'s "cage on the desk" — [text-outside-events.md](text-outside-events.md)): 150 insect records ([sumo.md](sumo.md)), 99 = empty — *inferred* from the length. Not the cage bug sumo lists |
 | 3637 | `0x80047EC0` | 8 | *unknown* |
 | 3645 | `0x80046F18` | 12 | *unknown* |
 | 3657 | `0x800476C0` | 60 | *unknown* |
@@ -150,7 +150,8 @@ sisters' marriages, `OTI01` the potter, `OTI03` the novelist.
 ## The generator and the corpus
 
 `./make.sh save --base BASE --out CARD [--day N | --finished] [--stars K | --stars-mask M]
-[--flag N=V] [--poke ADDR=HEX] [--slot S]` writes one card. `BASE` is a card (its save in
+[--flag N=V] [--poke ADDR=HEX] [--bug NAME[:SIZE]] [--slot S]` writes one card (`--bug`
+fills Boku's cage, [sumo.md](sumo.md)). `BASE` is a card (its save in
 `--slot`) or a 2 MB main-RAM dump; `--day N` makes the save the evening before (`g_clock` =
 N − 1, 20:00), so it wakes on August N; `--finished` makes it a finished game (§ A finished
 game); `--stars K` sets star bits 1…K. Every byte it writes is summed as the game sums it;
@@ -160,8 +161,8 @@ own bytes back for the header, title, icon and body.
 `./make.sh saves` writes the **corpus** into `work/saves/corpus/` (with `INDEX.tsv`), one
 save per card in slot 1: `day02` … `day31` — every morning from August 2 —,
 `ending-oti{4,2,0,1,3}-{00,05,08,11,15}stars`, the morning of August 31 with a star count
-inside each of `ending_pick`'s five bands, and `finished-oti…` the same five as finished
-games. The ending and finished saves' play timers read the star count in hours. Its base
+inside each of `ending_pick`'s five bands, `finished-oti…` the same five as finished
+games, and `sumo-maxed-cage` ([sumo.md](sumo.md)). The ending and finished saves' play timers read the star count in hours. Its base
 is a **new game's RAM** at the first dialogue (`work/saves/newgame.ram`, dumped once on
 Beetle from your own import by `run_core.py --ram-out`).
 
@@ -191,6 +192,7 @@ naming each card's slots:
 | `boku-mornings-aug17-aug31.mcd` | 1–15: wake on August 17 … 31 |
 | `boku-endings-by-stars.mcd` | 1–5: the morning of August 31 with 0, 5, 8, 11, 15 stars — one per epilogue band; PLAYTIME reads the stars in hours |
 | `boku-finished-game.mcd` | 1–5: the same five as finished games — Summer Memories, and its "ending" replays that band's epilogue |
+| `boku-bug-sumo.mcd` | 1: the morning of August 10 with bug sumo open and ten maxed beetles in the cage — walk to the secret base and examine the table ([sumo.md](sumo.md)) |
 
 The file list shows the day a save was **made**, the evening before the morning it wakes
 on (`8月16日` wakes on August 17), two files at a time; ↓ walks it.
@@ -253,7 +255,7 @@ BOKU_INPUT="2430:START:5;2590:DOWN:5;2660:CIRCLE:5;3050:CIRCLE:5;3150:CIRCLE:5" 
 | the insect box | in play, **△ opens the desk** (the "sub screen": net, cage, items, fishing gear, kites); the cage is the green box. From the item cursor, RIGHT ×2 reaches the net | desk measured; the cursor path to the cage not |
 | summer memories (the title menu's third item) | a finished save (§ A finished game): `boku-finished-game.mcd` or `./make.sh save --finished`. START, DOWN ×2, ○, ○ on the file, ○ on "yes"; the album is up ~1300 frames after the file is chosen | measured on both emulators (`tools/vwf/shoot-menus.sh`), and Beetle 2026-09-23 |
 | the ending | `ending-oti*` (a morning of August 31; ~9,500 frames of ○ to `MOVIE 24`, § The generator and the corpus), or at once from a finished save's Summer Memories → エンディング (DOWN ×4, ○) | measured on Beetle 2026-09-23 |
-| bug sumo | **no card needed, PCSX-Redux**: `tools/redux/to-sumo.lua` points the intro's return to the field at `E4025` with that event's flags met (the script's header lists the pokes), and the event enters mode 7 itself ~300 vsyncs later; the script saves the state `sumo-desk`. It reaches the **desk** (insect notebook and Boku's cage, ○ opens it), empty on a new game. A **bout** needs a beetle in Boku's cage (`0x80045A10`, the table above), and a record poked by hand (type 30, the rhinoceros beetle, with guessed fields) hung the game when the cage opened. Beetle PSX has no breakpoint to redirect at, so the same route there needs `--poke` timed into the intro movie | desk measured; bout not reached |
+| bug sumo | **a bout, Beetle**: `./make.sh sumo-bout CARD` with `sumo-maxed-cage` or any `boku save --bug` card — [sumo.md](sumo.md) § Reaching a bout. **The desk with no card, PCSX-Redux**: `tools/redux/to-sumo.lua` points the intro's return to the field at `E4025` with that event's flags met (its header lists the pokes) and saves the state `sumo-desk` | bout measured on Beetle 2026-09-23; desk on Redux |
 | the well on the shortcut path | the story bible puts "the secret shortcut" on days 17–18 (`E1754`); a `day19`-or-later card, with its flags set by `--flag` from `scenes.tsv` | not reached |
 | any map, day 1 | during a new game's opening movie, poke a three-character map base into `g_movie_return_map` (`0x80036588`): the movie ends in that map, its variant chosen by the clock as usual. `run_core.py --poke 5300:0x80036588=43313500` with `boot-to-dialogue.press` is `C15`, the path to the beach, by frame ~6000 ([texture-recipes.md](texture-recipes.md) § `M_C15`) | measured for `C15` |
 | the uncle's evening call (`exe@80029920`, system event 8) | any day's card with `./make.sh boot-save CARD`, then `--poke 6100:0x80019E08=08000224`: the chooser `0x80019DEC` gets `addiu v0, zero, 8` instead of `jal 0x8001933C`, so the event fires as soon as the morning's script ends (~frame 7500 on day 5), the kitchen and both pages follow; shots every 40 frames from 7300 | measured on Beetle 2026-09-23 |

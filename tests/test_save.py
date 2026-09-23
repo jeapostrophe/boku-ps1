@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from boku import REPO_ROOT
+from boku import REPO_ROOT, sumo
 from boku import save as S
 
 SAMPLE_CARD = Path(os.environ.get("BOKU_SAMPLE_CARD", REPO_ROOT / "work" / "saves" / "sample.mcd"))
@@ -267,9 +267,14 @@ def test_load_base_refuses_a_file_that_is_neither_card_nor_ram(tmp_path):
         S.load_base(odd, tables, 1)
 
 
+_SUMO = S.SumoTables(((40, 40, 40, 40),) * 13, (50,) * 13)
+"""Every species alike: base stats 40, typical size 50."""
+
+
 def _synthetic_tables() -> S.GameTables:
-    regions = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16))
-    return S.GameTables(regions, "P-", b"", ("a", "b", "c"), tuple("0123456789"))
+    regions = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16),
+               S.Region(sumo.CAGE, sumo.RECORD * sumo.CAGE_SLOTS))  # fmt: skip
+    return S.GameTables(regions, "P-", b"", ("a", "b", "c"), tuple("0123456789"), _SUMO)
 
 
 def _stub_disc(monkeypatch) -> S.GameTables:
