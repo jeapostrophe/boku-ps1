@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import struct
 
+import pytest
+
 from boku import clip_subs
 from boku.glyphs import END_WORD, PAGE_WORD
 from boku.layout import StockEncoder
@@ -26,10 +28,10 @@ def rows(tmp_path, text: str):
     return clip_subs.read(path)
 
 
-def test_the_committed_file_reads_cleanly_and_carries_no_english_yet():
+def test_the_committed_file_reads_cleanly():
     entries, problems = clip_subs.read()
     assert problems == []
-    assert entries == [], "clips.txt gains English in VO-04, reviewed like a day file"
+    assert entries, "clips.txt carries the bedtime, epilogue and bug-sumo English (PLAN VO-04)"
 
 
 def test_a_missing_file_is_no_rows(tmp_path):
@@ -76,4 +78,14 @@ def test_the_lint_reports_a_clip_row_by_file_line_and_id(tmp_path, disc_dir):
         (1, "XCH.34", "clip-subtitle"),
         (2, "XCH.99", "clip-subtitle"),
     ]
-    assert lint_clip_file(clip_subs.CLIP_FILE, Options(encoder=StockEncoder.load()), disc_dir) == []
+
+
+def test_the_committed_clips_fit_the_band_in_the_builds_own_font(disc_dir):
+    """The committed English measured the way the build lays it out: in the VWF cell map
+    (`./make.sh build-days` writes it), not the stock full-width sheet, which no English fits."""
+    from boku.lint import DEFAULT_CELLS, Options, lint_clip_file, make_encoder
+
+    if not DEFAULT_CELLS.is_file():
+        pytest.skip(f"{DEFAULT_CELLS} is not built; run ./make.sh build-days")
+    encoder = make_encoder("cellmap", None)
+    assert lint_clip_file(clip_subs.CLIP_FILE, Options(encoder=encoder), disc_dir) == []

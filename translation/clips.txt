@@ -5,55 +5,66 @@
 # without English is listed so the ids line up and draws nothing. Licence: CC BY-SA 4.0.
 
 # --- XCH.34: going to sleep on the first night (movie mode, over black, day 1 only).
-XCH.34	Narrator
+XCH.34	Narrator	And so the first day of that summer vacation came to an end.
 
 # --- XCH.41-XCH.45: the five epilogues (ENDOTI, over the ending's still; 28-49 s each).
 #     Which plays is the star count (research/save-format.md § Which ending plays).
-XCH.41	Narrator
-XCH.42	Narrator
-XCH.43	Narrator
-XCH.44	Narrator
-XCH.45	Narrator
+XCH.41	Narrator	In the end, both sisters later moved to the city, // made picture-perfect marriages and built happy homes. // Now Moe's eldest daughter is in her third year of middle school... // yes, she is already the same age her mother was back then.
+# NOTE XCH.41: 'kanojo' (her) 'at that time' is Moe, who was in her third year of middle school
+#   that summer; rendered 'her mother' so the English 'she' is not read as the daughter.
+XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, with 30 ahead of me, // I had set foot on the same path as my uncle: pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.
+# UNSURE XCH.42: the ASR heard 'tōge' (mountain pass) and 'hotte ita' / 'notte ita'; read as
+#   'tōgei' (pottery) and 'fumiirete ita' (had set foot on), the readings the ending is about.
+XCH.43	Narrator	A full twenty-five years have already slipped away since that summer. // Today I work at a certain major electronics manufacturer, // mostly writing control programs for communications equipment and drawing up designs. // White partitions and gray carpet; // the cold glow of fluorescent lights that never sleep, 24 hours a day. // In a dull, dry office, under a tight schedule, // I sometimes picture them: // how, bathed in strong sunlight, feeling the sweat run down my neck, // I ran all over the hills and fields... // those days of that summer.
+XCH.44	Narrator	That was everything I remembered of that summer. // Afterwards I became a successful novelist, // and now I live in a hotel in New York with a view of the Brooklyn Bridge, // searching for the words of the epilogue that will adorn the end of this story of my childhood. // Come to think of it, for the countdown to 2001, // it seems Shirabe and Moe will be coming over from Japan too, for the first time in a long while. // Goodbye, 20th century.
+XCH.45	Narrator	Within some 15 years of that summer vacation, // a huge multipurpose dam was completed in the Tsukiyono valley. // Around where my uncle's house once stood, // the water is 200 meters deep in the rainy season. // Nothing is left anymore to remember those days by.
+# UNSURE XCH.45: the valley's name was misheard ('tsukiyo no tani', 'kiiro no tani'); read as
+#   Tsukiyono (glossary § 2). 'Multipurpose dam' is 'tamokuteki damu', which the ASR garbled.
 
 # --- XCH.00-XCH.33, XCH.35-XCH.40: the bug-sumo voices (MUSI) and one cheer. English here
 #     is drawn in bug sumo only once PLAN VO-06 has made it so.
-XCH.00	(unlabelled)
-XCH.01	(unlabelled)
-XCH.02	(unlabelled)
-XCH.03	(unlabelled)
-XCH.04	(unlabelled)
-XCH.05	(unlabelled)
-XCH.06	(unlabelled)
-XCH.07	(unlabelled)
-XCH.08	(unlabelled)
-XCH.09	(unlabelled)
-XCH.10	(unlabelled)
-XCH.11	(unlabelled)
-XCH.12	(unlabelled)
-XCH.13	(unlabelled)
-XCH.14	(unlabelled)
-XCH.15	(unlabelled)
-XCH.16	(unlabelled)
-XCH.17	(unlabelled)
-XCH.18	(unlabelled)
-XCH.19	(unlabelled)
-XCH.20	(unlabelled)
-XCH.21	(unlabelled)
-XCH.22	(unlabelled)
-XCH.23	(unlabelled)
-XCH.24	(unlabelled)
-XCH.25	(unlabelled)
-XCH.26	(unlabelled)
-XCH.27	(unlabelled)
-XCH.28	(unlabelled)
-XCH.29	(unlabelled)
-XCH.30	(unlabelled)
-XCH.31	(unlabelled)
-XCH.32	(unlabelled)
-XCH.33	(unlabelled)
-XCH.35	(unlabelled)
-XCH.36	(unlabelled)
-XCH.37	(unlabelled)
-XCH.38	(unlabelled)
-XCH.39	(unlabelled)
-XCH.40	(unlabelled)
+XCH.00	(unlabelled)	I'll take you on first.
+XCH.01	(unlabelled)	Oh, I haven't got one. Somebody switch in.
+XCH.02	(unlabelled)	Looks like nobody's got one.
+XCH.03	(unlabelled)	At last, this guy's time to shine has come!
+XCH.04	(unlabelled)	Okay, go!
+XCH.05	(unlabelled)	Yes, yes, yes, yes!
+XCH.06	(unlabelled)	Go for it!
+XCH.07	(unlabelled)	Hehe, how about that!
+XCH.08	(unlabelled)	All right! I win!
+XCH.09	(unlabelled)	Hehe, of course I won.
+XCH.10	(unlabelled)	Oh, I lost.
+XCH.11	(unlabelled)	Argh, that stings!
+XCH.12	(unlabelled)	Then let's trade for that.
+XCH.13	(unlabelled)	First, yours truly takes you on!
+XCH.14	(unlabelled)	Haven't got one. Switch.
+XCH.15	(unlabelled)	Go all out!
+XCH.16	(unlabelled)	Hehe, going great, going great!
+# UNSURE XCH.16: the two passes heard 'gōjō gōjō' and 'gochō gochō'; read as 'kōchō
+#   kōchō' (going well), a mid-bout gloat like XCH.05's. Needs an ear.
+XCH.17	(unlabelled)	Uh-oh-oh-oh!
+# UNSURE XCH.17: a cry of alarm, 'ayayaya...' as heard: the partner of XCH.16, the bout going badly,
+#   so an English noise of alarm.
+XCH.18	(unlabelled)	Hahaha... I did it!
+XCH.19	(unlabelled)	Easy as pie.
+XCH.20	(unlabelled)	Huh? How did that happen?
+XCH.21	(unlabelled)	Tch, I lost.
+XCH.22	(unlabelled)	Sure, let's trade.
+XCH.23	(unlabelled)	Apparently I go first.
+# NOTE XCH.23: 'boku kara datte' read as hearsay ('it says I go first'), not 'I said'.
+XCH.24	(unlabelled)	Sorry, I don't have one.
+XCH.25	(unlabelled)	Go for it!
+XCH.26	(unlabelled)	All right! I might win this!
+XCH.27	(unlabelled)	Oh no, I'm going to lose.
+XCH.28	(unlabelled)	Huh? I won!
+XCH.29	(unlabelled)	Looks like I win.
+XCH.30	(unlabelled)	Aww... I lost.
+XCH.31	(unlabelled)	Oh, I want to get stronger.
+XCH.32	(unlabelled)	Oh, thank you. So it's a trade for that one.
+XCH.33	(unlabelled)	Yay! I did it!
+XCH.35	(unlabelled)	Okay, my turn next.
+XCH.36	(unlabelled)	Then how about this guy?
+XCH.37	(unlabelled)	Okay, yours truly is next.
+XCH.38	(unlabelled)	Can't be helped. Then how about this one?
+XCH.39	(unlabelled)	My turn next, huh.
+XCH.40	(unlabelled)	Then will this one do?
