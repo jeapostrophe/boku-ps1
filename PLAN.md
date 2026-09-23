@@ -587,8 +587,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       over earlier days once later ones are done. Jay's rulings of 2026-09-23 go in first
       (Megane → "Specs"; yowamushi → "scaredy-cat"; quotation marks around a named word
       allowed; gokurosama without the dash). Then days 1–7, `shared.txt` and `arrays.txt` are
-      re-translated through it, reviewed, and judged against what is committed. Whether the
-      same session continues through day 31 is `TRN-04`'s call (Jay's). Harmed: the player,
+      re-translated through it, reviewed, and judged against what is committed. Jay, 2026-09-23: "let's just keep
+      going and do the whole thing this way. It may require a few more tries, but it is worth
+      the experiment" — the session continues through day 31, and its result fills `TRN-04`'s
+      table. Harmed: the player,
       reading a translation made without the full context.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
@@ -689,7 +691,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [ ] **[GFX-10]** **The ending's credits strip in English** (Jay, 2026-09-23: "ultra" if it
       needs no video re-encode): each `OTI0n` pack's 276×33 production/copyright strip is a
       still texture shown over the epilogue, so it takes the same painted-type recipe as the
-      other textures (it was ruled N in `research/textures-plan.md`; Jay reverses that).
+      other textures (it was ruled N in `research/textures-plan.md`; Jay reverses that). Not the scrolling
+      credits inside the `M28` movie — those are video, and Jay rules out re-encoding video or
+      tracking moving text, so they stay Japanese.
       Harmed: the player, at the last screen.
 
 ## Movies
