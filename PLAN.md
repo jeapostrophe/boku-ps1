@@ -543,8 +543,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       a `HHON.OVL` extension, ~60 KB of room, once `TXT-05`'s insect-box layout is chosen);
       12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
       surfaces); 69 `array-group` warnings (the fishing messages and the ant count are laid out, 2026-09-23;
-      the fortune, kite-crash banner and sumo hint/strength rows have fixed cell counts in
-      their drawers — `TXT-05`'s; the insect box waits on its layout) and 1 `not-placeable` (the
+      the fortune and kite-crash banners draw one centred English line in a 120 × 36 panel,
+      proven on Beetle (`asm/banners.asm`, 2026-09-23); the sumo hint and strength rows wait
+      on a bout (`VO-06`'s cage record); the insect box waits on its layout) and 1 `not-placeable` (the
       specimen label, dead code): code labels are placed by rewriting their immediates, the
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
