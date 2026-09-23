@@ -8,3 +8,21 @@ tex@T_TITLE.0	New Game
 tex@T_TITLE.1	Continue
 tex@T_TITLE.2	Summer Memories
 tex@T_TITLE.3	Settings
+
+# --- T_CONFIG: the settings screen (research/texture-recipes.md § "T_CONFIG"). The five labels
+# down the left are text the renderer draws (exe@8003D9BC), not these. heading: the plaque
+# top left. voice_text / voice_only: the two message modes, each with a note on skipping (the
+# sheet's parentheses are vertical forms, so the notes go without them). stereo / mono: sound.
+# action ... sub_screen: the controller chart's four column headings, set top to bottom;
+# ` // ` breaks a heading into two lines.
+tex@T_CONFIG.heading	Settings
+tex@T_CONFIG.voice_text	Voice + Text
+tex@T_CONFIG.voice_text_note	Skip OK
+tex@T_CONFIG.voice_only	Voice Only
+tex@T_CONFIG.voice_only_note	No Skip
+tex@T_CONFIG.stereo	Stereo
+tex@T_CONFIG.mono	Mono
+tex@T_CONFIG.action	Action
+tex@T_CONFIG.cancel	Cancel
+tex@T_CONFIG.run	Run
+tex@T_CONFIG.sub_screen	Sub // Screen

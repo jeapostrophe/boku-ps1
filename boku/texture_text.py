@@ -18,9 +18,11 @@ import struct
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from pathlib import Path
 
 from boku import REPO_ROOT
+from boku import texture_paint as paint
 from boku.archive import ARCHIVE_NAME, Archive
 from boku.reinsert import ByteEdit
 from boku.textures import Inventory, inventory, patches_for
@@ -71,6 +73,115 @@ def read_entries(directory: Path = TEXTURE_TEXT_DIR) -> dict[str, Entry]:
     return entries
 
 
+# --- shared by the recipes below -------------------------------------------------------------
+
+
+def keyed(family: str, entries: Sequence[Entry], names: Sequence[str]) -> dict[str, Entry]:
+    """`entries` by the part of the id after the family, refusing a missing or extra key."""
+    by_key = {e.id.rsplit(".", 1)[1]: e for e in entries}
+    if len(by_key) != len(entries) or set(by_key) != set(names):
+        ids = ", ".join(sorted(e.id for e in entries))
+        raise TextureTextError(f"{family} takes exactly .{', .'.join(names)}; given {ids}")
+    return by_key
+
+
+LINE_BREAK = " // "
+"""Splits a string into lines -- honoured only where a recipe says so (`lines_of`)."""
+
+
+def ink_of(face: Face, entry: Entry, text: str | None = None) -> paint.Ink:
+    """The ink of `entry`'s English (or of `text`, one of its lines), refusals named."""
+    if text is None and LINE_BREAK in entry.text:
+        raise TextureTextError(
+            f"{entry.where}: {entry.id} is set on one line; `{LINE_BREAK.strip()}` would be "
+            f"drawn as slashes"
+        )
+    try:
+        return face.ink(entry.text if text is None else text)
+    except TypesetError as error:
+        raise TextureTextError(f"{entry.where}: {error}") from None
+
+
+def lines_of(entry: Entry) -> list[str]:
+    return entry.text.split(LINE_BREAK)
+
+
+def found(mask: paint.Ink, what: str) -> paint.Ink:
+    """`mask`, refused when empty: the image is not the one the recipe was measured on."""
+    if not mask:
+        raise TextureTextError(
+            f"{what}: no type where the recipe measured it -- a different "
+            f"revision of the image, or a wrong CLUT"
+        )
+    return mask
+
+
+def painted_out(
+    canvas: paint.Canvas, box: paint.Box, mask: paint.Ink, *, avoid: paint.Ink = frozenset(),
+    what: str,
+) -> None:  # fmt: skip
+    """`Canvas.paint_out`, refused -- naming `what` -- if any Japanese pixel is left."""
+    left = canvas.paint_out(box, mask, avoid=avoid)
+    if left:
+        raise TextureTextError(
+            f"{what}: {len(left)} pixel(s) of Japanese had no clean pixel "
+            f"to be painted out from, first {sorted(left)[:3]}"
+        )
+
+
+def rows_of(mask: paint.Ink) -> list[paint.Box]:
+    """The boxes of `mask`'s lines: runs of rows that carry ink, split at empty rows."""
+    ys = sorted({y for _, y in mask})
+    runs: list[list[int]] = []
+    for y in ys:
+        if runs and y == runs[-1][-1] + 1:
+            runs[-1].append(y)
+        else:
+            runs.append([y])
+    return [paint.extent({p for p in mask if run[0] <= p[1] <= run[-1]}) for run in runs]
+
+
+def fits(entry: Entry, ink: paint.Ink, room: paint.Box, where: str) -> None:
+    _, _, w, h = paint.extent(ink)
+    if w > room[2] or h > room[3]:
+        raise TextureTextError(
+            f"{entry.where}: {entry.text!r} is {w}x{h} px and {where} holds {room[2]}x"
+            f"{room[3]}; nothing is cut to fit (README)"
+        )
+
+
+def stacked(inks: Sequence[paint.Ink], gap: int) -> paint.Ink:
+    """Already-drawn `inks` one under another, `gap` rows apart, each centred on the widest."""
+    inks = [paint.normalised(ink) for ink in inks]
+    widest = max(paint.extent(ink)[2] for ink in inks)
+    out: paint.Ink = set()
+    y = 0
+    for ink in inks:
+        _, _, w, h = paint.extent(ink)
+        out |= {(x + (widest - w) // 2, dy + y) for x, dy in ink}
+        y += h + gap
+    return out
+
+
+def centred(ink: paint.Ink, on: paint.Box) -> tuple[int, int]:
+    """Where to stamp normalised `ink` so its extent is centred on box `on`."""
+    _, _, w, h = paint.extent(ink)
+    return on[0] + (on[2] - w) // 2, on[1] + (on[3] - h) // 2
+
+
+def erase_type(
+    canvas: paint.Canvas, clut: int, box: paint.Box, kind: str, *, grow=(1, 1, 1, 1),
+    avoid: paint.Ink = frozenset(), what: str,
+) -> tuple[paint.Ink, int]:  # fmt: skip
+    """Find the Japanese type in `box` (`kind` "pale" or "dark", through `clut`), paint it
+    out grown by `grow` (left, up, right, down), and return its pixels and the entry it was
+    drawn in most -- the entry the English is set in."""
+    mask = found(canvas.type_mask(kind, clut, box) - avoid, what)
+    ink_index = canvas.most_used(mask)
+    painted_out(canvas, box, paint.grown(mask, *grow) - avoid, avoid=avoid, what=what)
+    return mask, ink_index
+
+
 # --- drawing into palette indices ------------------------------------------------------------
 
 
@@ -88,9 +199,7 @@ def outlined(
     ring would not fit.
     """
     x0, y0, w, h = box
-    ring = {
-        (x + dx, y + dy) for x, y in ink for dx in (-1, 0, 1) for dy in (-1, 0, 1)
-    } - ink  # fmt: skip
+    ring = paint.grown(ink, 1, 1, 1, 1) - ink
     for points, index in ((ring, outline), (ink, fill)):
         for x, y in points:
             if 0 <= x < w and 0 <= y < h:
@@ -111,10 +220,7 @@ def set_line(
     Refuses, naming the row, a character the face cannot draw and a line whose outlined
     ink does not fit the box -- nothing is cut to fit (README).
     """
-    try:
-        ink = face.ink(entry.text)
-    except TypesetError as error:
-        raise TextureTextError(f"{entry.where}: {error}") from None
+    ink = ink_of(face, entry)
     need_w, need_h = face.measure(entry.text) + 2, CELL + 2
     if need_w > box[2] or need_h > box[3]:
         raise TextureTextError(
@@ -170,17 +276,12 @@ def _addiu_a1(immediate: int) -> bytes:
 
 def title_menu(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
     """Typeset the four title-menu lines and widen their sprites to fit English."""
-    by_line = {e.id.rsplit(".", 1)[1]: e for e in entries}
-    if len(by_line) != len(entries) or set(by_line) != {str(i) for i in range(MENU_LINES)}:
-        ids = ", ".join(sorted(e.id for e in entries))
-        raise TextureTextError(
-            f"tex@T_TITLE takes exactly .0-.{MENU_LINES - 1}, one per menu line; given {ids}"
-        )
+    by_line = keyed("tex@T_TITLE", entries, [str(i) for i in range(MENU_LINES)])
     texture = inv.get(TITLE_ATLAS)
     tim = texture.tim
     width = tim.width
     pixels = bytearray(tim.indices())
-    menu = [(x, y) for y in range(MENU_BAND * MENU_LINES) for x in range(MENU_WIDTH)]
+    menu = paint.points((0, 0, MENU_WIDTH, MENU_BAND * MENU_LINES))
     transparent = pixels[0]
     spare = {pixels[y * width + x] for x, y in menu if x >= RETAIL_MENU_WIDTH}
     if spare != {transparent} or tim.palette_rgba(0)[transparent][3] != 0:
@@ -224,6 +325,164 @@ def title_menu(archive: Archive, inv: Inventory, face: Face, entries: Sequence[E
     return edits
 
 
+# --- T_CONFIG: the settings screen -----------------------------------------------------------
+
+
+CONFIG_FRAME = "_DATA_T_CONFIG.BIN__000014"
+"""Child 0: the frame, the heading plaque, the back button, the sound plate, `OFF`."""
+CONFIG_PLATES = "_DATA_T_CONFIG.BIN__017234"
+"""Child 1: the message plate, the `ON`/`OFF` plate, the controller chart, the value labels."""
+
+CONFIG_HEADING, HEADING_CLUT = (64, 164, 50, 30), 2
+"""The heading plaque's flat interior."""
+MESSAGE_PLATE, MESSAGE_CLUT = (0, 0, 128, 146), 7
+"""Radial plate naming both message modes small, drawn at screen (168, 28)."""
+SOUND_PLATE, SOUND_CLUT = (256, 0, 128, 146), 1
+"""The same for stereo and mono, in child 0."""
+CHART_HEAD, CHART_CLUT = (256, 0, 128, 66), 5
+"""The controller chart's four column headings; row 66 is the rule under them."""
+CHART_KEYS = ("action", "cancel", "run", "sub_screen")
+"""The chart's columns, left to right."""
+VALUE_CLUT = 3
+VALUE_LABELS = {
+    "voice_text": (96, 148, 107, 45),
+    "voice_only": (0, 148, 96, 48),
+    "stereo": (96, 196, 96, 32),
+    "mono": (0, 196, 96, 32),
+}
+"""The selected value, drawn large and opaque over its small twin on the plate
+(`VALUE_CLUT`), each at the size of its sprite record in `TITLE.OVL`."""
+VALUE_NOTES = {"voice_text": "voice_text_note", "voice_only": "voice_only_note"}
+"""The values that carry a note under them, set 1x."""
+SHADOW = 2
+"""The large values' drop shadow: the ink repeated 1 and 2 px down-right."""
+CONFIG_KEYS = (
+    "heading", *VALUE_LABELS, *VALUE_NOTES.values(), *CHART_KEYS,
+)  # fmt: skip
+LINE_PITCH = 13
+"""Rows from one 1x line's cell to the next's: the room a note takes under its value."""
+NOTE_GAP = 3
+"""Rows (or, turned, columns) of air between stacked lines' ink."""
+
+
+def large(face: Face, entry: Entry, room: paint.Box) -> paint.Ink:
+    """`entry` at 2x if that fits `room`, else 1x bold: the emphasis the Japanese large type
+    has, as far as the room allows."""
+    ink = ink_of(face, entry)
+    _, _, w, h = paint.extent(ink)
+    return paint.scaled(ink, 2) if 2 * w <= room[2] and 2 * h <= room[3] else paint.bold(ink)
+
+
+def _small_labels(canvas, clut, plate, labels, face, where) -> None:
+    """Paint out the plate's two small labels and set the English in their place: `labels`
+    is (upper, lower), each the entries of its lines, set on the rows the Japanese used and
+    centred on the plate."""
+    mask, white = erase_type(canvas, clut, plate, "pale", what=where)
+    middle = plate[1] + plate[3] // 2
+    groups = [{p for p in mask if p[1] < middle}, {p for p in mask if p[1] >= middle}]
+    placed: list[tuple[Entry, int]] = []
+    for group, lines in zip(groups, labels, strict=True):
+        rows = rows_of(group)
+        if len(rows) != len(lines):
+            raise TextureTextError(
+                f"{where}: {len(rows)} lines of Japanese where {len(lines)} were measured"
+            )
+        for entry, row in zip(lines, rows, strict=True):
+            ink = paint.normalised(ink_of(face, entry))
+            fits(entry, ink, plate, where)
+            top, bottom = row[1], row[1] + paint.extent(ink)[3]
+            if bottom > plate[1] + plate[3] or (placed and top < placed[-1][1]):
+                into = "its edge" if bottom > plate[1] + plate[3] else placed[-1][0].id
+                raise TextureTextError(
+                    f"{entry.where}: {entry.text!r} set at rows {top}-{bottom - 1} of {where} "
+                    f"would run into {into}"
+                )
+            placed.append((entry, bottom))
+            canvas.stamp((centred(ink, plate)[0], top), ink, white)
+
+
+def chart_rules(head: paint.Ink) -> paint.Ink:
+    """The chart's vertical rules among its pale pixels: the columns pale down more than half
+    the heading rows (a rule is dithered, so not every row)."""
+    per_column = Counter(x for x, _ in head)
+    return {p for p in head if per_column[p[0]] > CHART_HEAD[3] // 2}
+
+
+def config_screen(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """The settings screen's heading, value plates, value labels and controller chart."""
+    text = keyed("tex@T_CONFIG", entries, CONFIG_KEYS)
+    frame, plates = paint.Canvas(inv.get(CONFIG_FRAME)), paint.Canvas(inv.get(CONFIG_PLATES))
+
+    # the heading plaque: dark type on a flat pale ground
+    heading = found(frame.type_mask("dark", HEADING_CLUT, CONFIG_HEADING), "the heading")
+    dark = frame.most_used(heading)
+    frame.fill(CONFIG_HEADING, frame.most_used(paint.points(CONFIG_HEADING)))
+    ink = paint.normalised(ink_of(face, text["heading"]))
+    fits(text["heading"], ink, CONFIG_HEADING, "the heading plaque")
+    frame.stamp(centred(ink, CONFIG_HEADING), ink, dark)
+
+    # the two plates that name both values small
+    _small_labels(
+        plates, MESSAGE_CLUT, MESSAGE_PLATE,
+        (
+            [text["voice_text"], text[VALUE_NOTES["voice_text"]]],
+            [text["voice_only"], text[VALUE_NOTES["voice_only"]]],
+        ),
+        face, "the message plate",
+    )  # fmt: skip
+    _small_labels(
+        frame, SOUND_CLUT, SOUND_PLATE, ([text["stereo"]], [text["mono"]]), face,
+        "the sound plate",
+    )  # fmt: skip
+
+    # the selected value, large, with a drop shadow
+    palette = plates.palette(VALUE_CLUT)
+    for key, cell in VALUE_LABELS.items():
+        what = f"the {key} label"
+        pale, white = erase_type(plates, VALUE_CLUT, cell, "pale", grow=(1, 1, 3, 3), what=what)
+        shadow_area = (paint.grown(pale, 0, 0, 3, 3) - pale) & set(paint.points(cell))
+        darkest = min((plates.at(p) for p in shadow_area), key=lambda i: luminance(palette[i]))
+        inner = (cell[0], cell[1], cell[2] - SHADOW, cell[3] - SHADOW)
+        note = VALUE_NOTES.get(key)
+        room = (0, 0, inner[2], inner[3] - (LINE_PITCH if note else 0))
+        inks = [large(face, text[key], room)]
+        if note:
+            inks.append(ink_of(face, text[note]))
+        block = stacked(inks, NOTE_GAP)
+        fits(text[key], block, inner, what)
+        x, y = centred(block, inner)
+        for depth in range(SHADOW, 0, -1):
+            plates.stamp((x + depth, y + depth), block, darkest)
+        plates.stamp((x, y), block, white)
+
+    # the controller chart: one heading per column, set top to bottom
+    rules = chart_rules(found(plates.type_mask("pale", CHART_CLUT, CHART_HEAD), "the chart"))
+    labels, white = erase_type(plates, CHART_CLUT, CHART_HEAD, "pale", avoid=rules,
+                               what="the chart")  # fmt: skip
+    edges = [CHART_HEAD[0] - 1, *sorted({x for x, _ in rules}), CHART_HEAD[0] + CHART_HEAD[2]]
+    if len(edges) - 1 != len(CHART_KEYS):
+        raise TextureTextError(
+            f"{CONFIG_PLATES}'s chart has {len(edges) - 1} columns, not {len(CHART_KEYS)}"
+        )
+    for key, (left, right) in zip(CHART_KEYS, pairwise(edges), strict=True):
+        entry = text[key]
+        room = (left + 1, CHART_HEAD[1], right - left - 1, CHART_HEAD[3] - 1)
+        lines = [ink_of(face, entry, line) for line in lines_of(entry)]
+        ink = paint.normalised(paint.rotated_cw(stacked(lines, NOTE_GAP)))
+        fits(entry, ink, (0, 0, room[2] - 2, room[3] - 2), f"the {key} column")
+        _, _, w, h = paint.extent(ink)
+        jp = {p for p in labels if left < p[0] < right}
+        if jp:
+            _, jp_top, _, jp_h = paint.extent(jp)
+            bottom = jp_top + jp_h
+        else:
+            bottom = room[1] + room[3] - 1
+        y = max(room[1] + 1, min(bottom, room[1] + room[3] - 1) - h)
+        plates.stamp((room[0] + (room[2] - w) // 2, y), ink, white)
+
+    return frame.patches() + plates.patches()
+
+
 # --- the build's entry point ---------------------------------------------------------------
 
 
@@ -231,6 +490,7 @@ Family = Callable[[Archive, Inventory, Face, Sequence[Entry]], list[ByteEdit]]
 
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
+    "tex@T_CONFIG": config_screen,
 }
 
 
@@ -277,9 +537,13 @@ __all__ = [
     "TextureEdits",
     "TextureTextError",
     "build_edits",
+    "chart_rules",
+    "config_screen",
+    "erase_type",
     "ink_roles",
     "outlined",
     "read_entries",
     "set_line",
+    "stacked",
     "title_menu",
 ]

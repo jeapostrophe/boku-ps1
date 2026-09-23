@@ -17,8 +17,8 @@ from collections import Counter
 
 import pytest
 
+from boku import texture_paint as paint
 from boku import texture_text as tt
-from boku.archive import Archive
 from boku.textures import Inventory
 from boku.tim import parse_exact
 from boku.typeset import FONT_SHEET_ID, GameFace
@@ -30,16 +30,13 @@ def inv(texture_inventory: Inventory) -> Inventory:
 
 
 @pytest.fixture(scope="module")
-def built(archive: Archive, inv: Inventory) -> tt.TextureEdits:
-    return tt.build_edits(archive, inv=inv)
+def built(texture_edits) -> tt.TextureEdits:
+    return texture_edits
 
 
 @pytest.fixture(scope="module")
-def patched(archive: Archive, built: tt.TextureEdits) -> bytes:
-    blob = bytearray(archive.boku)
-    for edit in built.edits:
-        blob[edit.offset : edit.offset + len(edit.new)] = edit.new
-    return bytes(blob)
+def patched(texture_patched) -> bytes:
+    return texture_patched
 
 
 def test_every_edit_replaces_exactly_the_bytes_the_import_holds(archive, built):
@@ -98,3 +95,80 @@ def test_the_title_atlas_holds_the_tracked_english_and_none_of_the_japanese(inv,
         if not (i // width < menu_rows and i % width < tt.MENU_WIDTH) and before[i] != after[i]
     ]
     assert outside == [], "the logo, PRESS START, the copyright line and the (TM) are untouched"
+
+
+# --- T_CONFIG ---------------------------------------------------------------------------------
+
+
+def placements(ink: set, marks: set) -> list[tuple[int, int]]:
+    """Every offset at which all of `ink` (normalised) lands on `marks`."""
+    ink = paint.normalised(ink)
+    first = min(ink)
+    return [
+        (mx - first[0], my - first[1])
+        for mx, my in marks
+        if all((x + mx - first[0], y + my - first[1]) in marks for x, y in ink)
+    ]
+
+
+def config_slots(english):
+    """(texture, CLUT, box, which marks, expected strings and how each may be drawn). The
+    strings come from the tracked file and the boxes from the recipe's measured geometry
+    (`research/texture-recipes.md` § "`T_CONFIG`"); the drawing variants are the only thing
+    a slot says about style."""
+    t = {k: english[f"tex@T_CONFIG.{k}"].text for k in tt.CONFIG_KEYS}
+    plain = [lambda i: i]
+    large = [lambda i: paint.scaled(i, 2), paint.bold]
+    return [
+        (tt.CONFIG_FRAME, tt.HEADING_CLUT, tt.CONFIG_HEADING, "dark", [(t["heading"], plain)]),
+        (tt.CONFIG_PLATES, tt.MESSAGE_CLUT, tt.MESSAGE_PLATE, "pale", [
+            (t["voice_text"], plain), (t["voice_text_note"], plain),
+            (t["voice_only"], plain), (t["voice_only_note"], plain)]),
+        (tt.CONFIG_FRAME, tt.SOUND_CLUT, tt.SOUND_PLATE, "pale",
+         [(t["stereo"], plain), (t["mono"], plain)]),
+        *[
+            (tt.CONFIG_PLATES, tt.VALUE_CLUT, tt.VALUE_LABELS[k], "pale",
+             [(t[k], large)] + ([(t[f"{k}_note"], plain)] if f"{k}_note" in t else []))
+            for k in tt.VALUE_LABELS
+        ],
+    ]  # fmt: skip
+
+
+def test_the_settings_screen_carries_exactly_the_tracked_english(inv, patched):
+    """In every slot the type-coloured pixels after the build are the English strings, each
+    found exactly once as the game's glyphs, and nothing else: no Japanese is left."""
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    english = tt.read_entries()
+    for texture_id, clut, box, kind, expected in config_slots(english):
+        texture = inv.get(texture_id)
+        after = parse_exact(patched, texture.occurrences[0].file_offset)
+        marks = (paint.pale_type if kind == "pale" else paint.dark_type)(after, clut, box)
+        covered: set = set()
+        for text, variants in expected:
+            found = [
+                (variant, spot)
+                for variant in variants
+                for spot in placements(variant(face.ink(text)), marks)
+            ]
+            assert len(found) == 1, f"{texture_id} {box}: {text!r} found {len(found)} times"
+            variant, (dx, dy) = found[0]
+            covered |= {(x + dx, y + dy) for x, y in paint.normalised(variant(face.ink(text)))}
+        assert marks == covered, f"{texture_id} {box}: {len(marks - covered)} stray type pixels"
+
+
+def test_the_controller_chart_headings_are_the_tracked_english_turned(inv, patched):
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    english = tt.read_entries()
+    texture = inv.get(tt.CONFIG_PLATES)
+    after = parse_exact(patched, texture.occurrences[0].file_offset)
+    marks = paint.pale_type(after, tt.CHART_CLUT, tt.CHART_HEAD)
+    rules = tt.chart_rules(marks)
+    covered: set = set()
+    for key in tt.CHART_KEYS:
+        for n, line in enumerate(tt.lines_of(english[f"tex@T_CONFIG.{key}"])):
+            ink = paint.rotated_cw(face.ink(line))
+            spots = placements(ink, marks - rules)
+            assert len(spots) == 1, f"{key} line {n}: {line!r} found {len(spots)} times"
+            dx, dy = spots[0]
+            covered |= {(x + dx, y + dy) for x, y in paint.normalised(ink)}
+    assert marks - rules == covered

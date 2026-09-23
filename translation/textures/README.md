@@ -8,8 +8,10 @@ is tracked (CLAUDE.md § "This repo is public").
 
 ## Format
 
-One string per row: `id<TAB>English`. `#` lines and blank lines are notes. The id is
-`tex@<member>.<n>` for a single texture's strings (`tex@T_TITLE.0`); the bulk families will be
+One string per row: `id<TAB>English`. `#` lines and blank lines are notes. ` // ` splits a
+string into lines, and only where the file's comment for that texture says it may; anywhere
+else the build refuses it rather than drawing the slashes. The id is
+`tex@<member>.<key>` for a single texture's strings (`tex@T_TITLE.0`); the bulk families will be
 `nikki@NIKKI_nnn`, `mzkan@…`, `tzkan@…` (`research/textures-plan.md` § "The new English text
 this creates"). An id may appear once across all the files.
 
@@ -24,7 +26,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 
 | file | textures | row |
 |---|---|---|
-| [ui.txt](ui.txt) | the title menu (`T_TITLE`) | PLAN `GFX-07` |
+| [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`) | PLAN `GFX-07` |
 
 To change a string, edit it here and run `./make.sh build-days`; the build prints which
 texture families it typeset.

@@ -307,7 +307,7 @@ case "$verb" in
         ;;
     emu-test)
         BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
-            tests/test_real_title_menu_beetle.py tests/test_real_save_boot.py "$@"
+            tests/test_real_texture_text_beetle.py tests/test_real_save_boot.py "$@"
         ;;
     lint)
         uv run ruff check .

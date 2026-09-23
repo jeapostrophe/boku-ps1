@@ -14,6 +14,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from boku import texture_paint as paint
 from boku import texture_text as tt
 from boku.archive import ARCHIVE_NAME, OVERLAY_LOAD_ADDRESS
 from boku.textures import Occurrence, Texture
@@ -242,7 +243,7 @@ def test_a_character_the_face_cannot_draw_is_refused_not_skipped():
 def test_the_menu_takes_all_four_lines_or_none(ids):
     texture = make_texture(atlas_pixels())
     entries = [tt.Entry(f"tex@T_TITLE.{i}", "Go", "ui.txt:1") for i in ids]
-    with pytest.raises(tt.TextureTextError, match=r"exactly \.0-\.3"):
+    with pytest.raises(tt.TextureTextError, match=r"exactly \.0, \.1, \.2, \.3"):
         tt.title_menu(
             FakeArchive(),
             SimpleNamespace(get=lambda _id: texture),
@@ -328,3 +329,70 @@ def test_a_texture_the_import_lacks_is_one_sentence_from_boku_build(monkeypatch,
     )
     assert args.run(args) == 1
     assert "boku build: no texture _DATA_T_TITLE" in capsys.readouterr().out
+
+
+# --- shared refusals (review 2026-09-22, T_CONFIG unit) -----------------------------------------
+
+
+def test_a_line_break_in_a_one_line_slot_is_refused_not_drawn_as_slashes():
+    with pytest.raises(tt.TextureTextError, match=r"ui.txt:0: tex@T_TITLE.0 is set on one line"):
+        run_title(("New // Game", *TEXTS[1:]))
+
+
+def test_type_missing_where_it_was_measured_is_refused_by_name():
+    with pytest.raises(tt.TextureTextError, match="the heading: no type where the recipe"):
+        tt.found(set(), "the heading")
+
+
+def test_japanese_with_nothing_to_paint_it_out_from_is_refused():
+    canvas = SimpleNamespace(paint_out=lambda box, mask, avoid: sorted(mask))
+    with pytest.raises(tt.TextureTextError, match=r"the chart: 1 pixel"):
+        tt.painted_out(canvas, (0, 0, 7, 1), {(3, 0)}, what="the chart")
+
+
+def plate(rows_of_type: list[int], width: int = 60, height: int = 40):
+    """An 8bpp plate: a saturated ground (entry 2) with pale type (entry 1) on the given rows."""
+    palette = synth.ramp(256)
+    palette[1] = 31 | 31 << 5 | 31 << 10  # white type
+    palette[2] = 20 | 2 << 5 | 4 << 10  # dark red ground
+    px = [2] * (width * height)
+    for y in rows_of_type:
+        for x in range(10, 30):
+            px[y * width + x] = 1
+    raw = synth.tim(
+        1, synth.pixel_block(width // 2, height, bytes(px)), clut=synth.clut_block(256, 1, palette)
+    )
+    tim = parse_exact(raw)
+    return paint.Canvas(Texture("plate", "0" * 40, tim, ()))
+
+
+def test_small_labels_that_would_run_into_each_other_are_refused():
+    """Two Japanese lines 4 rows apart: the first English line (9+ rows of ink) would overlap
+    the second, so the recipe refuses rather than overprinting."""
+    canvas = plate([2, 3, 4, 8, 9, 30, 31])
+    one, two, three = (tt.Entry(f"tex@T_CONFIG.{k}", "Hello", f"ui.txt:{n}")
+                       for n, k in enumerate(("a", "b", "c")))  # fmt: skip
+    with pytest.raises(tt.TextureTextError, match=r"ui.txt:1: .* would run into tex@T_CONFIG.a"):
+        tt._small_labels(
+            canvas, 0, (0, 0, 60, 40), ([one, two], [three]), GlyphFace(), "the plate",
+        )  # fmt: skip
+
+
+def test_a_small_label_that_would_run_off_the_plate_is_refused():
+    canvas = plate([2, 3, 36, 37])
+    one, two = (tt.Entry(f"tex@T_CONFIG.{k}", "Hello", f"ui.txt:{n}") for n, k in enumerate("ab"))
+    with pytest.raises(tt.TextureTextError, match=r"ui.txt:1: .* would run into its edge"):
+        tt._small_labels(
+            canvas, 0, (0, 0, 60, 40), ([one], [two]), GlyphFace(), "the plate",
+        )  # fmt: skip
+
+
+class GlyphFace(BlockFace):
+    """Blocks nine rows tall, like the game's capitals with a descender."""
+
+    def ink(self, text):
+        out, x = set(), 0
+        for ch in text:
+            out |= {(x + dx, dy) for dx in range(self.wide(ch)) for dy in range(9)}
+            x += self.wide(ch) + 1
+        return out

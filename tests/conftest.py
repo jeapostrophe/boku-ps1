@@ -80,6 +80,23 @@ def texture_inventory(archive: Archive) -> Inventory:
 
 
 @pytest.fixture(scope="session")
+def texture_edits(archive: Archive, texture_inventory: Inventory):
+    """Every edit the tracked texture English implies (`boku.texture_text.build_edits`)."""
+    from boku.texture_text import build_edits
+
+    return build_edits(archive, inv=texture_inventory)
+
+
+@pytest.fixture(scope="session")
+def texture_patched(archive: Archive, texture_edits) -> bytes:
+    """`BOKU.BIN` with those edits applied, in memory."""
+    blob = bytearray(archive.boku)
+    for edit in texture_edits.edits:
+        blob[edit.offset : edit.offset + len(edit.new)] = edit.new
+    return bytes(blob)
+
+
+@pytest.fixture(scope="session")
 def site_index(disc_dir: Path, archive: Archive) -> SiteIndex:
     """The walk, over the archive that is already open -- not a second copy of it."""
     return SiteIndex.from_disc(disc_dir, archive=archive)

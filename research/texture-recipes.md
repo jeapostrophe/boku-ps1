@@ -68,8 +68,63 @@ two most-used entries), not assumed.
 
 **Proof.** `tests/test_real_texture_text.py` checks the rebuilt atlas against the tracked
 English and the disc's glyph sheet texel by texel, and that nothing outside the four widened
-bands changed. `tests/test_real_title_menu_beetle.py` (`./make.sh emu-test`) boots an image
+bands changed. `tests/test_real_texture_text_beetle.py` (`./make.sh emu-test`) boots an image
 carrying only these edits on Beetle to the menu (START at frame 3300, shot at 3650) and
-requires every opaque texel of the three idle lines to show its CLUT-0 colour on screen
-exactly; the stock image fails it, and so does an image with the English but not the widened
-records.
+requires every texel the build changed and left opaque in the three idle lines to show its
+CLUT-0 colour on screen exactly; the stock image fails it, and so does an image with the
+English but not the widened records.
+
+## Painting Japanese out of a ground that is not flat
+
+Most plates are not one colour: the settings screen's are a dithered radial gradient. The
+recipes paint the Japanese out with `boku/texture_paint.py`: the type is found by colour
+through the CLUT the screen draws it in (pale near-neutral pixels on a saturated ground, or
+dark pixels on a pale plate), grown by a pixel or two to take its antialiasing and drop
+shadow, and each such pixel is replaced by the nearest clean pixel **of its own row, an even
+distance away**, so an ordered dither keeps its phase and a gradient keeps its slope. A rule
+or frame line that must survive is passed as `avoid` and is never a donor. The English is then
+stamped in the entry the Japanese used most — so the white, the shadow and the ground are
+all the texture's own.
+
+## `T_CONFIG` — the settings screen
+
+Two textures, both drawn by `TITLE.OVL`'s settings mode (records from `0x8008190A`, 0x16
+bytes apart here, same layout as the title's). The five labels down the left are renderer
+text (`exe@8003D9BC`, `TXT-05`), not these. Child 0 is `_DATA_T_CONFIG.BIN__000014` (384×240,
+5 CLUTs), child 1 `_DATA_T_CONFIG.BIN__017234` (384×228, 8 CLUTs). Where each piece lands and
+through which CLUT, measured on the stock image on Beetle by matching every CLUT at every
+screen offset against a screenshot:
+
+| piece | texture box (x, y, w, h) | CLUT | screen | record |
+|---|---|---|---|---|
+| heading plaque interior (flat) | child 0 (64, 164, 50, 30) | 2 | top left | `0x80081ACC` |
+| message plate: both modes, small | child 1 (0, 0, 128, 146) | 7 | (168, 28) | `0x800819D0` |
+| sound plate: stereo / mono, small | child 0 (256, 0, 128, 146) | 1 | (168, 28) | `0x800819BA` |
+| controller chart, column headings | child 1 (256, 0, 128, 66) | 5 | (168, 28) | `0x800819E6` |
+| selected value, large: voice + text | child 1 (96, 148, 107, 45) | 3 | (180, 42) | `0x800819FC` |
+| … voice only | child 1 (0, 148, 96, 48) | 3 | (185, 110) | `0x80081A12` |
+| … stereo | child 1 (96, 196, 96, 32) | 3 | (185, 53) | `0x80081A28` |
+| … mono | child 1 (0, 196, 96, 32) | 3 | (185, 113) | `0x80081A3E` |
+
+The plate names both values small; the **selected** value is then drawn large, as an opaque
+rectangle carrying its own slice of the gradient, over its small twin — so a plate always
+shows one value large and the other small. `ON`/`OFF` are already Latin and untouched.
+
+**What the recipe draws.** The heading: the plaque interior is refilled with its own flat
+colour and *Settings* set in the plaque's dark ink, centred (49 px of a 50 px interior).
+Small labels: set 1× in the plate's white on the rows the Japanese occupied, centred on the
+plate. Large values: the largest of 2× or 1×-bold that fits the cell (*Stereo* and *Mono*
+2×; the two message modes 1×-bold, with their note 1×), with a two-pixel drop shadow in the
+darkest entry the Japanese shadow used. Chart headings: turned a quarter clockwise to read
+top to bottom, in the column the Japanese occupied, bottom-aligned with it; `Sub // Screen`
+is two turned lines. The sheet's `(` `)` are vertical-writing forms, so the notes on skipping
+go without parentheses.
+
+**Proof.** `tests/test_real_texture_text.py` finds each tracked string in its slot exactly
+once, as the game's glyphs (plain, 2×, bold or turned), and requires the type-coloured pixels
+of the slot to be exactly those strings — no Japanese left.
+`tests/test_real_texture_text_beetle.py` drives Beetle to the message and sound pages and
+requires every texel the build changed and left opaque to show its colour on screen exactly,
+the large value included.
+
+The back button (`もどる`, a stone) belongs with the other buttons, not here.
