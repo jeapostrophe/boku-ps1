@@ -479,6 +479,22 @@ channel — `research/text-format.md`) sliced with `dd` and decoded with `ffmpeg
 slice.bin -map 0:a:<channel> clip.wav`. The `.IKI` movies take the same demuxer **for their
 audio only**: ffmpeg's `mdec` decoder rejects every IKI video frame, and jPSXdec is the
 decoder and encoder for the pictures ([movies.md](movies.md) § 4).
-No speech-to-text is installed; `whisper` (Japanese) is the obvious transcriber for `FMV-02`
-and for `TRN-08`'s "listen to the clip" — the model that translates cannot hear, so what it
-would receive is a transcript with timing, not sound. sox does not know XA.
+A key's span also holds the other 15 channels' sectors, so `./make.sh voice-only` keeps only
+the sectors whose subheader carries the key's file and channel before decoding (`boku.voice`
+`channel_sectors`); `-map 0:a:<channel>` is not needed. sox does not know XA.
+
+**Speech-to-text (installed 2026-09-22)** — a machine tool, not a project dependency: the
+model that translates cannot hear, so what it receives is a transcript with timing.
+`brew install whisper.cpp` (1.9.4, `whisper-cli`, Metal on Apple Silicon) and two models in
+`~/Dev/dist/whisper-models/`, from `huggingface.co/ggerganov/whisper.cpp` and
+`huggingface.co/ggml-org/whisper-vad`:
+
+| file | sha1 | what |
+|---|---|---|
+| `ggml-large-v3.bin` | `ad82bf6a9043ceed055076d0fd39f5f186ff8062` | Whisper large-v3 (3.1 GB) — the ASR |
+| `ggml-silero-v5.1.2.bin` | `a372f48dcf0bd9e4330eef2802bc46e061c19634` | Silero voice-activity detector |
+
+`$BOKU_WHISPER_MODEL` / `$BOKU_WHISPER_VAD` point elsewhere. `./make.sh voice-only
+--transcribe` runs both passes over every clip and voiced movie (17 minutes on an M4 Max);
+why both, and how Whisper fails on this material, is [voice-only.md](voice-only.md) § The
+listening pass.

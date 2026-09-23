@@ -271,7 +271,8 @@ depends on text.
 
 Label and slot disagree in 11 of 2,487 voiced lines (e.g. `E0441.0`–`.2`, `E2853.1`): authoring
 slips in the mouth-flap operand. The TSV takes the **label** when there is one and the slot
-otherwise; unvoiced `MSG` lines (114) have only the label. 108 `XA` nodes are voice without text.
+otherwise; unvoiced `MSG` lines (114) have only the label. The 115 `XA` nodes are voice without text;
+108 of them name no character (the reconciliation is [voice-only.md](voice-only.md)).
 
 ## Building the flow graph
 

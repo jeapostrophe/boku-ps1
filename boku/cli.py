@@ -27,6 +27,7 @@ from boku.textures import main_export as main_textures_export
 from boku.textures import main_import as main_textures_import
 from boku.trial import DEFAULT_OUT_DIR as TRIAL_OUT_DIR
 from boku.trial import TRIAL_TEXT, main_trial, patch_words
+from boku.voice import add_arguments as add_voice_arguments
 
 DEFAULT_MODIFIED_IMAGE = TRIAL_OUT_DIR / IMAGE_NAME
 
@@ -514,6 +515,20 @@ def build_parser() -> argparse.ArgumentParser:
                 "plays, which is filled in from watching them. An .IKI is real-time "
                 "interleaved, so `boku import` does not extract it and ffmpeg cannot "
                 "decode its video (research/movies.md section 4)."
+            ),
+        )
+    )
+
+    add_voice_arguments(
+        subcommands.add_parser(
+            "voice-only",
+            help="list the voice-only clips and decode them, and the voiced movies, to listen to",
+            description=(
+                "PLAN VO-01 / FMV-02: regenerate research/data/voice-only.tsv (one row per XA "
+                "instruction -- a voice played with no text), decode every clip from "
+                "__STR/BOKU_XA.XAM and every voiced movie's XA audio to WAV under work/voice/, "
+                "and with --transcribe run whisper-cli (Japanese) over them. The audio and the "
+                "transcripts are the game's own content, so they stay under work/."
             ),
         )
     )

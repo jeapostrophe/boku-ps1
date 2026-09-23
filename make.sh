@@ -17,7 +17,7 @@ usage: ./make.sh <verb> [arguments]
                                 your import; a test diffs them against the tracked copies,
                                 which is the gate on the walk. The other generated tables
                                 there have their own verbs -- texture-census, texture-plan,
-                                movies -- and glyph-table.tsv is kept by hand (research/font.md)
+                                movies, voice-only -- and glyph-table.tsv is kept by hand (research/font.md)
   textures export [arguments]   write one indexed PNG per distinct texture into
                                 work/textures/, plus an index of every occurrence
                                 (./make.sh textures export --help for the switches)
@@ -30,6 +30,12 @@ usage: ./make.sh <verb> [arguments]
                                 (research/movies.md section 4); --tsv regenerates just the
                                 table and needs neither
                                 (./make.sh movies --help for the switches)
+  voice-only [arguments]        regenerate research/data/voice-only.tsv -- one row per XA
+                                instruction, a voice with no text -- and decode every
+                                clip, and the voiced movies' audio, into work/voice/;
+                                --transcribe runs Whisper (Japanese) over them there,
+                                --tsv regenerates just the table
+                                (./make.sh voice-only --help for the switches)
   texture-census                regenerate research/data/texture-census.tsv -- what every
                                 distinct image is and whether it carries Japanese -- from
                                 work/rec08/distinct.tsv (REC-08's extractor writes that
@@ -243,6 +249,11 @@ case "$verb" in
         # and diffs it against the tracked copy, so a note edit that was never run here
         # is caught.
         exec uv run boku movies "$@"
+        ;;
+    voice-only)
+        # The gate is tests/test_real_voice.py: it regenerates research/data/voice-only.tsv
+        # and diffs it against the tracked copy.
+        exec uv run boku voice-only "$@"
         ;;
     texture-census)
         exec uv run python tools/textures/classify.py "$@"

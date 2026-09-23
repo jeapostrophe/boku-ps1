@@ -1,0 +1,172 @@
+# The voice-only clips: one row per `XA` instruction -- a voice played with no text on the
+# screen -- then one per `g_xa_clips` record (`XCH.nn`), which native code plays. Generated
+# by `./make.sh voice-only --tsv`; research/voice-only.md says where each column comes from
+# and how the rows reconcile with the counts quoted elsewhere.
+#
+# said and notes are the only hand-written columns, and a regeneration carries them across
+# unchanged by line_id. said is `wordless` or an English gist of what is said -- never the
+# Japanese, which lives only in work/voice/ (CLAUDE.md).
+line_id	node	day	speaker	slot	xa_file	channel	start	end	sectors	seconds	copies	same_clip_as	said	notes
+E0020.1	E0020.1@B6		VOICE	255	3	13	88925	89213	19	2.0	2	E2061.0,E2104.7	wordless	bath sounds (the bath is offered, E0020.0)
+E0184.2	E0184.2@9E	1	VOICE	255	2	4	88372	88980	39	4.2	1	E4046.0	wordless	sound effect: Boku flops onto the sunned futon (E0184)
+E0202.6	E0202.6@1B8	2	VOICE	255	2	6	88726	89190	30	3.2	1	E0302.6	wordless	jingle as the uncle names Boku's chore for the day
+E0302.6	E0302.6@16E	3	VOICE	255	2	6	88726	89190	30	3.2	1	E0202.6	wordless	jingle as the uncle names Boku's chore for the day
+E0305.0	E0305.0@42	3	VOICE	255	3	15	10799	14639	241	25.7	4	-	TV baseball commentary: national high-school tournament, game 1, Kumamoto vs Miyagi; second inning, the Miyagi ace pitches, a big curve just misses, three balls to the sixth batter	a sports announcer on the television
+E0305.1	E0305.1@5C	3	VOICE	255	2	2	10770	15042	268	28.6	4	-	TV baseball commentary: game 2, Hiroshima vs Niigata; bottom of the third, Hiroshima's first-year pitcher shows no sign of his feared elbow injury, Hiroshima leads 3-0	a sports announcer on the television
+E0305.2	E0305.2@76	3	VOICE	255	3	0	10688	15632	310	33.1	4	-	TV baseball commentary: game 3, North Hokkaido vs Toyama; bottom of the seventh, Toyama leads 8-2 after a big first inning, though the Hokkaido ace has held them since	a sports announcer on the television
+E0305.3	E0305.3@90	3	VOICE	255	3	13	11005	16701	357	38.1	4	-	TV baseball commentary: game 4, Aichi vs Okinawa, starting an hour late; a home run off the very first pitch	a sports announcer on the television
+E0305.4	E0305.4@AA	3	VOICE	255	3	10	11066	26330	955	101.9	4	-	TV baseball news: the day's four results in turn (7-2; 4-3 after the pitcher's elbow gave out; 9-8 comeback in the 11th; 1-0 on the first-pitch home run), signed off from Koshien	a news announcer on the television (102 s)
+E0306.5	E0306.5@16E	3	VOICE	255	3	8	11896	11992	7	0.7	2	-	wordless	short jingle: the corn-picking job starts
+E0401.4	E0401.4@138	4	VOICE	255	3	12	13676	14092	27	2.9	1	-	wordless	laughter
+E0405.5	E0405.5@186		VOICE	255	3	1	14705	17697	188	20.1	4	-	wordless	the far-off howl E0405.7's narration describes
+E0443.1	E0443.1@A8	4	VOICE	255	2	8	88936	88936	1	0.1	2	E0443.7,E4017.0	wordless	one sector (0.1 s): a click
+E0443.7	E0443.7@1C2	4	VOICE	255	2	8	88936	88936	1	0.1	2	E0443.1,E4017.0	wordless	one sector (0.1 s): a click
+E0444.4	E0444.4@EA	4	VOICE	255	3	12	89660	89820	11	1.2	2	E0444.6,E4047.0	wordless	sound effect (the flower's nectar is tasted)
+E0444.6	E0444.6@162	4	VOICE	255	3	12	89660	89820	11	1.2	2	E0444.4,E4047.0	wordless	sound effect (the flower's nectar is tasted)
+E0445.7	E0445.7@1D0	4	VOICE	255	2	5	87637	87685	4	0.4	2	E0923.8,E1606.2	wordless	camera shutter (after 'Cheese!')
+E0471.1	E0471.1@56	4	ALL	11	3	0	33008	33088	6	0.6	1	E0471.5,E1006.1,E4041.0,E4042.1,E4058.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
+E0471.5	E0471.5@F8	4	ALL	11	3	0	33008	33088	6	0.6	1	E0471.1,E1006.1,E4041.0,E4042.1,E4058.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
+E0504.0	E0504.0@56	5	VOICE	255	2	8	89160	90584	90	9.6	1	E1502.7	wordless	a car -- the father's car coming and going
+E0606.0	E0606.0@14	6	VOICE	255	2	4	21876	23044	74	7.9	3	-	TV news: many people have gathered in Hiroshima's Peace Park for today's memorial ceremony	a news announcer (day 6, August 6)
+E0650.3	E0650.3@B6		GUTS+FAT+MEGANE	15	2	6	24118	24518	26	2.8	1	-	wordless	the boys laugh
+E0650.12	E0650.12@210		BOKU+GUTS+FAT+MEGANE	16	2	9	24249	24681	28	3.0	1	-	wordless	the boys laugh
+E0807.4	E0807.4@28E		VOICE	255	2	15	88671	89375	45	4.8	4	-	wordless	sound effect as Boku heaves himself up
+E0835.0	E0835.0@58		VOICE	255	2	0	88752	88880	9	1.0	5	-	wordless	a door that will not open (the next line says it is locked)
+E0905.0	E0905.0@14	9	VOICE	255	3	5	31861	33141	81	8.6	3	-	wordless	bells on the television (the Nagasaki ceremony, day 9)
+E0905.1	E0905.1@2C	9	VOICE	255	3	3	31939	33235	82	8.7	3	-	TV news: the church bells ring sadly, as if to enfold the people gathered from around the world	a news announcer (day 9, Nagasaki)
+E0923.8	E0923.8@140		VOICE	255	2	5	87637	87685	4	0.4	2	E0445.7,E1606.2	wordless	camera shutter (after 'Cheese!')
+E1006.1	E1006.1@92		VOICE	255	3	0	33008	33088	6	0.6	6	E0471.1,E0471.5,E4041.0,E4042.1,E4058.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
+E1006.3	E1006.3@CA		VOICE	255	3	14	34222	34350	9	1.0	6	-	wordless	sound effect after Boku's 'Ei!'
+E1203.1	E1203.1@A4	12	VOICE	255	3	3	88547	88739	13	1.4	6	-	wordless	the monk begins: a bell
+E1203.2	E1203.2@C6	12	VOICE	255	3	5	87733	88789	67	7.1	6	E1203.3,E1203.4	wordless	the monk's sutra chanting -- Whisper transcribed nothing; liturgy, not dialogue. Whether a sutra gets a subtitle is a style call
+E1203.3	E1203.3@11E	12	VOICE	255	3	5	87733	88789	67	7.1	6	E1203.2,E1203.4	wordless	the monk's sutra chanting -- Whisper transcribed nothing; liturgy, not dialogue. Whether a sutra gets a subtitle is a style call
+E1203.4	E1203.4@12C	12	VOICE	255	3	5	87733	88789	67	7.1	6	E1203.2,E1203.3	wordless	the monk's sutra chanting -- Whisper transcribed nothing; liturgy, not dialogue. Whether a sutra gets a subtitle is a style call
+E1306.0	E1306.0@5C		VOICE	255	3	14	89486	91198	108	11.5	2	E1905.0,E2005.2	wordless	the howl
+E1306.1	E1306.1@B0		VOICE	255	2	5	60277	61221	60	6.4	2	E1905.1,E6001.14,E6101.14	wordless	the howl (E6001.14: Boku has just asked 'what kind of voice?')
+E1502.7	E1502.7@1C0	15	VOICE	255	2	8	89160	90584	90	9.6	2	E0504.0	wordless	a car -- the father's car coming and going
+E1505.0	E1505.0@14	15	VOICE	255	3	15	44927	46607	106	11.3	4	-	TV/radio broadcast: thirty years on from that day, perhaps the time has come to think about what the peace we enjoy really means	an announcer (day 15, August 15)
+E1605.0	E1605.0@38		VOICE	255	2	12	45996	46444	29	3.1	3	-	wordless	Nora the cat
+E1605.1	E1605.1@54		VOICE	255	3	4	45108	46068	61	6.5	3	E1612.0	wordless	Nora the cat mewing (E1612.1: the uncle hears Nora crying)
+E1605.2	E1605.2@62		VOICE	255	3	1	45265	46225	61	6.5	3	-	wordless	Nora the cat mewing
+E1606.2	E1606.2@CA		VOICE	255	2	5	87637	87685	4	0.4	2	E0445.7,E0923.8	wordless	camera shutter (after 'Cheese!')
+E1612.0	E1612.0@26	16	VOICE	255	3	4	45108	46068	61	6.5	1	E1605.1	wordless	Nora the cat mewing (E1612.1: the uncle hears Nora crying)
+E1761.0	E1761.0@86		VOICE	255	3	15	88495	88623	9	1.0	6	E1861.15,E1909.0,E1970.0,E1970.1,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
+E1861.15	E1861.15@280		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1909.0,E1970.0,E1970.1,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
+E1861.30	E1861.30@472		VOICE	255	2	2	51282	51442	11	1.2	2	-	'Hey -- good work.'	a voice on Saori's recorder, played back as she demonstrates it
+E1861.31	E1861.31@498		VOICE	255	3	8	51784	51976	13	1.4	2	-	'Who are you?'	a voice on Saori's recorder
+E1861.32	E1861.32@4A2		VOICE	255	2	6	51894	52214	21	2.2	2	-	'Say who you are first -- Boy Number One.'	a voice on Saori's recorder
+E1905.0	E1905.0@5C	19	VOICE	255	3	14	89486	91198	108	11.5	2	E1306.0,E2005.2	wordless	the howl
+E1905.1	E1905.1@FC	19	VOICE	255	2	5	60277	61221	60	6.4	2	E1306.1,E6001.14,E6101.14	wordless	the howl (E6001.14: Boku has just asked 'what kind of voice?')
+E1908.1	E1908.1@56		VOICE	255	2	13	89261	89389	9	1.0	5	-	wordless	a firecracker
+E1909.0	E1909.0@6		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1861.15,E1970.0,E1970.1,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
+E1970.0	E1970.0@70		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1861.15,E1909.0,E1970.1,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
+E1970.1	E1970.1@B2		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1861.15,E1909.0,E1970.0,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
+E1970.2	E1970.2@EA		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1861.15,E1909.0,E1970.0,E1970.1,E1970.3,E1970.4	wordless	the camera trap's flash going off
+E1970.3	E1970.3@12C		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1861.15,E1909.0,E1970.0,E1970.1,E1970.2,E1970.4	wordless	the camera trap's flash going off
+E1970.4	E1970.4@182		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1861.15,E1909.0,E1970.0,E1970.1,E1970.2,E1970.3	wordless	the camera trap's flash going off
+E2005.2	E2005.2@F4		VOICE	255	3	14	89486	91198	108	11.5	2	E1306.0,E1905.0	wordless	the howl
+E2061.0	E2061.0@18	20	VOICE	255	3	13	88925	89213	19	2.0	1	E0020.1,E2104.7	wordless	bath sounds (the bath is offered, E0020.0)
+E2104.7	E2104.7@224	21	VOICE	255	3	13	88925	89213	19	2.0	1	E0020.1,E2061.0	wordless	bath sounds (the bath is offered, E0020.0)
+E2202.7	E2202.7@1C0	22	ALL	11	3	4	60404	60852	29	3.1	1	E2204.11,E3174.3,E3175.0	wordless	everyone laughs
+E2204.11	E2204.11@1CE	22	ALL	11	3	4	60404	60852	29	3.1	2	E2202.7,E3174.3,E3175.0	wordless	everyone laughs
+E2305.0	E2305.0@5E		VOICE	255	3	1	64449	65985	97	10.3	4	-	'Come to think of it, that overzealous vice-principal at our school apparently hid some treasure of his on this back hill during the war.'	a remembered voice; the next line (narration) has Boku take the book home -- speaker not identified by ear
+E2330.11	E2330.11@13E	23	VOICE	255	2	8	65480	65912	28	3.0	2	E2430.13,E2530.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2430.13	E2430.13@168	24	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2530.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2432.10	E2432.10@19E	24	VOICE	255	3	0	67792	68288	32	3.4	1	-	wordless	sound effect (loud, no speech found)
+E2432.14	E2432.14@25C	24	VOICE	255	2	11	68363	68827	30	3.2	1	-	wordless	sound effect (loud, no speech found)
+E2530.13	E2530.13@18E	25	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2630.15	E2630.15@348	26	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2530.13,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2730.11	E2730.11@15C	27	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2530.13,E2630.15	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2901.7	E2901.7@18C	29	ALL	11	2	5	79749	80053	20	2.1	1	-	wordless	laughter
+E3102.2	E3102.2@C6	31	VOICE	255	3	0	88928	89600	43	4.6	1	-	wordless	sound effect after the meal
+E3174.3	E3174.3@D2		VOICE	255	3	4	60404	60852	29	3.1	1	E2202.7,E2204.11,E3175.0	wordless	everyone laughs
+E3175.0	E3175.0@4C		VOICE	255	3	4	60404	60852	29	3.1	1	E2202.7,E2204.11,E3174.3	wordless	everyone laughs
+E3178.0	E3178.0@5A		VOICE	22	3	13	88141	88653	33	3.5	1	E3179.0	wordless	laughter
+E3179.0	E3179.0@5A		VOICE	22	3	13	88141	88653	33	3.5	1	E3178.0	wordless	laughter
+E4014.0	E4014.0@46		VOICE	255	3	6	89238	90006	49	5.2	7	-	wordless	near-silence (5 s)
+E4017.0	E4017.0@28		VOICE	255	2	8	88936	88936	1	0.1	2	E0443.1,E0443.7	wordless	one sector (0.1 s): a click
+E4028.1	E4028.1@64		VOICE	255	3	12	6524	6620	7	0.7	3	E4064.1	wordless	the quiz's right-answer jingle
+E4028.3	E4028.3@7C		VOICE	255	2	12	6668	6764	7	0.7	3	E4064.3	wordless	the quiz's wrong-answer jingle
+E4029.0	E4029.0@3C		VOICE	255	2	13	88701	88877	12	1.3	19	-	wordless	sound effect: a drink is poured
+E4029.2	E4029.2@AC		VOICE	255	3	8	88984	89112	9	1.0	19	-	wordless	sound effect: a drink is poured
+E4029.3	E4029.3@102		VOICE	255	3	12	89932	90236	20	2.1	19	E4029.4	wordless	sound effect: a drink
+E4029.4	E4029.4@176		VOICE	255	3	12	89932	90236	20	2.1	19	E4029.3	wordless	sound effect: a drink
+E4041.0	E4041.0@44		VOICE	255	3	0	33008	33088	6	0.6	6	E0471.1,E0471.5,E1006.1,E4042.1,E4058.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
+E4041.1	E4041.1@5A		VOICE	255	2	8	33960	34280	21	2.2	6	E4042.2,E4042.3	wordless	Ken-bo growls
+E4042.0	E4042.0@58		VOICE	255	2	1	33617	33793	12	1.3	6	-	wordless	Ken-bo whimpers
+E4042.1	E4042.1@A2		VOICE	255	3	0	33008	33088	6	0.6	6	E0471.1,E0471.5,E1006.1,E4041.0,E4058.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
+E4042.2	E4042.2@B8		VOICE	255	2	8	33960	34280	21	2.2	6	E4041.1,E4042.3	wordless	Ken-bo growls
+E4042.3	E4042.3@DC		VOICE	255	2	8	33960	34280	21	2.2	6	E4041.1,E4042.2	wordless	Ken-bo growls
+E4046.0	E4046.0@20		VOICE	255	2	4	88372	88980	39	4.2	10	E0184.2	wordless	sound effect: Boku flops onto the sunned futon (E0184)
+E4047.0	E4047.0@48		VOICE	255	3	12	89660	89820	11	1.2	2	E0444.4,E0444.6	wordless	sound effect (the flower's nectar is tasted)
+E4052.0	E4052.0@60		VOICE	255	3	1	481	2417	122	13.0	10	-	wordless	television: music, no speech found (13 s)
+E4052.1	E4052.1@76		VOICE	255	3	3	435	1651	77	8.2	10	-	wordless	television: applause; the gated pass heard a possible 'otsukaresama' -- needs an ear
+E4052.2	E4052.2@A2		VOICE	255	3	12	332	1868	97	10.3	10	-	TV news: at a nursery school in Toyohashi, Aichi, the school's goat ate the entire stockpile of toilet paper	a news announcer
+E4052.3	E4052.3@B4		VOICE	255	3	15	383	1567	75	8.0	10	-	TV news: with this year's vinyl-kite craze, kite strings tangled on power lines have surged nationwide	a news announcer
+E4052.4	E4052.4@C6		VOICE	255	2	6	438	1334	57	6.1	10	-	TV news: Japan's first convenience store opened today in Koto ward, Tokyo	a news announcer
+E4052.5	E4052.5@DC		VOICE	255	2	14	526	1294	49	5.2	10	-	TV drama narrator: 'What will fate bring?'	a programme's narrator
+E4052.6	E4052.6@F2		VOICE	255	2	13	589	2333	110	11.7	10	-	wordless	television: music, no speech found (12 s)
+E4052.7	E4052.7@108		VOICE	255	3	0	496	1120	40	4.3	10	-	wordless	television: studio laughter
+E4058.1	E4058.1@1C8		VOICE	255	3	0	33008	33088	6	0.6	7	E0471.1,E0471.5,E1006.1,E4041.0,E4042.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
+E4059.1	E4059.1@1C8		VOICE	255	3	0	33008	33088	6	0.6	6	E0471.1,E0471.5,E1006.1,E4041.0,E4042.1,E4058.1,E4060.1	wordless	Ken-bo the dog barks
+E4060.1	E4060.1@1C8		VOICE	255	3	0	33008	33088	6	0.6	6	E0471.1,E0471.5,E1006.1,E4041.0,E4042.1,E4058.1,E4059.1	wordless	Ken-bo the dog barks
+E4064.1	E4064.1@64		VOICE	255	3	12	6524	6620	7	0.7	1	E4028.1	wordless	the quiz's right-answer jingle
+E4064.3	E4064.3@7C		VOICE	255	2	12	6668	6764	7	0.7	1	E4028.3	wordless	the quiz's wrong-answer jingle
+E5047.0	E5047.0@3C		VOICE	255	3	4	89028	89076	4	0.4	1	E5048.0,E5049.0,E5050.0	wordless	a short gasp ('ah!')
+E5048.0	E5048.0@3C		VOICE	255	3	4	89028	89076	4	0.4	1	E5047.0,E5049.0,E5050.0	wordless	a short gasp ('ah!')
+E5049.0	E5049.0@14		VOICE	255	3	4	89028	89076	4	0.4	1	E5047.0,E5048.0,E5050.0	wordless	a short gasp ('ah!')
+E5050.0	E5050.0@3C		VOICE	255	3	4	89028	89076	4	0.4	2	E5047.0,E5048.0,E5049.0	wordless	a short gasp ('ah!')
+E6001.14	E6001.14@1FE		VOICE	255	2	5	60277	61221	60	6.4	1	E1306.1,E1905.1,E6101.14	wordless	the howl (E6001.14: Boku has just asked 'what kind of voice?')
+E6101.14	E6101.14@276		VOICE	255	2	5	60277	61221	60	6.4	1	E1306.1,E1905.1,E6001.14	wordless	the howl (E6001.14: Boku has just asked 'what kind of voice?')
+E8026.0	E8026.0@18		VOICE	255	3	15	89423	89519	7	0.7	1	E8027.0,E8028.0,E8029.0	wordless	a door rattles (the next line says it is locked)
+E8027.0	E8027.0@1E		VOICE	255	3	15	89423	89519	7	0.7	7	E8026.0,E8028.0,E8029.0	wordless	a door rattles (the next line says it is locked)
+E8028.0	E8028.0@1E		VOICE	255	3	15	89423	89519	7	0.7	1	E8026.0,E8027.0,E8029.0	wordless	a door rattles (the next line says it is locked)
+E8029.0	E8029.0@1E		VOICE	255	3	15	89423	89519	7	0.7	1	E8026.0,E8027.0,E8028.0	wordless	a door rattles (the next line says it is locked)
+XCH.00	BOKU_XA.XCH[0]		-	-	3	8	1144	1304	11	1.2	1	-	'I'll take you on first.'	bug sumo
+XCH.01	BOKU_XA.XCH[1]		-	-	3	9	1241	1609	24	2.6	1	-	'I haven't got one -- somebody swap in.'	bug sumo
+XCH.02	BOKU_XA.XCH[2]		-	-	2	11	1275	1483	14	1.5	1	-	'Looks like nobody's got one.'	bug sumo
+XCH.03	BOKU_XA.XCH[3]		-	-	2	8	1352	1736	25	2.7	1	-	'Finally this guy's time to shine!'	bug sumo
+XCH.04	BOKU_XA.XCH[4]		-	-	3	14	1342	1422	6	0.6	1	-	'Right -- go!'	bug sumo
+XCH.05	BOKU_XA.XCH[5]		-	-	2	5	1333	1509	12	1.3	1	-	'Yes yes yes yes!'	bug sumo
+XCH.06	BOKU_XA.XCH[6]		-	-	3	6	1382	1430	4	0.4	1	-	'Go for it!'	bug sumo; 0.3 s, heard only by the plain pass
+XCH.07	BOKU_XA.XCH[7]		-	-	2	7	1447	1703	17	1.8	1	-	'Heh, how about that!'	bug sumo
+XCH.08	BOKU_XA.XCH[8]		-	-	2	10	1386	1578	13	1.4	1	-	'Yay! I win!'	bug sumo
+XCH.09	BOKU_XA.XCH[9]		-	-	2	14	1470	1886	27	2.9	1	-	'Heh, a win, naturally.'	bug sumo
+XCH.10	BOKU_XA.XCH[10]		-	-	2	6	1478	1830	23	2.5	1	-	'Aw, I lost.'	bug sumo
+XCH.11	BOKU_XA.XCH[11]		-	-	3	0	1456	1616	11	1.2	1	-	'Argh, so annoying!'	bug sumo
+XCH.12	BOKU_XA.XCH[12]		-	-	3	11	1531	1691	11	1.2	1	-	'Then let's trade for that one.'	bug sumo
+XCH.13	BOKU_XA.XCH[13]		-	-	3	7	1751	2023	18	1.9	1	-	'First you face the great me!'	bug sumo
+XCH.14	BOKU_XA.XCH[14]		-	-	3	8	1784	2040	17	1.8	1	-	'Haven't got one. Switch.'	bug sumo
+XCH.15	BOKU_XA.XCH[15]		-	-	2	3	1699	1859	11	1.2	1	-	'Go all out!'	bug sumo
+XCH.16	BOKU_XA.XCH[16]		-	-	3	6	1878	2166	19	2.0	1	-	uncertain: a gloat	bug sumo; the two passes heard different words -- needs an ear
+XCH.17	BOKU_XA.XCH[17]		-	-	3	14	1934	2222	19	2.0	1	-	uncertain: a cry of alarm ('ayayaya...')	bug sumo
+XCH.18	BOKU_XA.XCH[18]		-	-	3	3	1907	2355	29	3.1	1	-	laughter, then 'Did it!'	bug sumo
+XCH.19	BOKU_XA.XCH[19]		-	-	3	9	1945	2281	22	2.3	1	-	'Easy as pie.'	bug sumo
+XCH.20	BOKU_XA.XCH[20]		-	-	2	12	1916	2236	21	2.2	1	-	'Huh? Oh, great...'	bug sumo
+XCH.21	BOKU_XA.XCH[21]		-	-	2	7	2071	2407	22	2.3	1	-	'Tch, I lost.'	bug sumo
+XCH.22	BOKU_XA.XCH[22]		-	-	2	8	2088	2360	18	1.9	1	-	'Sure, let's trade.'	bug sumo
+XCH.23	BOKU_XA.XCH[23]		-	-	2	9	2329	2633	20	2.1	1	-	'I said I go first.'	bug sumo
+XCH.24	BOKU_XA.XCH[24]		-	-	2	3	2403	2659	17	1.8	1	-	'Sorry, I haven't got one.'	bug sumo
+XCH.25	BOKU_XA.XCH[25]		-	-	3	13	2381	2509	9	1.0	1	-	'Go for it!'	bug sumo; heard only by the plain pass
+XCH.26	BOKU_XA.XCH[26]		-	-	2	1	2465	2705	16	1.7	1	-	'Yes! I might do it!'	bug sumo
+XCH.27	BOKU_XA.XCH[27]		-	-	2	13	2557	2829	18	1.9	1	-	'Oh no, I'm going to lose.'	bug sumo; heard only by the plain pass
+XCH.28	BOKU_XA.XCH[28]		-	-	2	7	2727	3079	23	2.5	1	-	'Huh, I won!'	bug sumo
+XCH.29	BOKU_XA.XCH[29]		-	-	3	9	2681	2921	16	1.7	1	-	'I win.'	bug sumo
+XCH.30	BOKU_XA.XCH[30]		-	-	2	11	2731	3067	22	2.3	1	-	'Sigh... I lost.'	bug sumo
+XCH.31	BOKU_XA.XCH[31]		-	-	3	3	2707	3059	23	2.5	1	-	'I want to get stronger.'	bug sumo
+XCH.32	BOKU_XA.XCH[32]		-	-	3	1	2753	3169	27	2.9	1	-	'Oh, thanks. So I trade for that one.'	bug sumo
+XCH.33	BOKU_XA.XCH[33]		-	-	2	6	5494	5670	12	1.3	1	-	'Wow! Yes!'	a cheer; heard only by the plain pass
+XCH.34	BOKU_XA.XCH[34]		-	-	3	13	4525	5133	39	4.2	1	-	'And so the first day of that summer vacation came to an end.'	the adult narrator: going to sleep on day 1 (Jay's first sighting, VO-01)
+XCH.35	BOKU_XA.XCH[35]		-	-	2	0	1168	1408	16	1.7	1	-	'Right, my turn next.'	bug sumo
+XCH.36	BOKU_XA.XCH[36]		-	-	3	7	1271	1399	9	1.0	1	-	'Then how about this one?'	bug sumo
+XCH.37	BOKU_XA.XCH[37]		-	-	2	9	1657	1897	16	1.7	1	-	'Next up, the great me.'	bug sumo
+XCH.38	BOKU_XA.XCH[38]		-	-	2	11	1739	2331	38	4.1	1	-	'Can't be helped. Then how about this?'	bug sumo
+XCH.39	BOKU_XA.XCH[39]		-	-	3	11	2379	2683	20	2.1	1	-	'My turn next, huh.'	bug sumo
+XCH.40	BOKU_XA.XCH[40]		-	-	3	7	2455	2679	15	1.6	1	-	'Then will this one do?'	bug sumo
+XCH.41	BOKU_XA.XCH[41]		-	-	3	2	89010	93250	266	28.4	1	-	EPILOGUE, the sisters: both later moved to the city and married picture-book marriages; Moe's eldest is now in her third year of middle school -- the age her aunt was that summer	the adult narrator; ending 7-9 stars by bible § 2
+XCH.42	BOKU_XA.XCH[42]		-	-	2	15	89567	94575	314	33.5	1	-	EPILOGUE, the potter: after university and seven years at an art publisher, near thirty he took up his uncle's path; he now does all the clay-kneading, yet still gets dizzy at the wheel	the adult narrator; ending 10-12 stars
+XCH.43	BOKU_XA.XCH[43]		-	-	2	4	89124	96420	457	48.7	1	-	EPILOGUE, the programmer: 25 years on he writes control software for communications equipment at a big electronics maker; amid white partitions, grey carpet and never-sleeping fluorescent light he pictures those summer days running through the hills	the adult narrator; ending 4-6 stars
+XCH.44	BOKU_XA.XCH[44]		-	-	2	13	89581	96413	428	45.7	1	-	EPILOGUE, the novelist: this is all he remembers of that summer; now a successful novelist in a New York hotel within sight of the Brooklyn Bridge, looking for the words of this story's epilogue; Shirabe and Moe are visiting from Japan for the 2001 countdown -- 'Goodbye, twentieth century'	the adult narrator; ending 13-15 stars
+XCH.45	BOKU_XA.XCH[45]		-	-	3	10	88442	93050	289	30.8	1	-	EPILOGUE, the dam: within some fifteen years a huge dam was finished in the valley; where the uncle's house stood is 200 m deep in the rainy season; nothing is left to remember those days by	the adult narrator; ending 0-3 stars
+XCH.46	BOKU_XA.XCH[46]		-	-	2	12	89868	89884	2	0.2	1	-	wordless	0.2 s: a click
+XCH.47	BOKU_XA.XCH[47]		-	-	2	2	88786	88962	12	1.3	1	-	wordless	beeps

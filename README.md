@@ -167,8 +167,8 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, packet, save-event, mockup, build-days, patch, apply-patch, save(s), boot-save, test, emu-test, lint, smoke
-boku/                the Python package: import, extract, movies, trial, build (text and
+make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), boot-save, test, emu-test, lint, smoke
+boku/                the Python package: import, extract, movies, voice-only, trial, build (text and
                      texture recipes), patch, apply-patch, save
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
@@ -180,8 +180,10 @@ translation/         the English: story bible, style guide, open questions, samp
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
 research/data/       the tables a note would otherwise have to list: the script walk, the
-                     texture census and plan, and movies.tsv — what every FMV id plays,
-                     which `./make.sh movies` regenerates and a test diffs. glyph-table.tsv
+                     texture census and plan, movies.tsv — what every FMV id plays,
+                     which `./make.sh movies` regenerates and a test diffs — and
+                     voice-only.tsv, every voice with no text, from `./make.sh voice-only`.
+                     glyph-table.tsv
                      is the one kept by hand, not generated (research/font.md)
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below

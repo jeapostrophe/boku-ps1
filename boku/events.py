@@ -169,6 +169,16 @@ class Ins:
         return bool(self.b[5])
 
 
+VOICE_KEY_SIZE = 12
+
+
+def decode_voice_key(raw: bytes) -> dict[str, int]:
+    """A 12-byte clip key: `{u32 start, u32 end, u8 channel, u8 file, u16 0}` -- the layout of
+    an event message's key and of every `g_xa_clips` record (`research/voice-only.md`)."""
+    start, end, channel, file_no, _pad = struct.unpack("<IIBBH", raw)
+    return {"start": start, "end": end, "channel": channel, "file": file_no}
+
+
 def decode_code(code: bytes, ops: dict[int, tuple[str, int | None]] = OPS) -> dict[int, Ins]:
     """Walk one code entry by the size table, refusing every disagreement.
 
@@ -1127,11 +1137,8 @@ class EventWorld:
         return day, meal
 
     def voice_key(self, raw: bytes | None) -> dict[str, int] | None:
-        """The 12-byte clip key: `{u32 start, u32 end, u8 channel, u8 file, u16 0}`."""
-        if raw is None:
-            return None
-        start, end, channel, file_no, _pad = struct.unpack("<IIBBH", raw)
-        return {"start": start, "end": end, "channel": channel, "file": file_no}
+        """The 12-byte clip key of a message, or `None` for an unvoiced one."""
+        return None if raw is None else decode_voice_key(raw)
 
     def dinner_quiz(self, sc: Scene) -> dict[str, Any] | None:
         """The day -> message-index mapping for the two natively indexed routines.

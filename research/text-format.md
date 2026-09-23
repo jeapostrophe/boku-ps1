@@ -82,7 +82,7 @@ are 12-byte voice keys on PS1.
 |---|---|---|---|---|
 | `0x0D` XAMSG | 4 | `a, b, msg, c, d` | `0x8002F458` | start voice of key `msg` (`0x8002CF14`) and open text `msg` (`0x8002CF9C`) |
 | `0x0E` MSG | 4 | `…, msg, …` | `0x8002F524` | open text `msg` only — 585 sites, all unvoiced |
-| `0x0F` XA | 4 | `…, msg, …` | `0x8002F588` | voice only — all 446 null-text entries are named by this and nothing else |
+| `0x0F` XA | 4 | `…, msg, …` | `0x8002F588` | voice only — all 446 null-text entries (stored copies of 115 distinct messages, [voice-only.md](voice-only.md)) are named by this and nothing else |
 | `0x21` SELECT | 3 | `type, variant, msg, d` | `0x80030058` | `select_open(msg, type, variant, d)` `0x8002D00C` |
 
 The dispatch table is `g_ev_ops` at `0x80029014` (40 handlers, `jalr` at `0x8002D624`). Native
