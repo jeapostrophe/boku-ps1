@@ -802,10 +802,11 @@ def test_a_line_that_does_not_fit_is_left_alone_at_every_one_of_its_copies(
     Dropping a line from one map and keeping it in another would break the invariant the
     whole id scheme rests on — that every copy of a logical line is byte-identical — and
     `Walk.conflicts` would only notice afterwards, in a shipped image. The three draft
-    sample scenes are the fixture because the stock 14-px cells make plenty of them
-    overflow, which is what gives this test something to skip.
+    sample scenes were the fixture until they were retired (PLAN TRN-10); a committed day file
+    serves the same way — the stock 14-px cells make plenty of its pages overflow, which is
+    what gives this test something to skip.
     """
-    source = SampleScenes.from_directory(REPO_ROOT / "translation" / "samples")
+    source = SampleScenes.from_paths([REPO_ROOT / "translation" / "days" / "day28.txt"])
     result = build(
         source=real_image,
         out_dir=tmp_path_factory.mktemp("samples"),
