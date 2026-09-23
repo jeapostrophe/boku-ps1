@@ -14,7 +14,7 @@ claims against the disc and `HEAD` before working it. No time estimates — sect
 by dependency, and the project's pace is set by top-tier model throughput (Opus 5.5 since 2026-09-22, `CLAUDE.md` § Model tiers), which Jay has accepted.
 
 **Classes and ids spent so far:** `ENV-01`–`ENV-06` environment · `RSH-01`–`RSH-02` research ·
-`REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-06`
+`REC-01`–`REC-08` recon of formats · `TXT-01`–`TXT-08` text renderer · `PIPE-01`–`PIPE-07`
 pipeline · `TRN-01`–`TRN-09` translation · `GFX-01`–`GFX-09` textures · `FMV-01`–`FMV-04`
 movies · `VO-01`–`VO-04` voice-over · `REL-01`–`REL-03` release.
 
@@ -481,7 +481,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       | `day01.txt`–`day07.txt` | reviewed | first draft merged per line with a blind re-translation through the `TRN-08` packet, both reviewed against the Japanese (2026-09-22); Jay's comments kept |
       | `shared.txt` (76 events) | reviewed | the same merge; includes the coverage nine |
       | days 8–31 + their day-independent events | undrafted | 24 day files; run in batches Jay sizes |
-      | arrays / menus / overlays (308 lines) | undrafted | `TRN-09` |
+      | arrays / menus / overlays (308 lines) | reviewed | `translation/days/arrays.txt`; on screen as `PIPE-07` places them |
       | diary entries (94), encyclopedia spreads, textures | undrafted | `GFX-04`, `GFX-06`; new text with no line ids |
       | movie narration | undrafted | `FMV-02`; no text on the disc — transcribed from the audio |
 
@@ -499,15 +499,20 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       through the fixed packet cut the draft's defects from 32 to 13 and won 1 line of 75
       against the reviewed file — the packet makes a cleaner first draft, review still earns
       its place. The translators' remaining packet findings were fixed in the same stretch.
-- [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the engineering is DONE
-      (2026-09-22): `./make.sh packet --arrays` (42 surfaces: 34 arrays, 6 code labels, the
-      save title, one code-held message), English in `translation/days/arrays.txt`, code-file
-      menus as `[SEL]` rows through lint and build, `not-placeable` warnings for code labels
-      and the save title, coverage classifies them. Left: translate them (a directed
-      translator over the arrays packet). On screen the build writes only English that fits
-      each item's own bytes (a placeholder trial: 187 placed, 114 refused, 7 not placeable);
-      the rest waits on `TXT-05`'s fixed-pitch surfaces and array relocation (`PIPE-03`), and
-      the lint names each line. Harmed: the player, before the first line of dialogue.
+- [x] **[TRN-09]** **The 308 array, menu and overlay lines.** DONE 2026-09-22/23: the arrays
+      packet (`./make.sh packet --arrays`, 42 surfaces) and its translation,
+      `translation/days/arrays.txt` — 308 rows, reviewed against the Japanese (16 findings,
+      all applied). What reaches the screen is `PIPE-07`'s and `TXT-05`'s: the build places
+      only what fits each item's own bytes, and `boku lint` names every line it cannot place.
+- [ ] **[PIPE-07]** **Array English on screen.** `boku lint --encoder cellmap` over
+      `arrays.txt` (2026-09-23): 183 `array-bytes` (an item's English outgrows its bytes —
+      code-file arrays have no slack: relocate the array and patch its `lui`/`addiu` pairs,
+      `research/text-format.md`), 19 `array-width` (help-screen boxes, `research/data/
+      text-boxes.tsv`), 9 `unencodable` (the controls help's `{G:n}` button tokens and ○ × ↓
+      need to pass through the cell-map encoder), 106 `array-group` and 7 `not-placeable`
+      warnings (lines drawn as groups; code labels and the save title with no text site).
+      Done when the lint shows none of these errors and the build refuses no array line.
+      Harmed: the player, who sees Japanese menus around English dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
       through the workflow, not hand-patched around it. Harmed: the player.
