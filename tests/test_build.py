@@ -15,12 +15,14 @@ from pathlib import Path
 import pytest
 
 from boku import REPO_ROOT
-from boku.archive import ARCHIVE_NAME, EXE_NAME
+from boku.archive import ARCHIVE_NAME, EXE_NAME, OVERLAY_LOAD_ADDRESS
 from boku.arrays import SELECT_LINES_ADDR
 from boku.boxes import box_for
 from boku.build import (
     BuildRefused,
     EditSet,
+    LineResult,
+    answer_pair_patches,
     build,
     check_no_sector_clash,
     lay_out,
@@ -28,12 +30,14 @@ from boku.build import (
 )
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, GlyphTable, words_to_bytes
 from boku.layout import (
+    ANSWER_PAIR,
     DIALOGUE_BAND,
     LABEL_MARKS,
     SELECT_ROW,
     SPEAKER_LABELS,
     BoxSpec,
     CellMapEncoder,
+    LaidOut,
     LayoutError,
     Marks,
     StockEncoder,
@@ -378,6 +382,48 @@ def test_a_code_file_menu_row_wider_than_the_box_is_refused_as_the_lint_refuses_
     row = BoxSpec(width=measure(encoder, "Go") - 1, lines=1)
     (result,) = lay_out(NoArchive(), walk, [entry], encoder, DIALOGUE_BAND, select_row=row)
     assert any("cannot wrap" in problem for problem in result.problems)
+
+
+def test_the_two_answers_row_rewrites_the_drawer_s_split_and_count():
+    """`title@7A78.0` written `Yes | No`: its five cells, and two instruction words in
+    `TITLE.OVL` (`ANSWER_PAIR`), each an edit expecting the retail word (`stock_*`)."""
+    stock_split, stock_count = ANSWER_PAIR.stock_split, ANSWER_PAIR.stock_count
+
+    class TitleArchive(NoArchive):
+        def overlay_offset(self, name, ram):
+            assert name == ANSWER_PAIR.member
+            return 0x1000 + ram - OVERLAY_LOAD_ADDRESS
+
+    cells = {c: (300 + i, 6) for i, c in enumerate("YesNo")}
+    encoder = CellMapEncoder(cells)
+    walk = OneArraySite(words_to_bytes([256] * 5), kind="ARR-R", line_id=ANSWER_PAIR.line_id)
+    entry = TranslationEntry(line_id=ANSWER_PAIR.line_id, speaker="", pages=("Yes | No",))
+    (result,) = lay_out(TitleArchive(), walk, [entry], encoder, DIALOGUE_BAND)
+    assert result.problems == ()
+    assert result.laid_out.words == (300, 301, 302, 303, 304)
+    patches = {
+        edit.offset: (edit.old, edit.new) for edit in answer_pair_patches(TitleArchive(), [result])
+    }
+    assert patches == {
+        0x1000 + ANSWER_PAIR.split_ram - OVERLAY_LOAD_ADDRESS: (
+            stock_split.to_bytes(4, "little"),
+            (0x24020002).to_bytes(4, "little"),
+        ),
+        0x1000 + ANSWER_PAIR.count_ram - OVERLAY_LOAD_ADDRESS: (
+            stock_count.to_bytes(4, "little"),
+            (0x28420005).to_bytes(4, "little"),
+        ),
+    }
+    assert answer_pair_patches(TitleArchive(), []) == [], "no row, no code edit"
+    words = LaidOut(ANSWER_PAIR.line_id, (256,) * 5, (), (), ())
+    given = LineResult(ANSWER_PAIR.line_id, words, ())
+    assert answer_pair_patches(TitleArchive(), [given]) == [], (
+        "words given already encoded (the round trip) are the stock row: the stock split holds"
+    )
+    refused = LineResult(ANSWER_PAIR.line_id, result.laid_out, ("the plan refused it",))
+    assert answer_pair_patches(TitleArchive(), [refused]) == [], (
+        "a row the plan refused keeps its Japanese, so its split must stay the stock one"
+    )
 
 
 def dressed(original: bytes, speaker: str, label: bool = True):

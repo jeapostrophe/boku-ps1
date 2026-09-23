@@ -84,7 +84,9 @@ arrays — 10 strings — were found.)
   | `tako@440` | 4 glyphs | `tako_crash_draw` `0x8007C684`, vertical, via the stack | crash banner |
   | `title@7A78` | 2 + 3 glyphs | inside `0x8007CF7C` | yes / no |
 
-  A translated row must keep its cell count or the reader's loop bound changes with it.
+  A translated row must keep its cell count or the reader's loop bound changes with it —
+  except `title@7A78`, whose split and bound the build rewrites from the translation's
+  `Yes | No` ([vwf-prototype.md](vwf-prototype.md) § "The card screens' two answers").
 * The remaining EXE arrays are as `REC-03` had them, now with a reader each: `bag_draw`
   `0x800416E8` (item names by item id 0–14, descriptions by id − 1, captions through the table
   at `0x80047E38`), `kite_list_draw` `0x80041FE4`, `help_draw` `0x80035674` (lines 0–12, then

@@ -147,6 +147,14 @@ vwf_back_s2_s0:                     ; text_draw_right, draw: s2 -= advance[0(s0)
     jr      ra
     subu    s2, s2, t9
 
+vwf_step_s1_answer:                 ; TITLE 18: s1 += advance[lh 2*s0(s4)] (glyph index s0)
+    sll     at, s0, 1
+    addu    at, at, s4
+    lhu     at, 0(at)
+    vwf_lookup_at 12                ; (its first instruction does not read at: load delay)
+    jr      ra
+    addu    s1, s1, t9
+
 vwf_step_s1_s0_cur:                 ; text_draw_line_h / _h: s1 += advance[0(s0)]; s0 += 2;
     lhu     at, 0(s0)               ; v0 = v1 = the next word
     vwf_lookup_at 12

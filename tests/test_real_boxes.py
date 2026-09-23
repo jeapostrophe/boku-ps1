@@ -8,13 +8,16 @@ measurements and are checked only where the code also carries them (the help box
 
 from __future__ import annotations
 
+import re
 import struct
 
 import pytest
 
+from boku import REPO_ROOT
 from boku.archive import Archive
 from boku.boxes import EVERY_ITEM, box_for, load_boxes
 from boku.extract import SCRIPT_DIR_NAME
+from boku.layout import ANSWER_PAIR
 from boku.script_store import load_store
 
 HELP, CARD = "exe@80029B20", "exe@8003D5F0"
@@ -113,6 +116,7 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         "exe@80046398": step(0x800438B8),  # text_draw_h
         "exe@80046614": step(0x800438B8),
         "exe@8003DA00": step(0x80080790, "TITLE.OVL"),  # extras_draw
+        "title@7A78": step(0x8007D050, "TITLE.OVL"),  # the answers' drawer
     }
     help_line = step(0x80035490)  # help_line_draw: lines 19, 20
     # Letter-spaced lines add a second addiu after the step: config line 1, extras 0 and 3.
@@ -128,3 +132,24 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
     for line_id, box in load_boxes().items():
         wanted = special.get(line_id, walkers.get(line_id.rpartition(".")[0]))
         assert box.pitch == wanted, line_id
+
+
+def test_the_answers_constants_are_where_the_drawer_holds_them(archive):
+    """`ANSWER_PAIR` names the words the build rewrites and the pens it measures against; each
+    is read back from `TITLE.OVL`, and the second answer's pen is the renderer's own
+    (`asm/title.asm` `YESNO_SECOND`), which must be where the stock second answer began."""
+    title = ANSWER_PAIR.member
+    assert word(archive, ANSWER_PAIR.split_ram, title) == ANSWER_PAIR.stock_split
+    assert word(archive, ANSWER_PAIR.count_ram, title) == ANSWER_PAIR.stock_count
+    assert ANSWER_PAIR.stock_split >> 16 == 0x2402, "addiu v0,zero,SPLIT"
+    assert ANSWER_PAIR.stock_count >> 16 == 0x2842, "slti v0,v0,COUNT"
+    assert box_for(ANSWER_PAIR.line_id).x == ANSWER_PAIR.first_x, "the row's box starts at x"
+    first = word(archive, 0x8007CFF0, title)
+    assert first >> 16 == 0x2411 and first & 0xFFFF == ANSWER_PAIR.first_x, "addiu s1,zero,x"
+    gap = word(archive, 0x8007D04C, title)
+    assert gap >> 16 == 0x2631, "addiu s1,s1,gap"
+    stock_split = ANSWER_PAIR.stock_split & 0xFFFF
+    assert ANSWER_PAIR.second_x == ANSWER_PAIR.first_x + 12 * stock_split + (gap & 0xFFFF)
+    asm = (REPO_ROOT / "asm" / "title.asm").read_text(encoding="utf-8")
+    found = re.search(r"^YESNO_SECOND\s+equ\s+(0x[0-9A-Fa-f]+)", asm, re.M)
+    assert found and int(found.group(1), 16) == ANSWER_PAIR.second_x

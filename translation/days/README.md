@@ -39,6 +39,10 @@ are `./make.sh mockup`'s.
 * **The menus, books and screens** (`arrays.txt`) use the same rows. A line nobody speaks
   carries `(unlabelled)`; a menu is a `[SEL]` row; `# --- exe@8003D2E0: …` opens a list the
   way `# --- E0121` opens an event.
+* **The card screens' two answers** (`title@7A78.0`, the Japanese "hai" and "iie" side by
+  side) are one row written `Yes | No`: the first answer, ` | `, the second. The build places
+  the second where the Japanese one began and tells the drawer where the first ends; the two
+  share the row's five letters.
 * **Nothing is shortened to fit.** Translate the whole of what is said.
 
 ## The files

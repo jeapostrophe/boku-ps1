@@ -61,6 +61,7 @@ class Machine:
     hi: int = 0
     lo: int = 0
     _written: int | None = None
+    _pending: tuple[int, int] | None = None
 
     def load(self, address: int, blob: bytes) -> None:
         start = address - RAM_BASE
@@ -119,8 +120,10 @@ class Machine:
                 continue
             word = self.read(pc, 4)
             self._written = None
+            self._pending = pending
             target, load = self._step(word, pc, next_pc)
-            if pending is not None:
+            merges = word >> 26 in (0x22, 0x26)  # lwl/lwr combine with the load before them
+            if pending is not None and not (merges and load and load[0] == pending[0]):
                 if self._written == pending[0] or (load and load[0] == pending[0]):
                     raise MipsError(
                         f"0x{pc:08X} writes ${pending[0]} in the load delay slot of a load to "
@@ -234,6 +237,28 @@ class Machine:
             elif op == 0x21 and value & 0x8000:
                 value -= 0x10000
             return after, ((rt, value & 0xFFFFFFFF) if rt else None)
+        elif op in (0x22, 0x26):
+            # lwl / lwr, little-endian: the aligned word's bytes merged into rt. A pending
+            # load of rt is forwarded, which is what lets the pair run back to back.
+            address = (r[rs] + simm) & 0xFFFFFFFF
+            word = self.read(address & ~3, 4)
+            shift = 8 * (address & 3)
+            old = self._pending[1] if self._pending and self._pending[0] == rt else r[rt]
+            if op == 0x22:
+                value = (old & (0x00FFFFFF >> shift)) | (word << (24 - shift))
+            else:
+                value = (old & ~(0xFFFFFFFF >> shift)) | (word >> shift)
+            return after, ((rt, value & 0xFFFFFFFF) if rt else None)
+        elif op in (0x2A, 0x2E):
+            # swl / swr, little-endian.
+            address = (r[rs] + simm) & 0xFFFFFFFF
+            aligned, shift = address & ~3, 8 * (address & 3)
+            word = self.read(aligned, 4)
+            if op == 0x2A:
+                word = (word & ~(0xFFFFFFFF >> (24 - shift))) | (r[rt] >> (24 - shift))
+            else:
+                word = (word & ~((0xFFFFFFFF << shift) & 0xFFFFFFFF)) | (r[rt] << shift)
+            self.write(aligned, 4, word)
         elif op in (0x28, 0x29, 0x2B):
             address = (r[rs] + simm) & 0xFFFFFFFF
             self.write(address, {0x28: 1, 0x29: 2, 0x2B: 4}[op], r[rt])

@@ -389,7 +389,7 @@ tako@4	[SEL]	Stop flying the kite | Change kites
 tako@440.0	(unlabelled)	Crashed!
 
 # --- title@7A78: yes / no
-title@7A78.0	(unlabelled)	Yes No
+title@7A78.0	(unlabelled)	Yes | No
 # NOTE title@7A78.0: the two answers side by side in one fixed row, as the Japanese "hai" + "iie".
 
 # --- zukan@32E8: write the diary and sleep?

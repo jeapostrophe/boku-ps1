@@ -24,9 +24,10 @@ import struct
 
 import pytest
 
-from boku.archive import EXE_NAME
+from boku.archive import EXE_NAME, OVERLAY_LOAD_ADDRESS
 from boku.glyphs import END_WORD as END
 from boku.glyphs import NEWLINE_WORD as NEWLINE
+from boku.layout import ANSWER_PAIR, CellMapEncoder, answer_pair_code, lay_out_answer_pair
 from tests.mips import Machine
 from tests.test_vwf_prototype import (
     NEEDS_ARMIPS,
@@ -227,3 +228,42 @@ def test_the_manifest_cells_are_the_ones_the_table_holds(built):
     exe = images[EXE_NAME]
     for character, (glyph, advance) in cells.items():
         assert exe[table + glyph] == advance, json.dumps(character)
+
+
+# --- TITLE.OVL surface 18: the card screens' two answers -------------------------------------
+
+ANSWERS_DRAW = 0x8007CF7C
+ANSWERS = 0x80081480
+"""The five raw glyphs `title@7A78.0` names: the first answer, then the second."""
+
+
+def test_the_two_answers_are_proportional_and_the_second_starts_where_the_stock_one_did(built):
+    """Record 1 of `g_mc_msg` has a layout past 1, so the drawer runs. Stock: はい at 0x70 and
+    0x7C, いいえ from 0xAC. English (with SPLIT rewritten as the build rewrites it): the
+    first answer set proportionally from 0x70, the second from the same 0xAC."""
+    images, stock, _, cells, _ = built
+    japanese_words = list(
+        struct.unpack("<5H", stock["TITLE.OVL"][ANSWERS - OVERLAY_LOAD_ADDRESS :][:10])
+    )
+    for image in (images, stock):
+        m = machine(image, "TITLE.OVL")
+        m.call(ANSWERS_DRAW, 1)
+        assert pens(m.draws) == [0x70, 0x7C, 0xAC, 0xB8, 0xC4], "Japanese as the retail game"
+        assert [glyph for glyph, _, _ in m.draws] == japanese_words
+
+    encoder = CellMapEncoder(cells)
+    original = stock["TITLE.OVL"][ANSWERS - OVERLAY_LOAD_ADDRESS :][:10]
+    for first, second in (("Yes", "No"), ("Ok", "No")):
+        # The build's own layout and code words, not a copy of their arithmetic.
+        laid = lay_out_answer_pair(
+            ANSWER_PAIR.line_id, f"{first} | {second}", original, encoder, 299
+        )
+        m = machine(images, "TITLE.OVL")
+        m.halfwords(ANSWERS, list(laid.words))
+        for ram, word in answer_pair_code(laid).items():
+            m.write(ram, 4, word)
+        m.call(ANSWERS_DRAW, 1)
+        assert pens(m.draws) == [
+            *expected(ANSWER_PAIR.first_x, [cells[c][1] for c in first]),
+            *expected(ANSWER_PAIR.second_x, [cells[c][1] for c in second]),
+        ], f"{first} | {second}"

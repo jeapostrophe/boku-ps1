@@ -55,6 +55,7 @@ from boku.events import VOICE_KEY_SIZE, EventError
 from boku.glyphs import GlyphTable, TextError
 from boku.importer import ImportRefused, check_out_dir, sha1_of
 from boku.layout import (
+    ANSWER_PAIR,
     DIALOGUE_BAND,
     MENU_IS_SEL,
     SELECT_ROW,
@@ -64,6 +65,8 @@ from boku.layout import (
     LaidOut,
     LayoutError,
     StockEncoder,
+    answer_pair_code,
+    lay_out_answer_pair,
     lay_out_array,
     lay_out_array_select,
     lay_out_message,
@@ -734,6 +737,13 @@ def lay_out(
                     )
                 )
                 continue
+            if entry.line_id == ANSWER_PAIR.line_id:
+                panel = box_for(entry.line_id)  # text-boxes.tsv carries it; a test says so
+                laid = lay_out_answer_pair(
+                    entry.line_id, " ".join(entry.pages), original, encoder, panel.right
+                )
+                out.append(LineResult(entry.line_id, laid, laid.problems))
+                continue
             measured = box_for(entry.line_id)
             laid = lay_out_array(
                 entry.line_id,
@@ -897,7 +907,9 @@ def build(
             LineResult(line.line_id, line.laid_out, line.problems + refused.get(line.line_id, ()))
             for line in lines
         ]
-        edits += list(the_plan.edits)
+        answers = answer_pair_patches(archive, lines)
+        binary_patches = [*binary_patches, *answers]
+        edits += [*answers, *the_plan.edits]
 
     edits.sort(key=lambda e: (e.file, e.offset))
     # `plan` checks its own edits are disjoint; the caller's binary patches (less the ones
@@ -930,6 +942,32 @@ def build(
         sectors=sectors,
     )
     return result
+
+
+def answer_pair_patches(archive: Archive, lines: Sequence[LineResult]) -> list[ByteEdit]:
+    """The drawer's two constants for a written `Yes | No` row (`boku.layout.ANSWER_PAIR`):
+    edits in `BOKU.BIN` over the overlay's own words, each expecting the retail word there.
+    Call it with the lines the plan kept, so a refused row leaves the stock split behind."""
+    laid = next(
+        (line.laid_out for line in lines if line.line_id == ANSWER_PAIR.line_id and line.written),
+        None,
+    )
+    if laid is None or not laid.pages:  # words handed in already encoded keep the stock row
+        return []
+    stock = {
+        ANSWER_PAIR.split_ram: ANSWER_PAIR.stock_split,
+        ANSWER_PAIR.count_ram: ANSWER_PAIR.stock_count,
+    }
+    return [
+        ByteEdit(
+            ARCHIVE_NAME,
+            archive.overlay_offset(ANSWER_PAIR.member, ram),
+            stock[ram].to_bytes(4, "little"),
+            word.to_bytes(4, "little"),
+            f"{ANSWER_PAIR.line_id}: the answers' drawer word at 0x{ram:08X}",
+        )
+        for ram, word in answer_pair_code(laid).items()
+    ]
 
 
 def _plan_what_fits(

@@ -18,6 +18,7 @@ import pytest
 
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAD_WORD, PAGE_WORD, GlyphTable, words_of
 from boku.layout import (
+    ANSWER_PAIR,
     DIALOGUE_BAND,
     SELECT_ROW,
     SPEECH_MARKS,
@@ -26,6 +27,8 @@ from boku.layout import (
     CellMapEncoder,
     LayoutError,
     StockEncoder,
+    answer_pair_code,
+    lay_out_answer_pair,
     lay_out_array,
     lay_out_message,
     lay_out_select,
@@ -432,3 +435,39 @@ def test_an_array_item_with_no_english_is_refused_rather_than_blanked():
     laid = lay_out_array("exe@8003D5F0.8", "", original, cell_encoder(), len(original))
     assert not laid.fits
     assert "blank an item the game still draws" in laid.problems[0]
+
+
+# --- the card screens' two answers -------------------------------------------------------------
+
+
+def answer_encoder() -> CellMapEncoder:
+    return CellMapEncoder({c: (300 + i, 6) for i, c in enumerate("YesNoOk")} | {" ": (10, 4)})
+
+
+def test_the_two_answers_fill_the_row_and_name_the_split_the_code_needs():
+    """`title@7A78.0` is five raw glyphs the drawer splits after a code constant. The row is
+    written `Yes | No`; the words are the two answers back to back, and the split and the
+    count are the two instruction words the build rewrites (`ANSWER_PAIR`)."""
+    original = raw(0x100, 0x101, 0x102, 0x103, 0x104)
+    laid = lay_out_answer_pair("title@7A78.0", "Yes | No", original, answer_encoder(), 299)
+    assert laid.fits, laid.problems
+    assert laid.words == (300, 301, 302, 303, 304)
+    assert laid.pages == (("Yes", "No"),)
+    assert answer_pair_code(laid) == {
+        ANSWER_PAIR.split_ram: 0x24020000 | 2,  # addiu v0,zero,2: "Yes" ends at glyph 2
+        ANSWER_PAIR.count_ram: 0x28420000 | 5,  # slti v0,v0,5
+    }
+    short = lay_out_answer_pair("title@7A78.0", "Ok | No", original, answer_encoder(), 299)
+    assert short.fits, short.problems
+    assert answer_pair_code(short)[ANSWER_PAIR.count_ram] == 0x28420000 | 4
+    assert len(short.words) == 5, "the row keeps its five cells; the count stops the drawer"
+
+
+@pytest.mark.parametrize(
+    ("text", "complaint"),
+    [("Yes No", "two answers"), ("Yess | Noo", "cells"), ("Yes | ", "two answers")],
+)
+def test_two_answers_that_do_not_fit_the_row_are_refused(text, complaint):
+    original = raw(0x100, 0x101, 0x102, 0x103, 0x104)
+    laid = lay_out_answer_pair("title@7A78.0", text, original, answer_encoder(), 299)
+    assert any(complaint in problem for problem in laid.problems), laid.problems

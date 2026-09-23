@@ -37,3 +37,32 @@ def test_writing_the_loaded_register_in_its_delay_slot_is_refused():
     # lhu v0,0(a0); addiu v0,zero,1 -- undocumented on the R3000A, so no answer is given
     with pytest.raises(MipsError, match="load delay slot"):
         run(0x94820000, 0x24020001, JR_RA, NOP)
+
+
+@pytest.mark.parametrize("offset", [0, 1, 2, 3])
+def test_lwl_lwr_and_swl_swr_move_a_word_at_every_alignment(offset):
+    """The pair at each byte offset, the aligned one (lwl 3 / lwr 0 on a word boundary)
+    being what TITLE's card drawer runs to copy its tables to the stack."""
+    m = Machine()
+    m.load(DATA, bytes(range(0x10, 0x30)))
+    code = [0x88880003, 0x98880000, 0, 0xA8A80003, 0xB8A80000, JR_RA, NOP]
+    m.load(CODE, struct.pack(f"<{len(code)}I", *code))
+    m.call(CODE, DATA + offset, DATA + 16 + (3 - offset))
+    want = bytes(range(0x10 + offset, 0x14 + offset))
+    assert m.regs[8] == int.from_bytes(want, "little")
+    start = DATA - 0x80000000 + 16 + (3 - offset)
+    assert bytes(m.ram[start : start + 4]) == want
+
+
+def test_an_unaligned_word_moves_through_lwl_lwr_swl_swr():
+    """The compiler's unaligned copy (TITLE's card drawers copy tables to the stack this way):
+    lwl 3(a0) / lwr 0(a0) back to back -- the second merges with the first's pending load --
+    then swl 3(a1) / swr 0(a1)."""
+    m = Machine()
+    m.load(DATA, bytes(range(0x10, 0x20)))
+    # a0 = DATA+1, a1 = DATA+9; lwl t0,3(a0); lwr t0,0(a0); nop; swl t0,3(a1); swr t0,0(a1)
+    code = [0x88880003, 0x98880000, 0, 0xA8A80003, 0xB8A80000, JR_RA, NOP]
+    m.load(CODE, struct.pack(f"<{len(code)}I", *code))
+    m.call(CODE, DATA + 1, DATA + 9)
+    assert m.regs[8] == int.from_bytes(bytes(range(0x11, 0x15)), "little")
+    assert bytes(m.ram[DATA - 0x80000000 + 9 : DATA - 0x80000000 + 13]) == bytes(range(0x11, 0x15))

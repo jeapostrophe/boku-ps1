@@ -156,7 +156,8 @@ given, so it grows with the free-cell allocation, not with the font. **The walke
 bodies live in the walker island**, the second part of `dbg_font_init` `0x800221CC…0x80022494`
 (712 bytes, [text-renderer.md](text-renderer.md) § 6 candidate 2): `asm/vwf.asm` splits it at
 `DEBUG_FONT_SPLIT` (`0x800222EC`) — the movie loader below ([movies.md](movies.md) § 8, 288
-bytes, 228 used), the walkers above (424 bytes, 356 used by seven bodies on 2026-09-22) —
+bytes, 228 used), the walkers above (424 bytes; 412 used by eight bodies on 2026-09-23, so the next
+surface needs smaller bodies or another island) —
 and each half is an `.area`, so outgrowing one is a build error; the build prints where the
 walker half's free space starts. The 620 bytes at `0x80012E04` are the movie hooks'.
 Deadness is measured on one path: an execution breakpoint over the whole of `dbg_font_init` logged **0 hits** on the stock disc on PCSX-Redux through the title and card check,
@@ -472,6 +473,7 @@ ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 |---|---|---|---|
 | `0x8007CDD8` | 17, memory-card messages (pen `s5`) | `addiu s5,s5,0xC` | `jal vwf_step_s5_s0` |
 | `0x8007FBC4`, `D4` | 19, config labels (pen `s0` via `v1`, ids at `s1`) | `addiu v1,s0,0xC` · `addiu s0,v1,4` (line 1 letter-spaced) | `jal vwf_step_v1_s0_s1` · `move s0,v1` |
+| `0x8007D04C`, `50` | 18, the card screens' two answers (pen `s1`, id `lh 2·s0(s4)`) | `addiu s1,s1,0x30` (the gap, a jump's delay slot) · `addiu s1,s1,0xC` | `addiu s1,zero,0xAC` · `jal vwf_step_s1_answer`; SPLIT and COUNT (`0x8007D03C`, `64`) are the build's |
 | `0x8008045C`, `68` | 20a, extras label 5 (pen `s1`) | `addiu s0,s0,2` · `addiu s1,s1,0xC` (in a branch delay slot) | `jal vwf_step_s1_s0_next` · `nop` |
 | `0x80080790`, `A8`, `B0` | 20b, extras labels 0–4 | `addiu v1,s1,0xC` (next is a branch) · `addiu s1,v1,4` (lines 0, 3) · `addiu s0,s0,2` | `move v1,s1` · `move s1,v1` · `jal vwf_step_s1_s0_next` |
 
@@ -700,8 +702,8 @@ Reached on both emulators with generated cards (`./make.sh saves`,
 `tools/vwf/shoot-menus.sh`:
 
 * **"Load this file?"** (the day-5 card): the question is message 9 (surface 17, proportional
-  as fixtures allow), with the card screen's はい / いいえ below it — surface 18, still stock:
-  § "The fixed-pitch surfaces" row 18.
+  as fixtures allow), with the card screen's two answers below it — surface 18, § "The
+  card screens' two answers".
 * **Summer memories** (a card whose day reads 31): labels 1, 3, 4 as the fixtures
   "Insects", "Item", "Ending", proportional at x 40; labels 0 and 2, untranslated, at the
   stock 12. Line 0's stock 16-px letter-spacing is dropped with the rest.
@@ -738,7 +740,7 @@ specification.
 | 15 | `TITLE 0x8007BB60` (save date) | none: `0x3C` at `s1`, `0x1B8` at `+0xC`, digits, `0x157` at `+0x30` | — | **C** | table |
 | 16 | `TITLE 0x8007C8EC` (slot digits, `0x5B0`) | none | — | **C** | table |
 | 17 | `TITLE 0x8007CB54` (memory-card messages; `0x8007CC4C` is inside it, not a second walker) | `0x8007CDD8 addiu s5,s5,0xC` | `s5` · `-2(s0)` | **A** | **proven** |
-| 18 | `TITLE 0x8007CF7C` (card-screen yes/no, 5 raw glyphs at `0x80081480`) | `0x8007D050 addiu s1,s1,0xC`; after glyph index 1 (`0x8007D03C addiu v0,zero,1`) the step is `+0x30` (`0x8007D04C`) — the word gap | `s1` · `lh 2·s0(s4)` | **B** for now: "Yes"/"No" is 3 + 2 glyphs, so the split index and the gap literal change with the text; a hook would need the index-based id fetch | table |
+| 18 | `TITLE 0x8007CF7C` (card-screen yes/no, 5 raw glyphs at `0x80081480`) | `0x8007D050 addiu s1,s1,0xC`; after glyph index 1 (`0x8007D03C addiu v0,zero,1`) the step is `+0x30` (`0x8007D04C`) — the word gap | `s1` · `lh 2·s0(s4)` | **A**, with the build: `0x8007D050 → jal vwf_step_s1_answer` (id fetched by index), the gap `0x8007D04C → addiu s1,zero,0xAC` (the second answer starts where the stock one did), and the split and count rewritten from the translation — § "The card screens' two answers" | **proven** |
 | 19 | `TITLE 0x8007FA94` (config) | `0x8007FBC4 addiu v1,s0,0xC` | `v1 = s0 +` · `-2(s1)` | **A** | **proven** |
 | 20a | `TITLE 0x800803D8` (extras label 5) | `0x80080468` in a branch delay slot; hook at `0x8008045C addiu s0,s0,2` | `s1` · `-2(s0)` | **A** | assembled |
 | 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | **proven** |
@@ -749,12 +751,33 @@ specification.
 | 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table (sumo is days of play away) |
 | 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | table |
 
-Counts: **A** 12 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 19, 20a, 20b, 25, 26; 13 and 14 ride on
-12), of which 6 proven (5a, 12a, 12b, 17, 19, 20b), 1 tested (5b), 1 assembled (20a); **B** 3
-(18, 23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
+Counts: **A** 13 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 18, 19, 20a, 20b, 25, 26; 13 and 14
+ride on 12), of which 7 proven (5a, 12a, 12b, 17, 18, 19, 20b), 1 tested (5b), 1 assembled
+(20a); **B** 2 (23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
 register-identical — pens `s3`, `s5`, `v1`+`s0`, `v1`+`s1`, `s1`, `s1`; id pointers `s0` or
 `s1` — so the bodies are per shape and per stock pitch (`asm/walkers.asm`, the walker island;
 § "The free space").
+
+## The card screens' two answers (surface 18, 2026-09-23)
+
+`title@7A78.0` is five raw glyphs, はい then いいえ, with no control word: the drawer
+(`TITLE 0x8007CF7C`) draws glyphs 0…COUNT−1 from x 0x70, and after glyph SPLIT jumps to the
+second answer. SPLIT (`addiu v0,zero,1` at `0x8007D03C`) and COUNT (`slti v0,v0,5` at
+`0x8007D064`) are code constants, so how English divides the row is decided where the English
+is: the translation writes it `Yes | No` (Jay's ruling via the orchestrator, 2026-09-23:
+the translation files are the only interface between script and build), and `boku build`
+lays both answers into the row's cells and rewrites the two words
+(`boku.layout.ANSWER_PAIR`, `answer_pair_code`; `boku.build.answer_pair_patches`, each edit
+checked against the retail word). The renderer patch (`asm/title.asm` surface 18) restates
+neither: it routes the step through the table and starts the second answer at 0xAC, where
+the stock one began, so the hand cursor, which the game places by answer, still points at
+it. Untranslated, both constants keep their stock values and はい / いいえ draw exactly as
+before. Each answer is measured in its span — the first up to 0xAC, the second up to the
+card panel's edge (299) — and together they share the row's five cells.
+
+Proven with the days build (the real `arrays.txt` row) on both emulators, "Load this
+file?" with the day-5 card: "Yes" from x 112, "No" from 172, the cursor moved to "No" by
+RIGHT and pointing at it.
 
 ## Reaching the living room (why the SELECT proof is Redux-only)
 

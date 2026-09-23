@@ -35,3 +35,4 @@ exe@8003DA00.3	40	149	16	1	20 summer-memories labels (TITLE)	the left panel's fr
 exe@8003DA00.4	40	149	12	1	20 summer-memories labels (TITLE)	the left panel's frame, as the config screen's
 exe@80046398.*	184	301	12	3	12 item descriptions (bag)	the picture panel's inner edge; three 16-px lines above the frame
 exe@80046614.*	184	301	12	3	12 photo captions (bag)	the descriptions' drawer and pen (bag_draw); not shot
+title@7A78.0	112	299	12	1	18 the card screens' two answers (TITLE)	the card panel's inner edge, as the messages'; the second answer starts at 0xAC (boku.layout.ANSWER_PAIR)

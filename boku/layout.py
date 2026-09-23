@@ -563,6 +563,103 @@ def lay_out_array(
     )
 
 
+@dataclass(frozen=True)
+class AnswerPair:
+    """The card screens' two answers: one row of raw glyphs that `TITLE.OVL`'s drawer
+    (`0x8007CF7C`) splits after a code constant and bounds by another.
+
+    The translation writes it `Yes | No` (`translation/days/README.md`), and the build
+    rewrites the two constants from it -- `SPLIT` is the index of the first answer's last
+    glyph, `COUNT` how many glyphs are drawn -- so the renderer patch (`asm/title.asm`
+    surface 18) restates neither. Every address here is checked against the disc by
+    `tests/test_real_boxes.py`.
+    """
+
+    line_id: str
+    member: str
+    split_ram: int
+    stock_split: int
+    """`addiu v0,zero,1`: the retail word, which each rewrite checks is there first."""
+    count_ram: int
+    stock_count: int
+    """`slti v0,v0,5`."""
+    first_x: int
+    second_x: int
+
+
+ANSWER_PAIR = AnswerPair(
+    line_id="title@7A78.0",
+    member="TITLE.OVL",
+    split_ram=0x8007D03C,
+    stock_split=0x24020001,
+    count_ram=0x8007D064,
+    stock_count=0x28420005,
+    first_x=0x70,
+    second_x=0xAC,
+)
+
+
+def lay_out_answer_pair(
+    line_id: str,
+    text: str,
+    original: bytes,
+    encoder: Encoder,
+    right: int,
+    pair: AnswerPair = ANSWER_PAIR,
+) -> LaidOut:
+    """`Yes | No` as the drawer takes it: both answers back to back in the row's own cells,
+    each within its span -- the first up to where the second starts, the second up to
+    `right`, the panel's edge (the row's `text-boxes.tsv` box). Unused cells are padding
+    the rewritten `COUNT` never reaches."""
+    fields = [field.strip() for field in text.split("|")]
+    cells = len(words_of(original))
+    problems: list[str] = []
+    if len(fields) != 2 or not all(fields):
+        problems.append(
+            f"{line_id}: {text!r} is not two answers; the row is written `Yes | No`, the "
+            f"first answer, ` | `, then the second"
+        )
+        fields = [*fields, "", ""][:2]
+    first, second = fields
+    missing = unencodable(encoder, first + second)
+    if missing:
+        problems.append(f"{line_id}: the {encoder.name} draws no cell for {''.join(missing)!r}")
+    if len(first) + len(second) > cells:
+        problems.append(
+            f"{line_id}: {first!r} and {second!r} take {len(first) + len(second)} cells and "
+            f"the row holds {cells}"
+        )
+    widths = (measure(encoder, first), measure(encoder, second))
+    for answer, width, room in (
+        (first, widths[0], pair.second_x - pair.first_x),
+        (second, widths[1], right - pair.second_x),
+    ):
+        if width > room:
+            problems.append(
+                f"{line_id}: {answer!r} is {width} px and its span holds {room}, "
+                f"{width - room} over"
+            )
+    words = [_cell(encoder, c) for c in first + second][:cells]
+    words += [PAD_WORD] * (cells - len(words))
+    return LaidOut(
+        line_id=line_id,
+        words=tuple(words),
+        pages=((first, second),),
+        widths=(widths,),
+        problems=tuple(problems),
+    )
+
+
+def answer_pair_code(laid: LaidOut) -> dict[int, int]:
+    """The two instruction words `laid` needs in `ANSWER_PAIR.member`, by RAM address."""
+    first, second = laid.pages[0]
+    pair = ANSWER_PAIR
+    return {
+        pair.split_ram: (pair.stock_split & ~0xFFFF) | (len(first) - 1),
+        pair.count_ram: (pair.stock_count & ~0xFFFF) | (len(first) + len(second)),
+    }
+
+
 MENU_IS_SEL = "a menu held in the program; it is written as a [SEL] row, one field per line"
 """What the lint and the build say of a code-file menu written as a plain row."""
 

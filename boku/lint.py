@@ -36,6 +36,9 @@ What it checks, and where each rule comes from
 * **`not-placeable`** -- *a warning*: a label assembled from instruction immediates or the
   memory-card title (`script_store.PLACED_BY_CODE`). It has English but no text site, so
   the build cannot place it until a code patch does (`PLAN TXT-05`).
+* **`answer-pair`** -- the card screens' two answers (`title@7A78.0`) not written as
+  `Yes | No`; their widths and cells are `array-width` and `array-bytes`
+  (`boku.layout.ANSWER_PAIR`).
 * **`array-width`** -- an array item wider, in pixels, than its surface's measured box
   (`boku.boxes`, `research/data/text-boxes.tsv`, `PLAN TXT-07`). A surface with no row has
   not been measured and is held to its bytes alone. **`array-lines`**: an item whose box
@@ -89,6 +92,7 @@ from boku.boxes import TextBox, box_for
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import (
+    ANSWER_PAIR,
     DIALOGUE_BAND,
     MENU_IS_SEL,
     SELECT_ROW,
@@ -99,6 +103,7 @@ from boku.layout import (
     LayoutError,
     StockEncoder,
     label_allowance,
+    lay_out_answer_pair,
     lay_out_array,
     lay_out_array_select,
     lay_out_subtitle,
@@ -598,6 +603,21 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
     encoder = context.options.encoder
     text = " ".join(row.entry.pages)
     size = record["capacity"]["bytes"]
+    if row.line_id == ANSWER_PAIR.line_id:
+        original = original_bytes(record, context.table)
+        panel = box_for(row.line_id, context.options.boxes)
+        right = panel.right if panel else ANSWER_PAIR.second_x
+        laid = lay_out_answer_pair(row.line_id, text, original, encoder, right)
+        for problem in laid.problems:
+            check = "answer-pair"
+            if "draws no cell" in problem:
+                check = "unencodable"
+            elif "span holds" in problem:
+                check = "array-width"
+            elif "the row holds" in problem:
+                check = "array-bytes"
+            context.say(row, check, ERROR, problem.split(": ", 1)[-1])
+        return
     box = box_for(row.line_id, context.options.boxes)
     laid = lay_out_array(
         row.line_id,

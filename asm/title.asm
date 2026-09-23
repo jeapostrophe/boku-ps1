@@ -89,3 +89,23 @@
     jal     vwf_step_s1_s0_next
 .endif
 .endarea
+
+; ---- surface 18: the card screens' two answers (5 raw glyphs at 0x80081480), 0x8007CF7C ----
+; Pen s1 from 0x70; the glyph index is s0 and the id is lh 2*s0(s4). After glyph SPLIT
+; (`addiu v0,zero,1` at 0x8007D03C, compared at D040) the stock steps 0x30 more, which puts
+; the second answer at 0xAC when the first is two 12-px glyphs; the loop draws COUNT glyphs
+; (`slti v0,v0,5` at 0x8007D064). Proportional, the second answer starts at 0xAC itself, and
+; SPLIT and COUNT are the translation's: boku build rewrites both from the `Yes | No` row
+; (boku.layout.ANSWER_PAIR), so neither word is restated here.
+YESNO_SECOND equ 0xAC               ; where the stock second answer starts
+
+.org 0x8007D04C
+.area 2*4
+.if ORIGINAL
+    addiu   s1, s1, 0x30            ; stock: the gap, in the delay slot of `j 0x8007D054`
+    addiu   s1, s1, 0xC             ; stock: x += 12; delay slot `addiu v0,s2,1` follows
+.else
+    addiu   s1, zero, YESNO_SECOND
+    jal     vwf_step_s1_answer
+.endif
+.endarea
