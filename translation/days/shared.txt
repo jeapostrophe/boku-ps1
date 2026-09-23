@@ -846,3 +846,55 @@ E1861.34	Saori	Come to my tent tomorrow. // I've got loads of interesting books.
 # --- E1850: A18 -- the secret base
 E1850.0	Specs	Hey, they say the yo-yo champion has come as far as the next town!
 E1850.1	Fat	Champion? Oh, you mean yours truly.
+
+# --- E1909: B13 -- Saori's camera trap
+E1909.0	(voice only)
+
+# --- E1960: D07 -- Saori's camp
+E1960.0	Saori	What do you want?
+E1960.1	Boku	You told me to come to your tent, lady.
+E1960.2	Saori	There are all kinds of books and interesting stuff in the tent, so help yourself and have a look.
+E1960.3	Saori	But don't look inside the backpack. // Those are a lady's belongings.
+E1960.4	Boku	Who's the lady?
+E1960.5	Boku	What kind of stories are the books in the tent?
+E1960.6	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
+E1960.7	Boku	There was a painting of pretty flowers. Who painted it?
+E1960.8	Saori	I did.
+E1960.9	Saori	Boku-kun! Do you like it here?
+E1960.10	Boku	Yeah.
+E1960.11	Saori	Then come again.
+
+# --- E1961: D07 -- Saori's camp; I25 -- inside the tent
+E1961.0	Narrator	Inside the tent there were a great many books and photographs, // and pictures of dainty flowers, grasses and trees...
+
+# --- E1962: D07 -- Saori's camp
+E1962.0	Boku	What kind of stories are the books in the tent?
+E1962.1	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
+E1962.2	Boku	There was a painting of pretty flowers. Who painted it?
+E1962.3	Saori	I did.
+E1962.4	Saori	Boku-kun! Do you like it here?
+E1962.5	Boku	Yeah.
+E1962.6	Saori	Then come again.
+
+# --- E1970: B13 -- Saori's camera trap
+E1970.0	(voice only)
+E1970.1	(voice only)
+E1970.2	(voice only)
+E1970.3	(voice only)
+E1970.4	(voice only)
+
+# --- E1907: A18 -- the secret base
+E1907.0	(unlabelled)	Got the bundle of firecrackers!
+
+# --- E1908: H04, H09 -- the ant nests
+E1908.0	(unlabelled)	Used the firecrackers.
+E1908.1	(voice only)
+
+# --- E1951: A18 -- the secret base
+E1951.0	Guts	Last month at school... // the teacher got just the girls together and did something. // While that was going on, the boys played dodgeball.
+
+# --- E1952: A18 -- the secret base
+E1952.0	Fat	The ice creams with a winner marked on the lid... // I once won three times in a row.
+
+# --- E1953: A18 -- the secret base
+E1953.0	Specs	The Chronicles of Narnia... which story did you read first?

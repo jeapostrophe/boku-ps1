@@ -1,0 +1,93 @@
+# day19 (translation/days/README.md)
+# --- E1905: C05 -- the sunflower road (the howl)
+E1905.0	(voice only)
+E1905.1	(voice only)
+
+# --- E1921: G03 -- kitchen
+E1921.0	Aunt	Well, maybe it's just the thing for Onee-chan's diet...
+
+# --- E1901: G02 -- breakfast, Moe absent
+E1901.0	Shirabe	Onee-chan's not here.
+E1901.1	Aunt	No, she isn't.
+E1901.2	Uncle	Well, a person won't die from not eating for two or three days, but... // if it drags on too long, we'll have to properly... // be her dad and mom about it.
+E1901.3	Aunt	That's right.
+E1901.4	Uncle	Well then, itadakimaasu.
+E1901.5	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+
+# --- E1902: G02 -- after breakfast
+E1902.0	Uncle	Gochisosama deshita.
+E1902.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+
+# --- E1920: H08 -- the yard
+E1920.0	Aunt	I want to see~ a wider world~ // I am~ a white cosmos~
+E1920.1	Boku	What song is that?
+E1920.2	Aunt	Huh? Oh, this? It's just a hana-uta, Auntie humming whatever comes.
+E1920.3	Boku	A hana-uta? A nose song?
+E1920.4	Aunt	A flower song!
+E1920.5	Aunt	I want to see~ a wider world~ // I am~ a white cosmos~
+# NOTE E1920.2-.4: hana-uta is humming, written "nose song"; hana is also "flower" (style guide
+#   § 8 kind 3). The song is sung, so the wave dash stays (§ 10).
+
+# --- E1912: G01 -- living room
+E1912.0	Uncle	A man can never understand the mind of a girl.
+E1912.1	Boku	What are you talking about?
+E1912.2	Uncle	The story of a troubled father with a daughter in her adolescence...
+E1912.3	Boku	Addle-essence?
+E1912.4	Uncle	Adolescence.
+E1912.5	Uncle	When we were adolescents, Japan was still terribly poor, you know.
+# NOTE E1912.3-.4: shushinki for shishunki (style guide § 8 kind 1).
+
+# --- E1910: H26 -- the workshop
+E1910.0	Boku	I went and met the Wolf Girl.
+E1910.1	Uncle	Did you? Quite an interesting girl, isn't she?
+E1910.2	Boku	Interesting... or more like, a weird lady.
+E1910.3	Uncle	Hahaha, that's true.
+
+# --- E1903: G02 -- dinner
+E1903.0	Boku	Moe-neechan, why do you look so lonely?
+E1903.1	Aunt	Now, now, come on! Let's hurry up and eat.
+E1903.2	Uncle	Well then, itadakimasu!
+E1903.3	Shirabe, Moe, Boku, Aunt	Itadakimasu!
+
+# --- E1930: G16 -- Moe's bed
+E1930.0	Boku	Onee-chan, are you okay?
+E1930.1	Moe	...Yeah, I'm okay.
+E1930.2	Boku	Auntie said all girls get like that...
+E1930.3	Moe	......
+E1930.4	Boku	What part of you got sick?
+E1930.5	Moe	It's like my dreams, my hopes... // all that stuff about the future, I just don't care about any of it anymore.
+E1930.6	Boku	......
+E1930.7	Moe	I told you, just leave me alone...
+
+# --- E1931: G15 -- the sisters' room
+E1931.0	Moe	Onee-chan has made up her mind. Sorry for all the trouble I've caused you, Boku-kun...
+E1931.1	Moe	I'm going to make the most of this chance... and diet like there's no tomorrow!
+
+# --- E1940: H04 -- garden corner where Shirabe watches ants
+E1940.0	Shirabe	What kind of things do they sell at the penny-candy shop in your town?
+E1940.1	Boku	Menko cards and balls and snap caps.
+E1940.2	Shirabe	Oh, is that all? Nothing but things you can't eat. // I got along perfectly well to this age without ever having any of those...
+E1940.3	Boku	Whoa, country kids really don't know about penny-candy shops.
+E1940.4	Shirabe	That's right.
+E1940.5	Boku	They sell lots of candy too, you know...
+E1940.6	Shirabe	What kind of candy do they sell?
+E1940.7	Boku	Hehe, not telling! // Because it doesn't matter if you don't know, right?
+
+# --- E1941: G06 -- TV room
+E1941.0	Boku	Hey, doesn't it feel like the same shows are on every day?
+E1941.1	Shirabe	Huh? Well, of course.
+E1941.2	Boku	Huh? This place only has three channels?
+
+# --- E1904: G02 -- after dinner ("I saw a ghost")
+E1904.0	Uncle	Gochisosama deshita.
+E1904.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E1904.2	Boku	Hey, Uncle... // is it okay to believe everything you see with your own eyes and hear with your own ears?
+E1904.3	Uncle	Hmm, that's a hard question. For instance...
+E1904.4	Uncle	Is there a good example, I wonder...
+E1904.5	Aunt	Hm-hm... there is, there is. // ...For instance, sometimes Yusaku looks to me like a really good father, // and sometimes like an utterly, completely sloppy, hopeless... // plain good-for-nothing middle-aged man.
+E1904.6	Boku	Today I... saw a ghost.
+E1904.7	Shirabe	...You'd better not go around saying things like that.
+E1904.8	Aunt	Why, I believe you.
+E1904.9	Uncle	When I was little, one snowy night, I thought aliens had come, too...
+E1904.10	Aunt	And what was it really?
+E1904.11	Uncle	After I grew up, I was watching an old American movie at a revival theater, // and a scene came on exactly like the one in my memory...
