@@ -375,20 +375,31 @@ state: `g_map_load` `0x801B5A50`, `g_bg_clut_save` = B + `0x7C00`, level C `0x80
 `G01`), the SELECT and the day-2 `H06000` scene (`E0220`, `work/txt05b/shots/08`) all run
 on Beetle, and `M_H06001` itself — child 6 past `0x6400` — loads and draws (§ "Round 2").
 **The stack elsewhere** (2026-09-23, Beetle, `tools/vwf/stack-watch.sh`: a sentinel from
-level C + 0x6000 up, and the lowest changed byte still joined to the stack's top —
-`state_poke.py --scan`'s `stack_mark`, because the item menu writes a 2,776-byte buffer at
-the fill's floor): free-roam walking 0x228 bytes deep, the controls-help screen none past the
-fill's top, the item menu 0x298, the insect box forced open (hub, notebook page, grid)
-0x350, the kite game 0x348, `MUSI` forced (its init only: it returns to the field before a
-bout) 0x320, and mode 15 forced (which runs on into the evening's dinner scene rather than a
-save screen) **0xFB0 — 4,016 bytes, the same event-path depth as the arrival sequence**.
-Nothing measured goes deeper than the 4,016 the raise was sized against. But the item menu's
-2,776 bytes land at the scratch's end, inside the gap `arena.asm`'s `STACK_GAP` counts as free
-(not traced whose they are): with them the 6,640 bytes past the measured depth are 3,864 —
-still above the guard's half-depth 2,008, if the two ever coexist. `stack_mark` is a
-heuristic: a buffer written within `FRAME_HOLE` bytes of the stack's frames would be read as
-stack (over-reporting depth, the safe side). Not measured: § "Not done". Under the
-full-translation estimate six maps pass `0x6400` by up to 5,926 bytes
+level C up, the lowest changed byte — from C + 0x6000 for the scenarios that can change map):
+free-roam walking 0x228 bytes deep, the controls-help
+screen none past the fill's top, the insect box forced open (hub, notebook page, grid) 0x350,
+the kite game 0x348, `MUSI` forced 0x320 (not a sumo depth: the screen shows the room
+again before a bout, though the end state is still mode 7 with `g_arena_cur` at B), mode 15 forced (which runs on into the evening's dinner scene rather than a save
+screen) **0xFB0 — 4,016 bytes, the same event-path depth as the arrival sequence** — and the
+**item menu 0x3DC8, 15,816 bytes**. Walking and the dinner scene also write exactly `[C, C +
+0x6000)`: `bg_swap_in`'s scratch on a map change, a separate run below the stack's.
+
+The item menu's depth is one frame: mode 4's update (`g_modes[4]`, `0x8004330C`) calls
+`0x80042DDC`, which calls `0x80043608`, whose frame is `0x3CA8` bytes — a local buffer that a
+49×79 VRAM rect at (910, 132) is copied through (`StoreImage` then `LoadImage`; Redux, a
+breakpoint on the transfer setup `0x80054DDC`: `sp` `0x801FC288`, RAM `0x801FC2E8`). The
+only other caller is `TAKO.OVL` (`0x8007F66C`, mode 6). Its bottom, `0x801FC228`, lies
+inside the level-C scratch on this layout (above it on retail), but **the two never coexist**: the scratch is live only inside
+`bg_swap_in` (`map_commit`, field mode 5), and this frame only inside modes 4 and 6, which are
+level-B modes — `mode_set` puts `g_arena_cur` at B, and what they allocate from there ends
+far below the frame (measured `g_arena_cur` at the end of each: the bag B itself, the insect
+box `0x801C2F3C`, kite `0x801C4954`, 227,540 bytes under it; an overlay that allocated into
+level C would need re-measuring). What must survive under it is `g_bg_save`, which ends at
+C: 19,416 bytes below the frame on this layout, 32,820 on retail. `arena.asm`'s guard caps
+the raise of C at 1,116 + 12,904 = 14,020 bytes, so the menu frame cannot reach C under any
+raise the guard admits; the guard's binding constraint stays the field's 4,016.
+Not measured: § "Not done". Under the full-translation estimate six maps pass `0x6400` by
+up to 5,926 bytes
 (`M_H06001`), inside this raise.
 
 ### No cell the Japanese script draws is touched

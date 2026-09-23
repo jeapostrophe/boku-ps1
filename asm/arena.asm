@@ -39,8 +39,9 @@ HEAP_RAISE equ (HEAP_START_NEW - HEAP_START_STOCK)
     .error "MAP_AREA + 1 must fit slti's signed 16-bit immediate"
 .endif
 ; The raise must leave the measured gap with one and a half times the measured stack
-; depth to spare, because the measurement covered one route (arrival, free roam) and the
-; menus, sumo and fishing were not walked. Past this, re-measure before raising.
+; depth to spare: the depth is the field's (level-C modes); a sumo bout and fishing are not
+; measured. The item menu's deeper frame runs only in level-B modes, where level C is empty
+; (research/vwf-prototype.md § "The map work area"). Past this, re-measure before raising.
 .if 2 * MAP_AREA_EXTRA > STACK_GAP - HEAP_RAISE - STACK_DEPTH - STACK_DEPTH / 2
     .error "2 * MAP_AREA_EXTRA leaves the stack less than 1.5x its measured depth; re-measure"
 .endif

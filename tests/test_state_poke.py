@@ -1,4 +1,4 @@
-"""`tools/vwf/state_poke.py`'s stack mark: the stack is what grows down from the top."""
+"""`tools/vwf/state_poke.py --scan`: the stack's low-water mark in a sentinel fill."""
 
 from __future__ import annotations
 
@@ -17,14 +17,19 @@ def state_poke():
     return module
 
 
-def test_the_stack_mark_ignores_a_buffer_written_far_below_the_frames():
-    """The item menu's shape: a buffer at the fill's floor and the frames far above it."""
+def test_a_deep_frame_s_unwritten_middle_does_not_hide_its_bottom(tmp_path, capsys):
+    """The item menu's shape: one 0x3CA8-byte frame whose locals are written only at its
+    bottom (here from the `sp` Redux saw under it), its saved registers at its top,
+    thousands of untouched bytes between. The low-water mark is the bottom, not the top."""
     tool = state_poke()
-    changed = [False] * 10_000
-    for i in range(0, 2_000):
-        changed[i] = True  # a buffer at the floor
-    for i in (9_000, 9_004, 9_100, 9_600, 9_999):
-        changed[i] = True  # frames: sparse, but never far apart
-    assert tool.stack_mark(changed, gap=512) == 9_000
-    assert tool.stack_mark(changed, gap=8_000) == 0, "a gap wider than the hole joins them"
-    assert tool.stack_mark([False] * 10, gap=512) is None
+    low, high, sentinel = 0x801F0000, 0x801FFFF0, 0xEE
+    data = bytearray(tool.RAM_OFFSET + tool.RAM_SIZE)
+    fill = tool.ram_offset(low, high - low)
+    data[fill : fill + high - low] = bytes([sentinel]) * (high - low)
+    bottom = 0x801FC288
+    for address in (*range(bottom, bottom + 0x2000), *range(0x801FFF20, high)):
+        data[tool.ram_offset(address)] = 0
+    state = tmp_path / "s.state"
+    state.write_bytes(bytes(data))
+    tool.main([str(state), "--scan", hex(low), hex(high), hex(sentinel)])
+    assert f"stack: low-water 0x{bottom:08X}" in capsys.readouterr().out
