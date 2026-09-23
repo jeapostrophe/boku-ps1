@@ -733,17 +733,20 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       Redux (`tests/test_real_voice_subtitle.py`) and Beetle with an `E0184.2` fixture; stock
       round trip unchanged. Covers event `XA` entries only — the native `g_xa_clips` plays
       are `VO-03` and `VO-06`.
-- [ ] **[VO-03]** **The five endings and the credits.** Fable (RE): how `ENDOTI` picks and
-      plays an epilogue — and the day-1 bedtime clip `XCH.34`, played over black by the movie-mode code at `0x800192A4` through the same clip table (the ★ count → `OTI0n`, decoded by `ENV-06`; the narration's keys are `g_xa_clips` 41–45, `VO-01`), what the credits
-      are — texture (`OTI0n`'s credits line is one), code, or the ending movie — and how
-      much text that is; then how to draw subtitles there, since `ENDOTI` draws no glyphs:
-      the dialogue renderer called from the overlay, or `FMV-04`'s composite. Harmed: the
-      player, at the payoff of the game.
+- [x] **[VO-03]** **The five endings, the bedtime clip and the credits.** DONE 2026-09-23:
+      `ENDOTI` plays `XCH.41` + the ending in `0x80035F42`; movie mode plays `XCH.34` after the
+      day-1 diary (`research/event-scripts.md` § Native clips). Subtitles come from
+      `translation/clips.txt` (keyed `XCH.nn`, day-file row format), carried in the
+      movie-subtitle block (re-read in `ENDOTI`, which overwrites it — 16 vsyncs, only when
+      clip English exists) and drawn in the band by `asm/voice.asm` through a hook in
+      `xa_play_indexed` that every native clip passes. Proven on Redux
+      (`tests/test_real_clip_subtitle.py`) and Beetle. The credits are `OTI0n`'s 276×33
+      production/copyright strip, ruled N by `research/textures-plan.md`.
 - [ ] **[VO-06]** **Subtitles for the bug-sumo voices.** The boys' 39 bug-sumo lines
-      (`XCH.00`–`.40`, `research/data/voice-only.tsv`) are native `g_xa_clips` plays from the
-      sumo code, outside any event, so `VO-02`'s hooks never see them: find where the sumo
-      code starts a clip and draw its text there (the band, or `MUSI.OVL`'s own surface —
-      `TXT-05`). Harmed: the player, who hears the boys' taunts and reads nothing.
+      (`XCH.00`–`.40`, `research/data/voice-only.tsv`) pass `VO-03`'s `xa_play_indexed` hook
+      already; left: whether the movie-subtitle block survives bug sumo (mode 7) — allow that
+      mode in `clip_sub_block`, re-reading the block if needed — and a proof on both
+      emulators. Harmed: the player, who hears the boys' taunts and reads nothing.
 - [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
       translated like a day file — the `(voice only)` rows gain English in place, and the
       epilogues get their own file keyed by ending and time — reviewed against the
