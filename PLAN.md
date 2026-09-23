@@ -669,7 +669,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `work/smalltype/DECIDE.md`): balloons widened to take the game's own glyphs (our 7 px
       "Bean" face where an atlas has no room), the attendance card in our 5 px "Sprout", the
       stone Back buttons bigger and bold; clear a flat label's whole area before setting type,
-      and on textured stone clear only the ink.
+      and on textured stone clear only the ink. **DONE 2026-09-23:** the faces tracked (`boku/faces/`),
+      the `btn@` family (`boku/texture_buttons.py`, `translation/textures/buttons.txt`); bold
+      "Back" on all ten stones; the diary's "Good // night" balloon widened 4 texels; proven on
+      Beetle on settings, load and diary (`tests/test_real_texture_buttons.py`). Still to do:
+      the desk balloons (`SUB`), bag `PK_WAL`, kite record `TK_WAL`, kite book `TZICON`, bug
+      sumo's, the insect box `MZ02`/`SAMP`, and the attendance card.
 - [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
       to the original CLUT and committed as new pixels: three book covers consistently across
       their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
