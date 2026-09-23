@@ -7,6 +7,52 @@ register are [style-guide.md](style-guide.md) and [bible.md](bible.md); names ar
 [glossary.md](glossary.md); open questions for Jay are [QUESTIONS.md](QUESTIONS.md); speech
 with no text on the disc is [voice-only.md](voice-only.md).
 
+## Translating the whole game
+
+Jay, 2026-09-23: one translator session is given everything — the story bible, the style
+guide, the glossary and the checklist, whole — and then the game one event at a time in play
+order, so every line is written knowing all that came before it, and a revision pass can
+follow with the whole game in view.
+
+```
+./make.sh packet --game          # writes work/packets/game/ (never tracked: it is the Japanese)
+```
+
+* `system.md` is the first message (or the system prompt): the day-file format, then the four
+  documents whole. About 95,000 characters, ~29,000 tokens.
+* `order.txt` has one row per part, in the order to give them: the event id or surface key,
+  a tab, and the translation file its answer is saved into (`day08.txt`, `shared.txt`,
+  `arrays.txt`, …). All 31 days, each day's events in its day file's order where one exists,
+  each day-independent event on the day its id names (`E1006` on day 10) when its condition
+  allows that day, else at the first day that can reach it (the examine texts, the bath, the
+  dinner quiz: day 1); then the menus, books and screens. The first part of each day says "Day N begins".
+* `<key>.md` is each part (`exe@code:…` is saved as `exe@code_….md`). Together about 470,000
+  characters, ~186,000 tokens; the English answers add ~77,000 more (measured against days
+  1–7; all figures 2026-09-23), so a whole-game session is ~300,000 tokens and needs a
+  1M-context model.
+* Not in it: `clips.txt` and `movies.txt`. Their source is a transcript of the audio under
+  `work/voice/`, not the disc's text, and their rows are keyed by clip and frame, not by event.
+
+The orchestrator (a script, or a parent agent that never translates) drives the session:
+
+1. Send `system.md`. Then for each row `KEY<TAB>FILE` of `order.txt`, in order: send
+   `KEY.md` as the next message, take the reply, and save it:
+   `./make.sh save-event KEY --answer reply.txt --into translation/days/FILE --order work/packets/game/order.txt`.
+   The reply is the fenced block; prose around it is ignored.
+2. A refusal (an id missing or extra, Japanese left in a row or a note, a speaker that is not a
+   style-guide label) leaves the file untouched and says why: send the message back and ask
+   for the block again. Never edit an answer by hand to make it save.
+3. At the end of each day, `./make.sh lint-translation` over the day's file; fit on screen is
+   the lint's, not the translator's, so a page too long is not sent back.
+4. After the last part, the revision pass: ask the session whether it wants to revise a day
+   now that it has seen the whole game; for each part it revises, it answers with the whole
+   block again and the same `save-event` command replaces the old one.
+
+Days 1–7, `shared.txt` and `arrays.txt` already hold reviewed English, and a whole-game run
+replaces those blocks as it reaches them: tag the tree first, as `TRN-08` did, and compare.
+Every answer still goes through the independent review against the Japanese
+(`./make.sh packet --like FILE --for-review`) before it counts as reviewed.
+
 ## movies.txt
 
 The subtitles drawn over the movies (PLAN `FMV-02` writes them, `FMV-04` draws them). One

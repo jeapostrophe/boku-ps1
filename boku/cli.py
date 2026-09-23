@@ -488,14 +488,18 @@ def build_parser() -> argparse.ArgumentParser:
     add_packet_arguments(
         subcommands.add_parser(
             "packet",
-            help="assemble the local translator packet for a day, a day file or events",
+            help=(
+                "assemble the local translator packet for a day, a day file, events, the "
+                "arrays or the whole game"
+            ),
             description=(
-                "PLAN TRN-08: a directory per unit -- system.md (the day-file format, the "
-                "style guide and the glossary whole, the bible's day "
-                "summary), one <EVENT>.md per event holding its lines in the day-file shape "
-                "with the Japanese where the English goes, and order.txt, the order to give "
-                "them in. A packet is the game's own text, so it is written under the "
-                "gitignored work/ and is never tracked."
+                "PLAN TRN-08: a directory per unit -- system.md (the day-file format, then "
+                "the story bible, the style guide, the glossary and the checklist, each "
+                "whole), one <EVENT>.md per event or surface holding its lines in the "
+                "day-file shape with the Japanese where the English goes, and order.txt, "
+                "one row per part in the order to give them: its key, a tab, and the "
+                "translation file its answer is saved into. A packet is the game's own "
+                "text, so it is written under the gitignored work/ and is never tracked."
             ),
         )
     )

@@ -169,6 +169,11 @@ be shown "Firefly Creek". The ear/eye mismatch is real but small (28 occurrences
 
 **RULED 2026-09-20: as recommended.** Jay: *"Yes, recommended."* Glossary § 1.
 
+**RE-RULED 2026-09-23 (Jay's glossary review): Megane is "Specs" in English** — the
+alternative above, for his name in the lines and his speaker label alike (style guide § 9).
+**And *yowamushi* is "scaredy-cat", not "crybaby"** (Shirabe's "yowamushi Megane", `E0541.7`;
+"crybaby" is *nakimushi*): "that scaredy-cat Specs". Glossary § 1.
+
 ## Q7 — Speaker labels and quotation marks
 
 The Japanese draws `label「…」` inline. Recommended: the label is a **field** in the
@@ -186,6 +191,19 @@ for the translation prompts. On the subject of how they are presented and stored
 quotes is 4 characters in Japanese and much more in English, so it is expensive. I think we may
 need to default to something early but be willing to go back to it. Ideally, we'll retain the
 same style as the original, including labels and marks."* Style guide § 9.
+
+**RULED 2026-09-23 (Jay's glossary review): quotation marks around a word named inside a
+line are allowed** — *It's written "poem" and read "Shirabe"* (`E0177.1`). The rule above is
+about the marks around a whole utterance, which stay the renderer's. The font has the mark
+(`tools/vwf/placeholder-glyphs.txt`, `PLAN TXT-08`). Style guide § 9.
+
+## Q12 — *Gokurōsama* after the long trip
+
+The glossary's rendering of *nagatabi, gokurōsama deshita* (`E0174.1`) was written with an em
+dash, which the Japanese does not have (a comma; style guide § 18).
+
+**RULED 2026-09-23 (Jay's glossary review): without the em dash** — "That was a long trip.
+You did well." Glossary § 3.
 
 ## Q9 — Macrons
 

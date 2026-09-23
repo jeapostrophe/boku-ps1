@@ -11,7 +11,7 @@
 # Morning: E0605 (Shirabe wakes him — only if he went to Firefly Creek on the 5th, flag 26; there
 # is no calisthenics that day), then E0006 / E0007 (shared.txt). Free time from 8: E0620 (the aunt, the washing line),
 # E0606, E0640 (Shirabe and the ants), E0614 (the uncle in the watermelon field), the secret base
-# — E0650 (forced, the introductions), E0651-E0653 (Guts, Fat, Megane, talked to) — and, once the
+# — E0650 (forced, the introductions), E0651-E0653 (Guts, Fat, Specs, talked to) — and, once the
 # hive is down, the forest: E0607 (the hill), E0608 / E0609 (the beetle trees). Afternoon: E0612
 # (the uncle home from his watch). Evening: E0604 (after dinner: what beetles eat), E0641 (Shirabe
 # by the television), E0670 (the sugar). E0604, E0607-E0609, E0650-E0653 and E0670 carry day-6
@@ -89,7 +89,7 @@ E0614.1	Uncle	Ahh, a hot day like this is just when I want to eat cold watermelo
 #     has let Boku in (flag 25 == 2). Forced. Translated and reviewed in samples/kids-E0650.txt;
 #     reused with notes, except .1 ("the city", glossary § 2), .2, .10, .13, .17 (the retranslation's,
 #     closer to the Japanese) and .11 (no quotation marks, style guide § 9).
-E0650.0	Megane	Here he comes, here he comes...
+E0650.0	Specs	Here he comes, here he comes...
 E0650.1	Fat	I can smell it. The rotten wind of the city.
 E0650.2	Guts	Beansprout, did you eat a proper breakfast before you came?
 E0650.3	(voice only)
@@ -100,32 +100,32 @@ E0650.7	Fat	Shut up!
 E0650.8	Guts	We call him Fat. Be nice to him.
 E0650.9	Boku	What does that mean?
 E0650.10	Fat	See, there was this foreign lady who came to help out on a farm in Sagi-no-sato, // and she gazed at yours truly all dreamy, with misty eyes, and said this:
-E0650.11	Guts, Fat, Megane	Ohh! FAT!
+E0650.11	Guts, Fat, Specs	Ohh! FAT!
 E0650.12	(voice only)
 E0650.13	Boku	So what does it mean?
-E0650.14	Guts	And this is Megane. This guy is smaaart.
-E0650.15	Megane	Hi there, Boku-kun. You have beautiful eyes, you know.
+E0650.14	Guts	And this is Specs. This guy is smaaart.
+E0650.15	Specs	Hi there, Boku-kun. You have beautiful eyes, you know.
 E0650.16	Boku	...Huh?
 E0650.17	Guts	He's kind of a weirdo, but... // you pick on him, and you answer to me.
 E0650.18	Boku	I would never do that!
 # NOTE E0650.11: the Japanese follows the English word with a parenthesised gloss for the player;
 #   dropped, because it would gloss a word into itself (style guide § 16, Q10.6) — the one cut the
 #   guide allows, flagged every time. The rest of the sample's notes (ore-sama → "yours truly",
-#   "beansprout", -chan / -kun, "Megane" kept) apply unchanged.
+#   "beansprout", -chan / -kun) apply unchanged; Megane is "Specs" (glossary § 1).
 
-# --- E0651 / E0652 / E0653: the base (A18), before 18:00, talking to Guts, Fat and Megane. Each
+# --- E0651 / E0652 / E0653: the base (A18), before 18:00, talking to Guts, Fat and Specs. Each
 #     has a first talk and a repeat (.4-.10, .10; E0653 has one line only).
 E0651.0	Guts	You didn't tell your uncle about that secret, right?
 E0651.1	Boku	...Of course not.
 E0651.2	Guts	If you break your promise...
-E0651.3	Guts, Fat, Megane	The penalty: a hundred wrist slaps!
+E0651.3	Guts, Fat, Specs	The penalty: a hundred wrist slaps!
 E0651.4	Guts	What grade are you in?
 E0651.5	Boku	Third grade.
 E0651.6	Guts	Ohh, is that all? I'm in fifth.
 E0651.7	Fat	Yours truly is in fourth.
-E0651.8	Megane	Everyone's bigger than me. I'm still in second grade.
+E0651.8	Specs	Everyone's bigger than me. I'm still in second grade.
 E0651.9	Boku	Same as Shirabe?
-E0651.10	Megane	That's right, that's right. She's horrid! Horrid! // Because she's made picking on me her daily routine, you know. // Truly horrid! Horrid!
+E0651.10	Specs	That's right, that's right. She's horrid! Horrid! // Because she's made picking on me her daily routine, you know. // Truly horrid! Horrid!
 # NOTE E0651.3: "shippe" is the two-finger slap on the wrist that seals a boys' bet; Guts named
 #   the price on day 5 (E0551.12, "a hundred wrist slaps"), and the two lines use the same words.
 #   No label on the disc; speaker group 15, all three at once.
@@ -140,7 +140,7 @@ E0652.2	Fat	Huh? That's Sorano-san's place!
 E0652.3	Boku	Yeah, that's right.
 E0652.4	Fat	So that's it... that place, huh.
 E0652.5	Boku	What's the matter?
-E0652.6	Megane	Fat likes the middle-schooler at that house, you know.
+E0652.6	Specs	Fat likes the middle-schooler at that house, you know.
 E0652.7	Boku	Huh? Moe-neechan?
 E0652.8	Fat	Why, you...! // Want me to shove my hand in your mouth and turn you inside out?!
 E0652.9	Guts	Now, now, easy, easy.
@@ -148,13 +148,13 @@ E0652.10	Fat	Moe-san really is lovely, isn't she. // Lucky you, getting to live 
 # NOTE E0652.2: "Sorano-san's place" is the glossary's (§ 1). E0652.10: "issho ni" has no object in
 #   the Japanese; English needs one, and it can only be Moe.
 
-E0653.0	Megane	Boku-kun, are you the kind of person who reads lots of books and things?
+E0653.0	Specs	Boku-kun, are you the kind of person who reads lots of books and things?
 E0653.1	Boku	Yeah, I love them.
-E0653.2	Megane	Good... I've been at a loss, you see, because the kids around me and I don't have the same things to talk about.
+E0653.2	Specs	Good... I've been at a loss, you see, because the kids around me and I don't have the same things to talk about.
 E0653.3	Guts, Fat	That makes us sound like idiots!
-# NOTE E0653.2: "you see" renders the explanatory "-n da" in Megane's register (style guide § 5);
+# NOTE E0653.2: "you see" renders the explanatory "-n da" in Specs's register (style guide § 5);
 #   nothing else is added — "awanakute" is "don't match", not "never".
-# NOTE E0653.3: no label on the disc; speaker group 17 is Guts + Fat — Megane is the one being
+# NOTE E0653.3: no label on the disc; speaker group 17 is Guts + Fat — Specs is the one being
 #   objected to.
 
 # --- E0607: the hill (B10), the first time Boku reaches it: the condition is day > 1 and flag 33
@@ -228,7 +228,7 @@ E0670.1	(unlabelled)	Got the sugar water.
 #   reports to Boku (E0612.0), plain "I" where the Japanese has no self-reference at all (E0612.1-
 #   .2, E0614.0); mock-official for the watch report (E0612.0). Shirabe: prim third person
 #   (E0640, E0641). The boys as in the sample: Guts curt, Fat swaggering ("yours truly", E0651.7),
-#   Megane in complete sentences with "you see" / "you know" (E0651.10, E0652.6, E0653.2). Boku:
+#   Specs in complete sentences with "you see" / "you know" (E0651.10, E0652.6, E0653.2). Boku:
 #   short and polite; "Yeah" for "un".
 # * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
 #   original's. The longest pages (E0653.2, E0604.5 p4 — about 105 characters) fit in three of the

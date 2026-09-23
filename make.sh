@@ -66,11 +66,13 @@ usage: ./make.sh <verb> [arguments]
   apply-patch ORIG PATCH --out FILE
                                 apply one of our patches, checking both hashes
   packet [arguments]            assemble a translator packet into work/packets/<unit>/:
-                                system.md (format, style guide, glossary, the day) given
-                                once, one <EVENT>.md per event in order.txt's order, each
-                                the event's lines in the day-file shape with the Japanese
-                                where the English goes; --arrays does the same per menu,
-                                book and screen for translation/days/arrays.txt. Never tracked
+                                system.md (format, story bible, style guide, glossary,
+                                checklist -- each whole) given once, one <EVENT>.md per
+                                event in order.txt's order, each the event's lines in the
+                                day-file shape with the Japanese where the English goes;
+                                --arrays does the same per menu, book and screen for
+                                translation/days/arrays.txt; --game is the whole game in
+                                play order (translation/README.md). Never tracked
                                 (./make.sh packet --help for the switches)
   save-event PART [arguments]   write a translator's answer for one event or surface into
                                 its day file, replacing its block or placing it at its

@@ -26,7 +26,7 @@ Button; [web] see `reference/SOURCES.md`; [inference].
 | source | reading | English | rejected | notes | where |
 |---|---|---|---|---|---|
 | ボク | Boku | Boku | — | charter. Label and name. "I" when he says it of himself | label, 742 lines |
-| ボクくん | Boku-kun | Boku-kun | Boku | family, Megane, Saori. Q1 | `E0174.1` and 170 more |
+| ボクくん | Boku-kun | Boku-kun | Boku | family, Specs, Saori. Q1 | `E0174.1` and 170 more |
 | ボクちゃん | Boku-chan | Boku-chan | Boku | Guts, the monk | `E0650.4`, `E1203.8` |
 | 久保田 | Kubota | Kubota | — | Boku's family name; "Uncle Kubota" is how Moe greets his father on the phone | `E2904.1` |
 | 空野 | Sorano | Sorano | — | "sky field". The family name; "Sorano-san's place" | `E0175.0`, `E0652.2`, `E8013.0` |
@@ -57,8 +57,8 @@ Button; [web] see `reference/SOURCES.md`; [inference].
 | ファット | Fatto | Fat | Fatso | Q4. His own story of the name: `E0650.10`–`.11` | |
 | マンモスデブ | | Mammoth Fatso | | Guts's other name for him | `E0650.6` |
 | オレさま | ore-sama | yours truly | the great me | Fat's pronoun, 9 times; vary only when grammar forces it | `E0650.10` |
-| メガネ | Megane | Megane | Specs; Glasses | Q4 | `E0650.14` |
-| 弱虫メガネ / 太っちょ | | that crybaby Megane / the fat one | | Shirabe's descriptions. `[MINE: product]` the day-5 reviewer (2026-09-20) observes that 弱虫 is "weakling / scaredy-cat"; "crybaby" is 泣き虫 — the ruled term is unchanged pending Jay's call | `E0541.7` |
+| メガネ | Megane | Specs | Megane (as heard); Glasses | Q4, re-ruled 2026-09-23: his name and his speaker label | `E0650.14` |
+| 弱虫メガネ / 太っちょ | yowamushi Megane | that scaredy-cat Specs / the fat one | that crybaby Megane | Shirabe's descriptions. 弱虫 is "scaredy-cat" (Q4, 2026-09-23); "crybaby" is 泣き虫 | `E0541.7` |
 | もやしっ子 | moyashikko | beansprout | city weakling | period insult for a weedy city child | `E0650.2`, `E2952.0` |
 | ケン坊 | Ken-bō | Ken-bo | Kenbo | the dog; *-bō* is a boy's pet-name suffix | `E0471.0`, `E0904.9` |
 | ノラ | Nora | Nora | — | the cow; "stray" — the uncle explains it, so translate the explanation | `E1612.2`–`.6` |
@@ -186,7 +186,7 @@ where the entry jokes about the *Japanese* name (marked ✎) that line carries b
 | 21 | テングチョウ | tenguchō | Tengu Butterfly ✎ | *Libythea lepita* | entry is all tengu: nose, cloak of invisibility |
 | 22 | アオバセセリ | aoba-seseri | Green Skipper | *Choaspes benjaminii* | |
 | 23 / 56 | ミヤマクワガタ ♂ / ♀ | miyama-kuwagata | Miyama Stag Beetle | *Lucanus maculifemoratus* | ♂♀ signs are in the source |
-| 24 / 57 | オオクワガタ ♂ / ♀ | ō-kuwagata | Giant Stag Beetle | *Dorcus hopei* | "the King of stag beetles"; Megane's rare prize `E0773.0` |
+| 24 / 57 | オオクワガタ ♂ / ♀ | ō-kuwagata | Giant Stag Beetle | *Dorcus hopei* | "the King of stag beetles"; Specs's rare prize `E0773.0` |
 | 25 | ヒラタクワガタ | hirata-kuwagata | Flat Stag Beetle | *Dorcus titanus* | |
 | 26 | コクワガタ | ko-kuwagata | Little Stag Beetle | *Dorcus rectus* | |
 | 27 / 58 | ノコギリクワガタ ♂ / ♀ | nokogiri-kuwagata | Saw Stag Beetle | *Prosopocoilus inclinatus* | |

@@ -64,7 +64,7 @@ as names stay as heard:
 
 | Japanese | English | why |
 |---|---|---|
-| name + *-kun*, *-chan*, *-san* | kept as heard: Boku-kun, Boku-chan, Shirabe-chan, Moe-san, Yusaku-san, Gacchan | who uses which suffix is characterisation (the family and Megane say *-kun*; Guts and the monk say *-chan*; Fat says *Moe-san* with a sigh) and the player hears it |
+| name + *-kun*, *-chan*, *-san* | kept as heard: Boku-kun, Boku-chan, Shirabe-chan, Moe-san, Yusaku-san, Gacchan | who uses which suffix is characterisation (the family and Specs say *-kun*; Guts and the monk say *-chan*; Fat says *Moe-san* with a sigh) and the player hears it |
 | *oji-chan*, *oji-san* | **Uncle** | a natural English form of address and of self-reference to a child |
 | *oba-chan* | **Auntie** | likewise; "Aunt" as the speaker label |
 | *otō-san*, *okā-san*, *kā-chan* | Dad, Mom, (your) mom | likewise |
@@ -133,7 +133,7 @@ Full portraits are in the bible. The rules:
   that is not there).
 * Differences that Japanese carries in pronouns and sentence endings go into **diction and
   rhythm**, never into eye-dialect: Fat's *ore-sama* → "yours truly" and general swagger;
-  Guts curt and bossy; Megane bookish, complete sentences, "you know"; Saori blunt, masculine
+  Guts curt and bossy; Specs bookish, complete sentences, "you know"; Saori blunt, masculine
   endings → short declaratives, "kid", "brat"; polite with the adults. The aunt's feminine
   endings → warmth, "now", "you know"; not "my dear". The uncle's mock-official *desu/masu*
   when laying down rules → mock-official English ("No entry beyond this point at this hour").
@@ -215,7 +215,7 @@ bible § Wordplay). Three kinds, three treatments:
   it as a **parsed field** (as the samples do), never inline in the English — Jay: *"We
   definitely want to parse the label in our translation files, because that will be convenient
   for the translation prompts."* English labels: Boku, Uncle, Aunt, Moe, Shirabe, Guts, Fat,
-  Megane, Father, Monk, Boy, Woman, Saori, Narrator, All.
+  Specs, Father, Monk, Boy, Woman, Saori, Narrator, All.
   **On screen — SETTLED (Q7, 2026-09-20) as an early default, explicitly revisitable:** the
   renderer draws labelled dialogue in the original's style, label and marks — Jay: *"Ideally,
   we'll retain the same style as the original, including labels and marks"* — and the
@@ -226,6 +226,10 @@ bible § Wordplay). Three kinds, three treatments:
   are the 「 」 glyphs or English quotation marks, and whether the label sits inside the box, is
   the dialogue band's decision. Narration (『 』 in the Japanese) is
   unlabelled and set apart by the renderer; system messages ("Got the fishing rod.") plain.
+* **Quotation marks around a word named inside a line are allowed** — SETTLED (Q7, Jay,
+  2026-09-23): *It's written "poem" and read "Shirabe"* (`E0177.1`), a word written on a
+  sign, a word someone asks the meaning of. Straight double quotes; the font has them. What
+  stays unquoted is the utterance itself, above.
 * **One utterance is sometimes split across two messages** with the closing bracket in the
   second (`E1405.1`–`.2`, `E2231.1`–`.2`, `E2303.3`–`.4`): a silent beat, then the speech. The
   pair is translated as one sentence and must stay in order.

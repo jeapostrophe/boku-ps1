@@ -210,21 +210,21 @@ E0763.4	Fat	But when it comes down to it, I guess the strongest of all is the rh
 #   "-chan"; as with Boku's "-san" for the whale (shared.txt, E8055.0), English children do not,
 #   and it is dropped. "Rhino beetle" in the boys' mouths (glossary § 4a).
 
-# --- E0771 / E0772 / E0773: Megane's tips, the same three rotations: E0772.1-.3 = E0773.2-.4 =
+# --- E0771 / E0772 / E0773: Specs's tips, the same three rotations: E0772.1-.3 = E0773.2-.4 =
 #     E0771.0-.2, E0772.0 = E0773.1.
-E0771.0	Megane	Each kind of bug has all sorts of traits, you know, like being tough and not losing stamina easily. // In people terms, it's like the difference between me and Fat.
-E0771.1	Megane	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other. It's interesting.
-E0771.2	Megane	With bugs, even within the same kind, the males and the females fight differently. // Hehe, and that, you know, is somehow like the difference between human boys and girls, which is interesting.
-E0772.0	Megane	Did you try tapping your bug on the back before the match? // Tap it over and over and the way it gets angry changes, and it seems an angry one finds it easier to pull off its moves.
-E0772.1	Megane	Each kind of bug has all sorts of traits, you know, like being tough and not losing stamina easily. // In people terms, it's like the difference between me and Fat.
-E0772.2	Megane	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other. It's interesting.
-E0772.3	Megane	With bugs, even within the same kind, the males and the females fight differently. // Hehe, and that, you know, is somehow like the difference between human boys and girls, which is interesting.
-E0773.0	Megane	Do you know the Giant Stag Beetle? // You hardly ever get hold of one, but it has strength to match.
-E0773.1	Megane	Did you try tapping your bug on the back before the match? // Tap it over and over and the way it gets angry changes, and it seems an angry one finds it easier to pull off its moves.
-E0773.2	Megane	Each kind of bug has all sorts of traits, you know, like being tough and not losing stamina easily. // In people terms, it's like the difference between me and Fat.
-E0773.3	Megane	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other. It's interesting.
-E0773.4	Megane	With bugs, even within the same kind, the males and the females fight differently. // Hehe, and that, you know, is somehow like the difference between human boys and girls, which is interesting.
-# NOTE E0771-E0773: Megane in complete sentences, "you know" (style guide § 5). E0773.0: the
+E0771.0	Specs	Each kind of bug has all sorts of traits, you know, like being tough and not losing stamina easily. // In people terms, it's like the difference between me and Fat.
+E0771.1	Specs	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other. It's interesting.
+E0771.2	Specs	With bugs, even within the same kind, the males and the females fight differently. // Hehe, and that, you know, is somehow like the difference between human boys and girls, which is interesting.
+E0772.0	Specs	Did you try tapping your bug on the back before the match? // Tap it over and over and the way it gets angry changes, and it seems an angry one finds it easier to pull off its moves.
+E0772.1	Specs	Each kind of bug has all sorts of traits, you know, like being tough and not losing stamina easily. // In people terms, it's like the difference between me and Fat.
+E0772.2	Specs	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other. It's interesting.
+E0772.3	Specs	With bugs, even within the same kind, the males and the females fight differently. // Hehe, and that, you know, is somehow like the difference between human boys and girls, which is interesting.
+E0773.0	Specs	Do you know the Giant Stag Beetle? // You hardly ever get hold of one, but it has strength to match.
+E0773.1	Specs	Did you try tapping your bug on the back before the match? // Tap it over and over and the way it gets angry changes, and it seems an angry one finds it easier to pull off its moves.
+E0773.2	Specs	Each kind of bug has all sorts of traits, you know, like being tough and not losing stamina easily. // In people terms, it's like the difference between me and Fat.
+E0773.3	Specs	If you have them wrestle all sorts of opponents... // you come to see how the moves the bugs have, so to speak, match up against each other. It's interesting.
+E0773.4	Specs	With bugs, even within the same kind, the males and the females fight differently. // Hehe, and that, you know, is somehow like the difference between human boys and girls, which is interesting.
+# NOTE E0771-E0773: Specs in complete sentences, "you know" (style guide § 5). E0773.0: the
 #   Giant Stag Beetle is glossary § 4a (#24; the entry cites this line).
 
 # --- E0712: the living room (G01), day 7 from 16:00, talking to the uncle. .5 on a repeat.
@@ -281,7 +281,7 @@ E0741.2	Shirabe	When I'm grown, I should like to live in a house where one could
 #   E0712.2 page 3 has "Uncle" because the Japanese does). The aunt: quick, "I" in her own
 #   beauty secret (E0720.1 — the Japanese has no "Auntie" there), "all right?" endings. Moe:
 #   thinking aloud (E0780.0), "Hm-hm-hm" and "Gyahahahaha". Shirabe: prim, third-person
-#   "Shirabe", "I wonder?" for kashira. Guts curt, Fat "yours truly", Megane in full sentences.
+#   "Shirabe", "I wonder?" for kashira. Guts curt, Fat "yours truly", Specs in full sentences.
 #   Boku: short, literal, "Yeah"; "Onee-chan" to Moe.
 # * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
 #   original's. Every page fits the three lines of the band (cellmap lint, 2026-09-22);

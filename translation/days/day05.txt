@@ -175,14 +175,14 @@ E0541.3	Boku	Then when you line up by height at school, what number are you from
 E0541.4	Shirabe	...Well, excuse me. First prize.
 E0541.5	Shirabe	Call me a pipsqueak and I won't forgive you, you know. // Shirabe's going to be big someday...
 E0541.6	Boku	Do you know Guts-kun?
-E0541.7	Shirabe	Yeah, if you mean Gacchan, I know him. // He's good friends with that crybaby Megane from Shirabe's class and the fat one from the upper grades.
+E0541.7	Shirabe	Yeah, if you mean Gacchan, I know him. // He's good friends with that scaredy-cat Specs from Shirabe's class and the fat one from the upper grades.
 # NOTE E0541.1-.2: "Pipsqueak" is the glossary's one banned word (§ 1, which cites this line); the
 #   ban was laid down on day 4 (E0402.6-.7). E0541.5, page 1: "chibi" alone, the short form —
 #   the same word, lower case. Page 2: "biggu" in katakana → "big".
 # NOTE E0541.4: "warukatta wa ne" is sarcastic — "well, excuse me" — and "ittō-shō" is "first
 #   prize": smallest in the class, first in line (bible § 3).
 # NOTE E0541.6-.7: Boku says "Guts-kun"; Shirabe says "Gacchan" — both as heard (glossary § 1).
-#   "That crybaby Megane" and "the fat one" are the glossary's renderings for this line (§ 1);
+#   "That scaredy-cat Specs" and "the fat one" are the glossary's renderings for this line (§ 1);
 #   she does not know their names as names.
 
 # NOTES — the day
@@ -195,7 +195,7 @@ E0541.7	Shirabe	Yeah, if you mean Gacchan, I know him. // He's good friends with
 #   where the Japanese has "watashi"). Boku: short, literal, deadpan (E0551.5, E0551.10,
 #   E0520.9). The narrator: one sentence, no contractions (E0502.7).
 # * Pages. Every voiced line keeps the disc's page count and order; the "//" breaks are the
-#   original's. The longest pages, label and space included, are E0541.7 page 2 (110 characters)
+#   original's. The longest pages, label and space included, are E0541.7 page 2 (113 characters)
 #   and E0502.3 page 2 (106): three lines of the band at most, no OVERFLOW on day 5.
 # * No choice menus on day 5.
 # * Duplicates. E0502.0-.1 = E0010.0-.1 and E0504.5 = E0010.1 (identical source text, identical

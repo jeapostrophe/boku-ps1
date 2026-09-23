@@ -194,7 +194,7 @@ cloud", `E6004.5`).
 expressway and chief watermelon thief; *ore*, *ze*, *daro*; calls Boku *Boku-chan*; keeps his
 word; his family is selling their rice fields and he will have to leave for the city
 (`E2951`). **Fat** (ファット), fourth grade; *ore-sama*; crude, greedy, in love with *Moe-san*.
-**Megane** (メガネ), second grade, Shirabe's classmate and victim; a careful *boku* and *kimi*;
+**Specs** (メガネ, *Megane*: "glasses"), second grade, Shirabe's classmate and victim; a careful *boku* and *kimi*;
 bookish non sequiturs (Narnia, Dolittle, Miffy's mouth); will build the village a library.
 No source gives them real names [web]. Their 74 + 48 + 41 lines are mostly one-line chats
 gated by a counter (flag 72) and three rotating sets of bug-sumo tips.
@@ -221,7 +221,7 @@ ending events [xneo].
 | 3 | Fishing rod; corn harvest ★; Firefly Creek forbidden after dark | `E0301`, `E0306`, `E0384`, `E0303` |
 | 4 | Shirabe's guided tour ★ — river, Jizō, nectar flowers, the photograph; the watermelon thief and the howl; shaved ice | `E0401`, `E0442`–`E0445`, `E0405`, `E0406` |
 | 5 | Guts and the pact; the uncle is out: the one chance to see the fireflies ★ | `E0551`, `E0502` |
-| 6 | Oversleeps (no calisthenics stamp); the aunt found a firefly in his futon; the hive can come down (any day once he has the rod — `E0205` has no day of its own, and this is when it usually happens); Fat and Megane; sugar bait | `E0605`, `E0620`, `E0205`, `E0650`, `E0604` |
+| 6 | Oversleeps (no calisthenics stamp); the aunt found a firefly in his futon; the hive can come down (any day once he has the rod — `E0205` has no day of its own, and this is when it usually happens); Fat and Specs; sugar bait | `E0605`, `E0620`, `E0205`, `E0650`, `E0604` |
 | 7 | The hill → kites; Moe's flowers in the forest ★ | `E0701`, `E0733`–`E0786` |
 | 8 | The old axe; "Boku-kun unbanned" from the sisters' room; fireworks from his window | `E0814`, `E0830`, `E0805` |
 | 9– | The giant fish, Ken-bō's fur, the fly ★(catch it); the satellite (day 10: the narrator's sentence begins in movie M120 and ends in the first line of the satellite event (`E1008.0`), whose English picks it up as "...a satellite, flying quietly on, as if gliding."; translation/movies.txt, M120); the log bridge (five days of chopping) | `E0906`, `E0904`, `E1006`, `E1008`, `E0807` |

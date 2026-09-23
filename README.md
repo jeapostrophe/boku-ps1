@@ -70,8 +70,9 @@ disc's unused sectors, new packing or compression routines — not a shorter tra
 **The English script is written by AI agents** — Claude, the strongest model available, not a
 sentence-at-a-time machine translation (PLAN § *Translation*). The event scripts are decoded so a
 translator sees a whole scene as the game plays it — which line follows which, where the choices branch — along
-with the speakers, the style guide, the glossary, and the story of the day, and is handed a
-day's scenes one after another (`./make.sh packet`). The box limits are not handed to it: the
+with the speakers, and is given the whole story bible, style guide and glossary first and then
+the scenes one after another, a day's worth or the whole game in play order (`./make.sh
+packet`, `translation/README.md`). The box limits are not handed to it: the
 lint measures every page and `./make.sh mockup` draws them. A second agent reviews against the
 Japanese, and then it gets played.
 Scenes will be readable in order outside the game, with alternatives side by side, in a

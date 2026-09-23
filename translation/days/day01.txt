@@ -25,8 +25,8 @@ E0174.0	Boku	My mom's tummy has gotten big, so... // starting today, for one mon
 E0174.1	Uncle	Nice to meet you, Boku-kun. That was a long trip. You did well.
 # NOTE E0173.0: the same set phrase his father used in E0171.0 — the boy is reciting what he was
 #   taught to say, and "I'll be in your care" is kept as the same words for that reason.
-# NOTE E0174.1: the glossary's gokurōsama rendering (§ 3) with a full stop where its row has an em
-#   dash: the Japanese has a comma after "nagatabi" (style guide § 18).
+# NOTE E0174.1: the glossary's gokurōsama rendering (§ 3): a full stop, not a dash, after "a long
+#   trip" -- the Japanese has a comma after "nagatabi" (style guide § 18; Q12, 2026-09-23).
 
 # --- E0175: close-up of the uncle (I31).
 E0175.0	Uncle	This is the Sorano house, and I'm your Uncle Yusaku. // From today, think of this place as your own home, and please play as much as you like.

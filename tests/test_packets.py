@@ -27,7 +27,9 @@ from boku.packets import (
     DAYS_DIR,
     DINING_ROOM,
     EVENT_HEADER,
+    LABEL_OF,
     ORDER_NAME,
+    POLICY_DOCUMENTS,
     SYSTEM_NAME,
     VOICE_ONLY_TSV,
     DayFile,
@@ -39,10 +41,12 @@ from boku.packets import (
     check_destination,
     condition_in_words,
     default_day_file,
+    estimate_tokens,
     format_section,
     japanese_text,
     main_packet,
-    parse_day_rows,
+    main_save_event,
+    order_keys,
     parse_flags,
     parse_places,
     part_file,
@@ -50,9 +54,10 @@ from boku.packets import (
     scene_line_ids,
     unit_like,
     unit_of_day,
+    unit_of_game,
     unit_of_surfaces,
     untranslated_reachable,
-    without_line_citations,
+    without_plan_citations,
     write_unit,
 )
 from boku.script_store import Japanese, load_store, scene_day
@@ -120,24 +125,35 @@ def template_rows(part: str) -> list[str]:
 # --- the system part -----------------------------------------------------------------------------
 
 
-def test_the_system_part_carries_the_format_and_the_day(store, builder):
-    """Jay's four (`TRN-08`), each checked by a fact read out of its own home."""
+def test_the_system_part_carries_the_format(store, builder):
     system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
     readme = (DAYS_DIR / "README.md").read_text(encoding="utf-8")
     first_bullet = format_section(readme).splitlines()[0]
     assert first_bullet in system, "the day-file format is not the README's § Format"
-    what = Policy.load().day_row(1)
-    assert without_line_citations(what) in system
 
 
-@pytest.mark.parametrize("name", ["glossary.md", "style-guide.md"])
-def test_the_system_part_carries_the_whole_glossary_and_the_whole_style_guide(store, builder, name):
-    """Jay, 2026-09-22: the glossary and the style guide go in whole. A glossary narrowed to
-    rows whose Japanese a matcher found dropped rows with alternatives, brackets and
-    running text, and five translation errors traced to it."""
+@pytest.mark.parametrize("name", ["bible.md", "style-guide.md", "glossary.md", CHECKLIST_NAME])
+def test_the_system_part_carries_every_policy_document_whole(store, builder, name):
+    """Jay, 2026-09-23 (the v3 packet): the ENTIRE story bible, glossary, style guide and
+    checklist, verbatim but for PLAN citations. Every line of each file after its title is
+    looked for, so a document cut short, narrowed to a day (the v2 packet gave the bible's
+    one-day summary) or left out fails here by name. A glossary narrowed to rows a matcher
+    found caused five translation errors (2026-09-22)."""
     system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
-    body = (REPO_ROOT / "translation" / name).read_text(encoding="utf-8").split("\n", 1)[1]
-    assert body.strip() in system
+    lines = (REPO_ROOT / "translation" / name).read_text(encoding="utf-8").splitlines()[1:]
+    missing = [line for line in lines if without_plan_citations(line) not in system]
+    assert not missing, f"{name}: {len(missing)} line(s) missing, first {missing[0]!r}"
+    assert lines, f"{name} is empty"
+
+
+def test_the_policy_documents_are_the_bible_the_style_guide_the_glossary_the_checklist():
+    names = [name for _, name in POLICY_DOCUMENTS]
+    assert names == ["bible.md", "style-guide.md", "glossary.md", CHECKLIST_NAME]
+
+
+def test_a_plan_citation_is_all_that_comes_out():
+    text = "# Glossary (PLAN `TRN-01`)\nFat (PLAN `PIPE-07`) is `E0650.10`; see PLAN `TRN-08`."
+    assert without_plan_citations(text) == "# Glossary\nFat is `E0650.10`; see."
 
 
 def test_the_checklist_closes_the_system_part(store, builder):
@@ -145,12 +161,6 @@ def test_the_checklist_closes_the_system_part(store, builder):
     checklist = (REPO_ROOT / "translation" / CHECKLIST_NAME).read_text(encoding="utf-8")
     last = [line for line in checklist.splitlines() if line.strip()][-1]
     assert system.rstrip().endswith(last)
-
-
-def test_a_unit_with_no_day_says_it_has_no_day_summary(store, builder):
-    """A shared unit was promised the day's story and got none."""
-    system = builder.system_part(Unit("shared", "the shared events", None, tuple(store.scenes)))
-    assert "no day summary" in system
 
 
 def test_the_format_section_stops_at_its_own_section():
@@ -175,16 +185,12 @@ def test_nothing_on_jay_s_drop_list_reaches_the_translator(store, builder):
         "turns after",
         "col 1 (",
         "PLAN",
+        "Voice clips",
+        store.lines[VOICED]["voice"]["clip"],
     ):
         assert dropped not in text, f"{dropped!r} reached the packet"
     assert re.search(r"`[A-Z]{2,5}-\d{2}`", text) is None, "a plan row id reached the packet"
     assert "boku lint" not in text
-
-
-def test_the_day_summary_carries_no_line_citations():
-    assert without_line_citations("the relay `E0171`\u2013`E0186`, then the kit (`E0107`)") == (
-        "the relay, then the kit"
-    )
 
 
 # --- one event -----------------------------------------------------------------------------------
@@ -210,7 +216,7 @@ def test_a_line_keeps_its_page_breaks_and_loses_its_columns_and_marks(store, bui
     assert speaker == label, "the speaker column is the label the Japanese draws"
     assert not text.startswith(label)
     part = builder.event_part(event(store, "E9001"), 1, 1)
-    assert f"`{VOICED}` {record['voice']['clip']}" in part.split("## Your answer")[0]
+    assert record["voice"]["clip"] not in part, "Jay, 2026-09-23: no voice-clip references"
 
 
 def test_columns_join_on_one_space_and_the_indent_and_marks_come_off():
@@ -299,7 +305,7 @@ def test_a_unit_is_a_system_part_one_part_per_event_and_the_order(store, builder
     written = write_unit(builder, unit, tmp_path / "day01")
     names = [path.name for path in written]
     assert names[0] == SYSTEM_NAME and names[-1] == ORDER_NAME
-    order = (tmp_path / "day01" / ORDER_NAME).read_text(encoding="utf-8").split()
+    order = order_keys((tmp_path / "day01" / ORDER_NAME).read_text(encoding="utf-8"))
     assert order == [scene["event"] for scene in unit.scenes]
     assert [f"{name}.md" for name in order] == names[1:-1]
 
@@ -542,7 +548,7 @@ def test_a_part_s_file_name_holds_no_colon(surfaces, tmp_path):
     unit = unit_of_surfaces(surfaces)
     written = write_unit(builder, unit, tmp_path / "arrays")
     assert all(":" not in path.name for path in written)
-    assert LABEL in (tmp_path / "arrays" / ORDER_NAME).read_text(encoding="utf-8").split()
+    assert LABEL in order_keys((tmp_path / "arrays" / ORDER_NAME).read_text(encoding="utf-8"))
     assert (tmp_path / "arrays" / part_file(LABEL)).is_file()
 
 
@@ -702,8 +708,48 @@ def test_a_bible_entry_for_several_slots_says_which_slot_is_who(tmp_path):
     aunt = next(entry for entry in policy.cast if entry.slots == (2,))
     part = PacketBuilder.build(store, policy, [], False).event_part(store.scenes[0], 1, 1)
     who = next(line for line in part.splitlines() if line.startswith("* **Who is here**"))
-    assert "slot 7 is Fat" in who and len(boys.slots) > 1
-    assert aunt.heading.split(",")[0] in who
+    assert len(boys.slots) > 1
+    assert f"(here: {LABEL_OF['FAT']})" in who, "the boy present is named by his label"
+    assert LABEL_OF["GUTS"] not in who, "a boy not in the scene is not named"
+    assert aunt.heading.split(";")[0] in who
+
+
+def test_who_is_here_carries_no_slot_numbers_or_line_counts(store, builder):
+    """20k tokens of the whole-game packet were the bible's cast headings repeated whole --
+    slot numbers, labels and line counts -- in every part; the bible is in system.md."""
+    part = builder.event_part(event(store, "E9001"), 1, 1)
+    who = next(line for line in part.splitlines() if line.startswith("* **Who is here**"))
+    assert "slot" not in who and " lines" not in who
+    assert "Boku (" in who
+
+
+def test_bases_that_share_a_place_name_it_once(store):
+    """`E0710`'s header named "single-purpose close-ups (...)" once per base, eight times."""
+    policy = Policy.load()
+    by_place: dict[str, list[str]] = {}
+    for base, place in policy.places:
+        by_place.setdefault(place, []).append(base)
+    place, bases = next((p, b) for p, b in by_place.items() if len(b) > 2)
+    scene = event(store, "E9001")
+    scene["where"]["bases"] = bases[:3]
+    builder = PacketBuilder.build(store, policy, [], False)
+    assert builder.places(scene) == f"{', '.join(bases[:3])} -- {place}"
+
+
+def test_a_run_of_maps_the_player_is_not_on_is_one_phrase():
+    words = condition_in_words("flag[34]>=1 & map!=H26 & map!=I36 & map!=I37 & lflag==0", {})
+    assert words == (
+        "story flag 34 is at least 1 and the player is on none of maps H26, I36, I37 and "
+        "this event's own progress counter is 0"
+    )
+
+
+def test_a_part_does_not_repeat_the_answer_instruction_system_md_gives(store, builder):
+    """ "This block, with the Japanese replaced..." in each of 599 parts was 23k tokens."""
+    system = builder.system_part(Unit("day01", "day 1", 1, tuple(store.scenes)))
+    part = builder.event_part(event(store, "E9001"), 1, 1)
+    assert "the lines under **Your answer**" in system
+    assert "Japanese replaced" not in part
 
 
 def test_lines_that_share_a_recording_say_so(tmp_path):
@@ -853,27 +899,6 @@ def test_a_compound_condition_keeps_its_structure():
 # --- the policy documents, as they are committed ------------------------------------------------
 
 
-def test_the_bible_s_month_table_covers_every_day():
-    """A day with no row would leave that day's packets with no story context at all."""
-    rows = parse_day_rows((REPO_ROOT / "translation" / "bible.md").read_text(encoding="utf-8"))
-    month = set(range(1, 32))
-    covered = {day for days, _, _ in rows for day in days}
-    assert covered >= month, f"days missing from the table: {month - covered}"
-    policy = Policy(day_rows=rows)
-    assert all(policy.day_row(day) is not None for day in range(1, 32))
-
-
-def test_an_open_ended_day_row_runs_to_the_row_after_it():
-    """The table writes its ranges with an en dash, and `9-` means "until the next row"."""
-    rows = parse_day_rows(
-        "## 4. The month\n\n"
-        "| day | what happens | ids |\n|---:|---|---|\n"
-        "| 9\u2013 | the giant fish; the satellite | `E0906`, `E1006` |\n"
-        "| 11 | Moe posts her letter | `E1101` |\n"
-    )
-    assert [tuple(days) for days, _, _ in rows] == [(9, 10), (11,)]
-
-
 def test_the_bible_s_places_parse_to_one_base_each():
     places = parse_places((REPO_ROOT / "translation" / "bible.md").read_text(encoding="utf-8"))
     assert places, "no base -> place rows were parsed; every packet would lose its place names"
@@ -884,3 +909,138 @@ def test_the_bible_s_places_parse_to_one_base_each():
 def test_the_packet_reads_the_committed_day_files_by_default():
     assert DAYS_DIR.is_dir()
     assert any(DAYS_DIR.glob("*.txt"))
+
+
+# --- the whole game in one directed session (v3, Jay 2026-09-23) --------------------------------
+
+LATER_DAY = 2
+"""The day the game fixture's second-day events are dated to."""
+
+
+@pytest.fixture
+def game(tmp_path: Path):
+    """Two day-1 events held by `day01.txt` against their id order, a day-independent event
+    day 1 reaches, a day-2 event that replays day 1's recording, a day-independent event
+    only day 2 reaches, and one surface. The store is `tmp_path/disc/script`, so the command
+    line reads it with `--disc tmp_path/disc`."""
+    synth = SynthStore.new(tmp_path / "disc")
+    synth.message("E9101.0", [[4]], voiced=True)
+    synth.message("E9102.0", [[4]], voiced=False)
+    synth.message("E9802.0", [[4]], voiced=False)
+    synth.message("E9201.0", [[4]], voiced=True)
+    synth.message("E9801.0", [[4]], voiced=False)
+    synth.array_item(f"{ITEM}.0")
+    synth.scene("E9101", ["E9101.0"], day=1)
+    synth.scene("E9102", ["E9102.0"], day=1)
+    synth.scene("E9802", ["E9802.0"], day=None)
+    synth.scene("E9201", ["E9201.0"], day=LATER_DAY)
+    synth.scene("E9801", ["E9801.0"], day=None)["when"]["condition"] = f"day>={LATER_DAY}"
+    store = load_store(synth.write())
+    days = tmp_path / "days"
+    days.mkdir()
+    write_translation(
+        days / "day01.txt", [("E9102.0", "Uncle", "Two."), ("E9101.0", "Uncle", "One.")]
+    )
+    return store, days
+
+
+def game_builder(store, days: Path) -> PacketBuilder:
+    return PacketBuilder.build(store, Policy.load(), [days], False)
+
+
+def written_game(game, tmp_path: Path) -> tuple[Unit, Path]:
+    store, days = game
+    builder = game_builder(store, days)
+    unit = unit_of_game(store, builder)
+    write_unit(builder, unit, tmp_path / "game")
+    return unit, tmp_path / "game"
+
+
+def test_the_game_is_every_day_in_turn_then_the_surfaces(game):
+    """A day file's own order wins (it is the day as played); a day-independent event goes
+    in at the first day that can reach it; the menus and books come after the story."""
+    store, days = game
+    unit = unit_of_game(store, game_builder(store, days))
+    assert unit.keys == ["E9102", "E9101", "E9802", "E9201", "E9801", ITEM]
+    assert [unit.placed.get(key) for key in unit.keys] == [1, 1, 1, LATER_DAY, LATER_DAY, None]
+
+
+def test_an_undated_event_whose_id_names_a_day_it_can_play_goes_to_that_day(tmp_path):
+    """`E1006` (the satellite, bible § 4's days 9-10) tests flags, not the day, so the first
+    day its condition allows is day 1 -- and the whole-game packet gave it under "Day 1
+    begins". An event id is `E<day><nn>` (`translation/days/README.md`); when the condition
+    lets that day play it, that day is where it goes. An id outside the month (`E8013`, the
+    examine texts) keeps the first day that can reach it."""
+    synth = SynthStore.new(tmp_path)
+    for name in ("E0101", "E0250", "E8013"):
+        synth.message(f"{name}.0", [[4]], voiced=False)
+    synth.scene("E0101", ["E0101.0"], day=1)
+    synth.scene("E0250", ["E0250.0"], day=None)["when"]["condition"] = "flag[45]>0 & day>=1"
+    synth.scene("E8013", ["E8013.0"], day=None)["when"]["condition"] = "day>=1"
+    store = load_store(synth.write())
+    unit = unit_of_game(store, PacketBuilder.build(store, Policy.load(), [], False))
+    assert unit.placed == {"E0101": 1, "E0250": 2, "E8013": 1}
+    assert unit.keys == ["E0101", "E8013", "E0250"]
+
+
+def test_order_txt_names_the_file_each_part_saves_into(game, tmp_path):
+    """The mapping is what `save-event` would choose by itself, asked part by part."""
+    store, days = game
+    _, out = written_game(game, tmp_path)
+    rows = [line.split("\t") for line in (out / ORDER_NAME).read_text().splitlines()]
+    assert rows == [
+        ["E9102", "day01.txt"],
+        ["E9101", "day01.txt"],
+        ["E9802", "shared.txt"],
+        ["E9201", f"day{LATER_DAY:02d}.txt"],
+        ["E9801", "shared.txt"],
+        [ITEM, ARRAYS_NAME],
+    ]
+    for key, name in rows:
+        assert default_day_file(store, key, days).name == name, f"save-event disagrees on {key}"
+
+
+def test_the_first_part_of_each_day_says_the_day_begins(game, tmp_path):
+    unit, out = written_game(game, tmp_path)
+    begins = {key: (out / part_file(key)).read_text().count("begins") for key in unit.keys}
+    assert begins == {"E9102": 1, "E9101": 0, "E9802": 0, "E9201": 1, "E9801": 0, ITEM: 1}
+
+
+def test_a_replayed_recording_names_only_its_first_playing_in_the_game(game, tmp_path):
+    """E0502.0's part listed seventeen other lines and their clip ids. In play order the
+    translator has already answered the first playing; that one line is all it needs."""
+    store, _ = game
+    _, out = written_game(game, tmp_path)
+    later = (out / "E9201.md").read_text()
+    first = (out / "E9101.md").read_text()
+    assert "the same recording as `E9101.0`: keep the English identical" in later
+    assert "same recording" not in first
+    assert store.lines["E9101.0"]["voice"]["clip"] not in later + first
+
+
+def test_save_event_reads_the_key_column_of_a_two_column_order(game, tmp_path, capsys):
+    """order.txt now says which file a part goes to; `--order` must still read the keys,
+    and a part saved into an empty file goes in at its place among them."""
+    _, days = game
+    _, out = written_game(game, tmp_path)
+    into = days / "shared.txt"
+    for key in ("E9801", "E9802"):
+        answer = tmp_path / f"{key}.txt"
+        answer.write_text(f"{EVENT_HEADER}{key}\n{key}.0\tUncle\tWords.\n")
+        code = main_save_event(key, answer, into, tmp_path / "disc", "", out / ORDER_NAME)
+        assert code == 0, capsys.readouterr().err
+    assert [row.line_id for row in parse_file(into)[0]] == ["E9802.0", "E9801.0"]
+
+
+def test_the_cli_writes_the_whole_game_and_its_size(game, tmp_path, capsys):
+    _, days = game
+    out = tmp_path / "out"
+    code = main_packet(None, (), tmp_path / "disc", out, False, (days,), game=True)
+    assert code == 0, capsys.readouterr().err
+    said = capsys.readouterr().out
+    assert (out / "game" / SYSTEM_NAME).read_text().startswith("# Translating the whole game")
+    assert "tokens" in said
+
+
+def test_a_token_estimate_counts_japanese_one_each_and_the_rest_by_three_and_a_half():
+    assert estimate_tokens("あい" + "a" * 7) == 4
