@@ -32,7 +32,7 @@ from itertools import pairwise
 
 from boku.archive import EXE_LOAD_BIAS, OVERLAY_LOAD_ADDRESS, Archive
 from boku.glyphs import END_WORD, NEWLINE_WORD, GlyphTable, words_of
-from boku.pointers import LOOKAHEAD, destination, resolve, words32
+from boku.pointers import destination, resolve_at, words32
 
 OVL = OVERLAY_LOAD_ADDRESS
 
@@ -328,7 +328,7 @@ def locate(archive: Archive, array: ArrayDef) -> tuple[str, int]:
     if anchor is None:
         return array.image, array.ram
     image, lui = anchor
-    ram = resolve(archive.image_bytes(image, lui, 4 * (LOOKAHEAD + 1)), lui, lui)
+    ram = resolve_at(lambda at, n: archive.image_bytes(image, at, n), lui)
     return ("exe" if ram < OVL else array.image), ram
 
 

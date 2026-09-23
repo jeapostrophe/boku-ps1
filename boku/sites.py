@@ -44,13 +44,32 @@ from boku.archive import (
 from boku.arrays import SelectTables, legacy_spans, walk_all
 from boku.events import OP_MSG, OP_SELECT, OP_XA, OP_XAMSG, Block, BlockInstance, Ins, iter_blocks
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, iter_tokens, words_of
+from boku.pointers import resolve_at
 
-RESIDENT_BLOCK_ADDRS = (0x80029920, 0x80029A40, 0x80029A8C)
+RESIDENT_BLOCK_ANCHORS = {0x80029920: 0x80019E3C, 0x80029A40: 0x80019E4C, 0x80029A8C: 0x80019E50}
+"""Each block's retail address -> the `lui` in `0x80019DEC` (the system-event chooser) its
+address is built from. A build may move a block whose message grew (`boku.array_relocate`),
+so the walk reads the address from here, as the game does, and names the lines by the
+retail address."""
+
+RESIDENT_BLOCK_ADDRS = tuple(RESIDENT_BLOCK_ANCHORS)
 """Three event blocks compiled into the executable, chosen for system events
 (`research/text-format.md` § "Blocks in the executable"). They have no length field, so
 each is read with room to spare and its last entry parsed to its own terminator."""
 
 RESIDENT_BLOCK_HEADROOM = 0x400
+
+
+def resident_line_id(ram: int, index: int) -> str:
+    """`exe@80029920.0`: message `index` of the resident block whose retail address is `ram`."""
+    return f"exe@{ram:08X}.{index}"
+
+
+def resident_block_at(archive: Archive, ram: int) -> int:
+    """Where the chooser's pair says the resident block first found at `ram` now is."""
+    lui = RESIDENT_BLOCK_ANCHORS[ram]
+    return resolve_at(archive.exe_bytes, lui)
+
 
 LINE_KEY_LENGTH = 12
 """`REC-03` keys a line by the first 12 hex digits of the SHA-1 of its bytes."""
@@ -294,7 +313,7 @@ def walk(archive: Archive, array_partition: str = "reader", *, code_files: bool 
         return result
 
     for ram in RESIDENT_BLOCK_ADDRS:
-        fo = ram - EXE_LOAD_BIAS
+        fo = resident_block_at(archive, ram) - EXE_LOAD_BIAS
         (k,) = struct.unpack_from("<I", archive.exe, fo)
         offsets = struct.unpack_from(f"<{k}I", archive.exe, fo + 4)
         block = Block(archive.exe[fo : fo + max(offsets) + RESIDENT_BLOCK_HEADROOM])
@@ -314,7 +333,7 @@ def walk(archive: Archive, array_partition: str = "reader", *, code_files: bool 
                     size=size,
                     slack=0,
                     kind=kind + ("+XA" if voiced else ""),
-                    line_id=f"exe@{ram:08X}.{i}",
+                    line_id=resident_line_id(ram, i),
                     absolute=fo + to,
                 )
             )

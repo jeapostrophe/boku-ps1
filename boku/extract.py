@@ -168,7 +168,8 @@ def build(
         elif sites[0].container == "exe-block":
             record["capacity"]["note"] = (
                 "an event block compiled into the executable, chosen by 0x80019DEC for "
-                "system events; it has no length field, so nothing may move"
+                "system events; the build moves the whole block when a message grows "
+                "(boku.array_relocate), so the English is not held to these bytes"
             )
         lines.append(record)
 

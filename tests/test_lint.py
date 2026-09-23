@@ -759,7 +759,7 @@ def test_arrays_that_move_are_held_to_the_room_the_build_would_find(tmp_path):
     parsed, _ = load_rows(translation_paths([path]))
     asked: list[dict] = []
 
-    def no_room(words):
+    def no_room(words, blocks):
         asked.append(dict(words))
         return [(item, "no room")]
 

@@ -213,8 +213,16 @@ def scan(code: bytes, base: int) -> list[LuiPair]:
     return out
 
 
+def resolve_at(read: Callable[[int, int], bytes], lui_ram: int) -> int:
+    """`resolve` for the `lui` at `lui_ram`, reading code through `read(ram, n)` from the
+    instruction *before* it: when the `lui` sits in a branch's delay slot, the branch
+    decides which path completes the address (`0x80019E4C`'s does)."""
+    return resolve(read(lui_ram - 4, 4 * (LOOKAHEAD + 2)), lui_ram - 4, lui_ram)
+
+
 def resolve(code: bytes, base: int, lui_ram: int) -> int:
-    """The address the first low half after the `lui` at `lui_ram` forms: an anchor, read."""
+    """The address the first low half after the `lui` at `lui_ram` forms, `code` loaded at
+    `base`; start `code` one instruction early for a `lui` in a delay slot (`resolve_at`)."""
     words = words32(code)
     index = (lui_ram - base) // 4
     word = words[index]

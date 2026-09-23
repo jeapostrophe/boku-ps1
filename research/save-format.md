@@ -195,6 +195,7 @@ BOKU_INPUT="2430:START:5;2590:DOWN:5;2660:CIRCLE:5;3050:CIRCLE:5;3150:CIRCLE:5" 
 | bug sumo | a morning card from a day it runs, then walk there; the cage contents live at `0x80046F28` (`--poke`) | not reached |
 | the well on the shortcut path | the story bible puts "the secret shortcut" on days 17–18 (`E1754`); a `day19`-or-later card, with its flags set by `--flag` from `scenes.tsv` | not reached |
 | any map, day 1 | during a new game's opening movie, poke a three-character map base into `g_movie_return_map` (`0x80036588`): the movie ends in that map, its variant chosen by the clock as usual. `run_core.py --poke 5300:0x80036588=43313500` with `boot-to-dialogue.press` is `C15`, the path to the beach, by frame ~6000 ([texture-recipes.md](texture-recipes.md) § `M_C15`) | measured for `C15` |
+| the uncle's evening call (`exe@80029920`, system event 8) | any day's card with `./make.sh boot-save CARD`, then `--poke 6100:0x80019E08=08000224`: the chooser `0x80019DEC` gets `addiu v0, zero, 8` instead of `jal 0x8001933C`, so the event fires as soon as the morning's script ends (~frame 7500 on day 5), the kitchen and both pages follow; shots every 40 frames from 7300 | measured on Beetle 2026-09-23 |
 | bedtime, end of day 1 | only by playing day 1 from a new game (`boot-to-dialogue.press`). Poking `g_clock.hour` does not skip ahead: set to 20:50 after breakfast on day 3 (`run_core.py --poke`), 50 s later it read 17:00 and the map was still its morning variant — the clock is driven from elsewhere | not reached |
 
 ## Open

@@ -128,7 +128,11 @@ id is always byte-identical to the `EV` member (93 of 93).
 
 `0x80029920` (5 entries — one voiced message, the "playtime is over" call), `0x80029A40`,
 `0x80029A8C` (3 entries, no text). Chosen by `0x80019DEC` for system events 8 / `0xFD7` /
-other. No length field; nothing follows them that depends on their size except the next symbol.
+other, each through one `lui` pair (`0x80019E3C`, `0x80019E4C` — a branch's delay slot —
+and `0x80019E50`; `boku.sites.RESIDENT_BLOCK_ANCHORS`). No length field; nothing follows them
+that depends on their size except the next symbol. So a block whose message grows moves
+whole, repacked, and its pair is rewritten (`boku.array_relocate`); the last block has no
+known end and does not move.
 
 ## Text arrays in code files
 

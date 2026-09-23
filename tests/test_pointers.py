@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from boku.pointers import PointerError, repoint, resolve, scan
+from boku.pointers import PointerError, repoint, resolve, resolve_at, scan
 
 BASE = 0x80040000
 ARRAY = 0x80046214
@@ -134,3 +134,25 @@ def test_a_lui_in_a_branch_delay_slot_is_completed_on_both_sides_of_the_branch()
     )
     (pair,) = scan(image, BASE)
     assert [use.ram for use in pair.uses] == [BASE + 8, BASE + 20]
+
+
+def test_an_anchor_in_a_delay_slot_is_read_from_the_branch_before_it():
+    """`0x80019E4C`'s shape: `bne; lui v0` with the fall-through overwriting `v0` before any
+    use and the branch target completing the address. Read from the `lui` alone, the
+    fall-through is all there is and nothing is found."""
+    image = code(
+        bne(V1, V0, 3),  # 0 -> 4
+        lui(V0, hi(ARRAY)),  # 1, the delay slot
+        lui(V0, 0x1234),  # 2, fall-through: v0 is something else here
+        JR_RA,  # 3
+        addiu(A0, V0, lo(ARRAY)),  # 4, the branch target
+        JR_RA,
+        NOP,
+    )
+
+    def read(at, n):
+        return image[at - BASE : at - BASE + n]
+
+    assert resolve_at(read, BASE + 4) == ARRAY
+    with pytest.raises(PointerError, match="completes no address"):
+        resolve(image[4:], BASE + 4, BASE + 4)

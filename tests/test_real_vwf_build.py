@@ -42,7 +42,7 @@ from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
 from boku.reinsert import check_disjoint
 from boku.relocate import MOVIE_BLOCK_RESERVE
-from boku.sites import Walk
+from boku.sites import RESIDENT_BLOCK_ADDRS, Walk, resident_block_at
 from tests.test_real_reinsert import FILESYSTEM_ENTRIES, read_back
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -401,7 +401,16 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
     moved = days_manifest["arrays_moved"]
     assert moved, "the build moved no array; nothing here would be checked"
     catalogue = {array.line_id_prefix: array for array in ARRAYS}
+    blocks = {f"exe@{ram:08X}": ram for ram in RESIDENT_BLOCK_ADDRS}
+    elsewhere = 0
     for entry in moved:
-        array = catalogue[entry["array"]]
-        assert locate(built, array) == ("exe", int(entry["to"], 16)), entry
-        assert int(entry["to"], 16) != array.ram
+        to = int(entry["to"], 16)
+        if entry["array"] in blocks:  # an event block the executable holds
+            retail = blocks[entry["array"]]
+            assert resident_block_at(built, retail) == to, entry
+        else:
+            array = catalogue[entry["array"]]
+            retail = array.ram
+            assert locate(built, array) == ("exe", to), entry
+        elsewhere += to != retail  # a repack that still fits may be written where it was
+    assert elsewhere, "every 'moved' array stayed put; the pairs were never exercised"

@@ -1,4 +1,6 @@
-"""`PLAN PIPE-07`: code-file text arrays that outgrow their bytes move, whole.
+"""`PLAN PIPE-07`: code-file text arrays that outgrow their bytes move, whole -- and so do
+the event blocks the executable holds (`boku.sites.RESIDENT_BLOCK_ADDRS`, the uncle's evening
+call), which are reached the same way.
 
 An array has no slack -- the next symbol starts where it ends -- so an English item longer
 than the Japanese one cannot be written in place. What can move is the array: its items
@@ -21,12 +23,15 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 
 from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, OVERLAY_LOAD_ADDRESS, Archive
-from boku.arrays import ArrayWalk, relocatable, walk_all
+from boku.arrays import ArrayWalk, SelectTables, relocatable, walk_all
+from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
 from boku.pointers import LuiPair, PointerError, repoint, scan
 from boku.reinsert import ByteEdit
+from boku.sites import RESIDENT_BLOCK_ADDRS, resident_block_at, resident_line_id, walk_block
 
 
 class ArrayRoomRefused(Exception):
@@ -83,7 +88,7 @@ class ArrayPlan:
     edits: tuple[ByteEdit, ...]
     moved: tuple[Moved, ...]
     lines: frozenset[str]
-    """Every line id of a moved array: written by `edits`, not in place."""
+    """Every line id of a moved array or block: written by `edits`, not in place."""
     free_left: int
 
 
@@ -184,47 +189,112 @@ def scans(archive: Archive) -> Scanned:
     return [(image, scan(image[1], image[2])) for image in images(archive)]
 
 
+@dataclass(frozen=True)
+class _Unit:
+    """One thing that moves whole: a code-file array, or an event block the executable holds."""
+
+    prefix: str
+    image: str
+    start: int
+    end: int
+    blob: bytes
+    grown: tuple[str, ...]
+    """The items that outgrew their own bytes -- what a refusal leaves in Japanese."""
+    lines: tuple[str, ...]
+
+
+def _array_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterator[_Unit]:
+    for walked in walk_all(archive):
+        if not relocatable(walked.array):
+            continue
+        grown = _grown_items(walked, words)
+        if grown:
+            yield _Unit(
+                walked.array.line_id_prefix,
+                walked.image,
+                walked.start,
+                walked.end,
+                _array_bytes(archive, walked, words),
+                tuple(grown),
+                walked.line_ids,
+            )
+
+
+def _block_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterator[_Unit]:
+    """The resident event blocks (`boku.sites.RESIDENT_BLOCK_ADDRS`) whose message grew.
+
+    A block has no length field and nothing after it depends on its size but the next
+    block (research/text-format.md § "Blocks in the executable"), so a block is its span to
+    the next one; the last has no known end and does not move. A message has grown when
+    it outgrows the site the walk measured -- the same size the in-place writer holds it
+    to -- and the block's entries are then repacked by `boku.events.pack_block`, every
+    offset recomputed, and the chooser's pair rewritten."""
+    for ram, following in pairwise(RESIDENT_BLOCK_ADDRS):
+        if not any(line.startswith(f"exe@{ram:08X}.") for line in words):
+            continue
+        start = resident_block_at(archive, ram)
+        block = Block(archive.exe_bytes(start, following - ram))
+        sites = walk_block(block, SelectTables(archive), [], f"exe-block at 0x{ram:08X}")
+        entries = list(block.entries)
+        grown: list[str] = []
+        for index, _to, size, _kind, _slack, _voiced in sites:
+            line_id = resident_line_id(ram, index)
+            if line_id not in words:
+                continue
+            raw = words_to_bytes(words[line_id])
+            if len(raw) > size:
+                grown.append(line_id)
+            entries[4 + 2 * index] = raw + bytes(-len(raw) % 4)
+        if grown:
+            lines = tuple(resident_line_id(ram, index) for index, *_ in sites)
+            yield _Unit(
+                f"exe@{ram:08X}",
+                "exe",
+                start,
+                start + following - ram,
+                pack_block(entries),
+                tuple(grown),
+                lines,
+            )
+
+
 def plan_arrays(
     archive: Archive,
     words: Mapping[str, Sequence[int]],
     regions: Sequence[Region] = DEAD_REGIONS,
     scanned: Callable[[], Scanned] | None = None,
 ) -> ArrayPlan:
-    """Move every relocatable array one of whose items `words` grows past its bytes.
+    """Move every relocatable array, and every resident event block, one of whose items
+    `words` grows past its bytes.
 
     `scanned` supplies `scans(archive)`, called only once something grows; a caller that
     plans more than once memoises it."""
-    candidates = {w.array.line_id_prefix: w for w in walk_all(archive) if relocatable(w.array)}
-    items = {prefix: _grown_items(w, words) for prefix, w in candidates.items()}
-    grown = {prefix: w for prefix, w in candidates.items() if items[prefix]}
-    if not grown:
+    units = {u.prefix: u for u in (*_array_units(archive, words), *_block_units(archive, words))}
+    if not units:
         return ArrayPlan((), (), frozenset(), sum(r.size for r in regions))
 
     def refusal(why: str, prefixes: Sequence[str]) -> ArrayRoomRefused:
-        return ArrayRoomRefused(why, [line for prefix in prefixes for line in items[prefix]])
+        return ArrayRoomRefused(why, [line for prefix in prefixes for line in units[prefix].grown])
 
-    spans = {prefix: (w.image, w.start, w.end) for prefix, w in grown.items()}
-    blobs = {prefix: _array_bytes(archive, w, words) for prefix, w in grown.items()}
+    spans = {prefix: (u.image, u.start, u.end) for prefix, u in units.items()}
     vacated = [
-        Region(w.start, w.end, f"{prefix}'s old bytes")
-        for prefix, w in grown.items()
-        if w.image == "exe"
+        Region(u.start, u.end, f"{prefix}'s old bytes")
+        for prefix, u in units.items()
+        if u.image == "exe"
     ]
-    allocated = _allocate([(p, len(b)) for p, b in blobs.items()], [*regions, *vacated])
+    allocated = _allocate([(p, len(u.blob)) for p, u in units.items()], [*regions, *vacated])
     if isinstance(allocated[0], str):
         prefix, why = allocated
         raise refusal(why, [prefix])
     placed, free_left = allocated
 
-    moved = tuple(
-        Moved(prefix, w.start, placed[prefix], len(blobs[prefix])) for prefix, w in grown.items()
-    )
+    moved = tuple(Moved(p, u.start, placed[p], len(u.blob)) for p, u in units.items())
     edits = [
         ByteEdit(
             file=EXE_NAME,
             offset=m.new - EXE_LOAD_BIAS,
             old=archive.exe_bytes(m.new, m.size),
-            new=blobs[m.prefix],
+            new=units[m.prefix].blob,
             reason=f"{m.prefix} moved to 0x{m.new:08X} (PLAN PIPE-07)",
         )
         for m in moved
@@ -258,5 +328,5 @@ def plan_arrays(
                         reason=f"{image} 0x{ram:08X}: pointer to a moved array (PLAN PIPE-07)",
                     )
                 )
-    lines = frozenset(line for w in grown.values() for line in w.line_ids)
+    lines = frozenset(line for u in units.values() for line in u.lines)
     return ArrayPlan(tuple(edits), moved, lines, free_left)

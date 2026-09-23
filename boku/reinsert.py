@@ -326,7 +326,7 @@ def _fill_in_place(site: Site, raw: bytes) -> bytes:
             f"{site.line_id}: {len(raw)} bytes into a {site.size}-byte site, "
             f"{len(raw) - site.size} over. This site is written in place "
             f"({site.container} {site.kind}), so nothing may grow here; only a whole "
-            f"code-file array can move (boku.array_relocate).",
+            f"code-file array or resident block can move (boku.array_relocate).",
             [site.line_id],
         )
     filler = PAD_WORD.to_bytes(2, "little") * ((site.size - len(raw)) // 2)

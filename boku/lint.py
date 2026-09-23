@@ -133,6 +133,7 @@ from boku.script_store import (
     pages_fixed_by_voice,
     select_shape,
 )
+from boku.sites import RESIDENT_BLOCK_ADDRS
 from boku.translation import SampleScenes, TranslationEntry, select_fields
 from boku.voice import xch_nodes
 
@@ -144,6 +145,9 @@ from boku.voice import xch_nodes
 
 DEFAULT_SOURCES = (REPO_ROOT / "translation" / "days", REPO_ROOT / "translation" / "samples")
 """What `./make.sh lint-translation` lints when it is given nothing."""
+
+RESIDENT_PREFIXES = frozenset(f"exe@{ram:08X}" for ram in RESIDENT_BLOCK_ADDRS)
+"""The executable's resident event blocks, whose messages move like arrays."""
 
 DEFAULT_CELLS = REPO_ROOT / "build" / "vwf" / "edits.json"
 """The cell map, read out of the edit set `boku build --vwf` installs the renderer from
@@ -438,12 +442,18 @@ class Options:
     """The non-dialogue boxes by line id; `None` reads `research/data/text-boxes.tsv`."""
     select_row: BoxSpec = SELECT_ROW
     """What one select option may take (`renderer_for`)."""
-    array_room: Callable[[Mapping[str, Sequence[int]]], Sequence[tuple[str, str]] | None] | None = (
-        None
-    )
-    """Given every array item's laid-out words, `None` when the grown arrays fit the free
-    space, else `(line id, why)` for every item it leaves in Japanese -- the build's own
-    `boku.build.move_arrays`, which `main_lint` passes when the import is here."""
+    array_room: (
+        Callable[
+            [Mapping[str, Sequence[int]], Mapping[str, TranslationEntry]],
+            Sequence[tuple[str, str]] | None,
+        ]
+        | None
+    ) = None
+    """Given every array item's laid-out words and the rows of the executable's resident
+    event blocks (which move the same way and compete for the same room), `None` when the
+    grown ones fit the free space, else `(line id, why)` for every item it leaves in
+    Japanese -- the build's own `boku.build.move_arrays`, which `main_lint` passes when the
+    import is here."""
 
 
 @dataclass
@@ -456,6 +466,8 @@ class _Context:
     findings: list[Finding] = field(default_factory=list)
     array_words: dict[str, tuple[int, ...]] = field(default_factory=dict)
     """Array items that laid out cleanly, for `Options.array_room`."""
+    block_rows: dict[str, TranslationEntry] = field(default_factory=dict)
+    """Rows of the resident event blocks, for `Options.array_room`."""
 
     def say(self, row: Row, check: str, severity: str, message: str) -> None:
         self.findings.append(Finding(row.file, row.number, row.line_id, check, severity, message))
@@ -474,12 +486,15 @@ def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Findi
         if record is None:
             continue  # unknown: `_check_ids` has already said so
         _check_row(context, row, record)
+        if row.line_id.split(".", 1)[0] in RESIDENT_PREFIXES:
+            context.block_rows[row.line_id] = row.entry
         if options.additive:
             _check_additive(context, row, record)
         _check_em_dash(context, row)
-    if options.array_room is not None and context.array_words:
+    if options.array_room is not None and (context.array_words or context.block_rows):
         by_id = {row.line_id: row for row in english}
-        for line_id, message in options.array_room(context.array_words) or ():
+        refused = options.array_room(context.array_words, context.block_rows) or ()
+        for line_id, message in refused:
             context.say(by_id[line_id], "array-room", ERROR, message)
     context.findings.extend(_check_loader_agreement(rows))
     return sorted(context.findings)
@@ -949,7 +964,7 @@ def main_lint(
     except (StoreMissing, LayoutError) as error:
         print(f"lint: {error}", file=sys.stderr)
         return 2
-    options = replace(options, array_room=_array_room(Path(disc_dir), encoder_kind, cells))
+    options = replace(options, array_room=_array_room(Path(disc_dir), encoder_kind, cells, options))
     rows, findings = load_rows(paths)
     findings = [*findings, *lint_rows(store, rows, options)]
     try:
@@ -974,13 +989,15 @@ def main_lint(
     return 1 if any(finding.is_error for finding in findings) else 0
 
 
-def _array_room(disc_dir: Path, encoder_kind: str, cells: Path | None):
+def _array_room(disc_dir: Path, encoder_kind: str, cells: Path | None, options: Options):
     """`Options.array_room` over this import, in the regions the build would use: the
     edit set's when the cell map is one, else the dead regions alone. It runs the build's
-    own `move_arrays`, so it finds every array the build would refuse. The archive is
-    opened only when some array grows; a missing import is no check (`None`)."""
+    own `move_arrays` -- a resident block's rows laid out by the build's own `lay_out`, in
+    `options`' font and box -- so it finds every item the build would refuse. The import is
+    opened only when asked; a missing one is no check (`None`)."""
     from boku.array_relocate import DEAD_REGIONS
-    from boku.build import BuildRefused, load_edit_set, move_arrays
+    from boku.build import BuildRefused, lay_out, load_edit_set, move_arrays
+    from boku.sites import SiteError, load
 
     def regions():
         path = cells or DEFAULT_CELLS
@@ -991,12 +1008,24 @@ def _array_room(disc_dir: Path, encoder_kind: str, cells: Path | None):
                 pass  # the cell map is not an edit set: measure in the dead regions alone
         return DEAD_REGIONS
 
-    def room(words):
+    def room(words, blocks):
         try:
-            archive = Archive(disc_dir)
-        except ArchiveError:
+            archive, walk = load(disc_dir) if blocks else (Archive(disc_dir), None)
+        except (ArchiveError, SiteError):
             return None
-        _, refused = move_arrays(archive, dict(words), regions(), skip_unfitted=True)
+        words = dict(words)
+        if blocks:
+            laid = lay_out(
+                archive,
+                walk,
+                list(blocks.values()),
+                options.encoder,
+                options.box,
+                label=options.label,
+                select_row=options.select_row,
+            )
+            words |= {line.line_id: line.laid_out.words for line in laid if line.written}
+        _, refused = move_arrays(archive, words, regions(), skip_unfitted=True)
         if not refused:
             return None
         return [(line, reasons[0]) for line, reasons in refused.items()]
