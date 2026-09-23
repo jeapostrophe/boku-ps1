@@ -135,7 +135,10 @@ languages.
 
 * `PK_ITM` `0x00006c` (= `SBP01.TIM`), the **radio-exercise attendance card** — **P**. A flat
   frontal card, blue print on white: a two-line title and a footer line; the 31 stamp boxes are
-  numerals.
+  numerals. *Looked at again for `GFX-07` (2026-09-22):* the title has about 65 px beside the
+  picture, and *Attendance Card* alone is 100 px in the game's 12 px glyphs; the footer is ~6 px
+  type. It needs the same small type the action buttons do ([texture-recipes.md](texture-recipes.md)
+  § "Measured while looking at the rest of `GFX-07`").
 * `PK_ITM` `0x012acc` (census `maybe`) — **N**, *resolved*: an old book prop whose title is
   embossed dark-on-dark and does not resolve at any CLUT. The player never reads it.
 
@@ -247,9 +250,12 @@ question; it is noted here so the two sides do not both assume the other has it.
   close-up atlas with two action ovals in its corner, the same family as its siblings. These are
   multi-CLUT atlases: any rebuild must carry the per-region CLUT assignment, which lives in the
   drawing code and not in the TIM ([textures.md](textures.md) § Caveat).
-* `FS_WAL`, `PK_WAL`, `TK_WAL` — the collection record screens: field labels (size / average /
-  largest / count) on flat pale plates, plus the bait and tackle names.
-* `T_MEMORY` ×2 — the album heading plate. The filmstrip of thumbnails beside it is a strip of
+* `FS_WAL`, `PK_WAL`, `TK_WAL` — the census gave all three the same note, and only `FS_WAL`
+  fits it (looked at 2026-09-22): field labels (size / average / largest / count) on flat pale
+  plates, plus the bait and tackle names. `PK_WAL` and `TK_WAL` carry only frames, photographs
+  and the small speech-balloon buttons, which belong with the action buttons.
+* `T_MEMORY` ×2 — the album heading plate (child `0xd634`; child 0 is the frame and a back
+  button). The filmstrip of thumbnails beside it is a strip of
   illegible miniatures of the diary and collection pages; they are pictures of pages, not pages,
   and stay as they are.
 * `TZICON` — the kite-workshop speech balloon, its confirm word and a "back" button, flat on

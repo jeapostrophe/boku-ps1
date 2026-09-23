@@ -128,3 +128,37 @@ requires every texel the build changed and left opaque to show its colour on scr
 the large value included.
 
 The back button (`もどる`, a stone) belongs with the other buttons, not here.
+
+## `T_MEMORY` — the "summer memories" album
+
+`_DATA_T_MEMORY.BIN__00d634` (640×202, 6 CLUTs): five filmstrip miniatures, which stay, and the
+heading plaque. The plaque's interior is flat, x 16–114, y 158–187 (the most-used entry of
+the plaque, measured through CLUT 0), but for three corner pixels at (112–114, 158) that
+the recipe leaves alone; the other five CLUTs recolour the same pixels. *Summer
+Memories* is 107 px on one line against 99, so the tracked string breaks it onto two lines
+(`flat_plaque`, the same recipe as the settings heading). The six menu labels under it are
+renderer text (`exe@8003DA00`, `TXT-05`).
+
+**Not seen in the game.** The album is reached from the title menu only with a card holding
+a *finished* game; with anything else the title answers "no file that has finished this game"
+(`exe@8003D5F0.5`, `g_mc_msg` record 8). A generated card is not one, whichever of these it
+carries — measured on Beetle, 2026-09-22: a day-5 morning; the summary's unknown `flag` byte
+(`0x80025914`) at 1 or `0xFF`; `g_clock.day` 32; `flag[250]` 1 and `flag[251]` 12. What
+marks a finished file is not decoded. The proof here is the rebuilt texture
+(`tests/test_real_texture_text.py`: each line found once, in order, and nothing else on the
+plaque).
+
+## Measured while looking at the rest of `GFX-07`
+
+What remains of the row is listed in `PLAN.md` `GFX-07`; these are the facts it rests on.
+
+* The action and back buttons (`SUB`, `M_S01100`, `M_S02000`, `MZ00`, `MZ02`, `SAMP`,
+  `TZICON`, `PK_WAL`, `TK_WAL`, `T_MEMORY` child 0, `T_CONFIG`'s stone) are ovals about
+  20×35 px holding two lines of ~8 px Japanese; the game's 12 px glyphs do not fit English
+  there.
+* The attendance card (`PK_ITM` `0x6c`) has the same problem — see
+  [textures-plan.md](textures-plan.md) § "The two item pictures".
+* `FS_WAL`, the fishing record: its labels sit beside numbers the game draws at run time over
+  the texture's own `.` and `cm`, so the English has to be laid out against the screen, not
+  just the atlas. Opening the tackle box from the desk (△, cursor on it, ○) does nothing on a
+  generated day-5 card, which is story-naive (no rod yet).

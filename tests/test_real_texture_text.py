@@ -172,3 +172,45 @@ def test_the_controller_chart_headings_are_the_tracked_english_turned(inv, patch
             dx, dy = spots[0]
             covered |= {(x + dx, y + dy) for x, y in paint.normalised(ink)}
     assert marks - rules == covered
+
+
+def test_the_album_heading_is_the_tracked_english_on_its_lines(inv, patched):
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    entry = tt.read_entries()["tex@T_MEMORY.heading"]
+    after = parse_exact(patched, inv.get(tt.MEMORY_ALBUM).occurrences[0].file_offset)
+    marks = paint.dark_type(after, tt.MEMORY_CLUT, tt.MEMORY_HEADING)
+    covered: set = set()
+    tops = []
+    for line in tt.lines_of(entry):
+        spots = placements(face.ink(line), marks)
+        assert len(spots) == 1, f"{line!r} found {len(spots)} times"
+        tops.append(spots[0][1])
+        covered |= {(x + spots[0][0], y + spots[0][1]) for x, y in paint.normalised(face.ink(line))}
+    assert marks == covered, "type on the plaque other than the heading"
+    assert tops == sorted(tops) and len(set(tops)) == len(tops), "the lines are not in order"
+
+
+@pytest.mark.parametrize(
+    ("texture_id", "clut", "box"),
+    [
+        (tt.MEMORY_ALBUM, tt.MEMORY_CLUT, tt.MEMORY_HEADING),
+        (tt.CONFIG_FRAME, tt.HEADING_CLUT, tt.CONFIG_HEADING),
+    ],
+    ids=["album", "settings"],
+)
+def test_no_antialiasing_of_the_japanese_is_left_on_a_plaque(inv, patched, texture_id, clut, box):
+    """The dark mask cannot see the Japanese's grey antialiasing; this can. Where the Japanese
+    was (its extent, grown by the width of its fringe), every pixel after the build is either
+    the plaque's ground or the English's ink -- both entries read from the stock image."""
+    stock = inv.get(texture_id)
+    before = stock.tim.indices()
+    after = parse_exact(patched, stock.occurrences[0].file_offset).indices()
+    width = stock.tim.width
+    japanese = paint.dark_type(stock.tim, clut, box)
+    ground = Counter(before[y * width + x] for x, y in paint.points(box)).most_common(1)[0][0]
+    ink = Counter(before[y * width + x] for x, y in japanese).most_common(1)[0][0]
+    jx, jy, jw, jh = paint.extent(japanese)
+    fringe = paint.points((jx - 1, jy - 1, jw + 2, jh + 2))
+    left = {(x, y): after[y * width + x] for x, y in fringe}
+    stray = {p: i for p, i in left.items() if i not in (ground, ink)}
+    assert stray == {}, f"{len(stray)} pixels of neither ground nor ink, e.g. {list(stray)[:3]}"

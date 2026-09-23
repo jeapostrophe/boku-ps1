@@ -26,3 +26,8 @@ tex@T_CONFIG.action	Action
 tex@T_CONFIG.cancel	Cancel
 tex@T_CONFIG.run	Run
 tex@T_CONFIG.sub_screen	Sub // Screen
+
+# --- T_MEMORY: the "summer memories" album, reached from the title menu once a finished
+# game is on the card. Its heading plaque; the six menu labels under it are renderer text.
+# ` // ` breaks the heading onto two lines (it is 107 px on one, the plaque holds 99).
+tex@T_MEMORY.heading	Summer // Memories

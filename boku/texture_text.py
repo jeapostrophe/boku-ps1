@@ -182,6 +182,33 @@ def erase_type(
     return mask, ink_index
 
 
+LINE_PITCH = 13
+"""Rows from one 1x line's cell to the next's: the room a note takes under its value."""
+NOTE_GAP = 3
+"""Rows (or, turned, columns) of air between stacked lines' ink."""
+
+
+def flat_plaque(
+    canvas: paint.Canvas, clut: int, box: paint.Box, entry: Entry, face: Face, what: str,
+    *, lines: bool = False,
+) -> None:  # fmt: skip
+    """Dark type on a flat pale plaque: refill the Japanese's own rectangle, grown by two
+    pixels to take its antialiasing, with the plaque's ground, and set the English centred in
+    the dark entry the Japanese used. Only that rectangle is refilled, so any detail in the
+    plaque's corners survives. `lines` lets ` // ` break the English."""
+    japanese = found(canvas.type_mask("dark", clut, box), what)
+    dark, ground = canvas.most_used(japanese), canvas.most_used(paint.points(box))
+    jx, jy, jw, jh = paint.extent(japanese)
+    left, top = max(box[0], jx - 2), max(box[1], jy - 2)
+    right = min(box[0] + box[2], jx + jw + 2)
+    bottom = min(box[1] + box[3], jy + jh + 2)
+    canvas.fill((left, top, right - left, bottom - top), ground)
+    inks = [ink_of(face, entry, line) for line in (lines_of(entry) if lines else [None])]
+    ink = stacked(inks, NOTE_GAP)
+    fits(entry, ink, box, what)
+    canvas.stamp(centred(ink, box), ink, dark)
+
+
 # --- drawing into palette indices ------------------------------------------------------------
 
 
@@ -359,10 +386,6 @@ SHADOW = 2
 CONFIG_KEYS = (
     "heading", *VALUE_LABELS, *VALUE_NOTES.values(), *CHART_KEYS,
 )  # fmt: skip
-LINE_PITCH = 13
-"""Rows from one 1x line's cell to the next's: the room a note takes under its value."""
-NOTE_GAP = 3
-"""Rows (or, turned, columns) of air between stacked lines' ink."""
 
 
 def large(face: Face, entry: Entry, room: paint.Box) -> paint.Ink:
@@ -413,13 +436,7 @@ def config_screen(archive: Archive, inv: Inventory, face: Face, entries: Sequenc
     text = keyed("tex@T_CONFIG", entries, CONFIG_KEYS)
     frame, plates = paint.Canvas(inv.get(CONFIG_FRAME)), paint.Canvas(inv.get(CONFIG_PLATES))
 
-    # the heading plaque: dark type on a flat pale ground
-    heading = found(frame.type_mask("dark", HEADING_CLUT, CONFIG_HEADING), "the heading")
-    dark = frame.most_used(heading)
-    frame.fill(CONFIG_HEADING, frame.most_used(paint.points(CONFIG_HEADING)))
-    ink = paint.normalised(ink_of(face, text["heading"]))
-    fits(text["heading"], ink, CONFIG_HEADING, "the heading plaque")
-    frame.stamp(centred(ink, CONFIG_HEADING), ink, dark)
+    flat_plaque(frame, HEADING_CLUT, CONFIG_HEADING, text["heading"], face, "the heading")
 
     # the two plates that name both values small
     _small_labels(
@@ -483,6 +500,25 @@ def config_screen(archive: Archive, inv: Inventory, face: Face, entries: Sequenc
     return frame.patches() + plates.patches()
 
 
+# --- T_MEMORY: the "summer memories" album -----------------------------------------------------
+
+
+MEMORY_ALBUM = "_DATA_T_MEMORY.BIN__00d634"
+"""640x202, 6 CLUTs: five filmstrip miniatures (they stay) and the heading plaque."""
+MEMORY_HEADING, MEMORY_CLUT = (16, 158, 99, 30), 0
+"""The heading plaque's flat interior. The Japanese is one line of seven glyphs; the
+English is two (`Summer // Memories`), 107 px on one line against 99."""
+
+
+def memory_album(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """The album's heading plaque. The menu labels under it are renderer text (`TXT-05`)."""
+    text = keyed("tex@T_MEMORY", entries, ["heading"])
+    album = paint.Canvas(inv.get(MEMORY_ALBUM))
+    flat_plaque(album, MEMORY_CLUT, MEMORY_HEADING, text["heading"], face,
+                "the album heading", lines=True)  # fmt: skip
+    return album.patches()
+
+
 # --- the build's entry point ---------------------------------------------------------------
 
 
@@ -491,6 +527,7 @@ Family = Callable[[Archive, Inventory, Face, Sequence[Entry]], list[ByteEdit]]
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
+    "tex@T_MEMORY": memory_album,
 }
 
 

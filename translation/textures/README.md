@@ -26,7 +26,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 
 | file | textures | row |
 |---|---|---|
-| [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`) | PLAN `GFX-07` |
+| [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`), the album heading (`T_MEMORY`) | PLAN `GFX-07` |
 
 To change a string, edit it here and run `./make.sh build-days`; the build prints which
 texture families it typeset.
