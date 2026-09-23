@@ -1,0 +1,129 @@
+# day29 (translation/days/README.md)
+# --- E2901: G02 -- breakfast
+E2901.0	Aunt	Boku-kun, you look all better!
+E2901.1	Boku	Yeah, I'm fine now.
+E2901.2	Aunt	Really? I'm so glad!
+E2901.3	Uncle	When you're a kid... // catching a cold and getting over it are both so simple and easy to understand. That was nice.
+E2901.4	Aunt	Simple is best, in everything.
+E2901.5	Boku	That makes it sound like I'm...
+E2901.6	Shirabe	Well, boys are simple!
+E2901.7	(voice only)
+E2901.8	Uncle	Well then, itadakimaasu.
+E2901.9	Shirabe, Moe, Boku, Aunt	Itadakimaasu.
+
+# --- E2902: G02 -- after breakfast (the morning-glory photographs)
+E2902.0	Uncle	Gochisosama deshita.
+E2902.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2902.2	Aunt	Boku-kun, when you go home at the end of the month... // would you like to take your mother some vegetables or flowers from here?
+E2902.3	Uncle	But she's due any day... // Even if he takes them, won't cooking be hard for her?
+E2902.4	Aunt	That's true... Boku-kun, let's take your mother flowers, at least. // What kind of flowers does your mother like?
+E2902.5	Boku	Hmm, I don't know that.
+E2902.6	Aunt	I see......
+E2902.7	Shirabe	Boku-kun likes sunflowers!
+E2902.8	Aunt	Is that so...
+E2902.9	Aunt	Boku-kun, here...
+E2902.10	Aunt	Photos of the morning glories you grew... // I took them every single day they were in bloom, // and I picked out the especially pretty ones. // There happened to be one good one for each day, // so, as many photos as the days they bloomed, a present!
+E2902.11	Boku	Auntie! Thank you very much.
+E2902.12	Aunt	Not at all. Thank you for all your hard work.
+E2902.13	Boku	I'll take good care of these.
+E2902.14	Shirabe	But the flower you like is sunflowers, all right?
+E2902.15	Boku	Huh?
+E2902.16	Aunt	Hm-hm... Shirabe, you funny girl.
+# NOTE E2902.7: Shirabe calls him "Boku-kun" here, for once, not "you".
+
+# --- E2920: H05 -- the morning-glory trellis
+E2920.0	Aunt	Hey, do you like sunflowers too, Boku-kun?
+E2920.1	Boku	Yeah, I do.
+E2920.2	Aunt	Do all boys like sunflowers?
+E2920.3	Boku	Why?
+E2920.4	Aunt	Our Onii-chan who died loved sunflowers too, you know...
+
+# --- E2912: G01 -- living room
+E2912.0	Uncle	Lately, when evening comes, I get this strange feeling, // sort of lonely, sort of sad...
+E2912.1	Uncle	Come to think of it, the year the war ended too... // maybe the summer ended something like this...
+
+# --- E2913: G01 -- living room
+E2913.0	Uncle	Boku-kun... you must want to hurry home and see your little brother, right?
+E2913.1	Boku	I wonder. Not really...
+E2913.2	Uncle	What! Why? Babies are cute, aren't they...
+E2913.3	Boku	In the world of children, there are things only children understand...
+E2913.4	Uncle	Oh? Listen to you.
+E2913.5	Uncle	But having a brother is a pretty good thing, you know.
+
+# --- E2922: G01 -- living room
+E2922.0	Aunt	Ahh, maybe I'll pop out one more myself...
+
+# --- E2930: G15 -- the sisters' room
+E2930.0	Moe	Come to think of it, today's your mother's due date, Boku-kun.
+E2930.1	Boku	Huh? What's a due date?
+E2930.2	Moe	Mm, it's the day the baby is scheduled to be born!
+E2930.3	Boku	Onee-chan, I found something strange in the cave.
+E2930.4	Moe	Ohh, something strange? Good for you. // It might turn into your treasure for life, Boku-kun, // so keep it very, very carefully.
+E2930.5	Boku	So people already have things on their schedule before they're even born.
+
+# --- E2932: G17 -- the veranda
+E2932.0	Moe	Now that you're a big brother, you'll have to be more grown-up too, Boku-kun.
+E2932.1	Boku	Yeah! I'll do my best.
+E2932.2	Moe	Though maybe the one who needs to grow up is Onee-chan...
+
+# --- E2940: H09 -- garden corner where Shirabe watches ants
+E2940.0	Shirabe	Come to think of it, lately... Jumbo-san hasn't been around, has he?
+E2940.1	Boku	Who? Who's that?
+E2940.2	Shirabe	Huh? You don't know!
+E2940.3	Shirabe	Honestly, you're hopeless! You should just go on home to your own house...
+E2940.4	Shirabe	Umm, well, Jumbo-san is a fish... // he lives a little past the purple suck-suck, and he and Shirabe are good friends.
+E2940.5	Shirabe	Did somebody eat him? But why... // why does everyone, every single one, go away before you know it...
+E2940.6	Shirabe	Before you go home, did you go and say goodbye to Jumbo-san properly?
+E2940.7	Boku	Who's that?
+E2940.8	Shirabe	Huh? You don't know? He's a big fish... // You've been here a whole month and you don't even know that? // Honestly, what a hopeless person! Go on home to your own house, then! // He lives a little past the purple suck-suck... // He's ever so, ever so big!
+E2940.9	Shirabe	But why... why does everyone, every single one, go away before you know it...
+# NOTE E2940.0: Jumbo-san, Shirabe's name for the giant fish, the master of the pond (glossary § 1).
+
+# --- E2950: A18 -- the secret base (goodbyes)
+E2950.0	Guts	When you go back, don't let your friends there push you around.
+E2950.1	Boku	Haha, I went to school there to begin with, you know.
+E2950.2	Guts	That's right...
+E2950.3	Fat	You, eat properly and put on some weight...
+E2950.4	Boku	Yeah, just the right amount.
+E2950.5	Specs	Boku-kun... somehow it feels like we've been friends for a long time.
+E2950.6	Boku	...Yeah, it does.
+
+# --- E2951: A18 -- the secret base
+E2951.0	Guts	I... when I finish school, I'll probably have to go off to the city.
+E2951.1	Boku	Why?
+E2951.2	Guts	They're selling our rice fields...
+E2951.3	Boku	......
+
+# --- E2952: A18 -- the secret base
+E2952.0	Fat	Beansprout! Don't you want to get fat like yours truly?
+E2952.1	Boku	...I think Moe-neechan probably likes slim people.
+E2952.2	Fat	Gahaha! What's that... // That's just a passing whim, till she falls for yours truly.
+
+# --- E2953: A18 -- the secret base
+E2953.0	Specs	As soon as the new term starts, I'll write you a letter, Boku-kun.
+E2953.1	Boku	Okay, then I'll write back properly.
+
+# --- E2904: G02 -- dinner (the phone call)
+E2904.0	Moe	Okaaay, I'll get it!
+E2904.1	Moe	Hello, Sorano residence... Oh! Uncle Kubota!
+E2904.2	Moe	...No, no, it's we who should thank you for everything. // Oh, really! Then I'll put Boku-kun on. // Boku-kuuun...
+
+# --- E2906: G01, G02, G06 -- the house; G08 -- the telephone
+E2906.0	Moe	It's your dad on the phone! Boku-kun, congratulations!
+E2906.1	Boku	Okay, got it, Dad. // Uh-huh, uh-huh...
+E2906.2	Boku	Bye, Dad.
+
+# --- E2907: G06, G17, H06, H24 -- a brother
+E2907.0	Boku	It's a boy, they said...
+E2907.1	(unlabelled)	Yay! Congratulations!
+E2907.2	Moe	Congratulations! Onii-chan!
+E2907.3	Boku	Yeah!
+# NOTE E2907.2: Moe calls him by the word that was her dead brother's only name (style guide § 2).
+
+# --- E2941: G06 -- TV room
+E2941.0	Shirabe	Just because you've become a big brother, don't go getting all full of yourself.
+E2941.1	Boku	Nyaah!
+E2941.2	Shirabe	Shirabe wants a little brother too. I wonder if anyone would give me one?
+E2941.3	Boku	Why don't you have one yourself?
+E2941.4	Shirabe	No way! I want to enjoy my single life a good while longer!
+E2941.5	Shirabe	When I get a little brother, I'm going to make him my henchman!
