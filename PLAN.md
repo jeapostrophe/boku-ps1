@@ -103,12 +103,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       morning the day chains into the ending movie (~9,500 frames of ○). The DuckStation
       per-game shared-card route is in `research/save-format.md` and README (from source, not
       run). Proven on Beetle.
-- [ ] **[ENV-08]** **Boku's cage and bug sumo, decoded** (Jay, 2026-09-23: "worth it to me"):
-      the cage record at `0x80045A10` and the insect box at `0x80046F28` decoded from the
-      overlays' code, `boku save` placing chosen bugs with maxed stats; a card that enters a
-      bout, one set up for the praying-mantis fight that unlocks the shortcut, and the
-      shortcut unlocked — which reaches the well (`VO-05`) and the sumo surfaces (`VO-06`,
-      `TXT-05` 25/26). Harmed: every lane and Jay, who cannot reach sumo or the shortcut.
+- [ ] **[ENV-08]** **Bug sumo, the mantis fight, the shortcut and its well** (Jay,
+      2026-09-23: "worth it to me"). Cage record and bout DONE 2026-09-23: `research/sumo.md`,
+      `boku/sumo.py`, `boku save --bug NAME[:SIZE]`, `sumo-maxed-cage` /
+      `boku-bug-sumo.mcd`, and `./make.sh sumo-bout`, which reaches a bout on Beetle and checks
+      the game's fighter against the decoded formula. Left: a card set up for the mantis fight
+      (story stage `0x8003D27A`, flags 64/65/68/69), the shortcut unlocked (`E1754`), the well
+      on the shortcut (`E4057` → map `E02`) and which clip plays there (`VO-05`). Harmed: Jay's
+      testing, and `VO-06` / `TXT-05` 25/26, which need a bout.
+
 ## Recon — where every piece of Japanese lives
 
 - [x] **[REC-01]** **`BOKU.BIN`'s directory.** DONE 2026-09-20: `research/boku-bin.md` +
@@ -824,9 +827,8 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       sumo (mode 7) is entered only by `E4025`; `tools/redux/to-sumo.lua` reaches its desk
       from a cold boot (`research/save-format.md`). Measured 2026-09-23: the movie-subtitle
       block at `0x801C0000` is overwritten by the `A18` load and by mode 7, and that memory
-      is mode 7's own, so the text needs another home there. Left: that home; a bout, which
-      needs a correct beetle record in Boku's cage (`0x80045A10`); a proof on both
-      emulators. Harmed: the player, who hears the boys' taunts and reads nothing.
+      is mode 7's own, so the text needs another home there. Left: that home, and a proof on both emulators — a bout is now
+      reachable (`./make.sh sumo-bout`, `ENV-08`). Harmed: the player, who hears the boys' taunts and reads nothing.
 - [ ] **[VO-07]** **No subtitle on the day-1 bedtime voice-over in real play** (Jay's playtest,
       2026-09-23): `XCH.34` has English in `translation/clips.txt` and `VO-03` proved the hook
       with fixture English reached by pokes; in play after the diary no subtitle shows.
