@@ -1,0 +1,70 @@
+# day23 (translation/days/README.md)
+# --- E2360: D07 -- Saori's camp
+E2360.0	Saori	Boku-kun, how many color names can you say?
+E2360.1	Boku	Mmm, lots.
+E2360.2	Saori	Then what color is the sky today?
+E2360.3	Boku	Blue!
+E2360.4	Saori	...Huh. It really is just plain blue.
+E2360.5	Boku	Lady, if you sit still too long...
+E2360.6	Saori	What?
+E2360.7	Boku	the mosquitoes will eat you.
+
+# --- E2320: H10 -- the garden corner
+E2320.0	Aunt	Boku-kun... Boku's summer vacation has only one week left. // Hurry up and do the things you want to do while you still can!
+E2320.1	Aunt	Auntie would like a summer vacation too, even just a week or so.
+# NOTE E2320.0: the game's title phrase in dialogue (style guide § 1).
+
+# --- E2312: G01 -- living room
+E2312.0	Uncle	It's about time I lit the climbing kiln...
+E2312.1	Boku	Huh? When, when?
+E2312.2	Uncle	Soon...
+E2312.3	Uncle	The climbing kiln... it's hot in summer, you know.
+
+# --- E2330: G16 -- Moe's bed (the book from the shelter)
+E2330.0	Moe	Ahh, I really don't feel like doing anything... // I wish I could do everything just lying here like thiiis...
+E2330.1	Moe	Ahh... I want someone, anyone, to cheer me up.
+E2330.2	Moe	Oh, what's this?
+E2330.3	Boku	This... ana-ana-bobon.
+E2330.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+E2330.5	Boku	So it is a book from outer space.
+E2330.6	Moe	Dummy, this is English. En-glish!
+E2330.7	Boku	Onee-chan, can you understand English?
+E2330.8	Moe	Of course I can't. It's the class of the teacher I hate most.
+E2330.9	Moe	I'll try reading the letter a little.
+E2330.10	Boku	Yeah, let me hear it, let me hear it!
+E2330.11	(voice only)
+E2330.12	Moe	...The letter was in English too, I'm afraid.
+E2330.13	Boku	Aww, man...
+E2330.14	Moe	What should I do? Even if I wanted to translate it, my dictionary's sitting at school... // Is there an English dictionary around somewhere, I wonder?
+E2330.15	Boku	...Onee-chan, are you doing that on purpose?
+E2330.16	Moe	Huh? What? Whaaat? What do you mean?
+E2330.17	Moe	I'll have that letter translated by dinner.
+E2330.18	Boku	Can you?
+E2330.19	Moe	Oh, be quiet! // When I think someone's secret is packed in here, my heart pounds with excitement... // and somehow my own misery feels lighter.
+# NOTE E2330.11: Moe reading the English letter aloud, voice only (style guide § 16).
+
+# --- E2331: G15 -- the sisters' room
+E2331.0	Moe	Come to think of it, that vice-principal's treasure... // what on earth could it really be?
+E2331.1	Moe	How come, I wonder? I'm just a little bit interested.
+E2331.2	Boku	Hey, I found something strange, deep in the cave.
+E2331.3	Moe	Huh, whaaat? // Mmm, I'm in lazybones mode right now, so bring it tomorrow afternoon.
+E2331.4	Moe	Onee-chan's all sleepy already...
+E2331.5	Moe	Somehow, after reading that old letter... // I thought, maybe my worries are pretty tiny? // and my head's all spinning round and round...
+E2331.6	Boku	But whose is it?
+E2331.7	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
+E2331.8	Moe	From tomorrow...
+E2331.9	Boku	What?
+E2331.10	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+
+# --- E2340: H10 -- garden corner where Shirabe watches ants
+E2340.0	Shirabe	This morning, while I was washing my face, I realized something... // isn't fishing scary?
+E2340.1	Boku	Huh?
+E2340.2	Shirabe	Because if a whale got on your hook, // wouldn't it drag you all the way out to sea with it?
+E2340.3	Shirabe	This morning, while I was brushing my teeth, I realized something... // kite-flying is actually a truly wonderful game, isn't it?
+E2340.4	Shirabe	Because if the kite pulled you // and you flew right up high into the sky, that would be a very, very wonderful experience, wouldn't it?
+
+# --- E2341: G06 -- TV room
+E2341.0	Shirabe	Tomorrow's dinner is spring rolls, they say... // Chinese food is just too greasy for Shirabe. I'm not fond of it.
+E2341.1	Boku	Then which of Auntie's dishes do you like?
+E2341.2	Shirabe	Umm, fried rice, and sweet-and-sour pork...
+E2341.3	Boku	That's Chinese.

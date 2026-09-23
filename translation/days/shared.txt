@@ -1064,3 +1064,49 @@ E2252.3	Boku	We live in the same house, so obviously.
 
 # --- E2253: A18 -- the secret base
 E2253.0	Specs	Why don't cartoon heroes ever complain about their hairstyles? // No, really, I think they ought to stand up for their rights more.
+
+# --- E2306: G17 -- the veranda; I34 -- close-up (the wolf photograph)
+E2306.0	Uncle	We've just finished breakfast.
+E2306.1	Saori	There's something I want to show you... // Heeey, Boku-kun, come out here a sec!
+E2306.2	Uncle	Hm? What is it?
+E2306.3	Uncle	You finally did it.
+E2306.4	Saori	Yes. Thank you.
+E2306.5	Saori	Oh, morning, weird kid.
+E2306.6	Boku	Morning, weird lady.
+E2306.7	Saori	Deh-heh-heh. What do you think this is?
+E2306.8	Boku	It's a Japanese wolf! You did it, lady!
+E2306.9	Saori	So they really were here. On this mountain, all along...
+E2306.10	Boku	...Kind of, for some reason... huuuh?
+
+# --- E2302: G02 -- after breakfast (Saori at the door)
+E2302.0	Uncle	Gochisosama deshita.
+E2302.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2302.2	Uncle	Oh, good morning.
+E2302.3	Saori	Good mor-morning! Is Boku-kun up yet?
+
+# --- E2303: G02 -- dinner (Moe reads the 1942 letter)
+E2303.0	Boku	Onee-chan, what's wrong?
+E2303.1	Moe	Like, "life's full of all sorts of things"... or, like, wham...
+E2303.2	Shirabe	Makes no sense.
+E2303.3	Moe	...
+E2303.4	(unlabelled)	Anyway, I'll read it.
+E2303.5	Shirabe	What's that?
+E2303.6	Moe	Shirabe, be quiet! // I'm reading...
+E2303.7	Moe	Spring: the flow of the great river, the fragrance of the flowers in full bloom... // Now America, the land of dreams I read of in the adventure novels of Mark Twain, and // the country of my birth... this beloved homeland of mine, Japan, are at war. // Tom Sawyer. Huckleberry Finn. // The wind and the sunlight that blow across the fields and hills where they played... // I wished that one day I might feel them on my own skin... // Until today, I have studied their language, in secret and with all my heart, but... // that too, it seems, has nearly reached its end. // I have had to hide my English dictionary here as well. // If this war should end, and I am still alive, // then this innocent resolve of mine, pure as spring water... // and this elation, like the south wind that heralds the coming of spring... // these I wish to convey to my future self.    Spring, Showa 17...
+E2303.8	Uncle	The name?
+E2303.9	Moe	It isn't written.
+E2303.10	Uncle	I see...
+E2303.11	Aunt	This person... I hope they're still alive.
+# NOTE E2303.3-.4: one utterance across two messages (style guide § 9).
+# NOTE E2303.7: a schoolboy's formal written Japanese; "Spring, Showa 17" (1942) as the letter dates
+#   itself, no gloss (style guide §§ 10, 11). The spaces before the date keep the Japanese's gap.
+
+# --- E2305: D06 -- the air-raid shelter (the book)
+E2305.0	(voice only)
+E2305.1	Narrator	This might be something that mattered to someone... // Thinking so, I decided to take the book home with me.
+
+# --- E2304: G02 -- after dinner (the photo)
+E2304.0	Uncle	Gochisosama deshita.
+E2304.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
+E2304.2	Aunt	Here, Boku-kun, this is for you.
+E2304.3	Boku	Oh, the photo's ready. Thanks, Auntie.
