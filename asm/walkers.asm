@@ -94,6 +94,55 @@
 .endif
 .endarea
 
+; ---- surface 9: sysmsg_draw 0x800379EC (insect names; wrapper sysmsg_line_draw 0x80037BA8) ---
+; The across pass counts glyphs in s2 and returns the count, which five callers turn into
+; pixels (x 12) to place what follows the name or to right-align it (MUSI measures a name by
+; drawing it off screen at x 0x258 first). Patched, it adds the glyph's width to s2 instead,
+; so the return value is the line's width in pixels, and every consumer below takes it as
+; that (asm/hhon.asm, asm/musi.asm). The down pass (a3 != 0) is left stock: all eleven calls
+; in every image pass a3 = 0.
+.org 0x80037B20
+.area 4
+.if ORIGINAL
+    addiu   s3, s3, 0xC             ; stock: x += 12; delay slot `lhu a0,0(s0)` (next word)
+.else
+    jal     vwf_step_sysmsg_across
+.endif
+.endarea
+
+.org 0x80037B3C
+.area 4
+.if ORIGINAL
+    addiu   s2, s2, 1               ; stock: count, in the delay slot of `beqz v0`
+.else
+    nop                             ; the body adds the width
+.endif
+.endarea
+
+; cage_hud_draw: the next item goes 12 x count after the name; now the width itself.
+.org 0x8003FF98
+.area 3*4
+.if ORIGINAL
+    sll     v1, v0, 1
+    addu    v1, v1, v0
+    sll     v1, v1, 2               ; stock: v1 = 12 * count
+.else
+    move    v1, v0                  ; the width sysmsg_draw returns
+    nop
+    nop
+.endif
+.endarea
+
+; ---- surface 11: sys_title_draw 0x8003C5EC (fish names) --------------------------------
+.org 0x8003C6A0
+.area 4
+.if ORIGINAL
+    addiu   s1, s1, 0xC             ; stock: x += 12; delay slot `lhu a0,0(s0)`
+.else
+    jal     vwf_step_s1_s0
+.endif
+.endarea
+
 ; ---- the island ---------------------------------------------------------------------------
 ; The second part of dbg_font_init (vwf.asm, DEBUG_FONT_SPLIT; measured dead on the paths
 ; research/vwf-prototype.md § "The free space" lists). Not assembled under ORIGINAL: it is
@@ -185,6 +234,21 @@ vwf_step_s1_s0_cur:                 ; text_draw_line_h / _h: s1 += advance[0(s0)
     lhu     v0, 0(s0)
     jr      t8
     lhu     v1, 0(s0)               ; (the caller's next instruction is a nop: load delay)
+
+vwf_step_s1_s0:                     ; fish names, sumo move names: s1 += advance[-2(s0)]
+    move    t8, ra
+    jal     vwf_width_12
+    lhu     at, -2(s0)
+    jr      t8
+    addu    s1, s1, t9
+
+vwf_step_sysmsg_across:             ; sysmsg_draw across: s3 += width; s2 += width
+    move    t8, ra
+    jal     vwf_width_12
+    lhu     at, -2(s0)
+    addu    s3, s3, t9
+    jr      t8
+    addu    s2, s2, t9
 
     .align  4
 vwf_island_free:                    ; first unclaimed byte, reported by the build

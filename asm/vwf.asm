@@ -9,6 +9,8 @@
 ; product decision (PLAN TXT-03 / TXT-06 are open) and nothing here knows the typeface.
 ;
 ;   -strequ EXE_PATH    a COPY of the extracted executable; armips patches it in place
+;   -strequ TITLE_PATH, HHON_PATH, MUSI_PATH (and TAKO_PATH)
+;                       copies of the drawing overlays, patched in place the same way
 ;   -strequ TABLE_PATH  TABLE_IDS bytes: the pen advance of glyph ids 0 .. TABLE_IDS-1
 ;   -equ TABLE_IDS      how many ids the table covers; every other id advances FIXED_ADVANCE
 ;   -equ FIXED_ADVANCE  14, the stock pitch, so untranslated Japanese keeps its spacing
@@ -190,4 +192,13 @@ vwf_free:                           ; first unclaimed byte of the island, report
 ; member and compares it the same way. Sites in title.asm jump to the bodies above.
 .open TITLE_PATH, 0x80079A08
 .include "title.asm"
+.close
+
+; ---- HHON.OVL and MUSI.OVL -----------------------------------------------------------------
+.open HHON_PATH, 0x80079A08
+.include "hhon.asm"
+.close
+
+.open MUSI_PATH, 0x80079A08
+.include "musi.asm"
 .close

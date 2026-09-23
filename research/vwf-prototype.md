@@ -732,9 +732,9 @@ specification.
 | 6 | EXE `date_label_draw` `0x80037544` | none: five immediates at `x, x+0xD, x+0x25, x+0x3A/0x41` plus sprite digits | — | **C**; a translation re-points the ids and re-tunes the literals | table |
 | 7 | `date_label_draw_b` | unreferenced | — | **C** | table |
 | 8 | EXE `count_label_draw` `0x800377F8` | none: `0x26A`, `0x4B9` at offsets chosen by digit count | — | **C** | table |
-| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with a contract change**: body `s3 += w; s2 += w` and `0x80037B3C → nop`, so the return value becomes the pixel width; then the five consumers of `12 × count` must take it as pixels — EXE `cage_hud_draw` `0x8003FF98…A0` (`sll/addu/sll` → `move v1,v0` + nops), `HHON 0x8007C46C…74` (same), `MUSI 0x8007D474…7C`, and the two right-aligning `8 − n` blocks `MUSI 0x8007D918…30` and `0x8007D874…8C` (the latter through `sllv … s5`, whose `s5` is not settled statically — an emulator question before it is patched). The vertical path (`a3 ≠ 0`) has no traced caller | table (blocked on reach: the cage HUD needs a caught insect) |
+| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with the contract change, installed** (`asm/walkers.asm`): both passes add the glyph's width to `s2`, so the return value is pixels, and the five consumers take it — the cage HUD and HHON's label (`move v1,v0`), MUSI's stat line, and MUSI's two right-aligned names at `SUMO_FIELD − width` (the `sllv … s5` block: `s5` is 1, set at `0x8007D7C8`, so both were 12 × (8 − n); the count comes from drawing the name off screen at x 0x258 first). The down pass (`a3` ≠ 0) is left stock: no call in any image uses it | tested |
 | 10 | EXE `mc_slot_labels_draw` `0x8003A7A4` — really the fortune result (`大吉！` …), three glyphs stacked vertically at x `0x9A` | rows, not a pen | — | **C** | table |
-| 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table |
+| 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |
 | 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
 | 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | **proven** (descriptions) |
 | 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | tested |
@@ -749,12 +749,12 @@ specification.
 | 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **C** | table |
 | 23 | `MUSI 0x8007C604` (button hint, 7 glyphs, bound `slti 7`) | x recomputed from the index: `0x8007C700 sll a1,a1,2` + `addiu a1,a1,0x78` | index | **B**: the glyph count is a code constant; hooking means recomputing x as a prefix sum | table |
 | 24 | `MUSI 0x8007EDB0` (strength labels, 3 rows × 3 cells) | x from the index at 16 px (`0x8007EE1C`) and 12 px (`0x8007EE78`), bounds `slti 2`/`3` | index | **B**: the row stride and bounds fix the cell count, so a translation rewrites the array and the bounds anyway | table |
-| 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | table (sumo is days of play away) |
-| 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | table |
+| 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |
+| 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | tested |
 
 Counts: **A** 13 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 18, 19, 20a, 20b, 25, 26; 13 and 14
-ride on 12), of which 7 proven (5a, 12a, 12b, 17, 18, 19, 20b), 1 tested (5b), 1 assembled
-(20a); **B** 2 (23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
+ride on 12), of which 7 proven (5a, 12a, 12b, 17, 18, 19, 20b), 5 tested (5b, 9, 11, 25, 26),
+1 assembled (20a); **B** 2 (23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
 register-identical — pens `s3`, `s5`, `v1`+`s0`, `v1`+`s1`, `s1`, `s1`; id pointers `s0` or
 `s1` — so the bodies are per shape and per stock pitch (`asm/walkers.asm`, the walker island;
 § "The free space").
@@ -873,9 +873,16 @@ not register in mode 10, so the scroll (`0x800805DC` = 200) and the grid are wri
 ## Not done
 
 * **Summer memories' label 5** (walker 20a) is not on the screen shot. **`HHON`** is
-  measured and prototyped, not installed (§ "The `HHON` walkers"). **The A-decision
-  surfaces marked "table"** in § "The fixed-pitch surfaces" (9, 11, 25, 26) are not code
-  yet. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
+  measured and prototyped, not installed (§ "The `HHON` walkers"). **Surfaces 9, 11, 25
+  and 26** are installed and run in `tests/test_real_walkers.py` but not on screen: the cage
+  HUD needs a caught insect, fishing and sumo days of play. Their boxes are not measured,
+  and the English is wider than anything the Japanese drew there — insect names up to 145 px
+  (median 90) against the stock's 96, fish names 90 against 48, sumo moves 96 against 84
+  (`arrays.txt` through the cell map, 2026-09-23). An insect name wider than 96 px starts
+  left of MUSI's right-aligned field, and MUSI also draws names at a fixed x 0xAF with the
+  next item at a fixed 0x10F (`0x8007E6E4`, `E8E0`, `EA48`; 0xD8 at `0x8008E8AC`, `EC7C`),
+  which do not read the width — a name past 96 px runs under that item. What either
+  overlaps on screen is unmeasured. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
   route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
   bodies add only the table byte.

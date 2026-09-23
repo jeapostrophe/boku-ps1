@@ -267,3 +267,124 @@ def test_the_two_answers_are_proportional_and_the_second_starts_where_the_stock_
             *expected(ANSWER_PAIR.first_x, [cells[c][1] for c in first]),
             *expected(ANSWER_PAIR.second_x, [cells[c][1] for c in second]),
         ], f"{first} | {second}"
+
+
+# --- sysmsg_draw (surface 9): insect names, returning a pixel width -------------------------
+
+SYSMSG_DRAW = 0x800379EC
+"""`sysmsg_draw(text, line, x, y, vertical)`: line `line` of a list, across when the fifth
+argument is 0 (every call in every image); returns what its callers place the next thing by."""
+
+
+def test_sysmsg_draw_returns_the_line_s_pixel_width_and_steps_by_it(built):
+    """Its callers used the glyph count times 12 to place what follows the name, and to
+    right-align it in 96 px (MUSI measures a name by drawing it off screen). Patched it
+    returns the width in pixels and steps x by it; Japanese is 12 a glyph, so the pixels
+    are exactly what every caller computed before."""
+    images, stock, _, cells, _ = built
+    word, kana = "Wil", japanese(stock[EXE_NAME], 3)
+    english = ([cells[c][0] for c in word], [cells[c][1] for c in word])
+    for image, (ids, want), returned in (
+        (images, english, sum(english[1])),
+        (images, (kana, [12] * 3), 36),
+        (stock, (kana, [12] * 3), 3),  # the retail count, which its callers multiply by 12
+    ):
+        m = machine(image)
+        width = m.call(SYSMSG_DRAW, m.halfwords(TEXT, [*ids, NEWLINE]), 0, 40, 90)
+        assert width == returned, f"{ids}"
+        assert pens(m.draws) == expected(40, want)
+
+
+def run_slice(image: dict[str, bytes], overlay: str | None, start: int, end: int, **regs):
+    """The instructions [start, end) of the patched code, run alone with `regs` set: a slice
+    copied to scratch RAM and closed with `jr ra`, so a consumer's arithmetic is the file's."""
+    tool = vwf_prototype()
+    m = machine(image, overlay)
+    base = tool.EXE_LOAD_BIAS if overlay is None else tool.OVERLAY_BASE
+    blob = image[EXE_NAME if overlay is None else overlay]
+    code = blob[start - base : end - base] + struct.pack("<2I", 0x03E00008, 0)
+    scratch = 0x80180000
+    m.load(scratch, code)
+    names = {"v0": 2, "v1": 3, "s0": 16, "s1": 17, "s3": 19, "s5": 21}
+    m.call(scratch, registers={names[k]: v for k, v in regs.items()})
+    return m
+
+
+CONSUMERS = [
+    (None, 0x8003FF98, 0x8003FFA4, "v1"),  # cage_hud_draw: the next item after the name
+    ("HHON.OVL", 0x8007C46C, 0x8007C478, "v1"),
+    ("MUSI.OVL", 0x8007D474, 0x8007D480, "s1"),
+    ("MUSI.OVL", 0x8007D86C, 0x8007D890, "s0"),  # right-aligned in the field, via sllv s5
+    ("MUSI.OVL", 0x8007D910, 0x8007D934, "s0"),  # right-aligned
+]
+REGISTER = {"v1": 3, "s0": 16, "s1": 17}
+
+
+@pytest.mark.parametrize(("overlay", "start", "end", "out"), CONSUMERS)
+@pytest.mark.parametrize("glyphs", [1, 3, 8])
+def test_a_count_consumer_given_pixels_computes_what_stock_did_from_the_count(
+    built, overlay, start, end, out, glyphs
+):
+    """The retail slice given the count and the patched slice given the width that
+    Japanese now returns (12 a glyph) must leave the same value -- the stock arithmetic,
+    `sllv` by `s5` included (s5 = 1 where MUSI sets it), is the fixture, not a retyped
+    formula."""
+    images, stock, _, _, _ = built
+    before = run_slice(stock, overlay, start, end, v0=glyphs, s3=TEXT, s5=1)
+    after = run_slice(images, overlay, start, end, v0=12 * glyphs, s3=TEXT, s5=1)
+    assert after.regs[REGISTER[out]] == before.regs[REGISTER[out]]
+
+
+@pytest.mark.parametrize(("overlay", "start", "end", "out"), CONSUMERS)
+def test_a_count_consumer_places_by_an_english_width(built, overlay, start, end, out):
+    """An English name 61 px wide: the next item 61 after it, or the right-aligned name at
+    the field's width less 61 (the field is what the stock computes for no glyphs)."""
+    images, stock, _, _, _ = built
+    after = run_slice(images, overlay, start, end, v0=61, s3=TEXT, s5=1).regs[REGISTER[out]]
+    if out == "s0":
+        field = run_slice(stock, overlay, start, end, v0=0, s3=TEXT, s5=1).regs[16]
+        assert after == field - 61
+    else:
+        assert after == 61
+
+
+# --- surfaces 11, 25, 26: fish names and sumo move names ---------------------------------------
+
+
+FISH_NAME_DRAW = 0x8003C5EC
+FISH_NAMES = 0x8003DA4C
+FISH_INDEX = 0x8003E2A1
+"""`sys_title_draw` reads the fish's line index here (`lbu a1,9(a2)`, a2 = 0x8003E298)."""
+MOVE_NAME_DRAW = (0x80084F64, 0x800850D8)
+MOVE_NAMES = 0x80079A34
+"""`musi@2C`, where both walkers' lui/addiu pair points on the retail overlay."""
+
+
+def test_the_fish_name_walker_steps_english_by_width_and_japanese_by_12(built):
+    images, stock, _, cells, _ = built
+    kana = japanese(stock[EXE_NAME], 3)
+    for image, ids, steps in (
+        (images, [cells[c][0] for c in "Wil"], [cells[c][1] for c in "Wil"]),
+        (images, kana, [12] * 3),
+        (stock, kana, [12] * 3),
+    ):
+        m = machine(image)
+        m.halfwords(FISH_NAMES, [*ids, NEWLINE])
+        m.write(FISH_INDEX, 1, 0)
+        m.call(FISH_NAME_DRAW)
+        assert pens(m.draws) == expected(m.draws[0][1], steps), f"{ids}"
+
+
+@pytest.mark.parametrize("walker", MOVE_NAME_DRAW)
+def test_the_sumo_move_walkers_step_english_by_width_and_japanese_by_12(built, walker):
+    images, stock, _, cells, _ = built
+    kana = japanese(stock[EXE_NAME], 3)
+    for image, ids, steps in (
+        (images, [cells[c][0] for c in "Wil"], [cells[c][1] for c in "Wil"]),
+        (images, kana, [12] * 3),
+        (stock, kana, [12] * 3),
+    ):
+        m = machine(image, "MUSI.OVL")
+        m.halfwords(MOVE_NAMES, [*ids, NEWLINE])
+        m.call(walker, 0, 0)
+        assert pens(m.draws) == expected(m.draws[0][1], steps), f"{ids}"
