@@ -232,18 +232,22 @@ lands on `ink + 1` and the next glyph may not start before `ink + 2`. Both `game
 models hit that bound exactly. `』` shipped at 5 until the rule was measured and drew its
 shadow under the next glyph. `Uncle 「Text」` (`work/txt05b/shots/r2/02`).
 
-**The hand points right.** The select cursor is ONMEM.BIN sprite 1 — 16 × 24 at (0, 32) on
-the 48 × 88 4bpp UI sheet (child 3), drawn by `0x80042B64` from the record in child 0
-(`{u, v, w in VRAM units, h}`; the loader fixes up the page and CLUT). `build_prototype.py`
-`cursor_edits` turns the cell a quarter turn counter-clockwise in place, pads the rows it
-left transparent, and sets the record to 24 × 16; `SEL_CURSOR_DX` is −26. **What makes the
-turn safe is the record table, not the pixels**: index 0 of this sheet's CLUT is opaque
-white and index 1 transparent, so the padding beside the hand reads as `0` and no pixel
-test tells it from art — the check is that no other record reaches either the cell being
-vacated or the one being claimed (records 0/2/3/4 are at v 56, 0, 72, 80, and only the hand
-touches rows 32–55). No new art: the pixels are the original's, turned, and stay in the
-gitignored `edits.json`. `--cursor down` keeps the stock sprite, and `sel_cursor_dx`
-follows the hand's width (−18) unless `--sel-cursor-dx` says otherwise.
+**The hand points right.** The select's hand is drawn by `0x80042B64` from `ONMEM.BIN`'s
+sprite table (child 0, `{u, v, w in VRAM units, h}` on the 48 × 88 4bpp UI sheet, child 3;
+the loader fixes up the page and CLUT). That drawer picks **sprite 0** — 24 × 16 at (0, 56),
+the game's own right-pointing hand, the one the title menu and the file list show — when its
+`a3` is non-zero, and **sprite 1** — 16 × 24 at (0, 32), pointing down — when it is 0; the
+retail select passes 0 (`move a3, zero` at `0x8002C3D0`). The patch passes
+`SEL_CURSOR_SIDE` = 1 there (`asm/select.asm`), so the rows get sprite 0 and `SEL_CURSOR_DX`
+is −26 (its width + 2). Round 2 first did this by turning sprite 1 a quarter turn in the
+sheet at build time; sprite 1 is shared, so every hand the game points **down** at a button
+— the settings and load screens' もどる — pointed sideways at nothing (Jay, DuckStation,
+2026-09-23). Nothing in `ONMEM.BIN`'s table or sheet is edited now, so every other hand is
+the retail one (`tests/test_vwf_prototype.py` pins both). Proven on Beetle 2026-09-23: the
+`E0112.1` select with the right-pointing hand on Yes and on No, and the settings and load
+screens' hand over もどる pointing down as stock (`work/menus/`, reached with the pokes in
+§ "Reaching the living room"). `--cursor down` passes 0 and keeps the stock hand, and
+`sel_cursor_dx` follows the hand's width (−18) unless `--sel-cursor-dx` says otherwise.
 
 **The title screens are Japanese renderer text, not plates.** Card check ("checking the
 memory card / do not remove"), "no file" and the four config labels are `TITLE.OVL`'s array
@@ -489,7 +493,7 @@ ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 |---|---|---|---|
 | `0x8002C2D0` | `select_draw`, step | `addiu s0,s0,0xC` (y += 12) | `jal vwf_select_advance` (delay slot `lhu a0,0(s1)` kept) |
 | `0x8002C1D0`, `DC` | `select_box_draw` | `lhu v0,4(s1)` (w) · `lhu v0,6(s1)` (h) | `jal vwf_select_box` · `move v0,v1` |
-| `0x8002C3D4`, `DC` | `select_cursor_update`, sprite | `addiu a1,a1,-2` · `addiu a2,a2,-0x18` | `SEL_CURSOR_DX` (−18) · `SEL_CURSOR_DY` (−2) |
+| `0x8002C3D0`, `D4`, `DC` | `select_cursor_update`, sprite | `move a3,zero` (sprite 1) · `addiu a1,a1,-2` · `addiu a2,a2,-0x18` | `addiu a3,zero,SEL_CURSOR_SIDE` · `SEL_CURSOR_DX` (−26) · `SEL_CURSOR_DY` (−2) |
 | `0x8002C3E0` | `select_cursor_update`, pad | `slti v0,s1,4` | `addiu v0,zero,1` |
 | `0x8002C3F4`, `FC` | `select_cursor_update`, pad | `andi v0,v1,0x8000` (LEFT +1) · `andi v0,v1,0x2000` (RIGHT −1) | `0x4000` (DOWN +1) · `0x1000` (UP −1) |
 | `0x80028E7C`… | `g_select_pos`, 12 × 5 × `{s16 x, s16 y}` | column tops ([text-renderer.md](text-renderer.md) § 1) | `(SEL_X, SEL_Y + i · SEL_PITCH)` ×5 per layout |

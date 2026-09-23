@@ -237,6 +237,15 @@ example. The flags that matter, all verified by running them:
   instruction the game's own 3D code issues (none of `asm/*.asm` touches cop2, so the patch
   cannot add one). Not reproduced on the stock disc yet; until it is, PCSX-Redux on arm64 is
   a debugger, not a play-test target — DuckStation and Beetle are.
+* **DuckStation's window title** (ぼくのなつやすみ on the patched image) is not read from the
+  disc. `System::UpdateRunningGame` (`src/core/system.cpp`, read 2026-09-23) takes the serial
+  from `SYSTEM.CNF`, looks it up in its game database (`data/resources/gamedb.yaml`:
+  `SCPS-10088` → `name` "Boku no Natsuyasumi - Summer Holiday 20th Century", `localizedName`
+  ぼくのなつやすみ) and shows the localized name while the `[UI] GameListShowLocalizedTitles`
+  setting is on (its default). Nothing on the disc short of a different serial changes it,
+  and the serial stays. What a player can do: turn off "show localized titles" (the English name, for
+  every game), or set this image's own title in the game list's Properties → Title
+  (`custom_properties.ini`, `Title=`), which wins over the database.
 
 ### Answering "can an agent with no display drive this?"
 

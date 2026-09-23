@@ -104,7 +104,7 @@ exe@8003D5F0.1	(unlabelled)	No MEMORY CARD is inserted.
 exe@8003D5F0.2	(unlabelled)	Failed to access the MEMORY CARD.
 exe@8003D5F0.3	(unlabelled)	The MEMORY CARD has no free blocks.
 exe@8003D5F0.4	(unlabelled)	There is no file for this game.
-exe@8003D5F0.5	(unlabelled)	There is no file in which this game was finished.
+exe@8003D5F0.5	(unlabelled)	There is no file that has finished this game.
 exe@8003D5F0.6	(unlabelled)	Which file do you want to load?
 exe@8003D5F0.7	(unlabelled)	Which file do you want to save to?
 exe@8003D5F0.8	(unlabelled)	Is it all right to start the game as it is?

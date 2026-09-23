@@ -45,16 +45,21 @@
 .endif
 .endarea
 
-; ---- select_cursor_update: where the cursor sprite goes ------------------------------------
-; a1 = the line's x, a2 = its y from g_select_pos; the sprite drawer (0x80042B64) is
-; between the two immediates and is restated unchanged.
-.org 0x8002C3D4
-.area 3*4
+; ---- select_cursor_update: which hand, and where ------------------------------------------
+; a1 = the line's x, a2 = its y from g_select_pos; the hand drawer (0x80042B64) is between
+; the two immediates and is restated unchanged. It draws ONMEM.BIN sprite 0, the game's own
+; right-pointing hand (the title menu's), when a3 is non-zero, and sprite 1, pointing down,
+; when it is 0. Sprite 1 is the hand every Back button is pointed at, so the rows choose
+; sprite 0 here rather than the build turning the shared one.
+.org 0x8002C3D0
+.area 4*4
 .if ORIGINAL
+    move    a3, zero                ; stock: sprite 1, pointing down
     addiu   a1, a1, -2              ; stock: 2 px left of the column
     jal     0x80042B64
     addiu   a2, a2, -0x18           ; stock: 24 px above it
 .else
+    addiu   a3, zero, SEL_CURSOR_SIDE
     addiu   a1, a1, SEL_CURSOR_DX
     jal     0x80042B64
     addiu   a2, a2, SEL_CURSOR_DY

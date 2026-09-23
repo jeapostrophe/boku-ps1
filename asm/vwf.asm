@@ -26,6 +26,8 @@
 ;   -equ SEL_PAD        select: the box's margin around the measured text
 ;   -equ SEL_CURSOR_DX, SEL_CURSOR_DY
 ;                       select: where the cursor sprite sits relative to its row's origin
+;   -equ SEL_CURSOR_SIDE
+;                       select: 1 draws the right-pointing hand, 0 the stock downward one
 ;   -equ MOVIE_SUB_BLOCK, MOVIE_SUB_LBA, MOVIE_SUB_SECTORS, MOVIE_SUB_MAGIC,
 ;        MOVIE_SUB_MASK_ROWS, MOVIE_SUB_RECORD_SHIFT
 ;                       movies: where the subtitle block is read from and to, and the
