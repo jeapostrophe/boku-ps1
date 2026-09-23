@@ -492,14 +492,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       being fixed with the translators' other packet findings. Left: after that fix, one day
       re-translated through the corrected packet and judged the same way, so the packet is
       judged on its spec rather than on the defect. Harmed: the translator and Jay.
-- [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the first thing every player sees:
-      the memory-card and save/load messages (32), the title and config labels, the controls
-      help, item names and descriptions, the 57 insect names, photo captions, kite names
-      (`exe@…`, 201), the insect book (`hhon@…`, 62), bug sumo (`musi@…`, 37), title (5), kite
-      workshop (2), the "write the diary and sleep?" prompt (`zukan@…`). `boku coverage` lists
-      them as `not-event`; `boku lint` already checks array byte sizes. Needs an array packet
-      (`TRN-08`) and, on screen, `TXT-05`'s fixed-pitch surfaces. Jay saw these in Japanese
-      after START on 2026-09-20. Harmed: the player, before the first line of dialogue.
+- [ ] **[TRN-09]** **The 308 array, menu and overlay lines** — the engineering is DONE
+      (2026-09-22): `./make.sh packet --arrays` (42 surfaces: 34 arrays, 6 code labels, the
+      save title, one code-held message), English in `translation/days/arrays.txt`, code-file
+      menus as `[SEL]` rows through lint and build, `not-placeable` warnings for code labels
+      and the save title, coverage classifies them. Left: translate them (a directed
+      translator over the arrays packet). On screen the build writes only English that fits
+      each item's own bytes (a placeholder trial: 187 placed, 114 refused, 7 not placeable);
+      the rest waits on `TXT-05`'s fixed-pitch surfaces and array relocation (`PIPE-03`), and
+      the lint names each line. Harmed: the player, before the first line of dialogue.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
       through the workflow, not hand-patched around it. Harmed: the player.
@@ -677,20 +678,27 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       whether any of the 12 unreferenced `BOKU_XA.XAM` runs with words is played. Needs an ear
       — the model cannot hear. Harmed: the player (a wrong or missing subtitle); the
       translator, working from a guessed word.
-- [ ] **[VO-02]** **Subtitles for a voice-only clip in an event.** Fable (RE): the `XA`
-      handler `0x8002F588` plays the voice and draws nothing; `XAMSG` plays a voice and
-      draws a page. Find the cheapest way to give an `XA` entry text — whether a non-null
-      text pointer on an `XA` entry already draws (the entry layout has the slot,
-      `research/text-format.md` `off[4+2i]`), or the opcode must become `XAMSG` and what
-      else differs (page timing, the hold — `TXT-09`), so that a `(voice only)` row in a day
-      file that carries English becomes a subtitle through the existing reinserter and
-      band. Measured on the well. Harmed: the player.
+- [x] **[VO-02]** **Subtitles for a voice-only clip in an event.** DONE 2026-09-22
+      (`asm/voice.asm`, `research/event-scripts.md` § Voice-only entries): the `XA` handler's
+      `talk_set` call becomes `voice_sub_open`, which opens the entry's text (no stock entry
+      has any) and raises the band; `event_update` closes both when the clip stops and turns
+      pages while ○ holds auto-advance off; page timers come from the clip's length
+      (`boku.voice`). The reinserter fills the empty entry in every copy, the edit set records
+      the hooks (a build without them refuses subtitle rows), lint checks the fit. Proven on
+      Redux (`tests/test_real_voice_subtitle.py`) and Beetle with an `E0184.2` fixture; stock
+      round trip unchanged. Covers event `XA` entries only — the native `g_xa_clips` plays
+      are `VO-03` and `VO-06`.
 - [ ] **[VO-03]** **The five endings and the credits.** Fable (RE): how `ENDOTI` picks and
-      plays an epilogue (the ★ count → `OTI0n`, decoded by `ENV-06`; the narration's keys are `g_xa_clips` 41–45, `VO-01`), what the credits
+      plays an epilogue — and the day-1 bedtime clip `XCH.34`, played over black by the movie-mode code at `0x800192A4` through the same clip table (the ★ count → `OTI0n`, decoded by `ENV-06`; the narration's keys are `g_xa_clips` 41–45, `VO-01`), what the credits
       are — texture (`OTI0n`'s credits line is one), code, or the ending movie — and how
       much text that is; then how to draw subtitles there, since `ENDOTI` draws no glyphs:
       the dialogue renderer called from the overlay, or `FMV-04`'s composite. Harmed: the
       player, at the payoff of the game.
+- [ ] **[VO-06]** **Subtitles for the bug-sumo voices.** The boys' 39 bug-sumo lines
+      (`XCH.00`–`.40`, `research/data/voice-only.tsv`) are native `g_xa_clips` plays from the
+      sumo code, outside any event, so `VO-02`'s hooks never see them: find where the sumo
+      code starts a clip and draw its text there (the band, or `MUSI.OVL`'s own surface —
+      `TXT-05`). Harmed: the player, who hears the boys' taunts and reads nothing.
 - [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
       translated like a day file — the `(voice only)` rows gain English in place, and the
       epilogues get their own file keyed by ending and time — reviewed against the
