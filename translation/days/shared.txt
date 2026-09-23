@@ -650,3 +650,23 @@ E1053.0	Specs	The real problem is the African turtle in Doctor Dolittle. // How 
 # --- E1150: A18 -- the secret base
 E1150.0	Specs	Why doesn't anybody read books at all?
 E1150.1	Fat	Geh-heh-heh, 'cause if I got any smarter than this, // I couldn't take over my old man's job.
+
+# --- E1205: C11 -- the Great Oak; I22 -- close-up
+E1205.0	Narrator	How old could it have been... // That giant sawtooth oak towered between me and the blue sky, // its crown swaying quietly and pleasantly in the sunlight...
+E1205.1	Narrator	At that moment... // my tiny, tiny self came to want to know the great heart of this great oak...
+E1205.2	Narrator	and I stood on tiptoe, just a little...
+
+# --- E1214: H26 -- the workshop
+E1214.0	Uncle	Boku-kun, that great big fly is finished.
+E1214.1	Boku	Wow, thank you very much, Uncle.
+
+# --- E1251: A18 -- the secret base
+E1251.0	Guts	Boku-chan, what position do you play in baseball?
+E1251.1	Boku	...Bench.
+
+# --- E1252: A18 -- the secret base
+E1252.0	Fat	Were model planes big where you're from too?
+E1252.1	Boku	Yeah! But I'm... // lousy at bending the bamboo strips and cutting the aluminum tubes...
+
+# --- E1253: A18 -- the secret base
+E1253.0	Specs	When I grow up, I'm going to be an important person and build a big library in this village.
