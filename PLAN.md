@@ -527,10 +527,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`).
 - [ ] **[TRN-04]** **The full translation run** — a status table, not a churning row (Jay,
       2026-09-21: Fable translation is expensive; he spawns "do the next N days" himself when
-      the engineering is ready; this row only records where each unit stands). **Waits on
-      `TRN-08`**: changing the packet and its format invalidates every state below (Jay,
-      2026-09-21) — days 1–7 and shared are held as the *first draft*, tag
-      `first-draft-2026-09-21`, to be re-translated through the new packet and compared. States, in
+      the engineering is ready; this row only records where each unit stands). The whole game
+      was translated in one session on 2026-09-23 (`TRN-10`); the earlier draft is tag
+      `pre-trn10-2026-09-23`. States, in
       order: **undrafted → drafted → reviewed** (an independent agent against the Japanese)
       **→ checked** (Jay has read it, comments applied) **→ rendered** (the lint's pixel fit and
       the page mock-ups say it would display — `TRN-08`) **→ finalized** (Jay has seen it in the
@@ -539,12 +538,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
       | unit | state | note |
       |---|---|---|
-      | `day01.txt`–`day07.txt` | reviewed | first draft merged per line with a blind re-translation through the `TRN-08` packet, both reviewed against the Japanese (2026-09-22); Jay's comments kept |
-      | `shared.txt` (76 events) | reviewed | the same merge; includes the coverage nine |
-      | days 8–31 + their day-independent events | undrafted | 24 day files; run in batches Jay sizes |
-      | arrays / menus / overlays (308 lines) | reviewed | `translation/days/arrays.txt`; on screen as `PIPE-07` places them |
-      | diary entries (94), encyclopedia spreads, textures | undrafted | `GFX-04`, `GFX-06`; new text with no line ids |
-      | movie narration | undrafted | `FMV-02`; no text on the disc — transcribed from the audio |
+      | `day01.txt`–`day31.txt`, `shared.txt` | reviewed | the `TRN-10` whole-game session, nine independent reviews against the Japanese (160 findings, all applied; days 1–7 and shared take the earlier reviewed line where it was better); Jay's comments kept; Jay read days 1–2 in play on the earlier build |
+      | arrays / menus / overlays (308 lines) | reviewed | the same session and review; on screen as `PIPE-07` places them |
+      | voice-only clips, movie narration | reviewed | `translation/clips.txt`, `translation/movies.txt` (`VO-04`, `FMV-02`) — not part of the session |
+      | diary entries (94), encyclopedia spreads | undrafted / drafted | `GFX-04` (3 sample entries), `GFX-06` (a draft in `work/gfx06/`) |
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
       committed scene by scene. Harmed: the player.
@@ -584,17 +581,16 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       screen — a new array item. build-days: 971 lines laid out,
       108 refused. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
-- [ ] **[TRN-10]** **The maximal translation run, then the redo** (Jay, 2026-09-23). The
-      process is built: `./make.sh packet --game` gives one session `system.md` (the format,
-      then the bible, style guide, glossary and checklist, each whole; ~29k tokens), then 599
-      parts in play order (~186k tokens; English answers ~77k more); `order.txt` names the file
-      each part saves into; `translation/README.md` § "Translating the whole game" is how to
-      drive it. Jay's rulings of 2026-09-23 are applied (Specs, scaredy-cat, quotes around a
-      named word, gokurosama without a dash; QUESTIONS Q4/Q7/Q12). Left: run the session
-      through day 31 with a revision pass ("let's just keep going and do the whole thing this
-      way" — Jay), re-translating days 1–7, `shared.txt` and `arrays.txt` (tag the tree first);
-      review against the Japanese; judge against what is committed; fill `TRN-04`'s table.
-      Harmed: the player, reading a translation made without the full context.
+- [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
+      (the whole bible, glossary, style guide and checklist, ~29k tokens, then 599 parts in play
+      order) translated in ONE session, days 1–31 plus `shared.txt` and `arrays.txt`, then a
+      revision pass over the earlier days (`work/revision-notes.md` in its worktree); nine
+      independent reviews against the Japanese found 160 problems — days 8–31 "faithful and in
+      voice", the losses concentrated in days 1–7 / shared / arrays where the run overwrote
+      reviewed work — all applied, with the voice-only subtitles, Jay's rulings and the TXT-11
+      wording restored (`~/.claude/session-notes/boku-ps1/2026-09-23-trn10-review-applied.md`).
+      `./make.sh build-days` lays out 2,908 lines and refuses 96. Earlier draft: tag
+      `pre-trn10-2026-09-23`.
 - [ ] **[TRN-05]** **Play it.** A full playthrough of the patched game looking for wrong-context
       lines, overflow the lints missed, untranslated stragglers, and tone. Findings go back
       through the workflow, not hand-patched around it. Harmed: the player.
@@ -772,7 +768,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
       2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
       but that review reached the movie through a poked movie table. Reproduce the real
-      new-game path, find why no cue draws, and gate on that path. Harmed: the player, at the
+      new-game path, find why no cue draws, and gate on that path. Measured 2026-09-23: on
+      the real cold boot → New Game path Beetle draws the `M27` cues, and on DuckStation
+      (Jay's version, settings and BIOS) the block loads, `M27` is selected and the uploaded
+      slices carry the text — not reproduced; needs Jay's route and a DuckStation screenshot. Harmed: the player, at the
       opening that frames the game.
 
 ## Voice-over — speech with no text on the disc, outside the movies
@@ -829,10 +828,12 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       block at `0x801C0000` is overwritten by the `A18` load and by mode 7, and that memory
       is mode 7's own, so the text needs another home there. Left: that home, and a proof on both emulators — a bout is now
       reachable (`./make.sh sumo-bout`, `ENV-08`). Harmed: the player, who hears the boys' taunts and reads nothing.
-- [ ] **[VO-07]** **No subtitle on the day-1 bedtime voice-over in real play** (Jay's playtest,
-      2026-09-23): `XCH.34` has English in `translation/clips.txt` and `VO-03` proved the hook
-      with fixture English reached by pokes; in play after the diary no subtitle shows.
-      Reproduce by playing to bedtime, fix, gate on the real path. Harmed: the player.
+- [x] **[VO-07]** **The bedtime voice-over in real play.** DONE 2026-09-23: in play the event
+      runner's bit 0 (`0x8003637C`) stays set after the `END` into movie mode / `ENDOTI`, and
+      the hooks read it as "an event owns the text", so `XCH.34` and the epilogues never
+      opened; `clip_sub_block` no longer tests it and `clip_sub_frame` defers only for an
+      event's own subtitle (`clip_sub_owned`). Gated on Beetle down the diary → good-night
+      route and the real `E3182` ending (`tests/test_real_clip_subtitle_beetle.py`).
 - [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
       translated like a day file — the `(voice only)` rows gain English in place, and the
       epilogues get their own file keyed by ending and time — reviewed against the
