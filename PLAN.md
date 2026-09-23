@@ -635,9 +635,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       (2026-09-22, `movies.tsv`) only five movies have voice: `M27` (opening, with a song),
       `M28` (ending with the credits and a song), `M60` (fireworks), `M120` (the satellite),
       `M260` (the sunflower-field dream); the other 20 are wordless; the five epilogues are
-      not movies — `VO-03`. No text exists on the disc for any of it — the Japanese has to
-      be transcribed from the XA audio first (ffmpeg `-f psxstr` extracts it from the
-      `.IKI`, `research/tooling-setup.md`), then translated and reviewed like a day file,
+      not movies — `VO-03`. Transcribed 2026-09-22: timed Japanese per movie in
+      `work/voice/reviewed/<file>.ja.tsv` (1-based header frames; audio t = 0 is extent
+      sector 7, `research/voice-only.md`), songs marked `song`; left: translated and reviewed like a day file,
       keyed by movie and frame (`FMV-01`: 15 fps, header numbers 1-based). Harmed: the
       player.
 - [ ] **[FMV-03]** **Finalize the movies one by one.** The list is
@@ -661,16 +661,20 @@ are `ENDOTI.OVL` (mode `0x10`, entered after `MOVIE 24`) with five packs `OTI00`
 a still plus the credits line texture (`research/data/texture-census.tsv` `credits`), and
 `ENDOTI` calls `glyph_draw` nowhere (`research/text-outside-events.md`).
 
-- [ ] **[VO-01]** **The inventory.** Every voice-only clip that says words, in one list —
-      `research/data/voice-only.tsv`, one row per XA node (event, node, speaker, XA channel
-      and sector range from the voice key, seconds), generated the way `movies.tsv` is, with
-      a hand column for what is said. The listening pass: ASR (Whisper, Japanese — not
-      installed; `research/tooling-setup.md` § XA) over every clip's decoded audio, then a
-      reader marks each row *wordless* or gives its gist; the 108 nodes vs 446 entries are
-      reconciled in the row. Includes the epilogue narration once `VO-03` finds its keys. First sighting in play (Jay,
-      2026-09-22): going to sleep at the end of day 1, a voice-over over black with no subtitle.
-      Harmed: the player, who hears the well's narrator and reads nothing; the translator,
-      who cannot see what is missing.
+- [x] **[VO-01]** **The inventory.** DONE 2026-09-22: `research/data/voice-only.tsv`
+      (`./make.sh voice-only`, regenerate-and-diff gate; `research/voice-only.md`): one row per
+      event `XA` (115; 63 clips) plus one per `g_xa_clips` record (`BOKU_XA.XCH`, 48 — the
+      bug-sumo voices, the day-1 bedtime narration `XCH.34`, the five epilogues
+      `XCH.41`–`.45`). Every row `wordless` or an English gist from a Whisper pass
+      (whisper.cpp large-v3, a machine tool) read against context: 16 event rows and 46 `XCH`
+      rows have words. 446 null entries = stored copies of the 115; 108 = the rows with no
+      character speaking. Japanese transcripts under `work/voice/` only.
+- [ ] **[VO-05]** **Listen to what ASR could not settle.** `E2330.11` (Moe reading the English
+      letter? no speech found), the words marked `?` in the `M27`/`M28` and potter/dam
+      transcripts, the well narration Jay heard (not an `XA`/`XCH` clip; `E8062` is text), and
+      whether any of the 12 unreferenced `BOKU_XA.XAM` runs with words is played. Needs an ear
+      — the model cannot hear. Harmed: the player (a wrong or missing subtitle); the
+      translator, working from a guessed word.
 - [ ] **[VO-02]** **Subtitles for a voice-only clip in an event.** Fable (RE): the `XA`
       handler `0x8002F588` plays the voice and draws nothing; `XAMSG` plays a voice and
       draws a page. Find the cheapest way to give an `XA` entry text — whether a non-null
@@ -680,7 +684,7 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       file that carries English becomes a subtitle through the existing reinserter and
       band. Measured on the well. Harmed: the player.
 - [ ] **[VO-03]** **The five endings and the credits.** Fable (RE): how `ENDOTI` picks and
-      plays an epilogue (the ★ count → `OTI0n`; the narration's XA keys), what the credits
+      plays an epilogue (the ★ count → `OTI0n`, decoded by `ENV-06`; the narration's keys are `g_xa_clips` 41–45, `VO-01`), what the credits
       are — texture (`OTI0n`'s credits line is one), code, or the ending movie — and how
       much text that is; then how to draw subtitles there, since `ENDOTI` draws no glyphs:
       the dialogue renderer called from the overlay, or `FMV-04`'s composite. Harmed: the
