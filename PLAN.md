@@ -599,10 +599,14 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       Jay, 2026-09-22: the narrator says what it is); the result badges
       (`MITIM`), the bug-swap notebook cover, the brush-lettered plaque. Harmed: the player
       who examines the thing and reads nothing.
-- [ ] **[GFX-09]** **The beach notice, as a subtitle** — the one image (`M_C15100`) painted into a
-      background at an angle where a redraw means repainting the scene; an English caption
-      composited beside it at build time, tracked as text + placement only. Harmed: the
-      player at the beach. (The 30 images that stay Japanese by the charter need no row —
+- [x] **[GFX-09]** **The beach notice.** DONE 2026-09-23: seen on Beetle, the board is frontal
+      wood, not angled, so it is painted, not captioned — in both map variants (`M_C15000`,
+      which day 1 loads, and `M_C15100`; the census had missed the first). `beach_notice` in
+      `boku/texture_text.py` paints `translation/textures/signs.txt` onto both at 2×, cut by
+      the screen edge as the Japanese is; texture edits inside a map the translation rebuilds
+      are carried into the rebuild (`reinsert.plan(carry=…)`). Proven by
+      `tests/test_real_texture_text_beetle.py`; `research/texture-recipes.md` § `M_C15`. (The
+      30 images that stay Japanese by the charter need no row —
       `research/textures-plan.md` lists them.)
 
 ## Movies

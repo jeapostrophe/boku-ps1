@@ -7,7 +7,7 @@ SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools an
 > Beetle PSX, the core Mode One uses — and draws English left to right in a band under the
 > scene (`./make.sh trial`). The archive, text format, event scripts, font, renderer, memory
 > map and textures are decoded and written up under [research/](research/): the script is
-> 2,977 lines / ~75,000 glyphs, 180 textures carry Japanese, and the game checks nothing it
+> 2,977 lines / ~75,000 glyphs, 181 textures carry Japanese, and the game checks nothing it
 > loads. **Days 1–7 of the script play in English on Beetle PSX**
 > (`./make.sh build-days`): proportional text in a translucent three-line band under the
 > scene (inside the rows every emulator shows), speaker labels in the original's `Uncle「…」`
