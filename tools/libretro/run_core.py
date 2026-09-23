@@ -19,7 +19,8 @@ the same boot (`research/tooling-setup.md`).
 
 Memory card 1 is the core's SAVE_RAM: `--memcard CARD` copies a raw 128 KB card in before the
 first frame and `--memcard-out` writes it back out after the last; the card file itself is
-never written. `--ram-out` dumps main RAM and `--poke` writes it (`research/save-format.md`).
+never written. `--ram-out` dumps main RAM, `--peek` samples a few words of it into `peek.tsv`
+frame by frame, and `--poke` writes it (`research/save-format.md`).
 
 Exit codes: 0 ran to the end, 2 usage (including a --memcard the core's card does not fit),
 3 core did not load, 4 the core could not read the disc, 5 a save state, RAM dump or card
@@ -714,6 +715,20 @@ def ram_offset(addr: int, n: int) -> int:
     return addr & 0x1FFFFFFF
 
 
+def parse_peek(spec: str) -> tuple[int, int]:
+    """ADDR:LEN (hex address, decimal length) -> (RAM offset, length) inside main RAM."""
+    addr_text, sep, length_text = spec.partition(":")
+    if not sep:
+        raise UsageError(f"--peek wants ADDR:LEN, got {spec!r}")
+    try:
+        addr, length = int(addr_text, 16), int(length_text)
+    except ValueError as exc:
+        raise UsageError(f"--peek {spec!r}: {exc}") from exc
+    if length < 1:
+        raise UsageError(f"--peek {spec!r}: nothing to read")
+    return ram_offset(addr, length), length
+
+
 def parse_poke(spec: str) -> tuple[int, int, bytes]:
     """FRAME:ADDR=HEX -> (frame, RAM address, bytes), the address checked against main RAM."""
     at, sep, rest = spec.partition(":")
@@ -810,6 +825,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="write these bytes at RAM address ADDR (hex) just before FRAME runs; repeatable",
     )
     p.add_argument(
+        "--peek",
+        action="append",
+        default=[],
+        metavar="ADDR:LEN",
+        help="sample LEN (decimal) bytes of RAM at ADDR (hex) into work-dir/peek.tsv, which "
+        "each run rewrites: after every --peek-every'th frame from --peek-from to --peek-to "
+        "(default the last frame), one line per frame -- the frame, then one hex column per "
+        "--peek; repeatable",
+    )
+    p.add_argument("--peek-every", type=int, default=1, metavar="N")
+    p.add_argument("--peek-from", type=int, default=1)
+    p.add_argument("--peek-to", type=int)
+    p.add_argument(
         "--assert-drawn",
         action="append",
         default=[],
@@ -895,6 +923,17 @@ def main(argv: list[str]) -> int:
         shots = shot_frames(args)
         states = dict(parse_at(spec, "--state-out") for spec in args.state_out)
         rams = dict(parse_at(spec, "--ram-out") for spec in args.ram_out)
+        peeks = [parse_peek(spec) for spec in args.peek]
+        peek_to = args.frames if args.peek_to is None else args.peek_to
+        if args.peek_every < 1:
+            raise UsageError("--peek-every must be at least 1")
+        if not peeks and (args.peek_to is not None or args.peek_from != 1):
+            raise UsageError("--peek-from/--peek-to sample nothing without a --peek")
+        if peeks and not 1 <= args.peek_from <= peek_to <= args.frames:
+            raise UsageError(
+                f"the --peek window {args.peek_from}..{peek_to} is not inside the run's "
+                f"{args.frames} frames"
+            )
         pokes: dict[int, list[tuple[int, bytes]]] = {}
         for spec in args.poke:
             at, addr, value = parse_poke(spec)
@@ -978,9 +1017,11 @@ def main(argv: list[str]) -> int:
         slot[:] = card
         say(f"memcard: slot 1 <- {args.memcard}")
 
-    ram = fe.memory(MEMORY_SYSTEM_RAM) if pokes or rams else None
-    if (pokes or rams) and ram is None:
-        print("run_core: the core exposes no SYSTEM_RAM for --poke/--ram-out", file=sys.stderr)
+    ram = fe.memory(MEMORY_SYSTEM_RAM) if pokes or rams or peeks else None
+    if (pokes or rams or peeks) and ram is None:
+        print(
+            "run_core: the core exposes no SYSTEM_RAM for --poke/--ram-out/--peek", file=sys.stderr
+        )
         fe.close()
         return EXIT_STATE
 
@@ -991,6 +1032,11 @@ def main(argv: list[str]) -> int:
             fe.close()
             return EXIT_STATE
         say(f"state: restored {args.state_in}")
+
+    peek_out = None
+    if peeks:
+        work.mkdir(parents=True, exist_ok=True)
+        peek_out = (work / "peek.tsv").open("w", encoding="ascii")
 
     started = time.monotonic()
     frame = 0
@@ -1031,6 +1077,13 @@ def main(argv: list[str]) -> int:
                 status = EXIT_STATE
                 break
             say(f"state: frame {frame} -> {out} ({out.stat().st_size} bytes)")
+        if (
+            peek_out
+            and args.peek_from <= frame <= peek_to
+            and (frame - args.peek_from) % args.peek_every == 0
+        ):
+            cols = [ram[at : at + n].hex() for at, n in peeks]
+            peek_out.write("\t".join([str(frame), *cols]) + "\n")
         if frame in rams:
             out = work / f"{rams[frame]}.ram"
             out.parent.mkdir(parents=True, exist_ok=True)
@@ -1040,13 +1093,16 @@ def main(argv: list[str]) -> int:
             say(f"core asked to shut down at frame {frame}")
             break
     elapsed = time.monotonic() - started
+    if peek_out:
+        peek_out.close()
 
     # A frame that was asked for and never happened is a failure, not a note: the core can ask
     # to shut down early, and a gate whose --assert-drawn frame never arrived would otherwise
     # report success for a run that never tested anything.
-    missed = sorted(
-        f for f in set(shots) | set(states) | set(asserts) | set(rams) | set(pokes) if f > frame
-    )
+    wanted = set(shots) | set(states) | set(asserts) | set(rams) | set(pokes)
+    if peeks:
+        wanted.add(peek_to)
+    missed = sorted(f for f in wanted if f > frame)
     if missed:
         print(
             f"run_core: never reached frame(s) {missed} -- stopped at {frame} of {args.frames}",

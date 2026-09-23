@@ -234,6 +234,20 @@ def test_parse_poke_malformed(spec):
         run_core.parse_poke(spec)
 
 
+# --- parse_peek: what --peek samples (PLAN VO-07) ------------------------------------------
+
+
+def test_parse_peek_reads_a_hex_address_and_a_decimal_length_into_a_ram_offset():
+    assert run_core.parse_peek("800359EC:4") == (0x359EC, 4)
+    assert run_core.parse_peek("801FFFFC:4") == (0x1FFFFC, 4)  # the last word of RAM
+
+
+@pytest.mark.parametrize("spec", ["800359EC", "800359EC:", "800359EC:0", "801FFFFD:4", "zz:4"])
+def test_parse_peek_malformed(spec):
+    with pytest.raises(run_core.UsageError):
+        run_core.parse_peek(spec)
+
+
 # --- schedule_presses: out-of-order frames merge correctly -------------------------------
 
 

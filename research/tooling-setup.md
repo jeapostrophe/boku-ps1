@@ -423,8 +423,10 @@ nothing the core writes can land next to the image. Memory card 1 is **not** a f
 the core's default `use_mednafen_memcard0_method = libretro` it is the frontend's `SAVE_RAM`,
 which starts formatted and empty on every run and is thrown away at the end unless
 `--memcard-out` writes it; `--memcard CARD` puts a card in. That, `--ram-out` and `--poke`
-are [save-format.md](save-format.md)'s § "Loading a card headlessly". Two cold boots are
-byte-identical: the frame-5850 PNG has the same sha256.
+are [save-format.md](save-format.md)'s § "Loading a card headlessly". `--peek ADDR:LEN`
+samples a few RAM words into `peek.tsv` every `--peek-every` frames, where a 2 MB `--ram-out`
+per sample would be hundreds of megabytes (`tests/test_real_clip_subtitle_beetle.py` reads
+it). Two cold boots are byte-identical: the frame-5850 PNG has the same sha256.
 
 **The trap that matters: Beetle boots without a BIOS and does not stop you.** With an empty
 system directory the core logs `Firmware is missing` at INFO and runs the game on its own HLE

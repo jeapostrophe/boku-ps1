@@ -338,6 +338,25 @@ of the movie-subtitle block (`boku.movie_block`), which `movie_sub_load` reads t
   the switch to movie mode (frames 4352–4404) reaches `XCH.34` with both pages over black and
   a clean black frame after.
 
+**Reached as play reaches them (`VO-07`).** Both routes above start where the opening hands
+over, when no event has run. In play an event leads to each — the evening's to the diary,
+`E3182`'s `MOVIE 24` to the ending — and the event runner's flag word `0x8003637C` keeps
+bit 0 ("an event is running", set at `0x8002CD10` / `0x8002D6F0`) through the `END` that
+switches the mode: measured on Beetle, **9 from the ending movie through `ENDOTI`** and 1
+through the day-1 sleep movie and `XCH.34`, where the opening reads 0. The hooks had read that
+bit as "an event owns the text", so neither subtitle opened in play. Movie mode and `ENDOTI`
+run no event, so `clip_sub_block` no longer tests it, and `clip_sub_frame` defers to
+`event_update` only for an event's subtitle (`clip_sub_owned`: the bit, and not a native
+clip's) — an event's own subtitle still trusts the bit, so one left up by an `END` that
+switches mode would not be served until the next clip; no event is known to end that way.
+`tests/test_real_clip_subtitle_beetle.py` is the gate on those routes — the diary
+entered by `mode_set(11)` during the first dialogue (an event runs, so the bit is set as play
+leaves it) and then the game's own good-night, and a generated day-31 card with `g_flags[251]`
+poked so `E3182` fires — sampling the words with `run_core.py --peek`: the subtitle opens,
+its page turns on the clip's 30 Hz timer (so nothing counts it twice) and it is down when the
+mode changes. How play itself enters the diary was not walked; the gate requires the bit set
+at the clip, so a route that stopped exercising it fails rather than passing vacuously.
+
 **Bug sumo (`VO-06`).** The boys' voices (`XCH.00`–`.40`) go through the same hook, but mode 7
 stays off in `clip_sub_block`, measured on PCSX-Redux by `tools/redux/to-sumo.lua` (the route
 is [save-format.md](save-format.md) § Reaching the scenes other lanes asked for). In one run —

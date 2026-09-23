@@ -15,7 +15,8 @@
 ;   reads before every movie -- and a movie plays before both (research/event-scripts.md
 ;   § Native clips). No event runs, so nothing else draws it:
 ;     xa_play_indexed jal xa_play -> clip_sub_play: the call it replaces, then the block's
-;                     row for this clip, if there is one and no event owns the text
+;                     row for this clip, if there is one (clip_sub_block: movie mode and
+;                     ENDOTI only, whatever the event runner's stale flag says -- VO-07)
 ;     main loop       jal 0x80014C18 -> clip_sub_frame, the last call before frame_flip:
 ;                     serve the subtitle and draw it, text and band, in front of the picture
 ;     day-1 bedtime   the VSync of 0x8002E568's wait loop -> clip_sub_wait: that loop draws
@@ -196,20 +197,17 @@ voice_sub_drop:
     jr      ra
     nop
 
-; v0 -> the movie-subtitle block, or 0: when an event owns the text, when there is no block,
-; and in any mode but movie mode (whose movie has just read it) and ENDOTI (mode 0x10), which
-; writes over it while it starts (research/event-scripts.md § Native clips) and plays its
-; clip once the drive is idle, so there it is read again first -- before xa_play, since a
-; read after it would break the stream. Bug sumo's is PLAN VO-06.
+; v0 -> the movie-subtitle block, or 0: when there is no block, and in any mode but movie
+; mode (whose movie has just read it) and ENDOTI (mode 0x10), which writes over it while it
+; starts (research/event-scripts.md § Native clips) and plays its clip once the drive is
+; idle, so there it is read again first -- before xa_play, since a read after it would break
+; the stream. No event runs in either mode, whatever the event runner's bit says
+; (research/event-scripts.md § Native clips). Bug sumo's is PLAN VO-06.
 clip_sub_block:
     addiu   sp, sp, -24
     sw      ra, 16(sp)
-    lui     t0, 0x8003
-    lw      v0, 0x637C(t0)          ; the event runner's flags
     lui     v1, 0x8002
     lbu     v1, 0x37E0(v1)          ; the game mode
-    andi    v0, v0, 1
-    bnez    v0, @@none              ; an event owns the renderer's text
     addiu   at, zero, 0x0E
     beq     v1, at, @@check         ; movie mode
     addiu   at, zero, 0x10
@@ -433,6 +431,18 @@ voice_sub_tick:
     j       TEXT_SET_LIGHT
     move    a0, zero
 
+; v0 = 1 when event_update is the one to serve the subtitle: the event runner's bit is set
+; and the subtitle is not a native clip's -- the bit is stale in a native clip's modes
+; (research/event-scripts.md § Native clips). Clobbers v0, v1 and t5 only.
+clip_sub_owned:
+    lui     t5, 0x8003
+    lw      v0, 0x637C(t5)          ; the event runner's flags
+    lui     t5, hi(voice_sub_native)
+    lbu     v1, lo(voice_sub_native)(t5)
+    andi    v0, v0, 1
+    jr      ra
+    sltu    v0, v1, v0              ; the bit, and not native
+
 voice_sub_tick_end:
 .endarea
 
@@ -568,11 +578,9 @@ clip_sub_frame:
     sw      ra, 16(sp)
     jal     0x80014C18              ; the call this replaces
     nop
-    lui     t0, 0x8003
-    lw      v0, 0x637C(t0)
+    jal     clip_sub_owned
     lui     t0, 0x8002
-    andi    v0, v0, 1
-    bnez    v0, @@done              ; in an event, event_update serves the subtitle
+    bnez    v0, @@done              ; event_update serves it (clip_sub_owned)
     lw      a0, 0x37EC(t0)          ; the mode's vsync count: 0 or 1 runs this at 60 Hz
     addiu   t1, zero, 2             ; (load delay of a0)
     sltiu   v0, a0, 2

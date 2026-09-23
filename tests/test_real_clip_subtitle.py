@@ -13,6 +13,7 @@ two builds and two boots are minutes.
 
 from __future__ import annotations
 
+import functools
 import json
 import os
 import re
@@ -33,6 +34,8 @@ from tests.test_real_movie_subtitle import ARMIPS, BIOS, PROTOTYPE, REDUX, REDUX
 from tests.test_vwf_prototype import vwf_layout
 
 WORK = REPO_ROOT / "work" / "vo03"
+FIXTURE = REPO_ROOT / "work" / "clip-fixture"
+"""The fixture build, shared with `tests/test_real_clip_subtitle_beetle.py`."""
 SCRIPT = REPO_ROOT / "tools" / "redux" / "clip-sub.lua"
 BEDTIME = 34
 EPILOGUES = range(41, 46)
@@ -55,18 +58,17 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(scope="module")
-def image(real_image: Path, disc_dir: Path) -> Path:
-    for path, what in [
-        (ARMIPS, "the font build assembles with armips"),
-        (REDUX / "Contents" / "MacOS" / "PCSX-Redux", "set REDUX_APP"),
-        (BIOS, "set REDUX_BIOS"),
-    ]:
-        if not path.exists():
-            pytest.skip(f"no {path}: {what}")
-    shutil.rmtree(WORK, ignore_errors=True)
-    WORK.mkdir(parents=True)
-    clips = WORK / "clips.txt"
+@functools.cache
+def build_fixture_image(real_image: Path, disc_dir: Path) -> Path:
+    """`PAGES` as a fixture `clips.txt`, carried by the font build into `FIXTURE/vwf` and
+    written by `boku build --vwf` into `FIXTURE/image`; the `.cue` it wrote. Built once per
+    session, whichever emulator's gate asks first."""
+    work = FIXTURE
+    if not ARMIPS.exists():
+        pytest.skip(f"no {ARMIPS}: the font build assembles with armips")
+    shutil.rmtree(work, ignore_errors=True)
+    work.mkdir(parents=True)
+    clips = work / "clips.txt"
     clips.write_text(
         "".join(
             f"XCH.{n:02d}\tNarrator\t{SampleScenes.PAGE_BREAK.join(p)}\n" for n, p in PAGES.items()
@@ -81,7 +83,7 @@ def image(real_image: Path, disc_dir: Path) -> Path:
             "--clip-subs",
             str(clips),
             "--out",
-            str(WORK / "vwf"),
+            str(work / "vwf"),
         ],
         cwd=REPO_ROOT,
         check=True,
@@ -90,21 +92,32 @@ def image(real_image: Path, disc_dir: Path) -> Path:
     )
     status = main_build(
         str(real_image),
-        WORK / "image",
+        work / "image",
         None,
         None,
         disc_dir,
-        "vo03",
+        "clip-fixture",
         False,
         False,
-        vwf=WORK / "vwf" / "edits.json",
+        vwf=work / "vwf" / "edits.json",
     )
     assert status == 0, "boku build --vwf refused the fixture's edit set"
-    return WORK / "image" / "image.cue"
+    return work / "image" / "image.cue"
+
+
+@pytest.fixture(scope="module")
+def image(real_image: Path, disc_dir: Path) -> Path:
+    for path, what in [
+        (REDUX / "Contents" / "MacOS" / "PCSX-Redux", "set REDUX_APP"),
+        (BIOS, "set REDUX_BIOS"),
+    ]:
+        if not path.exists():
+            pytest.skip(f"no {path}: {what}")
+    return build_fixture_image(real_image, disc_dir)
 
 
 def boot(cue: Path, route: str, **env: str) -> str:
-    edits = json.loads((WORK / "vwf" / "edits.json").read_text(encoding="utf-8"))
+    edits = json.loads((FIXTURE / "vwf" / "edits.json").read_text(encoding="utf-8"))
     (sector,) = edits["sectors"]
     env = {
         "BOKU_BLOCK_BYTES": str(len(bytes.fromhex(sector["new"]))),
