@@ -699,13 +699,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `tests/test_real_texture_text_beetle.py`; `research/texture-recipes.md` § `M_C15`. (The
       30 images that stay Japanese by the charter need no row —
       `research/textures-plan.md` lists them.)
-- [ ] **[GFX-10]** **The ending's credits strip in English** (Jay, 2026-09-23: "ultra" if it
-      needs no video re-encode): each `OTI0n` pack's 276×33 production/copyright strip is a
-      still texture shown over the epilogue, so it takes the same painted-type recipe as the
-      other textures (it was ruled N in `research/textures-plan.md`; Jay reverses that). Not the scrolling
-      credits inside the `M28` movie — those are video, and Jay rules out re-encoding video or
-      tracking moving text, so they stay Japanese.
-      Harmed: the player, at the last screen.
+- [x] **[GFX-10]** **The ending's credits card in English.** DONE 2026-09-23: the epilogue's
+      closing card (`OTI00.BIN` `0x261f4`, identical in all five packs) reads "Production and
+      Copyright / Sony Computer Entertainment Inc." in the game's glyphs; `M28`'s scrolling
+      credits are video and stay Japanese. Proven on Beetle on the ending route
+      (`tests/test_real_credits_card.py`, `research/texture-recipes.md` § `OTI0n`).
 
 ## Movies
 
