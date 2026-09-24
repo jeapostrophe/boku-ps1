@@ -341,9 +341,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       line and the bag's and desk's balloons; Saori's "a lady's belongings" (`E1960.3`) is
       dialogue and keeps it; `test_no_menu_calls_boku_s_things_belongings` holds it; seen on
       Beetle. Harmed (was): the player.
-- [ ] **[TRN-13]** **The insect box's page pencils: "Prev" / "Next".** Jay, 2026-09-24 (§17.8e,
-      from the mock-ups): the pair matches, both in the game font — replacing "Page // Back" /
-      "Page // Next" in Bean, the last exception to the one-font rule. Harmed: the player.
+- [x] **[TRN-13]** **The insect box's page pencils: "Prev" / "Next".** DONE 2026-09-24
+      (`e5b046f`; Jay's §17.8e): both in the game font, proven on Beetle; the one-font test has no
+      exception left. Harmed (was): the player.
 - [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
       §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
       free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
@@ -699,8 +699,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       "From Saori" written on the rules in the game's glyphs and carried back (print font and "guy"
       accepted by Jay); on Beetle; `research/texture-recipes.md` § `M_I14000`; **the hunting-association
       board** (`G8-I23`) — a clean plate with the writing removed (keeping the explosion's
-      colours), then our text in the game's glyphs; **the keep-out sign** (`G8-I18`) and **the
-      bug-swap notebook cover** (`G8-NB`) repainted in the game's glyphs; **the result badges**
+      colours), then our text in the game's glyphs; **the keep-out sign** (`G8-I18`, "Don't // come in!") and **the
+      bug-trading notebook cover** (`G8-NB`, "Bug // Trading // Notebook") DONE 2026-09-24
+      (`8ec5c76`): marker lettering found by colour, painted out, set in the game's glyphs in the
+      marker's own colour, on Beetle (`research/texture-recipes.md` § "Marker signs"); **the result badges**
       (`MITIM`) generated programmatically, or left if that looks worse. Harmed: the player who
       examines the thing and reads nothing.
 - [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
