@@ -332,11 +332,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       multiple fonts in one place"); shorter names in the normal font. Four built (`ff0ac03`):
       "Miyama Stag", "Giant Stag", "Little Stag", "Rhinoceros", as notebook-only `@exchange`
       rows, seen on Beetle for every fighter and badge. Measured: the pink badge covers x
-      140–171 with its shadow, so a name has 98 px from x 173. Left **[MINE: product]**:
-      "Red-legged Stag" (102 px) does not clear — §14.1 a "Red-leg Stag", b "Redleg Stag",
-      c "Red-legged", d end unmarked bugs' names at their number (+12 px; recommended); and
-      "Saw Stag Beetle" (101, touches the badge) → "Saw Stag"? Harmed: the player, who reads
+      140–171 with its shadow, so a name has 98 px from x 173. Jay, 2026-09-24 (§14.1): "Red-leg Stag" (14.1a) and "Saw Stag" — to build.
+      Harmed: the player, who reads
       a name with a badge drawn over it.
+- [ ] **[TRN-12]** **"Stuff" for "Belongings" in every menu.** Jay, 2026-09-24 (§17.9): "a more
+      'childish' word" — the bag's balloon, the sub-screen menu and every other menu place that
+      says "Belongings" (dialogue keeps its own wording). Harmed: the player, reading a voice
+      that isn't Boku's.
 - [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
       §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
       free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
@@ -675,14 +677,19 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       bug-record card `rec@M_S01100.*` (all three copies), and the `T_MEMORY` heading proven on
       Beetle with a finished-game card — `tests/test_real_texture_records.py`. (`M_S02000`'s stone
       is never loaded — `research/texture-recipes.md`.)
-- [ ] **[GFX-08]** **The redraws** — 26 images to decide (2026-09-24: of the 28, the model kit stays Japanese and the insect book's stone is an ordinary Back button, built; per-image options in `work/review/decisions.html` §21) — an artist or an image model repaints, quantised back
-      to the original CLUT and committed as new pixels: three book covers consistently across
-      their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
-      (`M_I14000`, the one plot-bearing string with no line id; subtitle is the fallback), the
-      hunting-association board, the keep-out sign (the model-kit box `M_I19000` stays —
-      Jay, 2026-09-22: the narrator says what it is); the result badges
-      (`MITIM`), the bug-swap notebook cover, the brush-lettered plaque. Harmed: the player
-      who examines the thing and reads nothing.
+- [ ] **[GFX-08]** **The images with writing, per image** — RULED (Jay, 2026-09-24,
+      `work/review/decisions.html` §21). Left Japanese: the three book covers (`G8-D`, `G8-M`,
+      `G8-T` — "not important and conveys the style of the game in Japanese") and the model-kit
+      box `M_I19000`. To build, all programmatic (Jay: an image model changed the font and the
+      colours; do it ourselves), committed as new pixels:
+      **Saori's farewell note** (`M_I14000`, `G8-I14`) in our glyphs — un-rotate the note's
+      measured rectangle, erase and draw it upright, rotate back and replace, trying to keep the
+      blue ruled lines; the renderer caption (option c) as the fallback; **the hunting-association
+      board** (`G8-I23`) — a clean plate with the writing removed (keeping the explosion's
+      colours), then our text in the game's glyphs; **the keep-out sign** (`G8-I18`) and **the
+      bug-swap notebook cover** (`G8-NB`) repainted in the game's glyphs; **the result badges**
+      (`MITIM`) generated programmatically, or left if that looks worse. Harmed: the player who
+      examines the thing and reads nothing.
 - [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
       the board is frontal wood, painted not captioned, in both map variants (`M_C15000`, which
       day 1 loads, and `M_C15100`). `beach_notice` in `boku/texture_text.py` paints
@@ -791,6 +798,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       1221 → frames 1214–1288 at 17.0 cps (5.0 s, was 4.5 s); review regenerated. Harmed: the player.
       Jay, 2026-09-24 (§7, `work/movie-review/`): M27's timing is right — "every subtitle
       appears for a good amount of time"; the single 17 cps limit stays, no exemptions.
+- [ ] **[FMV-09]** **Jay's §22 movie rulings.** 2026-09-24, all (b): 22.1 the `M28` song panel two
+      lines tall on every song cue; 22.2 `M27`'s closing song all at the bottom with a panel;
+      22.3 one pair of 『 』 per narrated sentence, opening on its first cue and closing on its
+      last. Harmed: the player.
 - [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
       2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
       but that review reached the movie through a poked movie table. Reproduce the real
@@ -821,13 +832,25 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (whisper.cpp large-v3, a machine tool) read against context: 16 event rows and 46 `XCH`
       rows have words. 446 null entries = stored copies of the 115; 108 = the rows with no
       character speaking. Japanese transcripts under `work/voice/` only.
-- [ ] **[VO-05]** **Listen to what ASR could not settle.** `E2330.11` (Moe reading the English
-      letter? no speech found), the words marked `?` in the `M27`/`M28` and potter/dam
-      transcripts, the school and place names in `E0305` (the baseball commentary — "Asosan
-      Minami" vs "Aso Minami"), and
-      whether any of the 12 unreferenced `BOKU_XA.XAM` runs with words is played. Needs an ear
-      — the model cannot hear. Harmed: the player (a wrong or missing subtitle); the
-      translator, working from a guessed word.
+- [ ] **[VO-05]** **Listen to what ASR could not settle.** Jay listened, 2026-09-24 — to apply:
+      `E2330.11` is page turns, no voice; `M27` 41 s — "sorosoro jumyō ka na" is said; `M27`
+      175.4 s — 光の *togi*; the theme's ガラスに詰めて (*tsumete*) in both `M27` and `M28`;
+      `XCH.45` — 月夜野 (Tsukiyono) の谷; `XCH.16` sounds like "kōchō gōjō" (not one sound twice);
+      `XCH.17` is a sound of anxiety; `E0305` — Asosan, Chigi, Otafuku, Ryūhyō, "Nagoya Daimyō
+      Kōgyō", "Okinawa Kaisen", pitcher Gushiken correct, the results match. `XCH.42` (the
+      potter): Jay asks what "with 30 ahead of me" and "set foot on the same path as my uncle"
+      render — the ending is Boku becoming his uncle's apprentice in pottery; check against the
+      Japanese and answer him. The 12 unreferenced `BOKU_XA.XAM` runs are identified (Uncle's and
+      everyone's "Gochisosama deshita", the aunt, Boku asking something, the role-assignment
+      jingle, a car, a clock) — how they are played is `VO-08`. Harmed: the player (a wrong or
+      missing subtitle); the translator, working from a guessed word.
+- [ ] **[VO-08]** **How map interactions play voice.** Jay, 2026-09-24: the unreferenced
+      `BOKU_XA.XAM` runs "really occur in the game" — Uncle's and everyone's "Gochisosama
+      deshita", the aunt talking, Boku asking about something (runs 3387, 10721, 10813, 28925,
+      29041, 61999, 76910) — "I think that all of these things are used in some sort of map
+      interaction and we haven't decoded how they get referenced", and the well's narration the
+      same way. Decode the reference, then subtitle the worded runs where they play. Harmed:
+      the player, who hears lines with no subtitle.
 - [x] **[VO-02]** **Subtitles for a voice-only clip in an event.** DONE 2026-09-22
       (`asm/voice.asm`, `research/event-scripts.md` § Voice-only entries): the `XA` handler's
       `talk_set` call becomes `voice_sub_open`, which opens the entry's text (no stock entry
