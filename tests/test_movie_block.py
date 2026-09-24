@@ -452,3 +452,58 @@ def test_clip_words_must_end_with_end():
 def test_a_clip_index_past_a_u16_is_named_as_that_not_as_missing_words():
     with pytest.raises(mb.BlockError, match="u16"):
         mb.encode_block({}, FONT, clips={0x10000: (0x30, 0x8000)})
+
+
+# --- the panel (FMV-06) ---------------------------------------------------------------------------
+
+
+def dark_box(pixels) -> tuple[range, range]:
+    """The columns and rows the panel's pixels span, checked to fill that box."""
+    xs = sorted({x for x, _ in pixels})
+    ys = sorted({y for _, y in pixels})
+    box = (range(xs[0], xs[-1] + 1), range(ys[0], ys[-1] + 1))
+    assert len(pixels) == len(box[0]) * len(box[1]), "the panel is a filled rectangle"
+    return box
+
+
+def test_a_panel_is_a_dark_rectangle_behind_the_lines_with_the_text_on_top():
+    """ "ab" is 9 px wide at x 155 (see the layout test), its cells rows 199-212. With
+    `PANEL_PAD_X` 4 the panel wants 17 px, two 14-px tiles: 28 columns centred, 146-173,
+    over the line's own rows 199-212."""
+    assert mb.PANEL_PAD_X == 4, "the numbers below are worked for it"
+    pixels = mb.render(one([mb.Cue(10, 20, ("ab",), panel=True)]), 15)
+    assert dark_box(pixels) == (range(146, 174), range(199, 213))
+    plain = mb.render(one([mb.Cue(10, 20, ("ab",))]), 15)
+    white = {p for p, c in pixels.items() if c == mb.WHITE}
+    assert white == {p for p, c in plain.items() if c == mb.WHITE}, "the text is on top"
+    assert mb.render(one([mb.Cue(10, 20, ("ab",), panel=True)]), 21) == {}
+
+
+def test_a_two_line_panel_spans_both_lines_and_the_wider_one():
+    """Lines "a" (5 px) and "ab" (9 px), cells at rows 199-212 and 213-226: the panel is
+    sized by the wider, 146-173, and runs from row 199 to 226, a row of tiles per line."""
+    pixels = mb.render(one([mb.Cue(10, 20, ("a", "ab"), panel=True)]), 15)
+    assert dark_box(pixels) == (range(146, 174), range(199, 227))
+
+
+def test_a_panel_wider_than_the_frame_is_the_frames_width():
+    """A 318-px line wants 326 px of panel: the 23 tiles that span the frame, from column 0;
+    the last runs to column 321, which no slice holds."""
+    font = {"w": G(cell(), 159)}
+    block = one([mb.Cue(10, 20, ("ww",), panel=True)], font)
+    assert dark_box(mb.render(block, 15))[0] == range(0, 320)
+    assert dark_box(mb.render(block, 15, range(0, 400)))[0] == range(0, 322)
+
+
+def test_a_panel_cue_the_font_cannot_draw_is_the_same_refusal_as_without_one():
+    with pytest.raises(mb.BlockError, match="no glyph"):
+        mb.encode_block({NAME: [mb.Cue(1, 2, ("a\u00e9",), panel=True)]}, FONT)
+
+
+def test_the_panel_tile_takes_an_index_only_when_a_cue_asks_for_one():
+    """The tile is one more record after the font's; a 255-glyph font leaves it no index."""
+    characters = [chr(0x100 + i) for i in range(255)]
+    font = {c: G(cell(), 1) for c in characters}
+    mb.encode_block({NAME: [mb.Cue(1, 2, (characters[0],))]}, font)
+    with pytest.raises(mb.BlockError, match="panel"):
+        mb.encode_block({NAME: [mb.Cue(1, 2, (characters[0],), panel=True)]}, font)

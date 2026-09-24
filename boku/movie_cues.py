@@ -25,9 +25,11 @@ FIELDS = 4
 """A row's fields; a fifth, the options, is optional: space-separated, at most one position
 (`POSITIONS`, default `DEFAULT_POSITION`) and any of `FLAGS`."""
 CAPTION = "caption"
-FLAGS = frozenset({CAPTION})
+PANEL = "panel"
+FLAGS = frozenset({CAPTION, PANEL})
 """`caption`: the cue translates writing in the picture, not speech (FMV-08), so
-`boku.movie_timing` holds it to no transcript segment."""
+`boku.movie_timing` holds it to no transcript segment. `panel`: a dark panel is drawn behind
+the cue's lines (FMV-06, `boku.movie_block.PANEL_MASKS`)."""
 DEFAULT_POSITION = "bottom"
 MOVIE_BAND = BoxSpec(
     width=LINE_WIDTH, lines=min(map(len, POSITIONS.values())), name="the movie band"
@@ -48,6 +50,8 @@ class CueRow:
     """Where the cue sits: a key of `boku.movie_block.POSITIONS`."""
     caption: bool = False
     """Whether the cue translates writing in the picture (`CAPTION`) rather than speech."""
+    panel: bool = False
+    """Whether a dark panel is drawn behind the lines (`PANEL`)."""
 
     @property
     def key(self) -> str:
@@ -107,7 +111,18 @@ def parse(text: str) -> tuple[list[CueRow], list[Problem]]:
                 Problem(number, movie, "cue-malformed", f"frames {start!r}, {end!r} are not whole")
             )
             continue
-        rows.append(CueRow(movie, first, last, english, number, position, CAPTION in options))
+        rows.append(
+            CueRow(
+                movie,
+                first,
+                last,
+                english,
+                number,
+                position,
+                caption=CAPTION in options,
+                panel=PANEL in options,
+            )
+        )
     return rows, problems
 
 
@@ -198,7 +213,8 @@ def cues_by_movie(rows: Iterable[CueRow], encoder: Encoder) -> dict[str, list[Cu
     """The rows as `boku.movie_block.Cue`s, grouped by movie file in frame order."""
     out: dict[str, list[Cue]] = {}
     for row in sorted(rows, key=lambda row: (row.movie, row.start)):
-        cue = Cue(row.start, row.end, cue_lines(row.text, encoder), POSITIONS[row.position])
+        lines = cue_lines(row.text, encoder)
+        cue = Cue(row.start, row.end, lines, POSITIONS[row.position], panel=row.panel)
         out.setdefault(row.movie, []).append(cue)
     return out
 
@@ -208,6 +224,7 @@ __all__ = [
     "CUE_FILE",
     "FLAGS",
     "MOVIE_BAND",
+    "PANEL",
     "CueRow",
     "Problem",
     "check",

@@ -39,6 +39,10 @@ the 12 x 12 glyph's origin, so the 1-px outline has room on every side; the cell
 `start <= frame <= end` (STR header numbers, 1-based). Colours: `WHITE` where the glyph
 mask is set, else `DARK` where the outline is; a later glyph or line overwrites an earlier
 one, which is also the order the routine draws in.
+
+A cue with a panel (FMV-06) is the same lines, each preceded by a line of `PANEL_MASKS`
+tiles at its own y: one more record after the font's, drawn as a glyph is, so the routine
+needs no change.
 """
 
 from __future__ import annotations
@@ -120,6 +124,10 @@ _BOTTOM_MARGIN = FRAME_HEIGHT - (LINE_Y[-1] - 1 + MASK)
 LINE_Y_TOP = (_BOTTOM_MARGIN + 1, _BOTTOM_MARGIN + 1 + MASK)
 """The two rows mirrored to the top of the frame: the first drawn row (a cell's row 0 is at
 line y - 1) is as far from row 0 as the bottom position's last is from row 239."""
+PANEL_PAD_X = 4
+"""Pixels of panel either side of the widest line's advance (then rounded up to whole tiles).
+Vertically the panel is the lines' own cells: each already has paper above the capitals and
+below the descenders, and less than a whole tile row of pad would cost a whole row of tiles."""
 POSITIONS = {"bottom": LINE_Y, "top": LINE_Y_TOP}
 """Where a cue may sit (`translation/README.md` § movies.txt): the name the cue file uses ->
 the cell tops of its lines."""
@@ -141,12 +149,18 @@ class Cue:
     lines: tuple[str, ...]
     line_y: tuple[int, ...] = LINE_Y
     """Each line is centred on the screen with its cell top at `line_y[i]` (`POSITIONS`)."""
+    panel: bool = False
+    """Whether a dark panel is drawn behind the lines (FMV-06)."""
 
 
 @dataclass(frozen=True)
 class Masks:
     glyph: tuple[int, ...]
     outline: tuple[int, ...]
+
+
+PANEL_MASKS = Masks((0,) * MASK, (0xFFFC,) * MASK)
+"""The panel tile's record: no glyph, outline on every one of the 14 x 14 -- a `DARK` cell."""
 
 
 def masks_of(rows: Sequence[int]) -> Masks:
@@ -205,6 +219,11 @@ def encode_block(
     if len(characters) > END_OF_LINE:
         raise BlockError(f"{len(characters)} glyphs; a line's index byte reserves {END_OF_LINE:#x}")
     index = {c: i for i, c in enumerate(characters)}
+    panel = len(characters) if any(c.panel for cues in movies.values() for c in cues) else None
+    if panel == END_OF_LINE:
+        raise BlockError(
+            f"{len(characters)} glyphs leave the panel tile no index below {END_OF_LINE:#x}"
+        )
     names = sorted(name for name, cues in movies.items() if cues)
     for name in names:
         if len(movies[name]) > U16_MAX:
@@ -225,7 +244,8 @@ def encode_block(
             raise BlockError(f"cue frames {cue.start}..{cue.end} are not 0 <= start <= end < 65536")
         if len(cue.lines) > len(cue.line_y):
             raise BlockError(f"a cue holds at most {len(cue.line_y)} lines; {cue.lines!r} has more")
-        blob = bytearray()
+        text_lines = []
+        widest = 0
         for text, y in zip(cue.lines, cue.line_y, strict=False):
             missing = unencodable_by(index.__contains__, text)
             if missing:
@@ -235,11 +255,13 @@ def encode_block(
                 raise BlockError(f"{text!r} is {width} px wide; a movie line holds {LINE_WIDTH}")
             if y < 1 or y + MASK - 1 > FRAME_HEIGHT:
                 raise BlockError(f"line y {y} puts rows outside the {FRAME_HEIGHT}-row frame")
-            x = (SCREEN_WIDTH - width) // 2
-            blob += struct.pack("<HH", x, y)
-            blob += bytes(index[c] for c in text) + bytes([END_OF_LINE])
-            blob += bytes(len(blob) % 2)
-        blob += struct.pack("<HH", END_OF_LINES, 0)
+            widest = max(widest, width)
+            text_lines.append(_line((SCREEN_WIDTH - width) // 2, y, [index[c] for c in text]))
+        panel_lines = []
+        if cue.panel:  # drawn first, so the text lands on it
+            x, tiles = _panel_span(widest)
+            panel_lines = [_line(x, y, [panel] * tiles) for y in cue.line_y[: len(text_lines)]]
+        blob = b"".join(panel_lines + text_lines) + struct.pack("<HH", END_OF_LINES, 0)
         if cursor > U16_MAX:
             raise BlockError(
                 f"a cue's lines start {cursor} bytes in; the cue row names it in a u16"
@@ -276,8 +298,11 @@ def encode_block(
     for c in characters:
         if not 0 <= font[c].advance <= 0xFF:
             raise BlockError(f"{c!r} advances {font[c].advance} px; a record holds it in a u8")
-        masks = masks_of(font[c].rows)
-        record = struct.pack("<B3x", font[c].advance)
+    records = [(font[c].advance, masks_of(font[c].rows)) for c in characters]
+    if panel is not None:
+        records.append((MASK, PANEL_MASKS))
+    for advance, masks in records:
+        record = struct.pack("<B3x", advance)
         record += struct.pack(f"<{MASK}H", *masks.glyph) + struct.pack(f"<{MASK}H", *masks.outline)
         out += record.ljust(RECORD_SIZE, b"\0")
     if form1_sectors(len(out)) > BLOCK_MAX_SECTORS:
@@ -286,6 +311,20 @@ def encode_block(
             f"run holds {BLOCK_MAX_SECTORS} (boku.relocate.MOVIE_BLOCK_RESERVE)"
         )
     return bytes(out)
+
+
+def _line(x: int, y: int, indices: Sequence[int]) -> bytes:
+    """One line record, padded to an even length so the next header is halfword-aligned."""
+    line = struct.pack("<HH", x, y) + bytes([*indices, END_OF_LINE])
+    return line + bytes(len(line) % 2)
+
+
+def _panel_span(width: int) -> tuple[int, int]:
+    """`(pen x, tiles)` of a panel row behind lines whose widest is `width` px: `PANEL_PAD_X`
+    either side, rounded up to whole tiles and centred, at most the tiles that span the frame
+    (the last may run past column 319, which no slice holds, so the routine never draws it)."""
+    tiles = min(-(-(width + 2 * PANEL_PAD_X) // MASK), -(-SCREEN_WIDTH // MASK))
+    return max(0, (SCREEN_WIDTH - MASK * tiles) // 2) + 1, tiles
 
 
 def clip_words(block: bytes, index: int) -> tuple[int, ...] | None:

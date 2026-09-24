@@ -601,9 +601,22 @@ names ending near x 176 and a photograph at about x 180-306 — so **no position
 apart**. Counting pixels brighter than 40 in the two bands every third frame of each song
 cue (`work/movies/M28.avi`): only the first cue's top band is clear (0 against a mean of 242
 at the bottom); for the others the less-crossed band still holds 240-640 bright pixels on
-average, in most frames. Each row takes that band (seven top, three bottom). In the
-review's middle shots of nine of the ten (`work/movie-review/M28/`), four show English
-crossing Japanese names.
+average, in most frames. Placed in the less-crossed band (seven top, three bottom), four
+of the review's nine middle shots still showed English crossing Japanese names.
 
-What would keep them apart is a dark panel behind the song cues, hiding the credits in
-those rows while a line is up — a product choice for Jay, not built.
+**The panel (`FMV-06`, Jay, 2026-09-24).** Jay ruled a dark panel behind `M28`'s song cues
+and one position for all of them ("I don't understand why the subtitles move from the
+bottom to the top and back during the credits"): every `M28` row sits at the bottom, and
+each song row carries the `panel` option. The block draws it with no change to
+`asm/movie.asm`: one extra glyph record that paints a solid `DARK` cell
+(`boku.movie_block.PANEL_MASKS`), a line of those tiles behind each text line, as wide as the
+widest line plus `PANEL_PAD_X` each side in whole tiles. Beetle (`work/movie-review/M28/`):
+the credits under a line are hidden while it is up, and the player keeps its pace — 5.008
+STR frames per 20 vsyncs in the panel cues' windows against 5.016 outside them, sampled every
+20 vsyncs through `M28`. The Redux gate's `M60` fixture cue carries a panel and is matched
+pixel for pixel (`tests/test_real_movie_subtitle.py`).
+
+**When "Everything in this whole wide world," is sung.** The transcript's segment began at
+138.6 s (frame 2080), where the ASR started it, but the line is sung from 153.2 s: Whisper on
+cuts of the audio from 153.2 s hears it whole and from 153.4 s without its first word, so the
+reviewed transcript and the cue start at frame 2299 (`boku.voice.header_frame`).

@@ -81,10 +81,11 @@ M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	top
 * **options** are optional, space-separated. `caption` marks a cue that translates writing
   in the picture rather than speech (`M27`'s written thought, FMV-08): `movie-timing` holds
   it to the reading rate, the shortest time and overlap but to no speech, and `--write`
-  never moves its frames; it takes no narration marks.
+  never moves its frames; it takes no narration marks. `panel` draws a dark panel behind
+  the cue's lines, for text over busy writing such as `M28`'s scrolling credits (FMV-06).
   A position is `bottom` (the default, what an empty field means) or `top`, the
   same two rows mirrored to the top of the picture. Use `top` where the picture puts
-  something under the bottom rows, such as the staff credits during the theme song
+  something under the bottom rows, such as `M27`'s staff credits during the theme song
   (`research/movies.md` § 11).
 * The adult Boku's narration — every cue over a transcript segment of kind `narration` —
   is wrapped in `『` … `』`, each cue on its own, as the dialogue marks narration (style guide

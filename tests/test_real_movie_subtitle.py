@@ -74,11 +74,12 @@ EXE = REPO_ROOT / "disc" / "files" / "SCPS_100.88"
 FIXTURE_CUES = (
     "# FIXTURE: tests/test_real_movie_subtitle.py's placeholder cues. Not a translation.\n"
     "M27\t120\t300\tFIXTURE: the opening, M27 frames 120-300 | keyed to M27 and nothing else\n"
-    "M60\t120\t300\tFIXTURE: the fireworks, M60 frames 120-300\ttop\n"
+    "M60\t120\t300\tFIXTURE: the fireworks, M60 frames 120-300\ttop panel\n"
 )
 """Two movies' cues over the same frames: the one frame index inside both is where a
 loader that ignored the movie would draw the wrong one, and every pixel of it is checked.
-`M60`'s sits at the top (FMV-02's position field), so the blit is held to a line's y too."""
+`M60`'s sits at the top (FMV-02's position field) on a panel (FMV-06), so the blit is held
+to a line's y and to the panel tile's pixels too."""
 AT_TOP = {row.movie: row.position == "top" for row in parse(FIXTURE_CUES)[0]}
 
 BYTES_PER_PIXEL = 3

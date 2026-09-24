@@ -64,6 +64,14 @@ def test_the_fifth_field_may_also_mark_a_caption_of_text_in_the_picture():
     assert [(p.line, p.check) for p in problems] == [(3, "cue-malformed")]
 
 
+def test_a_panel_flag_reaches_the_blocks_cue():
+    """FMV-06: `panel` puts a dark panel behind the cue; it is carried to `movie_block.Cue`."""
+    found, problems = mc.parse("M28\t1\t2\tab\tpanel\nM28\t3\t4\tcd\n")
+    assert problems == [] and [row.panel for row in found] == [True, False]
+    cues = mc.cues_by_movie(found, FONT)["M28"]
+    assert [cue.panel for cue in cues] == [True, False]
+
+
 def test_a_files_length_is_the_last_frame_any_id_playing_it_shows():
     """The opening's file is played by an id stopping at 58 and one at 4,239."""
     assert mc.movie_lengths(TSV) == {"M27": 4239, "M60": 362}
