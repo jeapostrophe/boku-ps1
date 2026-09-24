@@ -134,6 +134,21 @@ def fill_from_nearest(
     return unfilled
 
 
+def groups(marks: Iterable[tuple[int, int]]) -> list[Ink]:
+    """The 8-connected groups of `marks`."""
+    out, todo = [], set(marks)
+    while todo:
+        group, stack = set(), [todo.pop()]
+        while stack:
+            p = stack.pop()
+            group.add(p)
+            for q in grown({p}, 1, 1, 1, 1) & todo:
+                todo.discard(q)
+                stack.append(q)
+        out.append(group)
+    return out
+
+
 def stamp(pixels: bytearray, width: int, at: tuple[int, int], ink: Ink, index: int) -> None:
     ax, ay = at
     for x, y in ink:
@@ -257,6 +272,7 @@ __all__ = [
     "dark_type",
     "extent",
     "fill_from_nearest",
+    "groups",
     "grown",
     "most_used",
     "normalised",

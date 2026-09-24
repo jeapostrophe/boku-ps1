@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from boku import texture_paint as paint
 from boku.archive import Archive
 from boku.reinsert import ByteEdit
-from boku.texture_buttons import groups, saturation
+from boku.texture_buttons import saturation
 from boku.textures import Inventory
 from boku.tim import luminance
 from boku.typeset import Face, pixel_face, wrap
@@ -122,7 +122,7 @@ def clear_body(canvas: paint.Canvas, area: Area, what: str) -> int:
     top, bottom = max(0, y0 - area.reach), min(canvas.height, y0 + h + area.reach)
     japanese: set = set()
     loose = []
-    for group in groups({p for p in paint.points((x0, top, w, bottom - top)) if mark(p)}):
+    for group in paint.groups({p for p in paint.points((x0, top, w, bottom - top)) if mark(p)}):
         if all(y0 <= y < y0 + h for _, y in group):
             japanese |= group
         elif all(

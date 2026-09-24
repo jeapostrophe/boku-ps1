@@ -101,12 +101,13 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_M_FILES\.BIN_M_I14000\.BIN__",
         1,
-        "R",
+        "P",
         "Saori's farewell note: 4 vertical columns incl. the signature",
-        "new (~25 chars); not in the script -- scene E2860 has 0 messages",
+        "new (a note and a signature); not in the script -- scene E2860 has 0 messages",
         "spiral notepad on a log, close-up screen I14 from day 28 (E2860, cond day>27 & "
-        "flag[96]>0). Page is near-flat but rotated and dappled with foliage shadow; redraw "
-        "the 3-4 ruled lines by hand. S is the fallback if no artist",
+        "flag[96]>0). The page is flat but turned and foreshortened: the Japanese is refilled "
+        "along the page's own rules and the English written on them through the page's "
+        "plane (Jay, 2026-09-24; research/texture-recipes.md M_I14000)",
     ),
     # ---- the other close-up screens the player deliberately examines ----
     (

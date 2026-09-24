@@ -24,7 +24,6 @@ from boku import REPO_ROOT
 from boku import texture_paint as paint
 from boku import texture_records as tr
 from boku.png import read as read_png
-from boku.texture_buttons import groups
 from boku.texture_text import ink_of, read_entries
 from boku.tim import luminance
 from boku.typeset import FONT_SHEET_ID, GameFace, face_named
@@ -98,7 +97,7 @@ def test_no_label_leaves_japanese_outside_its_box(member, copy, texture_inventor
             if lum(p) < ground - tr.MARK and palette[stock.at(p)][3]
         }  # fmt: skip
         ink = {p for p in paint.points(box) if lum(p) < tr.INK}
-        for group in groups(marks):
+        for group in paint.groups(marks):
             outside = sorted(group - inside) if group & ink else []
             assert not outside, f"{member} {box}: marks outside, {outside[:5]}"
 

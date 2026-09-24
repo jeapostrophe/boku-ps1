@@ -443,27 +443,12 @@ def inside_stone(canvas: paint.Canvas, button: Button, region: paint.Box) -> pai
     }  # fmt: skip
 
 
-def groups(marks: paint.Ink) -> list[paint.Ink]:
-    """The 8-connected groups of `marks`."""
-    out, todo = [], set(marks)
-    while todo:
-        group, stack = set(), [todo.pop()]
-        while stack:
-            p = stack.pop()
-            group.add(p)
-            for q in paint.grown({p}, 1, 1, 1, 1) & todo:
-                todo.discard(q)
-                stack.append(q)
-        out.append(group)
-    return out
-
-
 def islands(marks: paint.Ink, interior: paint.Ink, inked: paint.Ink) -> paint.Ink:
     """The type in a balloon, not the tail's or the outline's shading that reaches in from the
     edge: the groups of `marks` that `interior` surrounds on every side and that carry ink
     (`inked` -- a pale speck of shading is no type), and then any other group on only the rows
     those span (a stroke that runs out to the outline, as the last kana of リストへ does)."""
-    parts = groups(marks)
+    parts = paint.groups(marks)
     inner = [g for g in parts if paint.grown(g, 1, 1, 1, 1) <= interior and g & inked]
     if not inner:
         return set()

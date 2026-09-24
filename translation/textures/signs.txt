@@ -1,4 +1,5 @@
-# Signs painted into the scenery (PLAN GFX-09): the English the build paints in their place.
+# Signs and writing painted into the scenery (PLAN GFX-08, GFX-09): the English the build
+# paints in their place.
 # Format: translation/textures/README.md.
 
 # --- M_C15: the notice board on the path down to the beach, in both variants of map C15.
@@ -9,3 +10,13 @@
 # occurring / swimming during that period is ...
 tex@M_C15.0	High tide
 tex@M_C15.1	No swimming
+
+# --- M_I14000: Saori's farewell note (PLAN GFX-08), the close-up examining her empty camp
+# opens from day 28 (scene E2860, which has no text of its own). Handwriting on a ruled
+# notepad lying at an angle: the Japanese is refilled along the page's own rules and the
+# English written on the rules in the game's glyphs. `note` is up to five lines split at
+# ` // `, each at most 83 px in the game's glyphs; `signature` is one line at the foot, right.
+# The Japanese, four columns: goodbye / you (kimi, in katakana) were a pretty good guy (yatsu),
+# you know / from Saori. "guy", not "kid": the note drops her usual gaki (reviewed 2026-09-24).
+tex@M_I14000.note	Goodbye. // You were // a pretty good // guy.
+tex@M_I14000.signature	From Saori

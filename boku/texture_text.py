@@ -717,11 +717,19 @@ def records(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entr
     return texture_records.records(archive, inv, face, entries)
 
 
+def closeup_note(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Saori's farewell note (`boku.texture_closeups`)."""
+    from boku import texture_closeups
+
+    return texture_closeups.note(archive, inv, face, entries)
+
+
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
     "tex@T_MEMORY": memory_album,
     "tex@M_C15": beach_notice,
+    "tex@M_I14000": closeup_note,
     "nikki@": diary,
     "tex@OTI": credits_strip,
     "btn@": buttons,

@@ -4,8 +4,9 @@
 [data/texture-census.tsv](data/texture-census.tsv)): **180 distinct images `yes` + 17 `maybe`
 = 197**. (Ruling 2026-09-22, Jay: the model-kit box `M_I19000` stays Japanese — the narrator
 says what it is — and 2026-09-23, `GFX-09`: the beach notice is frontal, not at an angle, and is
-in both variants of its map, so it is **P** twice; and `GFX-10`: the epilogue's closing card is translated, **P** — the
-counts below are now **141 P, 27 R, 0 S, 30 N** of 198; the tables keep the audit's original
+in both variants of its map, so it is **P** twice; and `GFX-10`: the epilogue's closing card is translated, **P**;
+and 2026-09-24, `GFX-08`: Saori's farewell note is built programmatically, **P** — the
+counts below are now **142 P, 26 R, 0 S, 30 N** of 198; the tables keep the audit's original
 split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
@@ -30,9 +31,9 @@ the local export under `work/rec08/png/` (regenerate with `work/rec08/extract.py
 | **N** | none | stays Japanese by the charter: a shop sign is a shop sign | nothing |
 
 **P is not "easy" and R is not "hard".** The split is *what the pixels are*, not what they
-cost. The Wolf Girl's letter is 25 characters and is **R**, because the page is rotated and
-dappled; a 94-page diary is **P**, because every one of those pages is the same flat ruled
-panel.
+cost. A 94-page diary is **P**, because every one of those pages is the same flat ruled panel.
+(The audit made the Wolf Girl's letter **R** because its page is turned and foreshortened; it
+turned out to be **P** in the page's own plane — below.)
 
 ## Counts
 
@@ -144,15 +145,15 @@ languages.
 
 ## `signage or label` — 27
 
-### The Wolf Girl's letter — `M_I14000`, **R**
+### The Wolf Girl's letter — `M_I14000`, **P** (was **R**)
 
 Jay's recollection is right, and it is the only such texture on the disc.
 
 * **What it is.** `\_DATA\M_FILES.BIN\M_I14000.BIN` at `0x000214`, 320×240 8bpp, one CLUT: a
   spiral-bound ruled notepad page lying on a mossy fallen log, two mushrooms beside it. **Four
   vertical columns, right to left, fully legible, ≈25 characters**, ending in a signature column
-  that reads "from Saori". A complete, signed farewell note — *goodbye; you turned out to be
-  pretty all right, kid*.
+  that reads "from Saori". A complete, signed farewell note — *goodbye; you were a pretty good
+  guy*.
 * **Where it appears.** Scene **`E2860`** (`data/scenes.tsv`): `map_bases: D07,I14`,
   `triggers: auto=1 examine:z0=2`, `condition: (day>27 & flag[96]>0)`. `D07` is Saori's camp at
   Ryūjin Pond ([../translation/glossary.md](../translation/glossary.md) § 2 *Places*, the
@@ -163,14 +164,16 @@ Jay's recollection is right, and it is the only such texture on the disc.
   and no voiced nodes; `M_I14000` has **zero rows** in `data/text-sites.tsv`; there is no line id
   for the letter's words and none for a narrating "you examine the note" line. The close-up is
   shown silently and dismissed. It is the only plot-bearing string in the game with no line id.
-* **The path: R.** The paper is near-uniform and the note is short, but the page is rotated
-  ~10–25° out of axis, in slight perspective (the rules and the spiral binding converge) and
-  carries dappled foliage shadow. A programmatic blit has no place to land without a homography
-  and a shading rebuild, for exactly one image. An artist erases the four columns and hand-letters
-  three or four English lines along the rules that are already there. **S is the honest fallback**
-  if no artist is available: there is no dialogue on screen, so a caption has the frame to itself.
-  Either way the English is **new text** and this one deserves the most care of any texture in
-  the project.
+* **The path: P, in the page's plane** (Jay, 2026-09-24: un-rotate the page, erase and write
+  it upright, rotate it back, and keep the blue rules). The page is turned about 23° and
+  slightly foreshortened, and the audit took that to need an artist. It does not: the page is
+  one flat quadrilateral, so a single homography maps it upright, the Japanese is refilled
+  from the page's own pixels along its rules, and the English is written on the rules in the
+  game's glyphs and carried back through the same map
+  ([texture-recipes.md](texture-recipes.md) § `M_I14000`). The dappled shadow the audit
+  expected is not on the page. The caption (**S**) stays the fallback, and is not needed. The
+  English is **new text** — the note and its signature, `tex@M_I14000.note` / `.signature` —
+  and was checked against the Japanese for Saori's voice.
 
 ### The three other close-ups — **R**
 
@@ -388,7 +391,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 3 | `tzkan@TZKAN.n` | kite spreads: kite name, difficulty bracket, how to build it | 8 × 3 fields |
 | 4 | `tex@DOPA1`, `tex@MOPA1`, `tex@TOPA1` | 3 book cover titles + the insect book's author-and-photographer credit | 4 strings |
 | 5 | `btn@PK_ITM.title`, `btn@PK_ITM.footer` | radio-exercise attendance card: title + footer line | 2 strings |
-| 6 | `tex@M_I14000.0` | **Saori's farewell note** — the highest-value string here | ~25 chars, 4 columns |
+| 6 | `tex@M_I14000.note`, `.signature` | **Saori's farewell note** — the highest-value string here | ~25 chars, 4 columns |
 | 7 | `tex@M_I23000.*` | hunting-association warning board | 4 short strings |
 | 8 | `tex@M_I18000.0` | "keep out!" sign | 1 line |
 | 9 | `tex@M_I19000.0` | model-kit product name | 1 line |

@@ -91,7 +91,7 @@ test it, so expect to find the places where it quietly assumed its own workflow.
 | | Content | Plan |
 |---|---|---|
 | 1 | Text drawn by the game's own renderer — dialogue, menus, item and insect names | **The priority.** |
-| 2 | Japanese text inside textures (198 images; the picture diary is 94 of them) | After 1. Two paths, chosen per image in [research/textures-plan.md](research/textures-plan.md): **programmatic** (140 — paint the Japanese out of its panel or board and set the English with the game's own glyphs, at build time from your import; the diary, the encyclopedia spreads, the UI plates, the beach notice), **redraw** (27 — stylised lettering, book covers, the farewell note on the log). 31 stay Japanese by the charter — a shop sign is a shop sign. |
+| 2 | Japanese text inside textures (198 images; the picture diary is 94 of them) | After 1. Two paths, chosen per image in [research/textures-plan.md](research/textures-plan.md): **programmatic** (142 — paint the Japanese out of its panel or board and set the English with the game's own glyphs, at build time from your import; the diary, the encyclopedia spreads, the UI plates, the beach notice, the farewell note on the log), **redraw** (26 — stylised lettering, book covers). 30 stay Japanese by the charter — a shop sign is a shop sign. |
 | 3 | Narration inside the movies (`__STR/M27.IKI`, the opening; `M28.IKI`, the one ending movie) | In scope since 2026-09-20 — Jay, after playing: the opening "definitely needs subtitles". The player draws 24-bit frames straight into VRAM, so the subtitles are composited into each frame by a hook in the player (`asm/movie.asm`, ruled 2026-09-22 over burning them in — [research/movies.md](research/movies.md) § 5, § 7); keyed by movie from `translation/movies.txt` and carried by every days build, proven on two movies on both emulators. Left: the narration itself (PLAN `FMV-02`) and the ending's check (`FMV-04`). |
 | 4 | Voices (`__STR/BOKU_XA.XAM`) | **Kept Japanese on purpose** — subtitles, not a dub (see above). |
 | 5 | Voice-overs with no text — the five endings (a still with narration over it, after the one ending movie) and voice-only clips in play, such as the narrator at the well | In scope since 2026-09-22 (Jay, from playing). Inventory, mechanism and translation: PLAN § Voice-over (`VO-01`–`VO-04`). |
@@ -179,7 +179,7 @@ LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
 make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), duckstation-cards, boot-save, sumo-bout, examine, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, voice-only, trial, build (text,
-                     texture recipes, buttons, records and the encyclopedias, code-file arrays
+                     texture recipes, buttons, records, the encyclopedias and the close-ups, code-file arrays
                      moved whole when they grow, labels drawn from code immediates, the memory-card
                      save title), patch,
                      apply-patch, save, sumo (the bug-sumo cage); boku/faces/ holds the two

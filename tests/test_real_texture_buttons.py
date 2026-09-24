@@ -167,7 +167,7 @@ def test_a_balloon_carries_its_english_lines_and_no_japanese(
     ]  # fmt: skip
     assert len(placed) == 1, "the English lines, in their face, are not in the balloon once"
     dark = {p for p in ink - placed[0] if luminance(palette[canvas.at(p)]) < tb.SOFT}
-    left = [g for g in tb.groups(dark) if len(g) >= STROKE]
+    left = [g for g in paint.groups(dark) if len(g) >= STROKE]
     assert left == [], f"marks of type left beside the English: {[sorted(g)[:3] for g in left]}"
     if button.widen:
         assert_sizes_follow(archive, texture_inventory, texture_patched, button)

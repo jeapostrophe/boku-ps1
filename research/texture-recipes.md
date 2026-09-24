@@ -1,4 +1,4 @@
-# Texture recipes — English typeset into textures at build time (PLAN `GFX-07`, `GFX-09`)
+# Texture recipes — English typeset into textures at build time (PLAN `GFX-07`, `GFX-08`, `GFX-09`)
 
 [textures-plan.md](textures-plan.md) chose a path for every image with Japanese in its
 pixels. This file is the **P** path as built: how `boku build --textures` turns the tracked
@@ -199,6 +199,62 @@ build hands its texture patches to the reinserter (`boku.reinsert.plan(carry=…
 applies each one that falls inside a rebuilt member to the rebuilt bytes, in the same child at
 the same distance, and the build drops it from its own patches (`Plan.carried`). A patch into
 the text table itself, or into a bare `EV.BIN` block, is refused.
+
+## `M_I14000` — Saori's farewell note (PLAN `GFX-08`)
+
+`_DATA_M_FILES.BIN_M_I14000.BIN__000214`, 320×240 8bpp, one CLUT: the whole close-up screen
+(scene `E2860`, [textures-plan.md](textures-plan.md) § "The Wolf Girl's letter"). A spiral
+notepad lies on a log, turned about 23° and a little foreshortened; the Japanese is four
+vertical columns of handwriting across its horizontal rules, the pen dark grey with grey
+antialiasing, and the page's top-right corner is curled over.
+
+**The page's plane.** `boku/texture_closeups.py` treats the page as a flat rectangle, 100×123
+upright with the spiral on the left, mapped onto the picture by the homography through its four
+corners. Each corner is where two of the page's edges, fitted to the outline of its paper, meet:
+(84.2, 73.7), (179.7, 35.9), (239.3, 140.3), (149.0, 181.7) — the top-right one off the paper,
+under the curl. Read back upright through that map the rules come out level (within half a
+pixel across the page) at the heights `NOTE_RULES` lists, 4.5–5.5 apart as painted.
+
+**What the recipe does**, all in the text area — upright (11, 3) 86×119, right of the spiral's
+holes:
+
+* **The Japanese** is every group of pixels darker than luminance 150 that the area surrounds
+  (the curl and the log reach into its top right from outside, and are left), plus the grey
+  within two pixels of them that is darker than 215 and no bluer than grey — the paper round the
+  writing is paler, and bluer toward the foot of the page. Grown by a pixel, it is refilled
+  pixel by pixel from the nearest clean pixel **on its own rule**: walking along the page's
+  horizontal in half-pixel steps, the first pixel whose upright height is within half a pixel of
+  its own. So a ruled line stays a line and the page's shading, which runs in bands along the
+  rules, keeps its bands.
+* **The English** is the game's glyphs, set upright: the note's lines (at most five, split at
+  ` // `) from x 14 with their capitals standing on every third rule from the fifth, the
+  signature right-aligned on the twenty-first; a line is at most 83 px. Each picture pixel is
+  sampled 4×4 in the upright plane for how much of it the English covers; the coverage, scaled
+  by 1.5 (a one-pixel stroke off the grid covers two pixels by half, which reads grey beside the
+  Japanese's strokes; `paint.bold` clogs at this size), mixes the pen over the paper under it,
+  and the mix is matched to the nearest entry the page already uses. The pen is the entry the
+  darkest quarter of the Japanese's stroke pixels use most. A line that would be written off
+  the paper — onto the curl or the log — is refused.
+
+Only the Japanese, the pixel round it, and the English change; the rules, the shading and
+everything off the page are the original's.
+
+**Reaching it.** The real route is examining the empty camp from day 28. For a check, poking
+`I14` into `g_movie_return_map` during the opening movie (`run_core.py --poke
+5300:0x80036588=49313400` with `boot-to-dialogue.press`, as for `M_C15`) lands day 1 on the
+close-up, drawn exactly at the screen's top-left, with Boku standing on it at x 146–172,
+y 57–118.
+
+**Proof.** `tests/test_real_texture_closeups.py`: the rebuilt page read back upright through
+its plane holds each line of the tracked English (found by search, not by the recipe's
+placement), every dark pixel on the paper is within two pixels of one, and every line stands
+on its rule alike; the stock page fails. Where the Japanese was, the refilled paper is bluer
+on a rule than between rules, as the untouched paper is; nothing outside the text area
+changed. `tests/test_texture_closeups.py` checks the plane, and that a refill along a turned
+page keeps each pixel's band where a refill along the picture's rows does not.
+`tests/test_real_texture_text_beetle.py` warps a texture-only image there and requires every
+texel the build changed (but where Boku stands) to show its colour exactly; the stock image
+fails.
 
 ## Buttons — stone "Back" plaques and speech balloons
 
