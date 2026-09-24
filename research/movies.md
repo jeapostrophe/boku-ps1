@@ -545,8 +545,10 @@ reviewable; both write only under `work/`:
   narration segments of the voice lane's reviewed transcripts (`work/voice/reviewed/
   <movie>.ja.tsv`, their frame columns only): a segment's first cue starts within 7 frames
   (0.5 s) of the speech, its last cue does not end more than a frame before the speech does
-  (abutting segments share that frame), no cue is on screen under 23 frames (1.5 s), and none
-  asks more than 17 characters a second (the translator's `|` counts as one space). Reading
+  (abutting segments share that frame), no cue is on screen under 23 frames (1.5 s), none
+  asks more than 17 characters a second (the translator's `|` counts as one space, the
+  narration marks as nothing), and a cue is wrapped in `『 』` exactly when its segment is
+  narration (`FMV-07`). Reading
   beats sync: a start may leave the onset rule, and an end the end rule, by up to 30 more
   frames (2 s, `DRIFT`) when putting it back would leave a cue too fast or too short; a late
   end is not checked, and `retime` holds a cue at most `DRIFT` past its 2 s linger, never over

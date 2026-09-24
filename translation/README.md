@@ -82,6 +82,10 @@ M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	top
   same two rows mirrored to the top of the picture. Use `top` where the picture puts
   something under the bottom rows, such as the staff credits during the theme song
   (`research/movies.md` § 11).
+* The adult Boku's narration — every cue over a transcript segment of kind `narration` —
+  is wrapped in `『` … `』`, each cue on its own, as the dialogue marks narration (style guide
+  § 9); the song's cues carry no marks. `movie-timing` checks both ways (`cue-marks`), and
+  the marks are not counted toward a cue's reading rate.
 * `#` lines and blank lines are notes. There is no Japanese in this file, as in the day
   files: the transcripts of the narration stay under `work/`.
 

@@ -28,6 +28,7 @@ from fractions import Fraction
 from pathlib import Path
 
 from boku import REPO_ROOT
+from boku.layout import SPEECH_MARKS
 from boku.movie_cues import LINE_BREAK, CueRow, Problem
 from boku.movies import FPS
 
@@ -56,12 +57,18 @@ its cues: the edges sit on the speech, the splits only on the text."""
 
 SUBTITLED_KINDS = frozenset({"narration", "song"})
 """The transcript `kind`s a cue subtitles: the song is sung and subtitled too (FMV-02)."""
+NARRATION = "narration"
+"""The `kind` of the adult Boku's narration, whose cues take `NARRATION_MARKS` (FMV-07)."""
+NARRATION_MARKS = ("『", SPEECH_MARKS["『"])
+"""What the dialogue draws around narration (`boku.layout.SPEECH_MARKS`); each narrated cue
+opens and closes with them, which no one reads, so `characters` does not count them."""
 
 
 @dataclass(frozen=True)
 class Segment:
     start: int
     end: int
+    kind: str = NARRATION
 
 
 def read_segments(path: Path) -> list[Segment]:
@@ -69,15 +76,17 @@ def read_segments(path: Path) -> list[Segment]:
     with Path(path).open(encoding="utf-8") as handle:
         rows = csv.DictReader(handle, delimiter="\t")
         return [
-            Segment(int(row["start_frame"]), int(row["end_frame"]))
+            Segment(int(row["start_frame"]), int(row["end_frame"]), row["kind"])
             for row in rows
             if row["kind"] in SUBTITLED_KINDS
         ]
 
 
 def characters(text: str) -> int:
-    """What a viewer reads: the text with the translator's line breaks as one space."""
-    return len(" ".join(part.strip() for part in text.split(LINE_BREAK)))
+    """What a viewer reads: the text with the translator's line breaks as one space and
+    without the narration marks."""
+    unmarked = "".join(c for c in text if c not in NARRATION_MARKS)
+    return len(" ".join(part.strip() for part in unmarked.split(LINE_BREAK)))
 
 
 def rate(text: str, start: int, end: int) -> Fraction:
@@ -110,6 +119,7 @@ def problems(
     cues = sorted(cues, key=lambda cue: cue.start)
     owner = assign(cues, segments)
     found: list[Problem] = []
+    opening, closing = NARRATION_MARKS
 
     def say(cue: CueRow, check: str, message: str) -> None:
         found.append(Problem(cue.line, cue.key, check, message))
@@ -128,6 +138,15 @@ def problems(
             say(cue, "cue-unspoken", "overlaps no spoken segment")
             continue
         seg = segments[seg_index]
+        marks = sum(cue.text.count(mark) for mark in NARRATION_MARKS)
+        wrapped = marks == 2 and cue.text.startswith(opening) and cue.text.endswith(closing)
+        if not (wrapped if seg.kind == NARRATION else marks == 0):
+            say(
+                cue,
+                "cue-marks",
+                f"{seg.kind} at {seg.start}: "
+                + ("wrap it in 『 』" if seg.kind == NARRATION else "no 『 』"),
+            )
         mine = [m for m, index in enumerate(owner) if index == seg_index]
         before = cues[n - 1] if n and cues[n - 1].end + 1 == cue.start else None
         after = cues[n + 1] if n + 1 < len(cues) and cues[n + 1].start == cue.end + 1 else None
@@ -350,6 +369,8 @@ __all__ = [
     "LINGER",
     "MAX_CPS",
     "MIN_FRAMES",
+    "NARRATION",
+    "NARRATION_MARKS",
     "ONSET",
     "Segment",
     "assign",

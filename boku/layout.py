@@ -73,7 +73,8 @@ the real thing."""
 SPEECH_MARKS = {"「": "」", "『": "』"}
 """The marks the original draws around speech and narration, opening -> closing. The
 translation text carries none (style guide § 9); `original_marks` reads which the Japanese
-drew and `lay_out_message` puts them back around the English."""
+drew and `lay_out_message` puts them back around the English. The movie cues are the one
+exception: they have no original text, so their narration carries `『 』` itself."""
 
 
 class LayoutError(Exception):

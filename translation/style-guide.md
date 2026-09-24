@@ -226,6 +226,9 @@ bible § Wordplay). Three kinds, three treatments:
   are the 「 」 glyphs or English quotation marks, and whether the label sits inside the box, is
   the dialogue band's decision. Narration (『 』 in the Japanese) is
   unlabelled and set apart by the renderer; system messages ("Got the fishing rod.") plain.
+  **The one exception is `movies.txt`** (FMV-07, Jay, 2026-09-24): a movie has no original
+  text for the renderer to read the marks from, so the adult Boku's narration cues carry
+  `『 』` in the English, one pair per cue (`translation/README.md` § movies.txt).
 * **Quotation marks around a word named inside a line are allowed** — SETTLED (Q7, Jay,
   2026-09-23): *It's written "poem" and read "Shirabe"* (`E0177.1`), a word written on a
   sign, a word someone asks the meaning of. Straight double quotes; the font has them. What

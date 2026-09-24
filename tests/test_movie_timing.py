@@ -11,7 +11,9 @@ FPS = mt.FPS
 
 
 def cue(start: int, end: int, chars: int, line: int = 1) -> CueRow:
-    return CueRow("M60", start, end, "a" * chars, line)
+    """A narrated cue (a `Segment`'s default kind) reading `chars` characters."""
+    opening, closing = mt.NARRATION_MARKS
+    return CueRow("M60", start, end, opening + "a" * chars + closing, line)
 
 
 def checks(found) -> list[str]:
@@ -201,7 +203,10 @@ def test_sung_lines_are_timed_like_narration_and_music_is_not(tmp_path):
         "3\t4\t1159\t1200\tvoice\tok\t\t\n",
         encoding="utf-8",
     )
-    assert mt.read_segments(path) == [mt.Segment(961, 1044), mt.Segment(1044, 1159)]
+    assert mt.read_segments(path) == [
+        mt.Segment(961, 1044, "narration"),
+        mt.Segment(1044, 1159, "song"),
+    ]
 
 
 def test_a_cue_starting_before_its_onset_window_is_pulled_back_into_it():
@@ -218,3 +223,23 @@ def test_abutting_cues_across_a_long_silence_keep_the_next_cue_on_its_onset():
     cues = [cue(100, 199, 10, 1), cue(200, 230, 10, 2)]
     assert mt.problems(cues, segments) == []
     assert mt.problems(mt.retime(cues, segments, 400), segments) == []
+
+
+def test_the_narration_marks_are_not_read_so_they_do_not_count_toward_the_rate():
+    assert mt.characters("『abc | def』") == len("abc def")
+
+
+def test_a_narrated_cue_takes_the_narration_marks_and_a_sung_one_does_not():
+    """FMV-07: the adult Boku's narration is marked 『 』 as the dialogue's narration is; the
+    theme song is not narration. The transcript's `kind` says which a cue is."""
+    spoken = mt.Segment(100, 190, "narration")
+    sung = mt.Segment(100, 190, "song")
+    marked = CueRow("M60", 100, 190, "『aaaa | aaaa』", 1)
+    bare = CueRow("M60", 100, 190, "aaaa | aaaa", 1)
+    assert mt.problems([marked], [spoken]) == []
+    assert checks(mt.problems([bare], [spoken])) == ["cue-marks"]
+    assert mt.problems([bare], [sung]) == []
+    assert checks(mt.problems([marked], [sung])) == ["cue-marks"]
+    for wrong in ("『aaaa | aaaa", "『aaaa』 | aaaa"):
+        stray = CueRow("M60", 100, 190, wrong, 1)
+        assert checks(mt.problems([stray], [spoken])) == ["cue-marks"], wrong
