@@ -115,8 +115,8 @@ class GameFace(Face):
         self._width = sheet.width
         self.cells = cells
         """Character -> glyph id: ASCII through `GlyphTable.to_glyph` (which has no hyphen:
-        the sheet's only dash is a full-width minus, `research/font-candidates.md` § 1),
-        plus the apostrophe."""
+        the sheet's only dash is a full-width minus, `research/font-candidates.md` § 1; the
+        face draws its own, `HYPHEN_WIDTH`), plus the apostrophe."""
         self._cache: dict[str, Glyph | None] = {}
 
     @classmethod
@@ -136,24 +136,39 @@ class GameFace(Face):
             [(idx[(y0 + r) * w + x0 + c] >> plane) & 1 for c in range(CELL)] for r in range(CELL)
         ]
 
+    HYPHEN_WIDTH = 4
+    """Our hyphen's ink: the sheet has none (its only dash is the full-width minus), so one is
+    drawn on the row of `e`'s crossbar, narrower than `e` (PLAN TRN-04: "Moe-neechan")."""
+
+    def _hyphen(self) -> Glyph | None:
+        e = self.glyph("e")
+        if e is None:
+            return None
+        crossbar = max(range(len(e.rows)), key=lambda r: len(e.rows[r]))
+        span = tuple(range(self.HYPHEN_WIDTH))
+        return Glyph(self.HYPHEN_WIDTH, tuple(span if r == crossbar else () for r in range(CELL)))
+
     def glyph(self, ch: str) -> Glyph | None:
         if ch not in self._cache:
-            glyph_id = self.cells.get(ch)
-            found = None
-            if glyph_id is not None:
-                bits = self._bits(glyph_id)
-                inked = [c for r in range(CELL) for c in range(CELL) if bits[r][c]]
-                if inked:
-                    left, right = min(inked), max(inked)
-                    found = Glyph(
-                        width=right - left + 1,
-                        rows=tuple(
-                            tuple(c - left for c in range(left, right + 1) if bits[r][c])
-                            for r in range(CELL)
-                        ),
-                    )
-            self._cache[ch] = found
+            drawn = ch == "-" and ch not in self.cells
+            self._cache[ch] = self._hyphen() if drawn else self._from_sheet(ch)
         return self._cache[ch]
+
+    def _from_sheet(self, ch: str) -> Glyph | None:
+        glyph_id = self.cells.get(ch)
+        if glyph_id is None:
+            return None
+        bits = self._bits(glyph_id)
+        inked = [c for r in range(CELL) for c in range(CELL) if bits[r][c]]
+        if not inked:
+            return None
+        left, right = min(inked), max(inked)
+        return Glyph(
+            width=right - left + 1,
+            rows=tuple(
+                tuple(c - left for c in range(left, right + 1) if bits[r][c]) for r in range(CELL)
+            ),
+        )
 
 
 FACES_DIR = Path(__file__).parent / "faces"

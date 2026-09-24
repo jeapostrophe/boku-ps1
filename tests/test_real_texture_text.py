@@ -315,9 +315,28 @@ def test_an_entry_one_line_too_long_is_refused_with_its_numbers(archive, inv, tm
         diary_check(archive, inv, tmp_path, f"nikki@NIKKI_001\t{text} {word}\n")
 
 
-def test_a_hyphen_in_an_entry_is_refused(archive, inv, tmp_path):
-    with pytest.raises(tt.TextureTextError, match="no drawing for '-'"):
-        diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\tA well-known bug.\n")
+def test_a_double_quote_in_an_entry_is_refused(archive, inv, tmp_path):
+    with pytest.raises(tt.TextureTextError, match="no drawing for '\"'"):
+        diary_check(archive, inv, tmp_path, 'nikki@NIKKI_001\tA "bug".\n')
+
+
+def test_the_hyphen_is_drawn_as_the_crossbar_of_the_sheets_e(archive, inv, tmp_path):
+    """The sheet has no hyphen (its only dash is the full-width minus); the face draws a fixed
+    4 px one, narrower than `e`, on the row of `e`'s crossbar, so "Moe-neechan" sets as the
+    day files write it. The crossbar is found here as the one full-width row strictly between
+    `e`'s top and bottom ink, not as the face finds it."""
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    e = face.glyph("e")
+    inked = [r for r, xs in enumerate(e.rows) if xs]
+    interior = range(inked[0] + 1, inked[-1])
+    full = [r for r in interior if len(e.rows[r]) == e.width]
+    assert len(full) == 1, full
+    crossbar = full[0]
+    hyphen = face.glyph("-")
+    assert hyphen is not None
+    assert [r for r, xs in enumerate(hyphen.rows) if xs] == [crossbar]
+    assert hyphen.width < e.width
+    diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\tMoe-neechan read a well-known book.\n")
 
 
 def test_a_word_wider_than_a_line_is_refused_not_clipped(archive, inv, tmp_path):

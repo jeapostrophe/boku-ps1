@@ -167,7 +167,9 @@ Capacity, measured over the lowercase alphabet:
 | Galmuri9 (BDF, native size) | 5.54 / 5.62 | ≈39 | ≈194 | — |
 
 The hyphen is in that list on purpose: the sheet's only dash is a full-width minus (U+2212),
-which sits high and wide, so `-` is left unmapped and reported rather than silently set wrong.
+which sits high and wide, so `-` is not mapped to it. `GameFace` draws its own instead
+(`TRN-04`, 2026-09-24): a 4 px stroke on the row of `e`'s crossbar, so the diary sets
+"Moe-neechan" as the day files write it.
 
 ## The two faces, looked at
 
