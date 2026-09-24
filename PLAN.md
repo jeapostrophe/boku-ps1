@@ -365,7 +365,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       recommended), c (12 px pitch), shot in `work/lane/desc-options/`; and the surfaces
       bounded by their panel textures — extras .1 (memory-card .5 reworded to fit, `TXT-11`), item
       names .0/.1/.3 (136–144 px in 115) — two-line message, condensed glyphs or scrolling.
-      Still to measure: kite names and the cage HUD, fishing and sumo boxes. Original row — for every box geometry the game uses:
+      Bug sumo's boxes measured (hint, rank board, notebook names).
+      Still to measure: kite names and the cage HUD, fishing. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
       glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
       minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
@@ -576,8 +577,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
       surfaces); 69 `array-group` warnings (the fishing messages and the ant count are laid out, 2026-09-23;
       the fortune and kite-crash banners draw one centred English line in a 120 × 36 panel,
-      proven on Beetle (`asm/banners.asm`, 2026-09-23); the sumo hint and strength rows wait
-      on a bout (`VO-06`'s cage record); the insect box waits on its layout) and 1 `not-placeable` (the
+      proven on Beetle (`asm/banners.asm`, 2026-09-23); the sumo hint and strength rows are drawn
+      by banner routines, proven on Beetle (2026-09-24); the insect box waits on its layout) and 1 `not-placeable` (the
       specimen label, dead code): code labels are placed by rewriting their immediates, the
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
