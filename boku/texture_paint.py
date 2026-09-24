@@ -155,6 +155,21 @@ def stamp(pixels: bytearray, width: int, at: tuple[int, int], ink: Ink, index: i
         pixels[(ay + y) * width + ax + x] = index
 
 
+def groups(marks: Ink) -> list[Ink]:
+    """The 8-connected groups of `marks`."""
+    out, todo = [], set(marks)
+    while todo:
+        group, stack = set(), [todo.pop()]
+        while stack:
+            p = stack.pop()
+            group.add(p)
+            for q in grown({p}, 1, 1, 1, 1) & todo:
+                todo.discard(q)
+                stack.append(q)
+        out.append(group)
+    return out
+
+
 def scaled(ink: Ink, n: int) -> Ink:
     return {(x * n + i, y * n + j) for x, y in ink for i in range(n) for j in range(n)}
 

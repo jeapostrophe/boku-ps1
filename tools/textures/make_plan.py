@@ -121,10 +121,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_M_FILES\.BIN_M_I18000\.BIN__",
         1,
-        "R",
+        "P",
         "hand-lettered keep-out sign",
-        "new (1 line)",
-        "close-up screen; flat white panda-shaped panel, frontal, marker lettering",
+        "new (2 lines)",
+        "close-up screen; flat white panda-shaped panel, frontal, marker lettering. P by Jay's "
+        "ruling (2026-09-24, GFX-08 G8-I18 b): the marker painted out, the English in the game's "
+        "glyphs doubled (research/texture-recipes.md marker signs)",
     ),
     (
         r"^_DATA_M_FILES\.BIN_M_I19000\.BIN__",
@@ -229,11 +231,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_M_S01000\.BIN__017d24$",
         1,
-        "R",
-        "'bug swap notebook' cover, marker lettering on a spiral notepad",
-        "new (2 lines)",
-        "census maybe RESOLVED at CLUT 3: legible hand-lettered marker on a tan notepad in the "
-        "insect-cage close-up. Marker style, so not a glyph typeset",
+        "P",
+        "'bug trading notebook' cover, marker lettering on a spiral notepad",
+        "new (3 lines)",
+        "census maybe RESOLVED at CLUT 3: hand-lettered marker on a tan notepad on the bug-sumo "
+        "desk. P by Jay's ruling (2026-09-24, GFX-08 G8-NB b): the marker painted out, the "
+        "English in the game's glyphs (research/texture-recipes.md marker signs)",
     ),
     (
         r"^_DATA_M_S01001\.BIN__",
@@ -299,11 +302,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_MZKAN\.BIN__000048$",
         1,
-        "R",
-        "'back' plaque and two small action plates",
-        "new (3 short strings)",
-        "census maybe RESOLVED at CLUT 1: a 44x74 sprite set whose 'back' is brush-lettered on "
-        "a stone plaque, not plain type",
+        "P",
+        "the insect book's stone 'back' over a wreath and two pencils",
+        "new (1 word)",
+        "census maybe RESOLVED at CLUT 1: the same stone as every other 'Back', built with them "
+        "(research/texture-recipes.md Buttons, MZKAN.back); the wreath and pencils carry no "
+        "Japanese",
     ),
     # ---- the two that are not translation work at all ----
     (

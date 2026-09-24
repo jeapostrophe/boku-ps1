@@ -30,7 +30,7 @@ from boku.tim import luminance
 from boku.typeset import Face, face_named
 
 from boku.texture_text import (  # isort: skip
-    Entry, TextureTextError, centred, fits, found, ink_of, lines_of,
+    Entry, TextureTextError, centred, filled_from_nearest, fits, found, ink_of, lines_of,
 )  # fmt: skip
 
 FAMILY = "btn@"
@@ -421,10 +421,7 @@ def _repaint(
     text = paint.normalised(paint.bold(text) if bold else text)
     fits(entry, text, room, what)
     ink_index = canvas.most_used(ink if inked is None else inked, stock=True)
-    left = canvas.fill_from_nearest(mask, donors, parity=parity)
-    if left:
-        raise TextureTextError(f"{what}: {len(left)} pixel(s) of Japanese had nothing near "
-                               f"to be refilled from, first {left[:3]}")  # fmt: skip
+    filled_from_nearest(canvas, mask, donors, parity=parity, what=what)
     canvas.stamp(centred(text, paint.extent(ink)), text, ink_index)
 
 
@@ -596,10 +593,7 @@ def label(
     ink_index = canvas.most_used(core, stock=True)
     block = lines_block(face, lines_of(entry), entry)
     fits(entry, paint.grown(block, 1, 1, 1, 1), box, what)
-    left = canvas.fill_from_nearest(rect, donors, reach=LABEL_REACH)
-    if left:
-        raise TextureTextError(f"{what}: {len(left)} pixel(s) of the label had nothing near to "
-                               f"be refilled from, first {left[:3]}")  # fmt: skip
+    filled_from_nearest(canvas, rect, donors, reach=LABEL_REACH, what=what)
     cx, cy = centred(block, (jx, jy, jw, jh))
     _, _, bw, bh = paint.extent(block)
     # centred on the Japanese, but kept a pixel inside the box when the English is wider

@@ -39,11 +39,11 @@ turned out to be **P** in the page's own plane — below.)
 
 | path | images | what they are |
 |---|---:|---|
-| **P** programmatic | **138** | 94 diary pages, 26 encyclopedia spreads, 1 item card, 17 UI atlases/plates |
-| **R** redraw | **28** | 21 book-cover animation frames, 4 close-up signs, the result badges, a notebook cover, a brush-lettered button set |
-| **S** subtitle | **1** | the beach notice board (now **P** in both map variants — see its section) |
-| **N** none | **30** | scenery signage, packaging, calligraphy, the glyph sheet, the publisher credit |
-| | **197** | |
+| **P** programmatic | **144** | 94 diary pages, 27 encyclopedia spreads and item art, 3 signs (the beach board in both map variants, the keep-out sign), 19 UI atlases/plates (the bug-trading notebook's cover among them), the credits card |
+| **R** redraw | **24** | 21 book-cover animation frames (left Japanese by Jay's ruling, GFX-08), 2 close-up signs (Saori's note, the hunting board), the result badges |
+| **S** subtitle | **0** | (the beach notice board was the one; it is **P** in both map variants — see its section) |
+| **N** none | **30** | scenery signage, packaging, calligraphy, the glyph sheet |
+| | **198** | |
 
 By category (the census's own `category` values, so they grep):
 
@@ -51,12 +51,12 @@ By category (the census's own `category` values, so they grep):
 |---|---:|---:|---:|---:|---:|
 | `picture-diary page` | 94 | — | — | — | 94 |
 | `insect/fish/item book` | 27 | 21 | — | 1 | 49 |
-| `signage or label` | — | 4 | 1 | 22 | 27 |
-| `title/menu/UI art` | 17 | 3 | — | 4 | 24 |
+| `signage or label` | 3 | 2 | — | 23 | 28 |
+| `title/menu/UI art` | 19 | 1 | — | 4 | 24 |
 | `calendar/clock` | — | — | — | 1 | 1 |
 | `font/glyph sheet` | — | — | — | 1 | 1 |
-| `credits` | — | — | — | 1 | 1 |
-| **total** | **138** | **28** | **1** | **30** | **197** |
+| `credits` | 1 | — | — | — | 1 |
+| **total** | **144** | **24** | **0** | **30** | **198** |
 
 `maybe` rows are all resolved below; the TSV keeps the census's `yes`/`maybe` provenance out of
 the way and records only the decision, so "resolved" means *looked at again and settled*.
@@ -143,7 +143,7 @@ languages.
 * `PK_ITM` `0x012acc` (census `maybe`) — **N**, *resolved*: an old book prop whose title is
   embossed dark-on-dark and does not resolve at any CLUT. The player never reads it.
 
-## `signage or label` — 27
+## `signage or label` — 28
 
 ### The Wolf Girl's letter — `M_I14000`, **P** (was **R**)
 
@@ -175,15 +175,18 @@ Jay's recollection is right, and it is the only such texture on the disc.
   English is **new text** — the note and its signature, `tex@M_I14000.note` / `.signature` —
   and was checked against the Japanese for Saori's voice.
 
-### The three other close-ups — **R**
+### The three other close-ups — the hunting board **R**, the keep-out sign **P**, the model-kit box **N**
 
-These are `M_I*` **close-up screens**: the player entered them by choosing to examine the thing.
-Leaving them Japanese would be leaving untranslated the thing the player just asked to read.
+These are `M_I*` **close-up screens**: the player entered them by choosing to examine the thing,
+which is the case for translating them; the model-kit box stays Japanese by Jay's ruling
+(2026-09-22: packaging).
 
 * `M_I23000` — the hunting-association warning board: an alarm word in a starburst, two large
   hand-painted lines, and the association's name in the corner, over a weathered frontal board.
 * `M_I18000` (2 members, 1 image) — the hand-lettered "keep out!" sign hung on a door: flat
-  white panel, frontal, marker lettering.
+  white panel, frontal, marker lettering. *Now **P*** (Jay, 2026-09-24, GFX-08 G8-I18 b): the
+  marker painted out and "Don't come in!" set in the game's glyphs
+  ([texture-recipes.md](texture-recipes.md) § "Marker signs").
 * `M_I19000` — the model-aeroplane kit box: scale plus a Japanese product name over a
   specification line that is **already Latin**, on a flat frontal box face. The parody brand
   mark stays.
@@ -245,7 +248,7 @@ Two screens are **split between the two mechanisms**, and that is the thing to h
 `count_label_draw`) — English labels there may be cheaper *as* a texture. That is a `TXT`
 question; it is noted here so the two sides do not both assume the other has it.
 
-### **P** — 17
+### **P** — 19
 
 * `T_TITLE` — the four title-menu lines on a transparent ground, outlined type with a drop
   shadow. `PRESS START BUTTON` and the copyright line are already Latin. Clearing a transparent
@@ -267,19 +270,20 @@ question; it is noted here so the two sides do not both assume the other has it.
   and stay as they are.
 * `TZICON` — the kite-workshop speech balloon, its confirm word and a "back" button, flat on
   transparent.
+* `M_S01000` `0x017d24` (census `maybe`) — *resolved* at CLUT 3: the spiral notepad on the
+  bug-sumo desk whose cover is hand-lettered in marker, "bug trading notebook". *Now **P***
+  (Jay, 2026-09-24, GFX-08 G8-NB b): painted out and set in the game's glyphs as the
+  keep-out sign is.
+* `MZKAN.BIN` `0x000048` (census `maybe`) — *resolved* at CLUT 1, **P**: a 44×74 sprite set: the
+  insect book's stone "Back" — *corrected* 2026-09-23: the same stone drawing as every other
+  "Back", built with them ([texture-recipes.md](texture-recipes.md) § "Buttons") — above a
+  wreath and two pencils (`H`, `HB`), which carry no Japanese.
 
-### **R** — 3
+### **R** — 1
 
 * `MITIM` — the insect-catch result badges: a "rare" starburst, size crowns, male/female marks,
   on a transparent 4bpp sheet with 10 CLUTs. `BIG!` is already Latin. Stylised badge lettering,
   not type.
-* `M_S01000` `0x017d24` (census `maybe`) — *resolved* at CLUT 3: a spiral notepad in the
-  insect-cage close-up whose cover is hand-lettered in marker, "bug swap notebook". Legible,
-  real, and in a style no glyph typeset reproduces.
-* `MZKAN.BIN` `0x000048` (census `maybe`) — *resolved* at CLUT 1: a 44×74 sprite set: the
-  insect book's stone "Back" — *corrected* 2026-09-23: the same stone drawing as every other
-  "Back", built with them ([texture-recipes.md](texture-recipes.md) § "Buttons") — above a
-  wreath and two pencils (`H`, `HB`), which carry no Japanese.
 
 ### **N** — 4, all census `maybe`, all *resolved as having no Japanese*
 
@@ -393,8 +397,8 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 5 | `btn@PK_ITM.title`, `btn@PK_ITM.footer` | radio-exercise attendance card: title + footer line | 2 strings |
 | 6 | `tex@M_I14000.note`, `.signature` | **Saori's farewell note** — the highest-value string here | ~25 chars, 4 columns |
 | 7 | `tex@M_I23000.*` | hunting-association warning board | 4 short strings |
-| 8 | `tex@M_I18000.0` | "keep out!" sign | 1 line |
-| 9 | `tex@M_I19000.0` | model-kit product name | 1 line |
+| 8 | `tex@M_I18.0` | the keep-out sign, "Don't // come in!" | 2 lines |
+| 9 | `tex@M_I19000.0` | model-kit product name — left Japanese (**N**, Jay, 2026-09-22) | none |
 | 10 | `tex@M_C15.0`, `.1` | beach notice board, painted onto the board in both map variants | 2 lines |
 | 11 | `tex@T_TITLE.*` | title menu: new game / continue / summer memories / settings | 4 lines |
 | 12 | `tex@T_CONFIG.*` | settings value plates | ~6 plates |
@@ -403,8 +407,8 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 15 | `tex@MITIM.*` | result badge words | ~4 words |
 | 16 | `tex@TZICON.*` | kite-workshop balloon, confirm, back | 3 strings |
 | 17 | `tex@T_MEMORY.0` | album heading plate | 1 line |
-| 18 | `tex@M_S01000.*` | "bug swap notebook" cover | 2 lines |
-| 19 | `tex@MZKAN.*` | brush-lettered back plaque + 2 action plates | 3 strings |
+| 18 | `tex@M_S01000.0` | the bug-trading notebook's cover, "Bug // Trading // Notebook" | 3 lines |
+| 19 | `btn@MZKAN.back` | the insect book's stone "Back" (the same stone as every other; the wreath and pencils beside it carry no Japanese) | 1 word |
 
 Rows 1–3 are **111 pages** and dwarf everything else; rows 11–19 are a few dozen short strings
 that a single pass produces. The glossary already governs rows 2 and 3 (species and kite names)

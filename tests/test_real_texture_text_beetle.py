@@ -29,6 +29,7 @@ import pytest
 
 from boku import REPO_ROOT
 from boku import texture_closeups as tc
+from boku import texture_paint as paint
 from boku import texture_text as tt
 from boku.png import read as read_png
 from boku.tim import parse_exact
@@ -173,24 +174,22 @@ stock image by matching every CLUT at every screen offset (`research/texture-rec
 BEACH_ON_SCREEN = (161, 178)
 
 
-def test_the_beach_notice_on_beetle_is_the_painted_english(
-    beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
-):  # fmt: skip
+def warped_shot(beetle, image, work: Path, warp: str, frame: int):
+    """Boot `image` to the first dialogue, poke `warp` into the map the opening movie returns
+    to, and shoot `frame`."""
     core, system = beetle
-    work = tmp_path_factory.mktemp("beach-beetle")
-    args = [
-        sys.executable, str(RUNNER), str(texture_image),
-        "--core", core, "--system", system, "--work", str(work),
-        "--frames", str(BEACH_SHOT), "--shot", f"{BEACH_SHOT}:beach",
-        "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
-        "--poke", BEACH_WARP,
-    ]  # fmt: skip
-    subprocess.run(args, check=True, capture_output=True, timeout=600)
-    shot = read_png((work / "beach.png").read_bytes())
-    n, wrong = compare(
-        shot, texture_inventory, texture_patched, tt.BEACH_BACKGROUNDS[0], tt.BEACH_CLUT,
-        BEACH_BOARD, BEACH_ON_SCREEN,
+    subprocess.run(
+        [sys.executable, str(RUNNER), str(image), "--core", core, "--system", system,
+         "--work", str(work), "--frames", str(frame), "--shot", f"{frame}:shot",
+         "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
+         "--poke", warp],
+        check=True, capture_output=True, timeout=600,
     )  # fmt: skip
+    return read_png((work / "shot.png").read_bytes())
+
+
+def assert_on_screen(shot, inv, blob, texture_id: str, clut: int, box, at) -> None:
+    n, wrong = compare(shot, inv, blob, texture_id, clut, box, at)
     assert n > 500, "the build changed too few texels where the check looked"
     assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"
 
@@ -225,6 +224,14 @@ def test_saoris_note_on_beetle_is_the_written_english(
     )  # fmt: skip
     assert n > 1000, "the build changed too few texels where the check looked"
     assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"
+
+
+def test_the_beach_notice_on_beetle_is_the_painted_english(
+    beetle, texture_image, texture_inventory, texture_patched, tmp_path,
+):  # fmt: skip
+    shot = warped_shot(beetle, texture_image, tmp_path, BEACH_WARP, BEACH_SHOT)
+    assert_on_screen(shot, texture_inventory, texture_patched, tt.BEACH_BACKGROUNDS[0],
+                     tt.BEACH_CLUT, BEACH_BOARD, BEACH_ON_SCREEN)  # fmt: skip
 
 
 DIARY_MODE = [
@@ -328,3 +335,26 @@ def test_the_album_heading_on_beetle_is_the_typeset_english(
     )  # fmt: skip
     assert n > 200, "the build changed too few texels where the check looked"
     assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"
+
+
+def sign_area(sign: tt.MarkerSign) -> tuple[int, int, int, int]:
+    """The rectangle round a marker sign's lettering box and its English's room."""
+    return paint.extent({*paint.points(sign.box), *paint.points(sign.room)})
+
+
+KEEP_OUT_WARP = "5300:0x80036588=49313800"
+"""As `BEACH_WARP`, with `I18`: the game enters the upstairs landing and plays the locked
+door's close-up (`E0835`) by itself; at 6390 the sign is up, with the locked-door line
+beside it (Japanese on this textures-only image)."""
+KEEP_OUT_SHOT = 6390
+
+
+def test_the_keep_out_sign_on_beetle_is_the_painted_english(
+    beetle, texture_image, texture_inventory, texture_patched, tmp_path,
+):  # fmt: skip
+    """The close-up is a whole 320x240 texture drawn 1:1 at the screen's corner."""
+    shot = warped_shot(beetle, texture_image, tmp_path, KEEP_OUT_WARP, KEEP_OUT_SHOT)
+    sign = tt.MARKER_SIGNS["M_I18"]
+    area = sign_area(sign)
+    assert_on_screen(shot, texture_inventory, texture_patched, sign.texture, sign.clut, area,
+                     area[:2])  # fmt: skip

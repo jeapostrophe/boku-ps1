@@ -14,13 +14,14 @@ from __future__ import annotations
 
 import struct
 from collections import Counter
+from statistics import median_low
 
 import pytest
 
 from boku import texture_paint as paint
 from boku import texture_text as tt
 from boku.textures import Inventory
-from boku.tim import parse_exact
+from boku.tim import luminance, parse_exact
 from boku.typeset import FONT_SHEET_ID, GameFace, wrap
 
 
@@ -411,3 +412,65 @@ def test_textures_check_reports_writes_the_images_and_fails_on_a_refusal(
     (bad / "diary.txt").write_text("nikki@NIKKI_000\tHello.\n", encoding="utf-8")
     assert tt.main_check(disc_dir, bad, None) == 1
     assert "NIKKI_000 is the unused dummy page" in capsys.readouterr().out
+
+
+STILL_RED = 20
+"""Stricter than the recipe's `tt.MARKER`, so a leftover of the marker's antialias counts."""
+LETTERING = 40
+"""The stock's lettering itself is at least this much redder than its ground, above the tan's
+own orange noise (the measures are `tt.MARKER`'s)."""
+DARKER = 60
+"""A pixel this far under the ground's luminance is dark: near the lettering, a smudge of the
+marker's shading (`tt.MARKER_REACH`)."""
+NEAR = 3
+"""Pixels this close to the stock's lettering must be clean; farther out, a red speck the build
+did not touch is the ground's own."""
+
+
+@pytest.mark.parametrize("name", sorted(tt.MARKER_SIGNS))
+def test_a_marker_sign_holds_its_english_and_nothing_of_the_marker(name, inv, patched):
+    """The rebuilt image: in the marker's red, exactly the tracked English's lines at their
+    scales, once; near where the Japanese was, nothing else redder than the ground and no dark
+    smudge lying wholly near it (a dark run reaching farther is the picture's own line); and no
+    colour of such a line refilled anywhere."""
+    sign = tt.MARKER_SIGNS[name]
+    stock = inv.get(sign.texture)
+    tims = {"before": stock.tim, "after": parse_exact(patched, stock.occurrences[0].file_offset)}
+    palette = stock.tim.palette_rgba(sign.clut)
+    box = set(paint.points(sign.box))
+    area = box | set(paint.points(sign.room))
+    index = {k: {p: t.indices()[p[1] * t.width + p[0]] for p in area} for k, t in tims.items()}
+    red = {k: {p: palette[i][0] - palette[i][1] for p, i in ix.items()} for k, ix in index.items()}
+    lum = {k: {p: luminance(palette[i]) for p, i in ix.items()} for k, ix in index.items()}
+    ground = median_low(red["before"][p] for p in box)
+    ground_lum = median_low(lum["before"][p] for p in box)
+
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+    entry = tt.read_entries()[f"tex@{name}.0"]
+    scaled = [paint.scaled(face.ink(t), n)
+              for t, n in zip(tt.lines_of(entry), sign.scales, strict=True)]  # fmt: skip
+    ink = tt.stacked(scaled, tt.NOTE_GAP)
+    marker = {p for p in area if red["after"][p] - ground >= STILL_RED}
+    spots = placements(ink, marker)
+    assert len(spots) == 1, f"{name}: {entry.text!r} found {len(spots)} times"
+    drawn = {(x + spots[0][0], y + spots[0][1]) for x, y in paint.normalised(ink)}
+
+    near = paint.grown({p for p in area if red["before"][p] - ground >= LETTERING}, *(NEAR,) * 4)
+    changed = {p for p in area - drawn if index["after"][p] != index["before"][p]}
+    left = {p for p in marker - drawn if p in near or p in changed}
+    assert left == set(), f"{name}: marker pixel(s) besides the English: {sorted(left)[:5]}"
+
+    def dark(k):
+        return {p for p in area - drawn if lum[k][p] < ground_lum - DARKER}
+
+    smudge = {p for g in paint.groups(dark("after")) if g <= near for p in g}
+    assert smudge == set(), f"{name}: the marker's shading is left at {sorted(smudge)[:5]}"
+    lines = paint.grown({p for g in paint.groups(dark("before")) if not g <= near for p in g},
+                        1, 1, 1, 1)  # fmt: skip
+    where = {}
+    for p in box:
+        where.setdefault(index["before"][p], set()).add(p)
+    # An entry the stock uses only beside a picture line is that line's own (its pale edge).
+    line_colours = {i for i, ps in where.items() if ps <= lines}
+    bled = {p for p in changed if index["after"][p] in line_colours}
+    assert bled == set(), f"{name}: a picture line's colour refilled into {sorted(bled)[:5]}"

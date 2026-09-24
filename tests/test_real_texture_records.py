@@ -23,6 +23,7 @@ import pytest
 from boku import REPO_ROOT
 from boku import texture_paint as paint
 from boku import texture_records as tr
+from boku import texture_text as tt
 from boku.png import read as read_png
 from boku.texture_text import ink_of, read_entries
 from boku.tim import luminance
@@ -136,6 +137,10 @@ SCREENS = {
                   [("M_S01100", (0, 0, 4), None, (-132, 18)),
                    ("M_S01100", (0, 106, 4), None, (-132, 18))]),
 }  # fmt: skip
+MARKER_SIGNS_ON = {"one_card": [("M_S01000", (-264, 90))]}
+"""The marker signs (`boku.texture_text.MARKER_SIGNS`) a screen shows, and where each texture's
+(0, 0) lands: the bug-trading notebook's cover lies on the bug-sumo desk (measured by matching
+every changed texel on the English image)."""
 
 
 DRIVE = """
@@ -205,3 +210,12 @@ def test_the_records_on_beetle_are_the_typeset_english(
         points = {p for label in labels for p in paint.points(label.room_at(dx, dy))}
         check_texels(shot, texture_inventory, texture_patched, record, record.clut, chunk,
                      sorted(points), origin, f"{member} {dx, dy}", at_least=30)  # fmt: skip
+    for name, (ox, oy) in MARKER_SIGNS_ON.get(screen, []):
+        from tests.test_real_texture_text_beetle import compare, sign_area
+
+        sign = tt.MARKER_SIGNS[name]
+        area = sign_area(sign)
+        n, wrong = compare(shot, texture_inventory, texture_patched, sign.texture, sign.clut,
+                           area, (area[0] + ox, area[1] + oy))  # fmt: skip
+        assert n > 500, f"{name}: the build changed too few texels where the check looked"
+        assert wrong == [], f"{name}: {len(wrong)} of {n} texels differ, first {wrong[:5]}"

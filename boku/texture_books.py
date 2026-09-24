@@ -23,7 +23,7 @@ from boku.tim import luminance
 from boku.typeset import Face, pixel_face, wrap
 
 from boku.texture_text import (  # isort: skip
-    Entry, TextureTextError, found, ink_of, keyed,
+    Entry, TextureTextError, filled_from_nearest, found, ink_of, keyed,
 )  # fmt: skip
 
 INSECT = "mzkan@"
@@ -153,9 +153,7 @@ def clear_heading(canvas: paint.Canvas, box: paint.Box, what: str) -> int:
     papers = {i for i, n in counts.items()
               if n >= PAPER_SHARE * len(points) and luminance(palette[i]) >= INK}  # fmt: skip
     mask = {p for p in points if canvas.at(p, stock=True) not in papers}
-    left = canvas.fill_from_nearest(mask, set(points) - mask)
-    if left:
-        raise TextureTextError(f"{what}: {len(left)} pixel(s) had no paper near, {left[:3]}")
+    filled_from_nearest(canvas, mask, set(points) - mask, what=what)
     return ink_index
 
 

@@ -20,3 +20,14 @@ tex@M_C15.1	No swimming
 # you know / from Saori. "guy", not "kid": the note drops her usual gaki (reviewed 2026-09-24).
 tex@M_I14000.note	Goodbye. // You were // a pretty good // guy.
 tex@M_I14000.signature	From Saori
+
+# --- M_I18: the sign on the upstairs door, seen close up when Boku tries the locked door
+# (E0835). Pink marker on a white oval, a child's はいっちゃダメ!: "you can't come in!". Set on
+# two lines (` // `), each at twice the game's glyphs; the build refuses what does not fit.
+tex@M_I18.0	Don't // come in!
+
+# --- M_S01000: the cover of the bug-trading notebook on the bug-sumo desk. Red marker, a
+# child's 虫 / こうかん / ノート, three lines as the Japanese has: the first at twice the game's
+# glyphs as its 虫 is large, the other two at their own size. 虫交換 is "bug trading"
+# (glossary § 4b; Guts: "everybody ... trades them").
+tex@M_S01000.0	Bug // Trading // Notebook

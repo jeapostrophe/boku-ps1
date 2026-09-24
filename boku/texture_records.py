@@ -21,7 +21,7 @@ from boku.tim import luminance
 from boku.typeset import Face, face_named
 
 from boku.texture_text import (  # isort: skip
-    Entry, TextureTextError, fits, found, ink_of, keyed,
+    Entry, TextureTextError, filled_from_nearest, fits, found, ink_of, keyed,
 )  # fmt: skip
 
 FAMILY = "rec@"
@@ -114,9 +114,7 @@ def clear(canvas: paint.Canvas, clut: int, chunk: int, box: paint.Box, what: str
     marks = {p for p in points if lum(p) < ground - MARK}
     ink = found({p for p in marks if lum(p) < INK}, what)
     shade = marks - ink
-    left = canvas.fill_from_nearest(marks, set(points) - marks)
-    if left:
-        raise TextureTextError(f"{what}: {len(left)} pixel(s) had no paper near, {left[:3]}")
+    filled_from_nearest(canvas, marks, set(points) - marks, what=what)
     ink_index = canvas.most_used(ink, stock=True)
     shadow_index = canvas.most_used(shade, stock=True) if shade else ink_index
     return ink_index, shadow_index, paint.extent(ink)

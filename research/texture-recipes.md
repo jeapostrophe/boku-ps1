@@ -257,6 +257,39 @@ page keeps each pixel's band where a refill along the picture's rows does not.
 texel the build changed (but where Boku stands) to show its colour exactly; the stock image
 fails.
 
+## Marker signs — `M_I18` and `M_S01000` (PLAN `GFX-08`)
+
+Two images lettered by hand in coloured marker on a flat ground (Jay, 2026-09-24: G8-I18 and
+G8-NB, option b — painted over by us in the game's glyphs, not redrawn):
+
+* **The keep-out sign** (`_DATA_M_FILES.BIN_M_I18000.BIN__000450`, CLUT 0; `M_I18000` and
+  `M_I18001` hold the same image): pink marker, a child's *はいっちゃダメ!*, on a white oval hung on
+  the upstairs door. The texture is the whole 320×240 close-up and is drawn 1:1 at the
+  screen's corner. English: *Don't // come in!*, both lines at twice the game's glyphs.
+* **The bug-trading notebook's cover** (`_DATA_M_S01000.BIN__017d24`, CLUT 3): red marker,
+  虫 / こうかん / ノート, inside the cover's printed frame, on the left of the bug-sumo desk.
+  English: *Bug // Trading // Notebook* (glossary § 4b: 虫交換 is bug trading), the first line
+  at twice the game's glyphs as the 虫 is large, the other two at their own size.
+
+`paint_marker_sign` (`boku/texture_text.py`, table `MARKER_SIGNS`) finds the marker by hue, not
+brightness — the pink is barely darker than the white — as pixels redder than the box's median
+ground, and paints it and everything within `MARKER_REACH` of it out: the notebook's red has a
+brown shading two rows under a stroke. What makes this harder than the beach is the notebook's
+printed frame, which runs through the tail of ん and is broken by lighter texels into short
+runs, so no run length tells it from a smudge; instead a dark group that reaches beyond the
+marker's reach is the picture's own, and neither it nor its pale edge is painted out or used to
+refill. Each pixel takes one nearby donor (`fill_from_nearest`), which keeps the tan's grain.
+
+**Reaching them.** The keep-out sign: the beach's warp with `I18` (`KEEP_OUT_WARP`,
+`tests/test_real_texture_text_beetle.py`) — the game enters the upstairs landing and plays the
+locked door's close-up (`E0835`) by itself. The notebook cover: on the bug-sumo desk in the
+records' single-card screen (`MARKER_SIGNS_ON`, `tests/test_real_texture_records.py`).
+
+**Proof.** `tests/test_real_texture_text.py`: in each rebuilt image the marker's red holds
+exactly the English, once; near where the Japanese was nothing is still red and no dark smudge
+is left; and no colour of a picture line is refilled into the ground. On Beetle, the two tests
+named above show every changed texel exact (the stock image fails).
+
 ## Buttons — stone "Back" plaques and speech balloons
 
 `boku/texture_buttons.py`; one row of `BUTTONS` per button, its English `btn@<member>.<key>` in

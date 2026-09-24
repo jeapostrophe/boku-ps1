@@ -458,3 +458,61 @@ def test_a_diary_entry_belongs_to_the_diary_family_whatever_its_page():
     assert tt.Entry("nikki@NIKKI_072", "x", "d:1").family == "nikki@"
     assert tt.Entry("tex@T_TITLE.0", "x", "u:1").family == "tex@T_TITLE"
     assert tt.Entry("tex@M_C15.1", "x", "s:1").family == "tex@M_C15"
+
+
+# --- marker signs (GFX-08: G8-I18, G8-NB) ----------------------------------------------------
+
+GROUND, GROUND2, PINK, FRAME = 1, 2, 3, 4
+SIGN_W, SIGN_H = 80, 40
+SIGN = tt.MarkerSign("sign", 0, (10, 8, 60, 24), (12, 4, 56, 32), (2, 1))
+
+
+def marker_board(marker: int = 21 | 14 << 5 | 17 << 10) -> paint.Canvas:
+    """A pale bluish ground in two noisy entries, pink "marker" strokes at x 20-58 rows 12-19,
+    a dark frame line down column 19, beside the first stroke, and three dark specks of the
+    marker's own shading under the strokes, all inside the box."""
+    px = [GROUND if (x * 3 + y) % 4 else GROUND2 for y in range(SIGN_H) for x in range(SIGN_W)]
+    for x in range(20, 59, 3):
+        for y in range(12, 20):
+            px[y * SIGN_W + x] = PINK
+    for y in range(SIGN_H):
+        px[y * SIGN_W + 19] = FRAME
+    for x in (21, 22, 30):  # the marker's own dark shading, under its strokes
+        px[21 * SIGN_W + x] = FRAME
+    palette = synth.ramp(256)
+    palette[GROUND] = 25 | 26 << 5 | 28 << 10
+    palette[GROUND2] = 24 | 25 << 5 | 27 << 10
+    palette[PINK] = marker
+    palette[FRAME] = 5 | 4 << 5 | 3 << 10
+    raw = synth.tim(1, synth.pixel_block(SIGN_W // 2, SIGN_H, bytes(px)),
+                    clut=synth.clut_block(256, 1, palette))  # fmt: skip
+    return paint.Canvas(Texture("sign", "0" * 40, parse_exact(raw), ()))
+
+
+@pytest.mark.parametrize(
+    "marker", [21 | 14 << 5 | 17 << 10, 26 | 5 << 5 | 5 << 10], ids=["pink", "dark red"]
+)
+def test_a_marker_sign_is_painted_out_and_its_lines_set_at_their_scales_in_the_marker(marker):
+    """The dark red is as dark as the notebook's (luminance ~93): being dark keeps a pixel from
+    refilling others, never from being painted out when it is the marker."""
+    canvas = marker_board(marker)
+    entry = tt.Entry("tex@X.0", "ab // c", "s:1")
+    tt.paint_marker_sign(canvas, SIGN, entry, BlockFace(), "the sign")
+    pink = {p for p in paint.points((0, 0, SIGN_W, SIGN_H)) if canvas.at(p) == PINK}
+    want = tt.stacked([paint.scaled(BlockFace().ink("ab"), 2), BlockFace().ink("c")], tt.NOTE_GAP)
+    assert paint.normalised(pink) == paint.normalised(want), "only the English, in the marker"
+    assert paint.extent(pink)[:2] == tt.centred(want, SIGN.room), "centred on the room"
+    assert all(canvas.at((19, y)) == FRAME for y in range(SIGN_H)), "the frame is not painted out"
+    assert {canvas.at((x, 21)) for x in (21, 22, 30)} <= {GROUND, GROUND2}, "the shading goes too"
+
+
+def test_a_marker_sign_given_the_wrong_number_of_lines_is_refused():
+    with pytest.raises(tt.TextureTextError, match=r"s:1: .* 2 lines"):
+        tt.paint_marker_sign(marker_board(), SIGN, tt.Entry("tex@X.0", "abc", "s:1"),
+                             BlockFace(), "the sign")  # fmt: skip
+
+
+def test_a_marker_sign_too_wide_for_its_room_is_refused_not_cut():
+    with pytest.raises(tt.TextureTextError, match="nothing is cut to fit"):
+        tt.paint_marker_sign(marker_board(), SIGN, tt.Entry("tex@X.0", "aaaaaa // c", "s:1"),
+                             BlockFace(), "the sign")  # fmt: skip

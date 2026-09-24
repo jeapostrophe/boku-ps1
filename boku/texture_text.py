@@ -135,6 +135,18 @@ def painted_out(
         )
 
 
+def filled_from_nearest(
+    canvas: paint.Canvas, mask: paint.Ink, donors: paint.Ink, *, what: str, reach: int = 8,
+    parity: bool = False,
+) -> None:  # fmt: skip
+    """`Canvas.fill_from_nearest`, refused -- naming `what` -- if any pixel had no donor."""
+    left = canvas.fill_from_nearest(mask, donors, reach=reach, parity=parity)
+    if left:
+        raise TextureTextError(
+            f"{what}: {len(left)} pixel(s) had nothing near to be refilled from, first {left[:3]}"
+        )
+
+
 def rows_of(mask: paint.Ink) -> list[paint.Box]:
     """The boxes of `mask`'s lines: runs of rows that carry ink, split at empty rows."""
     ys = sorted({y for _, y in mask})
@@ -523,6 +535,87 @@ def memory_album(archive: Archive, inv: Inventory, face: Face, entries: Sequence
     return album.patches()
 
 
+# --- marker signs: hand-lettered in coloured marker on a flat ground (GFX-08) ---------------
+
+
+@dataclass(frozen=True)
+class MarkerSign:
+    texture: str
+    clut: int
+    box: paint.Box
+    """Where the marker lettering is found and painted out."""
+    room: paint.Box
+    """Where the English may go; it is set centred on it."""
+    scales: tuple[int, ...]
+    """Each line's scale over the game's glyphs; the English has exactly this many lines."""
+
+
+MARKER = 30
+"""How much redder (red minus green) than the box's median ground a pixel is to be the marker:
+the pink on the white sign is ~58 over it, and the tan cover's own noise ~25 at most."""
+MARKER_REACH = 2
+"""The marker's antialias and dark shading lie within this many pixels of it (the notebook's
+under the 虫's middle stroke, two rows down); they are painted out with it."""
+DONOR_DARK = 125
+"""Luminance under which a pixel that is not the marker is dark: the notebook frame's lighter
+pixels reach ~124, its tan ground's darkest ~131."""
+
+MARKER_SIGNS: dict[str, MarkerSign] = {
+    # The keep-out sign on the upstairs door (the close-up in `E0835`; `M_I18000` and
+    # `M_I18001` hold the same image): pink marker across a white oval.
+    "M_I18": MarkerSign(
+        "_DATA_M_FILES.BIN_M_I18000.BIN__000450", 0, (96, 90, 122, 40), (100, 76, 112, 72), (2, 2)
+    ),
+    # The bug-trading notebook's cover on the bug-sumo desk: red marker inside the cover's
+    # frame, the first line large as the Japanese's 虫 is.
+    "M_S01000": MarkerSign(
+        "_DATA_M_S01000.BIN__017d24", 3, (297, 10, 78, 93), (300, 13, 70, 86), (2, 1, 1)
+    ),
+}
+
+
+def paint_marker_sign(
+    canvas: paint.Canvas, sign: MarkerSign, entry: Entry, face: Face, what: str
+) -> None:
+    """Paint the marker lettering and its shading out of its ground and set the English's
+    lines, each at its scale, stacked and centred on the room, in the marker's own entry."""
+    lines = lines_of(entry)
+    if len(lines) != len(sign.scales):
+        raise TextureTextError(
+            f"{entry.where}: {what} is set on {len(sign.scales)} lines (` // ` between them)"
+        )
+    points = set(paint.points(sign.box))
+    colour = {p: canvas.colour(sign.clut, p, stock=True) for p in points}
+    red = {p: c[0] - c[1] for p, c in colour.items()}
+    ground = sorted(red.values())[len(red) // 2]
+    marker = found({p for p in points if red[p] - ground >= MARKER}, what)
+    ink_index = canvas.most_used(marker, stock=True)
+    dark = {p for p in points if luminance(colour[p]) < DONOR_DARK} - marker
+    near = paint.grown(marker, *(MARKER_REACH,) * 4)
+    # A dark group reaching beyond the marker's reach is a line of the picture (the cover's
+    # frame, broken by lighter texels into short runs): never painted out, and neither it nor
+    # its pale edge (the frame is two texels wide, one pale brown) refills anything.
+    rules = {p for group in paint.groups(dark) if group - near for p in group}
+    mask = (near & points) - rules
+    donors = points - mask - paint.grown(rules, 1, 1, 1, 1)
+    filled_from_nearest(canvas, mask, donors, reach=12, what=what)
+    inks = [paint.scaled(ink_of(face, entry, line), n)
+            for line, n in zip(lines, sign.scales, strict=True)]  # fmt: skip
+    ink = stacked(inks, NOTE_GAP)
+    fits(entry, ink, sign.room, what)
+    canvas.stamp(centred(ink, sign.room), ink, ink_index)
+
+
+def marker_sign(name: str, sign: MarkerSign) -> Family:
+    def family(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+        entry = keyed(f"tex@{name}", entries, ["0"])["0"]
+        canvas = paint.Canvas(inv.get(sign.texture))
+        paint_marker_sign(canvas, sign, entry, face, f"the {name} sign")
+        return canvas.patches()
+
+    return family
+
+
 # --- M_C15: the notice board on the path to the beach --------------------------------------
 
 
@@ -730,6 +823,7 @@ FAMILIES: Mapping[str, Family] = {
     "tex@T_MEMORY": memory_album,
     "tex@M_C15": beach_notice,
     "tex@M_I14000": closeup_note,
+    **{f"tex@{name}": marker_sign(name, sign) for name, sign in MARKER_SIGNS.items()},
     "nikki@": diary,
     "tex@OTI": credits_strip,
     "btn@": buttons,
