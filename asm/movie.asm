@@ -101,6 +101,7 @@ movie_sub_frame:
 ;   t6 line cursor  t7 pen x  t8 line y  t9 glyph record
 ;   s0 first mask column drawn (then + 16, the shift into the sign bit)  s1 columns drawn
 ;   s2 row's first pixel  s3 mask row  s4 rows left
+;   in @@shade: at the shift k, s0 the byte mask (0xFF >> k in each byte), s3 bytes a row
 movie_sub_blit:
     lui     t0, hi(MOVIE_SUB_BLOCK)
     addiu   t0, t0, lo(MOVIE_SUB_BLOCK)
@@ -178,9 +179,9 @@ movie_sub_blit:
     sll     v1, at, 1
     addu    at, at, v1              ; * 3 bytes
     addu    s2, s2, at
-    lbu     at, 1(t9)               ; the record's solid flag: the panel tile
+    lbu     at, 1(t9)               ; the record's shade shift: k for a shaded panel tile
     addu    s2, s2, t3              ; (the load's delay slot)
-    bnez    at, @@solid
+    bnez    at, @@shade
     addiu   s3, t9, 4               ; glyph rows; the outline rows follow them
     addiu   s4, zero, MOVIE_SUB_MASK_ROWS
     addiu   s0, s0, 16              ; the shift that puts column c0 in the sign bit
@@ -222,22 +223,39 @@ movie_sub_blit:
     lbu     at, 0(t9)               ; the pen advance (the VWF table's width)
     b       @@glyph
     addu    t7, t7, at              ; two instructions after the load
-@@solid:                            ; every column drawn, every row: DARK, no mask walk
+@@shade:                            ; each byte of the tile's columns >> k, a word at a time
+    lw      s0, 4+4*MOVIE_SUB_MASK_ROWS(t9) ; the record's last word: 0xFF >> k in each byte
+    sll     s3, s1, 1
+    addu    s3, s3, s1              ; bytes a row: 3 a column (s0's load delay)
     addiu   s4, zero, MOVIE_SUB_MASK_ROWS
-    addiu   v0, zero, 0x18
-    addiu   v1, zero, 0x14
-@@solid_row:
+@@shade_row:
+    srl     a3, s3, 2               ; whole words
+    beqz    a3, @@shade_tail
     move    a2, s2
-    move    a3, s1
-@@solid_column:
+@@shade_word:                       ; unaligned: a column is 3 bytes
+    lwr     v0, 0(a2)
+    lwl     v0, 3(a2)
+    addiu   a3, a3, -1              ; (the load's delay slot)
+    srlv    v0, v0, at
+    and     v0, v0, s0
+    swr     v0, 0(a2)
+    swl     v0, 3(a2)
+    bnez    a3, @@shade_word
+    addiu   a2, a2, 4
+@@shade_tail:
+    andi    a3, s3, 3
+    beqz    a3, @@shade_next
+    nop
+@@shade_byte:
+    lbu     v0, 0(a2)
+    addiu   a3, a3, -1              ; (the load's delay slot)
+    srlv    v0, v0, at
     sb      v0, 0(a2)
-    sb      v0, 1(a2)
-    sb      v1, 2(a2)
-    addiu   a3, a3, -1
-    bnez    a3, @@solid_column
-    addiu   a2, a2, 3
+    bnez    a3, @@shade_byte
+    addiu   a2, a2, 1
+@@shade_next:
     addiu   s4, s4, -1
-    bnez    s4, @@solid_row
+    bnez    s4, @@shade_row
     addiu   s2, s2, 48
     b       @@advance
     nop

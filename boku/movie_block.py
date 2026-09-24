@@ -31,10 +31,11 @@ Block layout (little-endian, RAM address `BLOCK_RAM`, read by `movie_sub_load` f
                            drawn by the dialogue renderer (`asm/voice.asm`), not by the masks
     glyphs_offset - 4       {u16 clips_offset, u16 0}: where `clip_sub_play` finds the clips
     glyphs_offset: record[] `RECORD_SIZE` bytes each, index = the u8 in a line:
-                           {u8 advance, u8 solid, u8[2] 0, u16 glyph[MASK], u16 outline[MASK],
-                           u8[4] 0}; `solid` is 1 only for the panel tile, which the routine
-                           fills with `DARK` over its columns without walking the masks --
-                           the same pixels, at about half the cost a pixel
+                           {u8 advance, u8 shade, u8[2] 0, u16 glyph[MASK], u16 outline[MASK],
+                           u32 shade_mask}; `shade` is 0 for a glyph, which the routine
+                           draws from its masks, and k for a shaded panel tile, whose
+                           columns it darkens instead -- every byte >> k, a word at a time,
+                           ANDed with `shade_mask` (0xFF >> k in each byte)
 
 A mask row's bit `15 - c` is column `c` of a `MASK` x `MASK` cell whose column 1, row 1 is
 the 12 x 12 glyph's origin, so the 1-px outline has room on every side; the cell's column
@@ -43,11 +44,10 @@ the 12 x 12 glyph's origin, so the 1-px outline has room on every side; the cell
 mask is set, else `DARK` where the outline is; a later glyph or line overwrites an earlier
 one, which is also the order the routine draws in.
 
-A cue with a panel (FMV-06) is the same lines preceded by a line of `PANEL_MASKS` tiles at
-each of its position's rows, whether or not text fills them (FMV-09: the panel keeps one
-height): one more record after the font's, flagged `solid` so the routine fills its columns
-without walking the masks (research/movies.md § 11); `render` draws it from the masks,
-which `PANEL_MASKS` makes the same pixels.
+A cue with a panel (FMV-06) is the same lines preceded by a line of panel tiles at each of
+its position's rows, whether or not text fills them (FMV-09: the panel keeps one height):
+one more record after the font's, in the `PANEL_STYLES` entry the build chose (FMV-10: see-
+through, research/movies.md § 11).
 """
 
 from __future__ import annotations
@@ -164,8 +164,42 @@ class Masks:
     outline: tuple[int, ...]
 
 
-PANEL_MASKS = Masks((0,) * MASK, (0xFFFC,) * MASK)
-"""The panel tile's record: no glyph, outline on every one of the 14 x 14 -- a `DARK` cell."""
+@dataclass(frozen=True)
+class Shade:
+    """A pixel the routine darkens rather than paints: its colour is the picture's, each
+    channel >> `shift`. What `render` names such a pixel, since it cannot know the picture."""
+
+    shift: int
+
+    def of(self, rgb: bytes) -> bytes:
+        return bytes(channel >> self.shift for channel in rgb)
+
+
+@dataclass(frozen=True)
+class PanelStyle:
+    shift: int
+    """The record's shade byte: 0 draws `masks` as a glyph, k darkens the tile >> k."""
+    masks: Masks
+
+
+SHADE_SHIFT = 2
+"""A shaded panel keeps a quarter of the picture's light: the credits under it drop to a
+grey the white text with its dark outline reads clearly over (research/movies.md § 11)."""
+PANEL_STYLES = {
+    "shade": PanelStyle(SHADE_SHIFT, Masks((0,) * MASK, (0,) * MASK)),
+    "hatch": PanelStyle(
+        0,
+        Masks(
+            (0,) * MASK,
+            tuple(sum(1 << (15 - c) for c in range(MASK) if (c + r) % 2 == 0) for r in range(MASK)),
+        ),
+    ),
+}
+"""The see-through panels (FMV-10): `shade` darkens the picture under it; `hatch` is a
+checkerboard of `DARK` drawn as a glyph. Tiles are 14 wide and tall, so the checkerboard
+runs on unbroken from tile to tile."""
+PANEL_STYLE = "shade"
+"""The one the build uses unless told otherwise (`build_prototype.py --movie-panel`)."""
 
 
 def masks_of(rows: Sequence[int]) -> Masks:
@@ -213,6 +247,7 @@ def encode_block(
     movies: Mapping[int, Sequence[Cue]],
     font: Mapping[str, GlyphLike],
     clips: Mapping[int, Sequence[int]] | None = None,
+    panel_style: str = PANEL_STYLE,
 ) -> bytes:
     """The block for `movies` -- name pointer -> its cues -- carrying every glyph of `font`
     (the VWF set, so the size measured is the size the design pays). Refuses text the font
@@ -306,11 +341,13 @@ def encode_block(
             raise BlockError(f"{c!r} advances {font[c].advance} px; a record holds it in a u8")
     records = [(font[c].advance, 0, masks_of(font[c].rows)) for c in characters]
     if panel is not None:
-        records.append((MASK, 1, PANEL_MASKS))
-    for advance, solid, masks in records:
-        record = struct.pack("<BB2x", advance, solid)
+        style = PANEL_STYLES[panel_style]
+        records.append((MASK, style.shift, style.masks))
+    for advance, shift, masks in records:
+        record = struct.pack("<BB2x", advance, shift)
         record += struct.pack(f"<{MASK}H", *masks.glyph) + struct.pack(f"<{MASK}H", *masks.outline)
-        out += record.ljust(RECORD_SIZE, b"\0")
+        mask = bytes([0xFF >> shift] * 4) if shift else bytes(4)
+        out += record + mask
     if form1_sectors(len(out)) > BLOCK_MAX_SECTORS:
         raise BlockError(
             f"the block is {len(out)} bytes, {form1_sectors(len(out))} sectors; its reserved "
@@ -381,8 +418,9 @@ def select(block: bytes, name: int) -> bytes:
 
 def render(
     block: bytes, frame: int, x_range: range = range(SCREEN_WIDTH)
-) -> dict[tuple[int, int], tuple[int, int, int]]:
-    """Every pixel the routine writes for `frame` whose x is in `x_range`, in draw order.
+) -> dict[tuple[int, int], tuple[int, int, int] | Shade]:
+    """Every pixel the routine writes for `frame` whose x is in `x_range`, in draw order: a
+    colour, or the `Shade` it darkens the picture's own by.
 
     `block` is the block as it is in RAM once a movie has started -- `select`'s output --
     because the routine draws the cues its +4 and +8 name. Decoded from the block's
@@ -393,7 +431,7 @@ def render(
     magic, cue_count, glyphs_offset, cues_offset = struct.unpack_from("<IHHH", block, 0)
     if magic != MAGIC:
         return {}
-    pixels: dict[tuple[int, int], tuple[int, int, int]] = {}
+    pixels: dict[tuple[int, int], tuple[int, int, int] | Shade] = {}
     for n in range(cue_count):
         row = cues_offset + CUE_SIZE * n
         start, end, lines_offset, _ = struct.unpack_from("<HHHH", block, row)
@@ -415,7 +453,12 @@ def render(
                 # not of its rows: a glyph outside the slice costs one pass over 14 columns
                 # instead of 196 membership tests.
                 columns = [c for c in range(MASK) if pen - 1 + c in x_range]
-                if columns:
+                if columns and block[record + 1]:
+                    shade = Shade(block[record + 1])
+                    for row in range(MASK):
+                        for column in columns:
+                            pixels[pen - 1 + column, y - 1 + row] = shade
+                elif columns:
                     glyph = struct.unpack_from(f"<{MASK}H", block, record + 4)
                     outline = struct.unpack_from(f"<{MASK}H", block, record + 4 + 2 * MASK)
                     for row in range(MASK):

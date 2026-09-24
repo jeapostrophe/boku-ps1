@@ -48,6 +48,7 @@ from boku.movie_block import (
     SLICE_WIDTH,
     SLICES,
     WHITE,
+    Shade,
     movie_names,
     render,
     select,
@@ -81,6 +82,7 @@ loader that ignored the movie would draw the wrong one, and every pixel of it is
 `M60`'s sits at the top (FMV-02's position field) on a panel (FMV-06), so the blit is held
 to a line's y and to the panel tile's pixels too."""
 AT_TOP = {row.movie: row.position == "top" for row in parse(FIXTURE_CUES)[0]}
+PANEL = {row.movie: row.panel for row in parse(FIXTURE_CUES)[0]}
 
 BYTES_PER_PIXEL = 3
 """The slice buffers are 24-bit: the movie's display mode, and what the blit writes."""
@@ -279,7 +281,7 @@ def patched(build: Path, plays: dict[str, Play]) -> dict[str, dict[int, Frame]]:
 
 # --- the gates -------------------------------------------------------------------------------
 
-Pixels = dict[tuple[int, int], tuple[int, int, int]]
+Pixels = dict[tuple[int, int], tuple[int, int, int] | Shade]
 
 
 def predicted(block: bytes, name: int, frame: Frame) -> Pixels:
@@ -297,11 +299,17 @@ def pixel(row: bytes, x: int) -> bytes:
     return row[BYTES_PER_PIXEL * x : BYTES_PER_PIXEL * (x + 1)]
 
 
+def drawn_as(colour: tuple[int, int, int] | Shade, under: bytes) -> bytes:
+    """The bytes the routine leaves where it draws `colour` over the decoded pixel `under`."""
+    return colour.of(under) if isinstance(colour, Shade) else bytes(colour)
+
+
 def painted(rows: tuple[bytes, ...], pixels: Pixels) -> tuple[bytes, ...]:
     out = [bytearray(row) for row in rows]
     for (x, y), colour in pixels.items():
         assert 0 <= x < SCREEN_WIDTH and 0 <= y < FRAME_HEIGHT, f"({x}, {y}) is off the frame"
-        out[y][BYTES_PER_PIXEL * x : BYTES_PER_PIXEL * (x + 1)] = bytes(colour)
+        at = slice(BYTES_PER_PIXEL * x, BYTES_PER_PIXEL * (x + 1))
+        out[y][at] = drawn_as(colour, bytes(out[y][at]))
     return tuple(bytes(row) for row in out)
 
 
@@ -334,8 +342,14 @@ def test_the_stock_frames_are_pictures_and_the_same_decoded_frame_in_both_runs(
         colours = {pixel(row, x) for row in stock[movie][n].rows for x in range(0, SCREEN_WIDTH, 4)}
         least = 100 if n == INSIDE else 1
         assert len(colours) > least, f"stock {movie} frame k{n} has {len(colours)} colours"
-        assert stock[movie][n].header == patched[movie][n].header, (
+        # The first slice's number is the frame's own; the next header can arrive before the
+        # last slices upload (research/movies.md § 7), and when depends on the blit's time.
+        first = stock[movie][n].header[0]
+        assert first == patched[movie][n].header[0], (
             f"{movie} k{n} is not the same STR frame in both runs"
+        )
+        assert set(patched[movie][n].header) <= {first, first + 1}, (
+            f"{movie} k{n}: a header past the next arrived while it uploaded"
         )
     assert stock["M27"][INSIDE].rows != stock["M60"][INSIDE].rows, "both runs played one movie"
 
@@ -365,6 +379,9 @@ def test_inside_its_cue_the_frame_is_the_stock_decode_plus_exactly_its_own_text(
         f"{sorted(set(frame.sub_frame))}); the cue is not where the test thinks"
     )
     assert WHITE in pixels.values() and DARK in pixels.values()
+    assert any(isinstance(c, Shade) for c in pixels.values()) == PANEL[movie], (
+        "the M60 fixture's panel is the shaded one the build installs by default"
+    )
     assert all((y < FRAME_HEIGHT // 2) == AT_TOP[movie] for _, y in pixels), (
         f"{movie}'s fixture cue is not in the half of the frame its position names"
     )
@@ -388,14 +405,12 @@ def test_the_other_movies_cue_is_not_drawn(movie, block, names, stock, patched):
     theirs = predicted(block, names[other(movie)], frame)
     base = stock[movie][INSIDE].rows
     telling = {
-        (x, y): colour
+        (x, y): drawn_as(colour, pixel(base[y], x))
         for (x, y), colour in theirs.items()
-        if (x, y) not in own and pixel(base[y], x) != bytes(colour)
+        if (x, y) not in own and pixel(base[y], x) != drawn_as(colour, pixel(base[y], x))
     }
     assert len(telling) > 100, f"{other(movie)}'s cue would barely show over {movie}; vacuous"
-    drawn = [
-        (x, y) for (x, y), colour in telling.items() if pixel(frame.rows[y], x) == bytes(colour)
-    ]
+    drawn = [(x, y) for (x, y), colour in telling.items() if pixel(frame.rows[y], x) == colour]
     assert not drawn, f"{len(drawn)} of {other(movie)}'s pixels are drawn over {movie}: {drawn[:8]}"
 
 
