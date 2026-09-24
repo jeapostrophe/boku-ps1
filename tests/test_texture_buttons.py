@@ -281,14 +281,6 @@ def test_a_stroke_that_runs_out_to_the_outline_on_the_type_rows_is_type():
     assert tb.islands(type_ | stroke | tail, interior, type_ | stroke) == type_ | stroke
 
 
-def test_stretched_art_may_only_drop_transparent_columns():
-    canvas, button = widening(8)
-    art = tb.Widen(8, button.widen.sizes, None, stretch=12)
-    wide = tb.Button("x", "balloon", button.box, 0, widen=art)
-    with pytest.raises(TextureTextError, match="runs past the sprite"):
-        tb.layout(canvas, [(Entry("btn@x.a", "Go", "b:1"), wide)])
-
-
 def test_a_pale_speck_of_the_tail_does_not_stretch_the_type_rows():
     """`M_S01100.rank`: a one-pixel speck of the tail's pale shading, surrounded by paper, sat
     three rows under the type and pulled the tail's own shading in as type."""

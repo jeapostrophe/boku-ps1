@@ -146,9 +146,6 @@ class Widen:
     centre repeated), so a dither keeps its phase."""
     sizes: tuple[AtlasEntry | SpriteRecord, ...]
     to: tuple[int, int] | None = None
-    stretch: int | None = None
-    """Columns inserted into the art, if not `extra`: more when the sprite ends in transparent
-    columns the stretched art may take (they must be transparent on every row)."""
 
 
 STONE_TEXT = (6, 2, 33, 13)
@@ -234,18 +231,8 @@ BUTTONS: dict[str, Button] = {
             "SUB.empty_handed": (-132, (100, 211, 11, 40, 0, 0x43), 4, (412, 211), "game"),
             "SUB.net": (-120, (111, 211, 11, 40, 0, 0x43), 0, (460, 211), "game"),
             "SUB.back": (-108, (175, 64, 11, 40, 0, 0x43), 0, None, "game"),
+            "SUB.belongings": (-180, (178, 194, 12, 40, 0, 0x42), 0, None, "game"),
         },
-    ),
-    # Belongings in Bean: the page-15 band holds it and the kite in 96 texels.
-    "SUB.belongings": Button(
-        "_DATA_SUB.BIN__002050",
-        "balloon",
-        (712, 194, 48, 40),
-        1,
-        drawn_4bpp=True,
-        chunk=2,
-        face="bean",
-        widen=Widen(4, (AtlasEntry(-180, (178, 194, 12, 40, 0, 0x42)),), stretch=8),
     ),
     # The bag (`PK_WAL`): its Belongings moves into the empty rows 154-239 of page 14, where
     # it has room for the game's glyphs, and so do the two page balloons (drawn only by an
@@ -278,9 +265,7 @@ BUTTONS: dict[str, Button] = {
         face="bean",
     ),
     # The kite book's 作るたこ決定 (a true 4bpp TIM, 12 VRAM words: no room to widen).
-    "TZICON.make_this_kite": Button(
-        "_DATA_TZICON.BIN__00006c", "balloon", (0, 0, 48, 40), 2, face="bean"
-    ),
+    "TZICON.make_this_kite": Button("_DATA_TZICON.BIN__00006c", "balloon", (0, 0, 48, 40), 2),
     # Bug sumo (`M_S01100`, drawn by `MUSI.OVL`'s 22-byte records; each balloon has a record
     # in both of its tables; the free texels are research's).
     **sumo_balloons(
@@ -319,9 +304,9 @@ BUTTONS: dict[str, Button] = {
             "MZ02.medicine": ((684, 120), "bean"),
             "MZ02.syringe": ((640, 80), "bean"),
             "MZ02.collecting_box": ((640, 40), "game"),
-            "MZ02.remove_specimen": ((640, 120), "sprout"),
+            "MZ02.remove_specimen": ((640, 120), "game"),
             "MZ02.prev_page": ((640, 0), "bean"),
-            "MZ02.next_page": ((640, 160), "bean"),
+            "MZ02.next_page": ((640, 160), "bean"),  # as its pair, which only Bean holds
         },
     ),
     "SAMP.species_list": Button(
@@ -402,16 +387,10 @@ def text_area(button: Button, box: paint.Box) -> paint.Box:
     if button.widen:
         split = button.split
         if tx <= split < tx + tw:
-            tw += stretched(button)
+            tw += button.widen.extra
         elif tx > split:
-            tx += stretched(button)
+            tx += button.widen.extra
     return box[0] + tx, box[1] + ty, tw, th
-
-
-def stretched(button: Button) -> int:
-    """Columns inserted into the button's art by its `Widen`."""
-    widen = button.widen
-    return widen.extra if widen.stretch is None else widen.stretch
 
 
 def plank(
@@ -515,15 +494,10 @@ def layout(canvas: paint.Canvas, group: Sequence[tuple[Entry, Button]]) -> dict[
     for b in widened:
         x0, y0, w, h = b.box
         split, extra = b.split, b.widen.extra
-        stretch = stretched(b)
-        if extra % 2 or stretch < extra:
-            raise TextureTextError(f"{names[b]}: widen by an even count, stretch by at least it")
+        if extra % 2:
+            raise TextureTextError(f"{names[b]}: widen by an even count")
         rows = [stock[y * canvas.width + x0 : y * canvas.width + x0 + w] for y in range(y0, y0 + h)]
-        art = [r[:split] + r[split : split + 2] * (stretch // 2) + r[split:] for r in rows]
-        palette = canvas.palette(b.clut, b.chunk)
-        if any(palette[v][3] for r in art for v in r[w + extra :]):
-            raise TextureTextError(f"{names[b]}: the stretched art runs past the sprite")
-        arts[b] = [r[: w + extra] for r in art]
+        arts[b] = [r[:split] + r[split : split + 2] * (extra // 2) + r[split:] for r in rows]
     sources = set().union(*(paint.points(b.box) for b in widened))
     taken: paint.Ink = set()
     for b in widened:

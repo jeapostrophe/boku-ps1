@@ -15,6 +15,7 @@ measured by matching its texels against a screenshot (`research/texture-recipes.
 
 from __future__ import annotations
 
+import dataclasses
 import os
 import struct
 import subprocess
@@ -26,7 +27,7 @@ from boku import REPO_ROOT
 from boku import texture_buttons as tb
 from boku import texture_paint as paint
 from boku.png import read as read_png
-from boku.texture_text import ink_of, lines_of, read_entries
+from boku.texture_text import TextureTextError, ink_of, lines_of, read_entries
 from boku.textures import Texture
 from boku.tim import luminance, parse_exact
 from boku.typeset import FONT_SHEET_ID, GameFace, face_named
@@ -172,6 +173,29 @@ def test_a_balloon_carries_its_english_lines_and_no_japanese(
         assert_sizes_follow(archive, texture_inventory, texture_patched, button)
 
 
+PAIRED = {"MZ02.next_page": "MZ02.prev_page"}
+"""Set in the face of a partner shown beside it, which the game's glyphs cannot hold: the insect
+box's two page pencils sit side by side, and a pair in two faces is the mix Jay ruled out."""
+SMALL = sorted(k for k, b in tb.BUTTONS.items() if b.face != "game" and k not in PAIRED)
+
+
+@pytest.mark.parametrize(("key", "partner"), sorted(PAIRED.items()))
+def test_a_paired_button_shares_its_partners_small_face(key, partner):
+    assert tb.BUTTONS[key].face == tb.BUTTONS[partner].face != "game"
+    assert partner in SMALL, "the partner must itself be one the game's glyphs cannot hold"
+
+
+@pytest.mark.parametrize("key", SMALL)
+def test_a_button_is_set_small_only_where_the_games_glyphs_do_not_fit(
+    key, archive, texture_inventory, game, monkeypatch
+):  # fmt: skip
+    """Jay, 2026-09-24: mixing faces in one place looks bad -- the game's glyphs wherever they
+    fit. So a button in Bean or Sprout is one the recipe refuses for size in the game's glyphs."""
+    monkeypatch.setitem(tb.BUTTONS, key, dataclasses.replace(tb.BUTTONS[key], face="game"))
+    with pytest.raises(TextureTextError, match="nothing is cut to fit"):
+        tb.buttons(archive, texture_inventory, game, [ENTRIES[key]])
+
+
 def assert_sizes_follow(archive, inv, patched: bytes, button: tb.Button) -> None:
     """Every stored size of a widened sprite spans its new art: width grown by `extra`, and an
     atlas entry's position moved with the art."""
@@ -251,9 +275,10 @@ SCREENS = {
         {7000: [("M_S01100.cage", (-296, -40), None)]},
     ),
     "insect_box": (
-        [*mode(0x0A, "f43d1b80"), "--press", "7250:DOWN"], False,
+        [*mode(0x0A, "f43d1b80"), "--press", "7250:DOWN", "--press", "7700:DOWN"], False,
         {7200: [("MZ02.cage", (-540, 40), None)],
-         7690: [("MZ02.collecting_box", (-520, 8), None), ("SAMP.back", (-80, 177), None)]},
+         7690: [("MZ02.collecting_box", (-520, 8), None), ("SAMP.back", (-80, 177), None)],
+         7800: [("MZ02.remove_specimen", (-476, 48), (162, 178, 9, 20))]},
     ),
 }  # fmt: skip
 """Measured on the English image by matching each box's texels near where the recon put it

@@ -262,26 +262,27 @@ stroke that runs out to the outline, as the last kana of リストへ does) — 
 tail's shading, above or below the type, alone. Lines break at ` // `, `face.pitch` apart;
 every inked pixel must keep one pixel of paper between it and anything not paper, or the build
 refuses. A balloon is set in the game's glyphs where it holds them, widened where its texture
-has free texels, and in Bean where it has none (Jay's ruling, 2026-09-23); only one balloon
+has free texels, and in Bean where it has none (Jay's ruling, 2026-09-23); and a button is in
+Bean or Sprout only where the game's glyphs do not fit it (Jay, 2026-09-24: mixing faces looks
+bad), which `tests/test_real_texture_buttons.py` checks through the recipe. Only one balloon
 shows at a time on every screen here, the one for the item under the cursor.
 
 **Widening** (`Widen`, `layout`) repeats the pair of columns at the balloon's centre (a pair,
 so a dither keeps its phase), may set the widened art down elsewhere in texels that are
 transparent or were widened balloons' own (a repack), and grows — and moves — every stored
 size of the sprite, each checked against its measured bytes first. A sprite may not cross a
-256-texel page. `stretch` inserts more columns than the sprite grows by where the sprite ends
-in transparent columns the art may take.
+256-texel page.
 
 | screen | balloons | how |
 |---|---|---|
 | diary desk (`NIKKI_W`) | おやすみ *Good // night* | widened 4 (atlas entry 6, 12 bytes in front of the TIM); the idle hint, drawn at (40, 16) while `0x80047E50` is set, after 61 frames with no input |
-| desk (`SUB`, CLUT 1 slices 2–3; table 0xB4 in front of the texture) | the tackle, cage, glove and net band (page 14, rows 211–250) repacked: tackle +12, glove +4, the others moved right; *Belongings* in Bean, +4 (stretch 8) — the page-15 band holds 96 texels for it and the kite, and 72 would be the game's glyphs; kite, back fit | `SUB.BIN` is loaded once at boot (resident), so a state saved on another image shows the old desk |
+| desk (`SUB`, CLUT 1 slices 2–3; table 0xB4 in front of the texture) | the tackle, cage, glove and net band (page 14, rows 211–250) repacked: tackle +12, glove +4, the others moved right; *Stuff* (Belongings), kite and back fit as they are | `SUB.BIN` is loaded once at boot (resident), so a state saved on another image shows the old desk |
 | the bag (`PK_WAL`) | *Belongings* +28 and the two page balloons +4, all moved into the empty rows 154–239 of page 14 | the page balloons are drawn only by an idle hint nothing calls (recon); built so no Japanese is left if it is |
 | kite record (`TK_WAL`) | *Fly a // Kite* | fits |
 | fishing record (`FS_WAL`, 4bpp, CLUT 0) | *Fishing // Tackle* in Bean | no free texels measured |
-| kite book (`TZICON`, a true 4bpp TIM 12 VRAM words wide) | *Make // This Kite* in Bean | no free texels |
+| kite book (`TZICON`, a true 4bpp TIM 12 VRAM words wide) | *Make*, fits as it is | no free texels |
 | bug sumo (`M_S01100` `0x164b4`, CLUT 2; `MUSI.OVL` 22-byte records from `0x8007A538`, `{u16 semi, s16 x, y, u8 u, v, u16 w, h, u16 tpage x, y, clut x, y, u8 depth, abr}`, one per balloon in each of the two tables) | *Release* +12 and *Bug // Rank* +8 into the free x 484–511; the rest fit; the swap plate (4bpp, slice 3, record `0x8007A7B4`) +8, set by the `plate` recipe (its ground is a checkerboard: refilled from donors an even number of steps away, only its text area, not the arrow); the とじる board (8bpp, CLUT 5, records `0x8007A742`, `0x8007A786`) by the `plank` recipe, its punched-through Japanese transparent | the stone on this screen is drawn through a CLUT not in its TIM |
-| insect box (`MZ02`, CLUT 4, the same texture as `SAMP.BIN`'s copy; `SAMP` `0x14e48`, CLUT 6 slices 0–1) | *Bug // Cage*, *Bug // Box* in the game's glyphs; the rest in Bean; *Remove // Specimen* in Sprout — one pixel short in Bean | no free texels (one 44×40 slot at x 684, y 160, and nothing wider) |
+| insect box (`MZ02`, CLUT 4, the same texture as `SAMP.BIN`'s copy; `SAMP` `0x14e48`, CLUT 6 slices 0–1) | *Bug // Cage*, *Bug // Box*, *Take // Out* in the game's glyphs; the rest in Bean (*Page // Next* would fit the game's glyphs, but its pair *Page // Back* shows beside it and does not) | no free texels (one 44×40 slot at x 684, y 160, and nothing wider) |
 
 **The attendance card** (`PK_ITM` `0x6c`, item 0x6c; seen in the bag, drawn dithered: every
 texel its colour or 8 less on each channel). Its title (beside the radio picture) and its
@@ -292,8 +293,8 @@ of the punched hole in its corner), clears the whole of its rectangle grown a pi
 the same rows, so the grid's pale shadow one row above the footer is not drawn down into it,
 and on the flat title ground that is the paper itself — and sets the English in Sprout, in
 the type's own blue: *Radio // Calisthenics // Attendance Card* beside the picture (its box
-stops a column short of the picture's frame) and the footer between the reference marks,
-drawn as `*`.
+stops a column short of the picture's frame) and *Have a healthy summer!* under the grid
+(Jay, 2026-09-24), without the reference marks ※ the Japanese has around it.
 
 **Proof.** `tests/test_real_texture_buttons.py`: each stone's dark pixels are exactly its
 English bold in the disc's glyphs (only its outline besides), each balloon's type exactly its
@@ -395,13 +396,13 @@ the fish's name / the tackle's description are drawn text (`TXT-05`'s). The scre
 
 **The bug-trading notebook's record card** (`_DATA_M_S01100.BIN__0164b4`, 4bpp, CLUT 2), at the
 bug-sumo desk: the offered bug's card alone (the MUSI record `0x8007A758`, texture (512, 0),
-slice 5, at screen (124, 48)) or over the held bug's (`0x8007A79C`, (256, 0), slice 4, at
-(124, 18); the second card 106 rows below the first). The notebook's offer is saved
-(`0x8003DE18`, body offset 740). Each card reads *[size]mm Caught Aug. [day]* / *[wins] W
-[losses] L* / *Worth, counted in* / *[6.4] Saw Stags*: the day's 日 is cleared with nothing in
-its place (an English date needs none), W and L are the glossary's, and ノコギリクワガタ換算で …
-匹の価値 — its value converted into saw stag beetles — is the last two lines. The type has a drop
-shadow, and so does the English. The numbers are the game's (MUSI `FUN_8007e670`,
+slice 5, at screen (124, 48)) or over the held bug's (`0x8007A79C`, (256, 0), slice 4, at (124,
+18); the second card 106 rows below the first). The notebook's offer is saved (`0x8003DE18`,
+body offset 740). Each card reads *[size]mm Caught 8/[day]* / *[wins] W [losses] L* / *Worth as
+many as* / *[6.4] Saw Stags*: "Caught 8/" ends where the day starts, and the day's 日 is cleared
+with nothing in its place (an English date needs none), W and L are the glossary's, and
+ノコギリクワガタ換算で … 匹の価値 — its value converted into saw stag beetles — is the last two lines. The type
+has a drop shadow, and so does the English. The numbers are the game's (MUSI `FUN_8007e670`,
 `FUN_80080888`).
 
 **Proof.** `tests/test_real_texture_records.py`: every label at every place it is drawn holds

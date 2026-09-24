@@ -31,7 +31,7 @@ FAMILY = "rec@"
 class Label:
     key: str | None
     """The English's key; None for a Japanese mark the English needs no word for (the 日 after
-    a day number: an English date is "Aug. 16")."""
+    a day number: an English date is "8/16")."""
     clear: paint.Box
     """The rectangle the Japanese, its shadow and its antialias are in."""
     room: paint.Box | None = None
@@ -84,7 +84,7 @@ RECORDS: dict[str, Record] = {
         "_DATA_M_S01100.BIN__0164b4",
         2,
         (
-            Label("caught", (355, 29, 51, 15), (352, 29, 56, 15)),
+            Label("caught", (355, 29, 51, 15), (352, 29, 57, 15), "right"),
             Label(None, (422, 29, 12, 15)),
             Label("won", (362, 43, 15, 15), (364, 43, 13, 15)),
             Label("lost", (397, 43, 15, 15), (399, 43, 13, 15)),

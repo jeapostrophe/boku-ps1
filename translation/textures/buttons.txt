@@ -26,7 +26,7 @@ btn@NIKKI_W.good_night	Good // night
 # case, as the title menu.
 
 # --- the desk (SUB): one balloon shows at a time, for the item under the cursor
-btn@SUB.belongings	Belongings
+btn@SUB.belongings	Stuff
 btn@SUB.kite	Fly a // Kite
 btn@SUB.tackle	Fishing // Tackle
 btn@SUB.cage	Bug // Cage
@@ -41,7 +41,7 @@ btn@PK_WAL.next_page	Page // Next
 btn@TK_WAL.kite	Fly a // Kite
 
 # --- the kite book (TZICON): the balloon over the confirm button
-btn@TZICON.make_this_kite	Make // This Kite
+btn@TZICON.make_this_kite	Make
 
 # --- bug sumo (M_S01100): the balloons, the swap plate beside its arrow, the Close board.
 # me: 自分, the balloon over Boku's own side.
@@ -62,7 +62,7 @@ btn@MZ02.magnifier	Magnifier
 btn@MZ02.medicine	Medicine
 btn@MZ02.syringe	Syringe
 btn@MZ02.collecting_box	Bug // Box
-btn@MZ02.remove_specimen	Remove // Specimen
+btn@MZ02.remove_specimen	Take // Out
 btn@MZ02.prev_page	Page // Back
 btn@MZ02.next_page	Page // Next
 btn@SAMP.species_list	Species // List
@@ -70,10 +70,10 @@ btn@SAMP.medicine	Medicine
 btn@SAMP.syringe	Syringe
 
 # --- the radio-exercise attendance card (PK_ITM, item 0x6c), set in Sprout: its title beside
-# the radio picture (` // ` breaks it) and its footer under the grid, between the reference
-# marks the Japanese has (drawn as *).
+# the radio picture (` // ` breaks it) and its footer under the grid (the Japanese's ※ marks
+# are not carried over).
 btn@PK_ITM.title	Radio // Calisthenics // Attendance Card
-btn@PK_ITM.footer	* Healthy summer vacation! *
+btn@PK_ITM.footer	Have a healthy summer!
 
 # --- the fishing record's balloon (FS_WAL; つり道具), in Bean
 btn@FS_WAL.tackle	Fishing // Tackle
