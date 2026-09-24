@@ -2,9 +2,10 @@
 # Format: translation/textures/README.md.
 
 # --- M_C15: the notice board on the path down to the beach, in both variants of map C15.
-# Two painted lines, white on dark wood. The board runs off the right edge of the screen, so
-# in the game both lines are cut there, the Japanese and the English alike: write each line
-# whole. The Japanese, as far as it is painted: while high tides are occurring / swimming
-# during that period is ... (the rest of the board is off the screen).
-tex@M_C15.0	When high tides come,
-tex@M_C15.1	swimming is forbidden.
+# Two painted lines, white on dark wood. The board runs off the right edge of the screen and
+# the Japanese is cut there, mid-line; the English is worded to fit the part on screen (Jay,
+# 2026-09-24), at twice the game's glyphs; the build refuses a line that does not fit and
+# says how much room there is. The Japanese, as far as it is painted: while high tides are
+# occurring / swimming during that period is ...
+tex@M_C15.0	High tide
+tex@M_C15.1	No swimming

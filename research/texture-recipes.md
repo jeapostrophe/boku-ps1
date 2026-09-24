@@ -165,14 +165,20 @@ angle", so a caption beside it. Seen on Beetle it is neither angled nor alone:
   place, in two lightings (different indices and palettes). The census missed `C15000` — its
   rule's regex read `M_C1510?0` (corrected; the census and plan tables regenerated, 198 rows).
 * The board is drawn through **CLUT 5**; atlas (330, 20) lands at screen (161, 178), so atlas
-  x 489 is just past the right edge.
+  x 489 is just past the right edge. That last column is not wood: it is another region's
+  entry (175 in `C15000`, 177 in `C15100`), 0x0000 through CLUT 5 -- transparent -- and a
+  refill that takes donors from it lets what lies behind the board show through, red specks
+  on Beetle, which a Beetle comparison skipping transparent texels cannot see. No line box
+  reaches it.
 
 So it is programmatic, like the plates: the type (pale, through CLUT 5) is painted out along
 the wood's horizontal grain, and the English painted in the white the Japanese used most, at
-2× the game's glyphs (the Japanese is ~22 px with 2 px strokes). Line boxes: x 392–489 rows
-18–47 (starting after the bird) and x 334–489 rows 50–77. Each English line starts where its
-Japanese did and runs off the board exactly as the Japanese does; nothing is shortened.
-`beach_notice` does this to both atlases.
+2× the game's glyphs (the Japanese is ~22 px with 2 px strokes). Line boxes: x 387–488 rows
+18–47 (the bird and wave end at x 385) and x 334–488 rows 50–77. The English is worded to fit
+the part of the board on screen (Jay, 2026-09-24: the sign is too small for a cut
+"...orbidden" to read as off-screen), so it is never cut: each line starts where its Japanese
+did, moves left just enough to end at x 488 if it would run past it, and is refused if that
+takes it out of its box. `beach_notice` does this to both atlases.
 
 **Reaching it.** After a new game's opening movie the game enters the map named at
 `g_movie_return_map` ([movies.md](movies.md)); poking `C15` into it during the movie
@@ -180,8 +186,9 @@ Japanese did and runs off the board exactly as the Japanese does; nothing is sho
 this screen at frame ~6000. `C15100` is not reached that way on day 1; its board is checked
 at the texture level.
 
-**Proof.** `tests/test_real_texture_text.py` finds each line in both atlases, at 2×, cut at
-the atlas edge, and no other pale type in the line boxes. `tests/test_real_texture_text_beetle.py`
+**Proof.** `tests/test_real_texture_text.py` finds each line in both atlases, whole at 2× and
+ending on screen, with no other pale type in the line boxes and no entry on screen that the
+stock board did not show there. `tests/test_real_texture_text_beetle.py`
 warps a texture-only image there and requires every texel the build changed on the visible
 board to show its CLUT-5 colour exactly.
 

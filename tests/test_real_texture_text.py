@@ -218,8 +218,8 @@ def test_no_antialiasing_of_the_japanese_is_left_on_a_plaque(inv, patched, textu
 
 @pytest.mark.parametrize("texture_id", tt.BEACH_BACKGROUNDS)
 def test_the_beach_notice_is_the_tracked_english_painted_on_both_variants(inv, patched, texture_id):
-    """Each line's English, at the recipe's scale and cut at the atlas's edge as the board is
-    cut by the screen's, is found once in its line, and no other pale type is left there."""
+    """Each line's English, whole at the recipe's scale, is found once in its line -- whose box
+    ends at the last column on screen -- and no other pale type is left there."""
     face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
     english = tt.read_entries()
     after = parse_exact(patched, inv.get(texture_id).occurrences[0].file_offset)
@@ -227,15 +227,28 @@ def test_the_beach_notice_is_the_tracked_english_painted_on_both_variants(inv, p
         marks = paint.pale_type(after, tt.BEACH_CLUT, box)
         text = english[f"tex@M_C15.{n}"].text
         ink = paint.normalised(paint.scaled(face.ink(text), tt.BEACH_SCALE))
-        right = box[0] + box[2]
-        # The line runs off the board, so it is located by its first letters, which are on it.
-        head = {p for p in ink if p[0] < box[2] // 2}
-        hx, hy, _, _ = paint.extent(head)
-        spots = placements(head, marks)
+        spots = placements(ink, marks)
         assert len(spots) == 1, f"line {n}: {text!r} found {len(spots)} times"
-        dx, dy = spots[0][0] - hx, spots[0][1] - hy
-        drawn = {(x + dx, y + dy) for x, y in ink if x + dx < right}
+        drawn = {(x + spots[0][0], y + spots[0][1]) for x, y in ink}
         assert marks == drawn, f"line {n}: {len(marks ^ drawn)} pixels differ from the English"
+
+
+@pytest.mark.parametrize("texture_id", tt.BEACH_BACKGROUNDS)
+def test_the_beach_notice_on_screen_is_painted_only_in_the_boards_own_colours(
+    inv, patched, texture_id
+):  # fmt: skip
+    """Where a line was painted out, the part on screen takes only entries the stock board
+    shows on screen there: the atlas column past the screen's edge is another region's
+    (transparent through the board's CLUT: on Beetle what is behind shows, red, and the Beetle
+    comparison skips it), and a refill that reached it would paint it in."""
+    texture = inv.get(texture_id)
+    stock = texture.tim
+    after = parse_exact(patched, texture.occurrences[0].file_offset)
+    for n, (x0, y0, _, h) in enumerate(tt.BEACH_LINES):
+        seen = set(paint.points((x0, y0, tt.BEACH_VISIBLE - x0, h)))
+        before = {stock.indices()[y * stock.width + x] for x, y in seen}
+        new = {after.indices()[y * after.width + x] for x, y in seen} - before
+        assert new == set(), f"line {n}: entries {sorted(new)} are not the board's on screen"
 
 
 # --- the picture diary (GFX-04) -------------------------------------------------------------------

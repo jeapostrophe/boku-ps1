@@ -165,9 +165,8 @@ BEACH_WARP = "5300:0x80036588=43313500"
 (`0x80036588`, `research/movies.md`); poking the base `C15` into it during the movie lands day 1
 on the path to the beach (`C15000`). Shot at 6390, after the map has faded in."""
 BEACH_SHOT = 6390
-BEACH_BOARD = (330, 20, 159, 62)
-"""The board's part of the atlas that reaches the screen -- its last column, x 489, falls
-just past the screen's right edge -- and where it lands: measured on the
+BEACH_BOARD = (330, 20, tt.BEACH_VISIBLE - 330, 62)
+"""The board's part of the atlas that reaches the screen, and where it lands: measured on the
 stock image by matching every CLUT at every screen offset (`research/texture-recipes.md`
 § `M_C15`)."""
 BEACH_ON_SCREEN = (161, 178)

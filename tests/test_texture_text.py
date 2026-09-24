@@ -398,13 +398,12 @@ class GlyphFace(BlockFace):
         return out
 
 
-def test_a_beach_line_taller_than_its_painted_rows_is_refused_not_stamped_above_them():
-    """A line may run off the board to the right, as the Japanese does, but it may not leave
-    the rows that were painted out -- above them is wood nobody cleaned."""
+def beach_board() -> Texture:
+    """A board with a 16-row line of white "type" on dark wood, well inside each line box."""
     width, height = 490, 90
     px = [2] * (width * height)
     for x0, y0, w, _ in tt.BEACH_LINES:
-        for y in range(y0 + 4, y0 + 20):  # a 16-row line of "type", well inside its box
+        for y in range(y0 + 4, y0 + 20):
             for x in range(x0 + 2, x0 + w - 2, 3):
                 px[y * width + x] = 1
     palette = synth.ramp(256)
@@ -414,16 +413,45 @@ def test_a_beach_line_taller_than_its_painted_rows_is_refused_not_stamped_above_
         1, synth.pixel_block(width // 2, height, bytes(px)),
         clut=synth.clut_block(256, tt.BEACH_CLUT + 1, palette * (tt.BEACH_CLUT + 1)),
     )  # fmt: skip
-    board = Texture("board", "0" * 40, parse_exact(raw), ())
+    return Texture("board", "0" * 40, parse_exact(raw), ())
+
+
+def beach(face, lines, monkeypatch) -> list[tuple[tuple[int, int], set]]:
+    """Run `beach_notice` on `beach_board` with `lines`; the stamps it made, in order."""
+    board = beach_board()
+    stamps = []
+    monkeypatch.setattr(paint.Canvas, "stamp", lambda _c, at, ink, _i: stamps.append((at, ink)))
+    entries = [tt.Entry(f"tex@M_C15.{n}", t, f"signs.txt:{n}") for n, t in enumerate(lines)]
+    tt.beach_notice(SimpleNamespace(), SimpleNamespace(get=lambda _id: board), face, entries)
+    return stamps
+
+
+def test_a_beach_line_taller_than_its_painted_rows_is_refused_not_stamped_above_them(monkeypatch):
+    """A line may not leave the rows that were painted out -- above them is wood nobody
+    cleaned."""
 
     class TallFace(BlockFace):
         def ink(self, text):  # 16 rows: doubled, 32 -- taller than a 30-row line box
             return {(x, y) for x in range(4) for y in range(16)}
 
-    entries = [tt.Entry(f"tex@M_C15.{n}", "Go", f"signs.txt:{n}") for n in range(2)]
     with pytest.raises(tt.TextureTextError, match=r"signs.txt:0: 'Go' is 32 px tall"):
-        tt.beach_notice(SimpleNamespace(), SimpleNamespace(get=lambda _id: board), TallFace(),
-                        entries)  # fmt: skip
+        beach(TallFace(), ["Go", "Go"], monkeypatch)
+
+
+def test_a_beach_line_is_moved_left_to_end_on_the_screen_whole(monkeypatch):
+    """A line that would run past the last column on screen starts just far enough left to
+    end there, and is stamped whole."""
+    stamps = beach(BlockFace(), ["aaaaaaaaaai", "Go"], monkeypatch)
+    (x, _), ink = stamps[0]
+    width = paint.extent(ink)[2]
+    assert width == tt.BEACH_SCALE * BlockFace().measure("aaaaaaaaaai")
+    assert x + width == tt.BEACH_VISIBLE, "the line ends at the screen's right edge"
+    assert x < tt.BEACH_LINES[0][0] + 2, "it starts left of where the Japanese did"
+
+
+def test_a_beach_line_wider_than_the_board_on_screen_is_refused_not_cut(monkeypatch):
+    with pytest.raises(tt.TextureTextError, match=r"signs.txt:0: 'aaaaaaaaaaa' is .* on screen"):
+        beach(BlockFace(), ["aaaaaaaaaaa", "Go"], monkeypatch)
 
 
 def test_a_diary_entry_belongs_to_the_diary_family_whatever_its_page():
