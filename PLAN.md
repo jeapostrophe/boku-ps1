@@ -672,7 +672,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       2026-09-23:** desk `SUB` (repacked), bag `PK_WAL`, kite record `TK_WAL`, kite book
       `TZICON` (Bean), bug sumo `M_S01100` (balloons, swap plate, Close board), insect box
       `MZ02`/`SAMP` (Bean; one in Sprout), proven on Beetle. **Attendance card DONE 2026-09-23:** `PK_ITM 0x6c`
-      title and footer in Sprout, proven on Beetle in the bag. Still to do: `FS_WAL`; the
+      title and footer in Sprout, proven on Beetle in the bag; the insect book's stone Back
+      (`MZKAN.BIN` `0x48`) with the other stones. Still to do: `FS_WAL`; the
       bug-record card in `M_S01100` `0x164b4` (labels beside
       run-time numbers, like `FS_WAL`).
 - [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
