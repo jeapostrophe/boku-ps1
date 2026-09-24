@@ -836,13 +836,15 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       `xa_play_indexed` that every native clip passes. Proven on Redux
       (`tests/test_real_clip_subtitle.py`) and Beetle. The credits are `OTI0n`'s 276×33
       production/copyright strip, ruled N by `research/textures-plan.md`.
-- [ ] **[VO-06]** **Subtitles for the bug-sumo voices.** The boys' 39 lines (`XCH.00`–`.40`,
-      English in `translation/clips.txt`) pass `VO-03`'s `xa_play_indexed` hook already. Bug
-      sumo (mode 7) is entered only by `E4025`; `tools/redux/to-sumo.lua` reaches its desk
-      from a cold boot (`research/save-format.md`). Measured 2026-09-23: the movie-subtitle
-      block at `0x801C0000` is overwritten by the `A18` load and by mode 7, and that memory
-      is mode 7's own, so the text needs another home there. Left: that home, and a proof on both emulators — a bout is now
-      reachable (`./make.sh sumo-bout`, `ENV-08`). Harmed: the player, who hears the boys' taunts and reads nothing.
+- [x] **[VO-06]** **Subtitles for the bug-sumo voices.** DONE 2026-09-23: bug sumo's mode init
+      reads the movie-subtitle block to arena level C's base (untouched through a bout,
+      measured on Beetle; `research/sumo.md` § Subtitles); `VO-07`'s ownership rule already
+      covers these native clips; the subtitle draws in OT slot 0 and in bug sumo starts 42 px
+      right of Boku's portrait (clips laid out to match). Proven on Beetle in a real bout
+      (`sumo_bout.py --gong`) and on Redux; `tests/test_real_sumo_voice.py`. Speakers labelled
+      by pronoun (Guts, Fat, Specs). Fixed on the way: leaving bug sumo hung on every raised
+      build — `SUB.TIM`'s reload ran into the stack (`asm/arena.asm` `sub_tim_floor`,
+      `research/loading-and-memory.md` § Leaving a mode; gate `sumo_bout.py --leave`).
 - [x] **[VO-07]** **The bedtime voice-over in real play.** DONE 2026-09-23: in play the event
       runner's bit 0 (`0x8003637C`) stays set after the `END` into movie mode / `ENDOTI`, and
       the hooks read it as "an event owns the text", so `XCH.34` and the epilogues never
