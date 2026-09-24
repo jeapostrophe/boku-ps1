@@ -43,7 +43,8 @@ are `./make.sh mockup`'s.
   carries `(unlabelled)`; a menu is a `[SEL]` row; `# --- exe@8003D2E0: …` opens a list the
   way `# --- E0121` opens an event. A game glyph the English sits beside — a button, the
   dashed rule — is written `{G:n}` (its id in `research/data/glyph-table.tsv`) or as the
-  character the sheet draws (○ × ↓); either is that one cell of the game's own sheet.
+  character the sheet draws (○ × ↓); either is that one cell of the game's own sheet. A line
+  of dialogue may name a button the same way, by the character (`Try pressing the ○ button`).
 * **The memory card's save title** (`title@sjis:188`) marks where the game puts the slot
   number and the day: `Boku's Memories {slot} August {day}`. The console's card screen
   shows it in full-width letters, at most 64 bytes with the widest slot and day (the lint

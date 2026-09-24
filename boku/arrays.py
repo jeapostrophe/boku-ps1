@@ -277,10 +277,16 @@ UNREACHABLE: dict[str, str] = {
         "text); the build leaves the retail bytes. Reopen when a retail path is found that "
         "shows them"
     ),
+    "exe@code:80037698": (
+        "specimen_label_draw has no caller in any image (research/text-outside-events.md) "
+        "and asm/voice.asm puts the voice-only hooks over its bytes (VOICE_OPEN_ISLAND); the "
+        "build leaves its glyph ids alone. Reopen when a retail path is found that calls it"
+    ),
 }
-"""Arrays no retail path draws. Their English stays in `translation/days/arrays.txt`, the
-build writes nothing for them (so they take no relocation room), and the lint reports each
-row once as `unreachable`. Each reason names what would reopen it."""
+"""Arrays, and code labels, no retail path draws. Their English stays in
+`translation/days/arrays.txt`, the build writes nothing for them (so they take no relocation
+room), and the lint reports each row once as `unreachable`. Each reason names what would
+reopen it."""
 
 
 def unreachable(line_id: str) -> str | None:

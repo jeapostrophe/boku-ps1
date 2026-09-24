@@ -2,9 +2,19 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
-from boku.arrays import SAVE_TITLE_BYTES, SAVE_TITLE_LINE_ID, CodeLabel
+from boku import REPO_ROOT
+from boku.arrays import (
+    CODE_LABEL_MARK,
+    CODE_LABELS,
+    SAVE_TITLE_BYTES,
+    SAVE_TITLE_LINE_ID,
+    CodeLabel,
+    unreachable,
+)
 from boku.boxes import box_spec_for
 from boku.code_text import (
     DAY,
@@ -155,3 +165,35 @@ def test_a_banner_item_is_its_cells_ended_by_0x8000_and_held_to_its_box():
 
 def test_a_banner_item_with_no_english_is_refused():
     assert lay_out_banner("tako@440.0", "", CELLS, None).problems
+
+
+ISLAND_EQU = re.compile(r"^(\w+_ISLAND(?:_END)?)\s+equ\s+0x([0-9A-Fa-f]{8})\b", re.MULTILINE)
+
+
+def _executable_islands() -> list[tuple[str, int, int]]:
+    """`(name, start, end)` of every `NAME_ISLAND` / `NAME_ISLAND_END` pair `asm/` gives as
+    an address: retail executable code a renderer patch overwrites with its own."""
+    equates = {}
+    for source in (REPO_ROOT / "asm").glob("*.asm"):
+        for name, value in ISLAND_EQU.findall(source.read_text(encoding="utf-8")):
+            equates[name] = int(value, 16)
+    return [
+        (name, start, equates[f"{name}_END"])
+        for name, start in equates.items()
+        if not name.endswith("_END") and f"{name}_END" in equates
+    ]
+
+
+def test_a_code_label_whose_function_a_patch_overwrites_is_unreachable():
+    """`exe@code:80037698` (`specimen_label_draw`): nothing calls it, and `asm/voice.asm`
+    puts the voice-only hooks over its bytes. Its label cannot be drawn, so the build must
+    leave it retail rather than patch glyph ids into the hooks' code, or refuse the row."""
+    islands = _executable_islands()
+    assert any(name == "VOICE_OPEN_ISLAND" for name, _, _ in islands), "the parse found no islands"
+    for image, function, _ in CODE_LABELS:
+        if image != "exe":
+            continue
+        line_id = f"{image}{CODE_LABEL_MARK}{function:X}"
+        for name, start, end in islands:
+            if start <= function < end:
+                assert unreachable(line_id), f"{line_id} is inside {name} and still drawn"

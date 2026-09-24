@@ -182,5 +182,6 @@ def test_the_days_build_leaves_the_move_names_retail_and_does_not_call_them_refu
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     moves = sorted(line for line in rows if line.startswith("musi@2C."))
     assert moves, "arrays.txt carries the move names"
-    assert sorted(manifest["lines_unreachable"]) == moves
+    left = sorted(line for line in manifest["lines_unreachable"] if line.startswith("musi@2C."))
+    assert left == moves
     assert not set(moves) & (set(manifest["lines_refused"]) | set(manifest["lines_written"]))

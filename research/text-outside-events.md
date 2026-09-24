@@ -127,7 +127,7 @@ composes sentences. What exists:
   | function | glyph ids | reads as | callers |
   |---|---|---|---|
   | `caught_label_draw` `0x80037544` | `0x21F 0x382`, `0x1B8`, `0x157` | caught, month, day | EXE, `HHON`, `MUSI` |
-  | `specimen_label_draw` `0x80037698` | `0x3EC 0x158 0x1F7 0x25D`, `0x1B8`, `0x157` | specimen made, month, day | **none found — dead** |
+  | `specimen_label_draw` `0x80037698` | `0x3EC 0x158 0x1F7 0x25D`, `0x1B8`, `0x157` | specimen made, month, day | **none found — dead**; its bytes are `asm/voice.asm`'s `VOICE_OPEN_ISLAND`, so the build leaves its label retail (`boku.arrays.UNREACHABLE`) |
   | `winloss_draw` `0x800377F8` | `0x26A`, `0x4B9` | wins, losses | EXE, `HHON`, `MUSI` ×2 |
   | `save_date_draw` (`TITLE`) | `0x3C`, `0x1B8`, `0x157` | 8, month, day | `TITLE` |
   | `file_rows_draw` (`TITLE`) | `0x5B0` ×4 sites | `）` after the slot number | `TITLE` |
@@ -273,7 +273,8 @@ Shift-JIS title (`title@sjis:188`).
 ## Not settled statically — as emulator questions
 
 * Is `specimen_label_draw` really dead? Break at `0x80037698`, open the insect book and the
-  specimen box.
+  specimen box. (Every build with the voice-only hooks already runs their code there; a live
+  caller would run the hooks' code instead.)
 * Does any surface bypass `glyph_draw`? Break on writes of texture-page words selecting the
   font page (VRAM x = 768) outside `glyph_draw`; owned by the renderer trace.
 * Which `dbg_printf` sites run in retail: break at `0x80022C38` during a normal day.

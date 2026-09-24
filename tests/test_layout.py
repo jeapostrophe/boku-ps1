@@ -218,6 +218,32 @@ def test_a_mark_the_font_cannot_draw_is_reported_like_any_other_character():
     assert any("draws no cell for 'Z「'" in problem for problem in laid.problems)
 
 
+def test_a_sheet_symbol_in_a_line_of_dialogue_is_the_sheet_s_own_cell_at_the_stock_pitch():
+    """ "Try pressing the ○ button" (E1754.5, where the Japanese draws the same ○): the
+    English font has no cell for it and needs none -- the sheet's own cell is drawn, and
+    `dialog_draw` steps a cell that is not English at the stock pitch (`asm/dialogue.asm`)."""
+    circle = GlyphTable.load().from_character["○"]
+    encoder = cell_encoder()
+    laid = lay_out_message("E1.0", ("a ○ b",), raw(1, END_WORD), encoder, BoxSpec(999, 4))
+    assert laid.fits, laid.problems
+    assert laid.words == (302, 10, circle, 10, 303, END_WORD)
+    assert laid.widths == ((measure(encoder, "a  b") + STOCK_ADVANCE,),)
+
+
+def test_a_sheet_symbol_whose_cell_the_font_redrew_is_unencodable_in_dialogue():
+    """The cell map took ○'s cell for a letter, so that cell no longer draws a ○."""
+    circle = GlyphTable.load().from_character["○"]
+    encoder = CellMapEncoder({**CELLS, "z": (circle, 6)})
+    laid = lay_out_message("E1.0", ("a ○",), raw(1, END_WORD), encoder, BoxSpec(999, 4))
+    assert laid.problems == ("E1.0: the cell map draws no cell for '○'",)
+
+
+def test_japanese_in_a_line_of_dialogue_is_not_passed_through_as_the_sheet_s_glyphs():
+    kana = next(c for c in GlyphTable.load().from_character if "\u3040" <= c <= "\u30ff")
+    laid = lay_out_message("E1.0", (kana,), raw(1, END_WORD), cell_encoder(), BoxSpec(999, 4))
+    assert laid.problems == (f"E1.0: the cell map draws no cell for {kana!r}",)
+
+
 # --- pages, which never move -------------------------------------------------------------------
 
 

@@ -129,6 +129,7 @@ from boku.layout import (
     LabelledBox,
     LayoutError,
     StockEncoder,
+    WithSheetSymbols,
     label_allowance,
     lay_out_answer_pair,
     lay_out_array,
@@ -789,7 +790,7 @@ def _check_message(context: _Context, row: Row, record: dict) -> None:
                 else "; these page breaks are not voice-timed, so this may be deliberate"
             ),
         )
-    missing = unencodable(encoder, "".join(pages))
+    missing = unencodable(WithSheetSymbols(encoder), "".join(pages))
     if missing:
         context.say(
             row, "unencodable", ERROR, f"the {encoder.name} draws no cell for {''.join(missing)!r}"

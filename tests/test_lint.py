@@ -238,6 +238,14 @@ def test_a_character_with_no_cell_is_an_error(store, tmp_path):
     assert missing in finding.message
 
 
+def test_a_sheet_symbol_in_a_line_of_dialogue_is_drawn_not_unencodable(store, tmp_path):
+    """The lint asks the same question the build does (`boku.layout.WithSheetSymbols`):
+    ○ is the sheet's own cell, which the dialogue draws beside the English."""
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    findings = run(store, tmp_path, [*rows, (UNVOICED, "Boku", "Press ○.")], label=False)
+    assert "unencodable" not in checks(findings)
+
+
 def test_a_page_one_character_too_wide_is_an_error(store, tmp_path):
     """The narrowest pixel case: the widest line that fits, then one cell more.
 

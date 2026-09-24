@@ -211,6 +211,47 @@ SHEET_CELL_PROBLEMS = ("draws no cell", "not the sheet's own glyph", "names no c
 """What each of `sheet_cells`' problems says, so a lint files them all as `unencodable`."""
 
 
+def _sheet_symbol(character: str) -> int | None:
+    """The sheet's own cell for `character` if it is a symbol the sheet draws (○ × ↓), which
+    English may borrow; `None` for anything else -- a kana or kanji is Japanese left
+    untranslated, not a symbol."""  # noqa: RUF002
+    cell = _sheet().from_character.get(character)
+    return cell if cell is not None and category(character)[0] == "S" else None
+
+
+def _redrawn(encoder: Encoder) -> dict[int, str]:
+    """Cell -> the English character `encoder` redrew it as; such a cell no longer draws
+    the sheet's own glyph."""
+    if not isinstance(encoder, CellMapEncoder):
+        return {}
+    return {cell: character for character, (cell, _) in encoder.cells.items()}
+
+
+@dataclass(frozen=True)
+class WithSheetSymbols:
+    """`encoder`, plus the sheet's own cell for a symbol it has none for: the ○ of "press
+    the ○ button", which the Japanese draws with the same cell. Its advance is `encoder`'s
+    for a character it lacks -- the stock pitch, which is what `dialog_draw` steps a cell
+    that is not English (`asm/dialogue.asm`). A cell `encoder` redrew as a letter does not
+    draw the symbol any more, so that symbol stays unencodable."""
+
+    encoder: Encoder
+
+    @property
+    def name(self) -> str:
+        return self.encoder.name
+
+    def glyph(self, character: str) -> int | None:
+        cell = self.encoder.glyph(character)
+        if cell is not None:
+            return cell
+        own = _sheet_symbol(character)
+        return None if own is None or own in _redrawn(self.encoder) else own
+
+    def advance(self, character: str) -> int:
+        return self.encoder.advance(character)
+
+
 class SheetCells(NamedTuple):
     """An array item's text as cells, the pixels they step, and what could not be drawn."""
 
@@ -231,11 +272,7 @@ def sheet_cells(encoder: Encoder, text: str, pitch: int = 0) -> SheetCells:
     problem, not a passthrough.
     """  # noqa: RUF002
     stock = pitch or getattr(encoder, "fixed_advance", STOCK_ADVANCE)
-    redrawn = (
-        {cell: character for character, (cell, _) in encoder.cells.items()}
-        if isinstance(encoder, CellMapEncoder)
-        else {}
-    )
+    redrawn = _redrawn(encoder)
     cells: list[int] = []
     width = 0
     missing: list[str] = []
@@ -258,8 +295,8 @@ def sheet_cells(encoder: Encoder, text: str, pitch: int = 0) -> SheetCells:
             if cell is not None:
                 cells.append(cell)
                 width += encoder.advance(character)
-            elif character in _sheet().from_character and category(character)[0] == "S":
-                own(_sheet().from_character[character])
+            elif (symbol := _sheet_symbol(character)) is not None:
+                own(symbol)
             else:
                 if character not in missing:
                     missing.append(character)
@@ -526,6 +563,7 @@ def _paginate(
     closing: str = "",
 ) -> LaidOut:
     """Wrap each page into the box, lint it, and encode it with `waits` after each break."""
+    encoder = WithSheetSymbols(encoder)
     dressed = list(pages)
     if dressed:
         dressed[0] = opening + dressed[0]
