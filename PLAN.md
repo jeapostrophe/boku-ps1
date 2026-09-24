@@ -698,8 +698,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       pixels along its rules (the blue lines kept), "Goodbye. / You were / a pretty good / guy." —
       "From Saori" written on the rules in the game's glyphs and carried back (print font and "guy"
       accepted by Jay); on Beetle; `research/texture-recipes.md` § `M_I14000`; **the hunting-association
-      board** (`G8-I23`) — a clean plate with the writing removed (keeping the explosion's
-      colours), then our text in the game's glyphs; **the keep-out sign** (`G8-I18`, "Don't // come in!") and **the
+      board** (`G8-I23`) DONE 2026-09-24 (`ee24b05`): a clean plate refilled from the board (the
+      starburst's colours and the bullet trail kept), "DANGER!" / "Homes nearby," / "Fire with
+      care!" / "Prefectural // Hunting Assn." in the game's glyphs twice as tall and emboldened,
+      on Beetle — the size put to Jay (§21 G8-I23: tall or bold); **the keep-out sign** (`G8-I18`, "Don't // come in!") and **the
       bug-trading notebook cover** (`G8-NB`, "Bug // Trading // Notebook") DONE 2026-09-24
       (`8ec5c76`): marker lettering found by colour, painted out, set in the game's glyphs in the
       marker's own colour, on Beetle (`research/texture-recipes.md` § "Marker signs"); **the result badges**
