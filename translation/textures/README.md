@@ -11,9 +11,9 @@ is tracked (CLAUDE.md § "This repo is public").
 One string per row: `id<TAB>English`. `#` lines and blank lines are notes. ` // ` splits a
 string into lines, and only where the file's comment for that texture says it may; anywhere
 else the build refuses it rather than drawing the slashes. The id is
-`tex@<member>.<key>` for a single texture's strings (`tex@T_TITLE.0`); the bulk families will be
-`nikki@NIKKI_nnn`, `mzkan@…`, `tzkan@…` (`research/textures-plan.md` § "The new English text
-this creates"). An id may appear once across all the files.
+`tex@<member>.<key>` for a single texture's strings (`tex@T_TITLE.0`); the bulk families are
+`nikki@NIKKI_nnn`, `btn@<member>.<key>`, `mzkan@<page>.<field>` and `tzkan@<page>.<field>`.
+An id may appear once across all the files.
 
 A string is set in the game's own glyphs unless its texture says otherwise (a button whose
 row in `boku/texture_buttons.py` names one of the pixel faces in `boku/faces/`, which also
@@ -31,6 +31,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 | [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`), the album heading (`T_MEMORY`) | PLAN `GFX-07` |
 | [signs.txt](signs.txt) | the notice board on the path to the beach (`M_C15`) | PLAN `GFX-09` |
 | [buttons.txt](buttons.txt) | the stone "Back" buttons, the speech-balloon buttons and the attendance card's labels (`btn@<member>.<key>`) | PLAN `GFX-07` |
+| [books.txt](books.txt) | the insect book and the kite book, one row per field of a page (`mzkan@<n>.<field>`, `tzkan@<n>.<field>`) | PLAN `GFX-06` |
 | [diary.txt](diary.txt) | the picture diary, one entry per page id (`nikki@NIKKI_nnn`); three so far | PLAN `GFX-04`, `TRN-04` |
 
 To change a string, edit it here and run `./make.sh textures check` (add `--out

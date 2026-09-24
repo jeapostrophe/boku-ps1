@@ -208,6 +208,7 @@ BUTTONS: dict[str, Button] = {
     "PK_WAL.back": stone_at("_DATA_PK_WAL.BIN__0000e4", 73, 81, 4),  # the bag
     "MZ00.back": stone_at("_DATA_MZ00.BIN__000350", 321, 1, 0),  # specimen grid
     "SAMP.back": stone_at("_DATA_SAMP.BIN__014e48", 318, 24, 5),  # specimen box
+    "MZKAN.back": stone_at("_DATA_MZKAN.BIN__000048", 0, 0, 1),  # the insect book
     # The diary's idle hint おやすみ, drawn at screen (40, 16) after a second without input
     # (atlas entry 6 of the table in front of the sheet; ZUKAN.OVL places it).
     "NIKKI_W.good_night": Button(

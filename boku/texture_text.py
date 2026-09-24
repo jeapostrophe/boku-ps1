@@ -651,6 +651,20 @@ def buttons(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entr
     return texture_buttons.buttons(archive, inv, face, entries)
 
 
+def insect_book(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """The insect book's spreads (`boku.texture_books`)."""
+    from boku import texture_books
+
+    return texture_books.insect_book(archive, inv, face, entries)
+
+
+def kite_book(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """The kite book's spreads (`boku.texture_books`)."""
+    from boku import texture_books
+
+    return texture_books.kite_book(archive, inv, face, entries)
+
+
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
@@ -658,6 +672,8 @@ FAMILIES: Mapping[str, Family] = {
     "tex@M_C15": beach_notice,
     "nikki@": diary,
     "btn@": buttons,
+    "mzkan@": insect_book,
+    "tzkan@": kite_book,
 }
 
 

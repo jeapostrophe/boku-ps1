@@ -179,8 +179,9 @@ LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
 make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), duckstation-cards, boot-save, sumo-bout, examine, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, voice-only, trial, build (text,
-                     texture recipes and buttons, code-file arrays moved whole when they grow,
-                     labels drawn from code immediates, the memory-card save title), patch,
+                     texture recipes, buttons and the encyclopedias, code-file arrays moved
+                     whole when they grow, labels drawn from code immediates, the memory-card
+                     save title), patch,
                      apply-patch, save, sumo (the bug-sumo cage); boku/faces/ holds the two
                      small pixel faces drawn for this project (Bean, Sprout)
 asm/                 armips source for the executable patches

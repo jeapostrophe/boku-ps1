@@ -242,6 +242,9 @@ SCREENS = {
         [*mode(0x0C, "f4791180"), "--poke", "7010:0x800459DC=08000000"], False,
         {7200: [("TZICON.make_this_kite", (16, 160), None), ("TZICON.back", (256, 130), None)]},
     ),
+    "insect_book": (
+        [*mode(0x0D, "f4791180")], False, {7290: [("MZKAN.back", (256, 202), None)]},
+    ),
     "bug_sumo": (
         [*BOOT, "--poke", "5300:0x80036588=41313800", "--poke", "5300:0x80036359=01",
          "--poke", "5300:0x8003635A=b90f", "--poke", "5300:0x80035E61=02",

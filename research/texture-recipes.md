@@ -235,6 +235,7 @@ are its row of `BUTTONS`; where it is drawn:
 | the bag | `PK_WAL` | (248, 190) |
 | specimen grid | `MZ00` `0x350` | (252, 192) |
 | specimen box | `SAMP` `0x14e48` | (240, 201) |
+| insect book | `MZKAN` `0x48` | texture origin (256, 202) |
 
 The stone is textured, so the recipe changes **only the Japanese's own pixels** (Jay,
 2026-09-23: the mock-up's kite button banded because it repainted more): the ink (darker than
@@ -294,9 +295,52 @@ English bold in the disc's glyphs (only its outline besides), each balloon's typ
 English lines, each board's dark pixels and each card label's printed pixels exactly its
 English, each widened sprite's stored sizes grown and moved; on Beetle (`./make.sh emu-test`)
 settings, load (a generated day-5 card), the diary desk, the desk (tackle and belongings), the
-bag, the kite record, the kite book, bug sumo and the insect box show every opaque texel of
+bag, the kite record, the kite book, the insect book, bug sumo and the insect box show every opaque texel of
 each button's box in its rebuilt colour (but where the hand cursor covers it; the attendance
 card within its dither), and the stock image fails every one.
+
+## The books — the insect and kite encyclopedias (PLAN `GFX-06`)
+
+`boku/texture_books.py`; the English is `mzkan@<n>.<field>` and `tzkan@<n>.<field>` in
+`translation/textures/books.txt`. The insect book is nine 252×188 8bpp spreads, the same nine
+in `MZKAN1` (by day) and `MZKAN0` (by night, other indices and palette), page n of each the
+same species, so each English page is set into both; the kite book is eight 244×186 spreads in
+`TZKAN`. Both are drawn dithered (every texel its colour or 8 less on each channel, as the
+attendance card) at texture origin (38, 23) for the kite book and (45, 23) for the insect book
+— measured on Beetle with the book modes forced by hand (mode 12 and 13, the diary's pokes).
+
+Every text area was found by classifying every pixel of every page of the pack: furniture
+(the photograph, the green rules; saturation over `FURNITURE`), ink, paper — and taking the largest
+rectangles no page has furniture in:
+
+| area | box | set |
+|---|---|---|
+| insect name, on the grey of the right page's curled top edge | (140, 12, 111, 13) | the game's glyphs, centred; Bean where they do not fit (*Great Purple Emperor*, 128 px) |
+| insect header: family, size, likes | (140, 27, 108, 60) | Bean, each field wrapped and centred |
+| insect body, left page under the photograph | (8, 96, 120, 77) | Bean, left, the first lines |
+| insect body, right page under the rule | (130, 95, 118, 78) | Bean, left, the rest |
+| kite page: the right page and the left page's last column | (106, 13, 134, 159) | cleared; the name (game glyphs), `[level]` (Bean) and body (Bean) set in (128, 14, 110, 156) |
+
+The Japanese body runs in vertical columns from the right page to the left; the English runs
+down the left page and on to the right, as an English book reads. A body area is blanked whole
+first, each column to the paper that column shows most, so the shading toward the spine
+stays. The name and header straddle the diagonal edge of the grey curl at the page's top, so
+there only the pixels that are not one of the area's paper entries (white, the curl's grey —
+the entries covering `PAPER_SHARE` of it) change, each refilled from the nearest that is. The
+Japanese running out of an area goes too: its first strokes start on the photograph's sloping
+lower edge, above the box, and its last end on the rule at the foot. A mark darker than the
+paper outside the box is the Japanese's when it is paper all round and within `GAP` pixels of the
+box or of a stroke already found; a group touching the photograph or a rule is the page's and
+stays (a first build that cleared by darkness alone took dull stretches out of twelve
+photographs). With Bean at a pitch of 9 the longest bodies fill the spread (the insect pages
+hold 16 lines); a page that does not fit is refused, never cut.
+
+**Proof.** `tests/test_real_texture_books.py`: on every page, in both lightings, each text
+area's dark pixels are exactly as many as its English lines ink; outside the areas only strokes
+of the Japanese change — no pixel next to the photograph's or a rule's colour — and no stroke
+is left across a body's edge; the curl's white and grey stay under the name and header. On
+Beetle (`./make.sh emu-test`) both books open on page 0 with every texel of the text areas as
+rebuilt, within the dither; the stock image fails both.
 
 ## Measured while looking at the rest of `GFX-07`
 

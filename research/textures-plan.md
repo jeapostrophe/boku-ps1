@@ -272,8 +272,10 @@ question; it is noted here so the two sides do not both assume the other has it.
 * `M_S01000` `0x017d24` (census `maybe`) — *resolved* at CLUT 3: a spiral notepad in the
   insect-cage close-up whose cover is hand-lettered in marker, "bug swap notebook". Legible,
   real, and in a style no glyph typeset reproduces.
-* `MZKAN.BIN` `0x000048` (census `maybe`) — *resolved* at CLUT 1: a 44×74 sprite set whose
-  "back" is brush-lettered on a stone plaque, with two smaller action plates below it.
+* `MZKAN.BIN` `0x000048` (census `maybe`) — *resolved* at CLUT 1: a 44×74 sprite set: the
+  insect book's stone "Back" — *corrected* 2026-09-23: the same stone drawing as every other
+  "Back", built with them ([texture-recipes.md](texture-recipes.md) § "Buttons") — above a
+  wreath and two pencils (`H`, `HB`), which carry no Japanese.
 
 ### **N** — 4, all census `maybe`, all *resolved as having no Japanese*
 

@@ -5,7 +5,7 @@
 # lines with ` // `.
 
 # --- stone "Back" (もどる): settings, load/save, the album, the diary desk, the bug-sumo
-# desk, the kite record, the kite book, the bag, the specimen grid and box
+# desk, the kite record, the kite book, the bag, the specimen grid and box, the insect book
 btn@T_CONFIG.back	Back
 btn@M_S01001.back	Back
 btn@T_MEMORY.back	Back
@@ -16,6 +16,7 @@ btn@TZICON.back	Back
 btn@PK_WAL.back	Back
 btn@MZ00.back	Back
 btn@SAMP.back	Back
+btn@MZKAN.back	Back
 
 # --- balloons. NIKKI_W.good_night: the diary desk's idle hint (おやすみ).
 btn@NIKKI_W.good_night	Good // night
