@@ -45,8 +45,7 @@ def rebuilt(inv, patched: bytes, button: tb.Button) -> paint.Canvas:
 
 
 def box_of(button: tb.Button) -> paint.Box:
-    x, y, w, h = button.box
-    return x, y, w + (button.widen.extra if button.widen else 0), h
+    return button.placed
 
 
 @pytest.fixture(scope="module")
@@ -91,6 +90,30 @@ def test_a_stone_carries_its_english_bold_and_no_japanese(
     )
 
 
+@pytest.mark.parametrize(
+    "key", sorted(k for k, b in tb.BUTTONS.items() if b.kind in ("plank", "plate"))
+)
+def test_a_board_carries_its_english_and_no_japanese(
+    key, texture_inventory, texture_patched, game
+):  # fmt: skip
+    """The Close board (bold, its punched-through Japanese transparent) and the swap plate:
+    every dark or transparent pixel of the room is the English, once."""
+    button = tb.BUTTONS[key]
+    canvas = rebuilt(texture_inventory, texture_patched, button)
+    room = tb.text_area(button, box_of(button)) if button.kind == "plate" else button.box
+    palette = canvas.palette(button.clut, button.chunk)
+    colours = {p: palette[canvas.at(p)] for p in paint.points(room)}
+    dark = {p for p, c in colours.items() if not c[3] or luminance(c) < tb.INK_DARK}
+    ink = ink_of(game, ENTRIES[key])
+    english = paint.normalised(paint.bold(ink) if button.kind == "plank" else ink)
+    assert paint.normalised(dark) == english
+
+
+STROKE = 8
+"""Dark pixels in one group that make a stroke of type, not a speck of the tail's shading
+(the largest measured is 4)."""
+
+
 @pytest.mark.parametrize("key", sorted(k for k, b in tb.BUTTONS.items() if b.kind == "balloon"))
 def test_a_balloon_carries_its_english_lines_and_no_japanese(
     key, archive, texture_inventory, texture_patched, game
@@ -106,39 +129,107 @@ def test_a_balloon_carries_its_english_lines_and_no_japanese(
         xs = [x for x in range(x0, x0 + w) if canvas.at((x, y)) == paper]
         if xs:
             interior |= {(x, y) for x in range(min(xs), max(xs) + 1)}
-    marks = {p for p in interior if canvas.at(p) != paper}
     face = tb._face(button, game)
     expected = tb.lines_block(face, lines_of(ENTRIES[key]), ENTRIES[key])
-    assert paint.normalised(tb.islands(marks, interior)) == expected
+    ink = {p for p in interior if canvas.at(p) != paper}
+    placed = [
+        moved for dx, dy in paint.points((x0, y0, w, h))
+        if (moved := {(x + dx, y + dy) for x, y in expected}) <= ink
+    ]  # fmt: skip
+    assert len(placed) == 1, "the English lines, in their face, are not in the balloon once"
+    dark = {p for p in ink - placed[0] if luminance(palette[canvas.at(p)]) < tb.SOFT}
+    left = [g for g in tb.groups(dark) if len(g) >= STROKE]
+    assert left == [], f"marks of type left beside the English: {[sorted(g)[:3] for g in left]}"
     if button.widen:
-        first = texture_inventory.get(button.texture).occurrences[0].file_offset
-        at = first + button.widen.entry_at
-        _, _, w_words, *_ = struct.unpack_from("<6H", texture_patched, at)
-        assert w_words * 4 == button.widen.entry[2] * 4 + button.widen.extra
+        assert_sizes_follow(archive, texture_inventory, texture_patched, button)
+
+
+def assert_sizes_follow(archive, inv, patched: bytes, button: tb.Button) -> None:
+    """Every stored size of a widened sprite spans its new art: width grown by `extra`, and an
+    atlas entry's position moved with the art."""
+    x, y, _, _ = box_of(button)
+    moved = (x - button.box[0], y - button.box[1])
+    for size in button.widen.sizes:
+        if isinstance(size, tb.AtlasEntry):
+            first = inv.get(button.texture).occurrences[0].file_offset
+            x_words, v, w_words, *_ = struct.unpack_from("<6H", patched, first + size.at)
+            per = size.per_word
+            assert (x_words * per, v, w_words * per) == (
+                size.entry[0] * per + moved[0], size.entry[1] + moved[1],
+                size.entry[2] * per + button.widen.extra,
+            )  # fmt: skip
+        else:
+            at = archive.overlay_offset(size.overlay, size.ram + 8)
+            assert struct.unpack_from("<H", patched, at)[0] == size.width + button.widen.extra
+
+
+BOOT = ["--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press")]
+FREE = 24000
+"""A new game, left alone after its first dialogue, is free to roam by this frame; the desk's
+atlas is loaded at boot (`SUB.BIN` is resident), so the desk is only seen in English from a
+boot of the English image, not from a state saved on another."""
+
+
+def mode(n: int, arena: str) -> list[str]:
+    """`mode_set(n)` by hand after the first dialogue (`test_real_texture_text_beetle`)."""
+    pokes = ["0x800237E5=05", f"0x800237E0={n:02x}", f"0x800237E4={n:02x}",
+             "0x80024728=01000000", f"0x800258E0={arena}"]  # fmt: skip
+    return [*BOOT, *(a for poke in pokes for a in ("--poke", f"6500:{poke}"))]
 
 
 SCREENS = {
-    # screen: (press schedule and pokes, shot frame, needs a card, [(button, texture origin)])
+    # screen: (presses and pokes, needs a card, {shot frame: [(button, texture origin, skip)]})
     "settings": (
         ["--press", "3300:START", "--press", "3700:DOWN", "--press", "3760:DOWN",
          "--press", "3820:DOWN", "--press", "3900:CIRCLE"],
-        4250, False, [("T_CONFIG.back", (176, 150))],
+        False, {4250: [("T_CONFIG.back", (176, 150), None)]},
     ),
     "load": (
         ["--press", "3300:START", "--press", "3610:DOWN", "--press", "3680:CIRCLE"],
-        4160, True, [("M_S01001.back", (8, 0))],
+        True, {4160: [("M_S01001.back", (8, 0), None)]},
     ),
     "diary": (
-        ["--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
-         "--poke", "6500:0x800237E5=05", "--poke", "6500:0x800237E0=0b",
-         "--poke", "6500:0x800237E4=0b", "--poke", "6500:0x80024728=01000000",
-         "--poke", "6500:0x800258E0=f4791180"],
-        7000, False, [("NIKKI_W.back", (256, 100)), ("NIKKI_W.good_night", (40, -48))],
+        mode(0x0B, "f4791180"), False,
+        {7000: [("NIKKI_W.back", (256, 100), None), ("NIKKI_W.good_night", (40, -48), None)]},
+    ),
+    "desk": (
+        [*BOOT, "--press", f"{FREE + 30}:TRIANGLE", "--press", f"{FREE + 320}:RIGHT"], False,
+        {FREE + 300: [("SUB.belongings", (-664, -56), None)],
+         FREE + 520: [("SUB.tackle", (-260, -82), (102, 136, 6, 10))]},
+    ),
+    "bag": (
+        [*BOOT, "--press", f"{FREE + 30}:TRIANGLE", "--press", f"{FREE + 330}:CIRCLE"], False,
+        {FREE + 790: [("PK_WAL.belongings", (-248, -140), None),
+                      ("PK_WAL.back", (176, 110), None)]},
+    ),
+    "kite_record": (
+        [*BOOT, "--poke", f"{FREE}:0x80047EC0=0101", "--press", f"{FREE + 30}:TRIANGLE",
+         "--press", f"{FREE + 330}:UP", "--press", f"{FREE + 460}:CIRCLE"], False,
+        {FREE + 1150: [("TK_WAL.kite", (16, -180), None),
+                       ("TK_WAL.back", (204, -10), (276, 193, 3, 1))]},
+    ),
+    "kite_book": (
+        [*mode(0x0C, "f4791180"), "--poke", "7010:0x800459DC=08000000"], False,
+        {7200: [("TZICON.make_this_kite", (16, 160), None), ("TZICON.back", (256, 130), None)]},
+    ),
+    "bug_sumo": (
+        [*BOOT, "--poke", "5300:0x80036588=41313800", "--poke", "5300:0x80036359=01",
+         "--poke", "5300:0x8003635A=b90f", "--poke", "5300:0x80035E61=02",
+         "--poke", "5300:0x80035E66=01"], False,
+        {7000: [("M_S01100.cage", (-296, -40), None)]},
+    ),
+    "insect_box": (
+        [*mode(0x0A, "f43d1b80"), "--press", "7250:DOWN"], False,
+        {7200: [("MZ02.cage", (-540, 40), None)],
+         7690: [("MZ02.collecting_box", (-520, 8), None), ("SAMP.back", (-80, 177), None)]},
     ),
 }  # fmt: skip
-"""The diary desk is `mode_set(11)` by hand (`test_real_texture_text_beetle.DIARY_MODE`); the
-good-night balloon is its idle hint, drawn after 61 frames with no input. A texture origin is
-where the texture's (0, 0) lands on screen; negative where only part of it is drawn."""
+"""Measured on the English image by matching each box's texels near where the recon put it
+(`research/texture-recipes.md` § "Buttons"). A texture origin is where the texture's (0, 0)
+lands on screen; `skip` is a screen rectangle the hand cursor is drawn over. The diary's and
+the kite book's balloons are idle hints; the kite record needs kite 0 owned (the poke);
+bug sumo and the insect box are forced by the recon's pokes. Not compared, though seen: the
+bug-sumo desk's stone, drawn through a CLUT that is not in its TIM."""
 BASE = REPO_ROOT / "work" / "saves" / "newgame.ram"
 
 
@@ -160,12 +251,14 @@ def image(texture_edits, real_image, disc_dir, tmp_path_factory) -> Path:
 def test_the_buttons_on_beetle_are_the_typeset_english(
     screen, image, disc_dir, texture_inventory, texture_patched, tmp_path
 ):  # fmt: skip
-    args, frame, card, buttons = SCREENS[screen]
+    args, card, shots = SCREENS[screen]
     command = [
         sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"), str(image),
         "--core", os.environ["BOKU_LIBRETRO_CORE"], "--system", os.environ["BOKU_LIBRETRO_SYSTEM"],
-        "--work", str(tmp_path), "--frames", str(frame + 10), "--shot", f"{frame}:{screen}", *args,
+        "--work", str(tmp_path), "--frames", str(max(shots) + 10), *args,
     ]  # fmt: skip
+    for frame in shots:
+        command += ["--shot", f"{frame}:{screen}-{frame}"]
     if card:
         if not BASE.is_file():
             pytest.skip(f"no {BASE}: `./make.sh saves` dumps it")
@@ -177,22 +270,32 @@ def test_the_buttons_on_beetle_are_the_typeset_english(
         )  # fmt: skip
         command += ["--memcard", str(mcd)]
     subprocess.run(command, check=True, capture_output=True, timeout=600, cwd=REPO_ROOT)
-    shot = read_png((tmp_path / f"{screen}.png").read_bytes())
-    for key, (ox, oy) in buttons:
-        button = tb.BUTTONS[key]
-        canvas = rebuilt(texture_inventory, texture_patched, button)
-        stock = paint.Canvas(texture_inventory.get(button.texture), drawn_4bpp=button.drawn_4bpp)
-        palette = canvas.palette(button.clut, button.chunk)
-        compared, changed, wrong = 0, 0, []
-        for x, y in paint.points(box_of(button)):
-            colour = palette[canvas.at((x, y))]
-            if not colour[3]:
-                continue
-            at = ((oy + y) * shot.width + ox + x) * 4
-            seen = tuple(shot.rgba[at : at + 3])
-            compared += 1
-            changed += canvas.at((x, y)) != stock.at((x, y))
-            if seen != tuple(c >> 3 << 3 for c in colour[:3]):
-                wrong.append((x, y, seen))
-        assert changed > 60, f"{key}: the build changed too few texels where the check looked"
-        assert wrong == [], f"{key}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"
+    for frame, buttons in shots.items():
+        shot = read_png((tmp_path / f"{screen}-{frame}.png").read_bytes())
+        for key, origin, skip in buttons:
+            check_on_screen(shot, texture_inventory, texture_patched, key, origin, skip)
+
+
+def check_on_screen(shot, inv, patched: bytes, key: str, origin, skip) -> None:
+    """Every opaque texel of the button's box, as rebuilt, is on screen exactly, but those
+    under `skip`; and enough of them are ones the build changed."""
+    ox, oy = origin
+    button = tb.BUTTONS[key]
+    canvas = rebuilt(inv, patched, button)
+    stock = paint.Canvas(inv.get(button.texture), drawn_4bpp=button.drawn_4bpp)
+    palette = canvas.palette(button.clut, button.chunk)
+    compared, changed, wrong = 0, 0, []
+    for x, y in paint.points(box_of(button)):
+        colour = palette[canvas.at((x, y))]
+        sx, sy = ox + x, oy + y
+        hidden = skip and skip[0] <= sx < skip[0] + skip[2] and skip[1] <= sy < skip[1] + skip[3]
+        if not colour[3] or hidden:
+            continue
+        at = (sy * shot.width + sx) * 4
+        seen = tuple(shot.rgba[at : at + 3])
+        compared += 1
+        changed += canvas.at((x, y)) != stock.at((x, y))
+        if seen != tuple(c >> 3 << 3 for c in colour[:3]):
+            wrong.append((x, y, seen))
+    assert changed > 60, f"{key}: the build changed too few texels where the check looked"
+    assert wrong == [], f"{key}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"

@@ -6,12 +6,13 @@ box the Japanese is in, the CLUT the screen draws it through, and the face the E
 in. Its English is `btn@<member>.<key>` in `translation/textures/`. The family builds the
 buttons it is given, a texture at a time, so each texture's edits come from one canvas.
 
-Two recipes, after Jay's ruling (2026-09-23): a **stone** is textured, so only the Japanese's
-own pixels change -- its ink and the antialias touching it -- each refilled from the nearest
-clean pixel of the stone, and the English is set bold in the game's glyphs in the ink the
-Japanese used. A **balloon** is flat paper, so the whole label area is blanked to paper first
-and the English set on it, every inked pixel keeping a pixel of paper between it and the
-outline.
+The recipes (`RECIPES`), after Jay's ruling (2026-09-23): a **stone** is textured, so only
+the Japanese's own pixels change -- its ink and the antialias touching it -- each refilled from
+the nearest clean pixel of the stone, and the English is set bold in the game's glyphs in the
+ink the Japanese used; a **plank** is the same on a board, and a **plate** the same on a
+dithered plate at the glyphs' own weight. A **balloon** is flat paper, so the whole label
+area is blanked to paper first and the English set on it, every inked pixel keeping a pixel of
+paper round it; `layout` widens and repacks balloons where their texture has room.
 """
 
 from __future__ import annotations
@@ -49,10 +50,10 @@ PAPER = 200
 class Button:
     texture: str
     kind: str
-    """`stone` or `balloon`."""
+    """`stone`, `plank`, `plate` or `balloon` (`RECIPES`)."""
     box: paint.Box
-    """A stone: the rows and columns the Japanese is inked in (`STONE_TEXT`). A balloon: the
-    whole sprite, outline and tail included."""
+    """A stone: the rows and columns the Japanese is inked in (`STONE_TEXT`). A plank: the
+    board. A plate or a balloon: the whole sprite, outline and tail included."""
     clut: int
     """The CLUT the screen draws it through (measured on Beetle)."""
     drawn_4bpp: bool = False
@@ -62,20 +63,91 @@ class Button:
     face: str = "game"
     """`game` (the dialogue glyphs) or a tracked pixel face (`bean`)."""
     widen: Widen | None = None
+    text: paint.Box | None = None
+    """A plate or balloon whose sprite carries a picture beside the Japanese (bug sumo's swap
+    plate and its arrow): the part of `box`, relative to it, the Japanese is in
+    (`text_area`)."""
+
+    @property
+    def placed(self) -> paint.Box:
+        """Where `layout` leaves the art: widened, and set down at `widen.to` if given."""
+        if not self.widen:
+            return self.box
+        x, y, w, h = self.box
+        x, y = self.widen.to or (x, y)
+        return x, y, w + self.widen.extra, h
+
+    @property
+    def split(self) -> int:
+        """The column of `box` widening inserts in front of (the middle)."""
+        return self.box[2] // 2
+
+
+@dataclass(frozen=True)
+class AtlasEntry:
+    """One entry of a screen's atlas table, `{u16 x_words, y, w_words, h, mode, clut}`
+    (`research/texture-recipes.md` § "Buttons"), `at` bytes from the texture's first copy in
+    `BOKU.BIN`, as measured."""
+
+    at: int
+    entry: tuple[int, int, int, int, int, int]
+
+    @property
+    def per_word(self) -> int:
+        """Texels per VRAM word: 2 at 8bpp (mode 0x80), 4 at 4bpp."""
+        return 2 if self.entry[4] & 0x80 else 4
+
+    def edit(self, archive: Archive, inv: Inventory, texture: str, move, extra, what) -> ByteEdit:
+        x_words, y, w_words, h, mode, clut = self.entry
+        per_word = self.per_word
+        if move[0] % per_word or extra % per_word:
+            raise TextureTextError(f"{what}: {move[0]} and {extra} texels are not whole VRAM words")
+        first = next(o for o in inv.get(texture).occurrences if o.file == ARCHIVE_NAME)
+        new = (x_words + move[0] // per_word, y + move[1], w_words + extra // per_word, h, mode,
+               clut)  # fmt: skip
+        return _checked(archive, first.file_offset + self.at, "<6H", self.entry, new, what)
+
+
+@dataclass(frozen=True)
+class SpriteRecord:
+    """A 22-byte sprite record of an overlay, `{u16 semi, s16 x, y, u8 u, v, u16 w, h, …}`,
+    at RAM `ram`, drawn `width` texels wide as measured (bug sumo, `MUSI.OVL`)."""
+
+    overlay: str
+    ram: int
+    width: int
+
+    def edit(self, archive: Archive, inv: Inventory, texture: str, move, extra, what) -> ByteEdit:
+        if move != (0, 0):
+            raise TextureTextError(f"{what}: a sprite record's balloon widens in place")
+        at = archive.overlay_offset(self.overlay, self.ram + 8)
+        return _checked(archive, at, "<H", (self.width,), (self.width + extra,), what)
+
+
+def _checked(archive: Archive, at: int, fmt: str, old, new, what: str) -> ByteEdit:
+    before = struct.pack(fmt, *old)
+    if archive.boku[at : at + len(before)] != before:
+        raise TextureTextError(f"{what}: the sprite's size at BOKU.BIN {at:#x} is not the one "
+                               f"measured")  # fmt: skip
+    return ByteEdit(ARCHIVE_NAME, at, before, struct.pack(fmt, *new),
+                    f"GFX-07: {what} widened for English")  # fmt: skip
 
 
 @dataclass(frozen=True)
 class Widen:
-    """A balloon made wider for the game's glyphs: its centre column repeated `extra` times, the
-    right half moved right into texels that must be transparent, and `w_words` of its atlas
-    entry grown to match (the entry format: `research/texture-recipes.md` § "Buttons")."""
+    """A balloon made wider for the game's glyphs: its centre column repeated `extra` times,
+    placed at `to` (canvas x, y; where it was if None) in texels that must be transparent or
+    be other widened balloons' old places, and every stored size of its sprite grown (and
+    moved) to match."""
 
     extra: int
-    """Texels added; a multiple of the texels per VRAM word (4 at 4bpp)."""
-    entry_at: int
-    """The atlas entry's offset in `BOKU.BIN` from the texture's first copy there."""
-    entry: tuple[int, int, int, int, int, int]
-    """The entry as measured, checked before it is changed."""
+    """Texels the sprite grows by. The art grows by two columns at a time (the pair at its
+    centre repeated), so a dither keeps its phase."""
+    sizes: tuple[AtlasEntry | SpriteRecord, ...]
+    to: tuple[int, int] | None = None
+    stretch: int | None = None
+    """Columns inserted into the art, if not `extra`: more when the sprite ends in transparent
+    columns the stretched art may take (they must be transparent on every row)."""
 
 
 STONE_TEXT = (6, 2, 33, 13)
@@ -89,6 +161,37 @@ def stone_at(texture: str, x: int, y: int, clut: int, chunk: int | None = None) 
     """A stone whose top-left corner is (x, y); `chunk` given, drawn at 4bpp from that slice."""
     dx, dy, w, h = STONE_TEXT
     return Button(texture, "stone", (x + dx, y + dy, w, h), clut, chunk is not None, chunk or 0)
+
+
+def atlas_balloons(texture: str, clut: int, rows: dict) -> dict[str, Button]:
+    """Balloons drawn at 4bpp from `texture` by an atlas table, each row `(entry offset from
+    the texture, entry as measured, texels to widen, where to move it or None, face)`; the
+    sprite's box is the entry's, its CLUT slice the entry's code."""
+    out = {}
+    for key, (at, entry, extra, to, face) in rows.items():
+        size = AtlasEntry(at, entry)
+        x_words, y, w_words, h, _mode, code = entry
+        widen = Widen(extra, (size,), to) if extra or to else None
+        box = (x_words * size.per_word, y, w_words * size.per_word, h)
+        out[key] = Button(texture, "balloon", box, clut, True, code % 0x40, face, widen)
+    return out
+
+
+def sumo_balloons(rows: dict) -> dict[str, Button]:
+    """Bug sumo's 44x40 balloons, CLUT 2 slice 0: `(corner, records, texels to widen)`."""
+    out = {}
+    for key, (corner, records, extra) in rows.items():
+        sizes = tuple(SpriteRecord("MUSI.OVL", ram, 44) for ram in records)
+        widen = Widen(extra, sizes) if extra else None
+        out[key] = Button("_DATA_M_S01100.BIN__0164b4", "balloon", (*corner, 44, 40), 2, True,
+                          0, widen=widen)  # fmt: skip
+    return out
+
+
+def fixed_balloons(texture: str, clut: int, chunk: int, rows: dict) -> dict[str, Button]:
+    """44x40 balloons drawn at 4bpp that stay their size: `(corner, face)`."""
+    return {key: Button(texture, "balloon", (*corner, 44, 40), clut, True, chunk, face)
+            for key, (corner, face) in rows.items()}  # fmt: skip
 
 
 BUTTONS: dict[str, Button] = {
@@ -113,7 +216,120 @@ BUTTONS: dict[str, Button] = {
         1,
         drawn_4bpp=True,
         chunk=1,
-        widen=Widen(4, -0xC, (0, 64, 12, 40, 0, 0x41)),
+        widen=Widen(4, (AtlasEntry(-0xC, (0, 64, 12, 40, 0, 0x41)),)),
+    ),
+    # The desk (`SUB`; its atlas table runs up to the texture). One balloon shows at a time,
+    # for the cursor's item. The page-14 band (rows 211-250) is repacked so the tackle and the
+    # glove can widen: the tackle widens in place, the cage, glove and net move right.
+    **atlas_balloons(
+        "_DATA_SUB.BIN__002050",
+        1,
+        {
+            "SUB.kite": (-168, (167, 194, 11, 40, 0, 0x43), 0, None, "game"),
+            "SUB.tackle": (-156, (78, 211, 11, 40, 0, 0x43), 12, (312, 211), "game"),
+            "SUB.cage": (-144, (89, 211, 11, 40, 0, 0x43), 0, (368, 211), "game"),
+            "SUB.empty_handed": (-132, (100, 211, 11, 40, 0, 0x43), 4, (412, 211), "game"),
+            "SUB.net": (-120, (111, 211, 11, 40, 0, 0x43), 0, (460, 211), "game"),
+            "SUB.back": (-108, (175, 64, 11, 40, 0, 0x43), 0, None, "game"),
+        },
+    ),
+    # Belongings in Bean: the page-15 band holds it and the kite in 96 texels.
+    "SUB.belongings": Button(
+        "_DATA_SUB.BIN__002050",
+        "balloon",
+        (712, 194, 48, 40),
+        1,
+        drawn_4bpp=True,
+        chunk=2,
+        face="bean",
+        widen=Widen(4, (AtlasEntry(-180, (178, 194, 12, 40, 0, 0x42)),), stretch=8),
+    ),
+    # The bag (`PK_WAL`): its Belongings moves into the empty rows 154-239 of page 14, where
+    # it has room for the game's glyphs, and so do the two page balloons (drawn only by an
+    # idle hint no code calls -- built so no Japanese is left if one does).
+    **atlas_balloons(
+        "_DATA_PK_WAL.BIN__0000e4",
+        1,
+        {
+            "PK_WAL.belongings": (-180, (0, 200, 12, 40, 0, 0x40), 28, (264, 160), "game"),
+            "PK_WAL.prev_page": (-156, (36, 40, 11, 40, 0, 0x42), 4, (344, 160), "game"),
+            "PK_WAL.next_page": (-144, (12, 192, 11, 40, 0, 0x42), 4, (396, 160), "game"),
+        },
+    ),
+    **atlas_balloons(
+        "_DATA_TK_WAL.BIN__00009c",
+        0,
+        {  # the kite record
+            "TK_WAL.kite": (-132, (0, 200, 11, 40, 0, 0x00), 0, None, "game"),
+        },
+    ),
+    # The kite book's 作るたこ決定 (a true 4bpp TIM, 12 VRAM words: no room to widen).
+    "TZICON.make_this_kite": Button(
+        "_DATA_TZICON.BIN__00006c", "balloon", (0, 0, 48, 40), 2, face="bean"
+    ),
+    # Bug sumo (`M_S01100`, drawn by `MUSI.OVL`'s 22-byte records; each balloon has a record
+    # in both of its tables; the free texels are research's).
+    **sumo_balloons(
+        {
+            "M_S01100.release": ((440, 0), (0x8007A538, 0x8007A5D2), 12),
+            "M_S01100.swap": ((440, 40), (0x8007A54E, 0x8007A5E8), 0),
+            "M_S01100.cage": ((440, 80), (0x8007A564, 0x8007A5FE), 0),
+            "M_S01100.rank": ((440, 120), (0x8007A590, 0x8007A62A), 8),
+            "M_S01100.me": ((440, 160), (0x8007A5A6,), 0),
+            "M_S01100.gong": ((440, 200), (0x8007A5BC, 0x8007A656), 0),
+            "M_S01100.place": ((328, 204), (0x8007A640,), 0),
+        }
+    ),
+    "M_S01100.trade_plate": Button(
+        "_DATA_M_S01100.BIN__0164b4",
+        "plate",
+        (256, 220, 40, 20),
+        2,
+        drawn_4bpp=True,
+        chunk=3,
+        text=(12, 2, 26, 16),
+        widen=Widen(8, (SpriteRecord("MUSI.OVL", 0x8007A7B4, 40),)),
+    ),
+    "M_S01100.close": Button("_DATA_M_S01100.BIN__0164b4", "plank", (129, 205, 34, 14), 5),
+    # The insect box (`HHON.OVL`; sprite tables in `SAMP.BIN`). No free texels to widen
+    # into: what does not fit the game's glyphs is set in Bean. `MZ02` is the same texture
+    # as `SAMP.BIN`'s copy of it.
+    **fixed_balloons(
+        "_DATA_MZ02.BIN__000000",
+        4,
+        0,
+        {
+            "MZ02.cage": ((684, 0), "game"),
+            "MZ02.release": ((684, 40), "bean"),
+            "MZ02.magnifier": ((684, 80), "bean"),
+            "MZ02.medicine": ((684, 120), "bean"),
+            "MZ02.syringe": ((640, 80), "bean"),
+            "MZ02.collecting_box": ((640, 40), "game"),
+            "MZ02.remove_specimen": ((640, 120), "sprout"),
+            "MZ02.prev_page": ((640, 0), "bean"),
+            "MZ02.next_page": ((640, 160), "bean"),
+        },
+    ),
+    "SAMP.species_list": Button(
+        "_DATA_SAMP.BIN__014e48", "balloon", (640, 88, 44, 40), 6, drawn_4bpp=True, face="bean"
+    ),
+    "SAMP.medicine": Button(
+        "_DATA_SAMP.BIN__014e48",
+        "balloon",
+        (640, 48, 48, 40),
+        6,
+        drawn_4bpp=True,
+        chunk=1,
+        face="bean",
+    ),
+    "SAMP.syringe": Button(
+        "_DATA_SAMP.BIN__014e48",
+        "balloon",
+        (720, 64, 48, 40),
+        6,
+        drawn_4bpp=True,
+        chunk=1,
+        face="bean",
     ),
 }
 
@@ -138,22 +354,79 @@ def _colour(canvas: paint.Canvas, button: Button, point):
     return canvas.colour(button.clut, point, stock=True, chunk=button.chunk)
 
 
-def stone(canvas: paint.Canvas, button: Button, entry: Entry, face: Face, what: str) -> None:
-    """Refill the Japanese's ink and its antialias from the stone round it, and set the English
-    bold, centred on where the Japanese was, in the ink it used."""
-    x0, y0, w, h = button.box
-    near = (x0 - DONOR_MARGIN, y0, w + 2 * DONOR_MARGIN, h)
-    stone_face = inside_stone(canvas, button, near)
-    lum = {p: luminance(_colour(canvas, button, p)) for p in stone_face}
-    box = set(paint.points(button.box))
-    ink = found({p for p in box & stone_face if lum[p] < INK_DARK}, what)
-    soft = {p for p in paint.grown(ink, 1, 1, 1, 1) & box & stone_face - ink if lum[p] < SOFT}
+def stone(
+    canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
+) -> None:
+    """Refill the Japanese's ink and its antialias from the stone round it (`inside_stone`),
+    and set the English bold, centred on where the Japanese was, in the ink it used."""
+    x0, y0, w, h = box
+    ground = inside_stone(canvas, button, (x0 - DONOR_MARGIN, y0, w + 2 * DONOR_MARGIN, h))
+    lum = {p: luminance(_colour(canvas, button, p)) for p in ground}
+    ink = {p for p in set(paint.points(box)) & ground if lum[p] < INK_DARK}
+    _repaint(canvas, box, entry, face, what, ground, lum, ink)
+
+
+def plate(
+    canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
+) -> None:
+    """A stone's recipe, in the game's glyphs at their own weight, on a plate whose ground is
+    dithered (bug sumo's swap plate): only `button.text` of the sprite is touched, and a pixel
+    is refilled from a donor an even number of steps away, so the dither keeps its phase."""
+    room = text_area(button, box)
+    area = set(paint.points(room))
+    lum = {p: luminance(_colour(canvas, button, p)) for p in area}
+    ink = {p for p in area if lum[p] < INK_DARK}
+    _repaint(canvas, room, entry, face, what, area, lum, ink, bold=False, parity=True)
+
+
+def text_area(button: Button, box: paint.Box) -> paint.Box:
+    """`button.text` placed on the sprite's `box`: stretched if widening went through it,
+    moved with the art if it lies right of where widening went."""
+    tx, ty, tw, th = button.text
+    if button.widen:
+        split = button.split
+        if tx <= split < tx + tw:
+            tw += stretched(button)
+        elif tx > split:
+            tx += stretched(button)
+    return box[0] + tx, box[1] + ty, tw, th
+
+
+def stretched(button: Button) -> int:
+    """Columns inserted into the button's art by its `Widen`."""
+    widen = button.widen
+    return widen.extra if widen.stretch is None else widen.stretch
+
+
+def plank(
+    canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
+) -> None:
+    """A stone's recipe on a plain board whose Japanese is partly punched through to
+    transparency (bug sumo's とじる): `box` is the board, and a transparent pixel in it is ink."""
+    colours = {p: _colour(canvas, button, p) for p in paint.points(box)}
+    ground = set(colours)
+    opaque = {p for p, c in colours.items() if c[3]}
+    lum = {p: luminance(c) if c[3] else 0 for p, c in colours.items()}
+    ink = {p for p in ground if lum[p] < INK_DARK}
+    _repaint(canvas, box, entry, face, what, ground, lum, ink, inked=ink & opaque)
+
+
+def _repaint(
+    canvas, room, entry, face, what, ground, lum, ink, *, inked=None, bold=True, parity=False
+) -> None:
+    """Refill `ink` and its antialias (darker than `SOFT`, touching it, inside `room`) from the
+    nearest pixel of `ground` that is neither, and stamp the English (`bold`) in `room`, in
+    the entry `inked` used most, centred where the Japanese was."""
+    found(ink, what)
+    box = set(paint.points(room))
+    soft = {p for p in paint.grown(ink, 1, 1, 1, 1) & box & ground - ink if lum[p] < SOFT}
     mask = ink | soft
-    donors = {p for p in stone_face - mask if lum[p] >= INK_DARK}
-    text = paint.normalised(paint.bold(ink_of(face, entry)))
-    fits(entry, text, button.box, what)
-    ink_index = canvas.most_used(ink, stock=True)
-    left = canvas.fill_from_nearest(mask, donors)
+    donors = {p for p in ground - mask if lum[p] >= INK_DARK}
+    text = ink_of(face, entry)
+    text = paint.normalised(paint.bold(text) if bold else text)
+    fits(entry, text, room, what)
+    ink_index = canvas.most_used(ink if inked is None else inked, stock=True)
+    left = canvas.fill_from_nearest(mask, donors, parity=parity)
     if left:
         raise TextureTextError(f"{what}: {len(left)} pixel(s) of Japanese had nothing near "
                                f"to be refilled from, first {left[:3]}")  # fmt: skip
@@ -175,11 +448,9 @@ def inside_stone(canvas: paint.Canvas, button: Button, region: paint.Box) -> pai
     }  # fmt: skip
 
 
-def islands(marks: paint.Ink, interior: paint.Ink) -> paint.Ink:
-    """The 8-connected groups of `marks` that `interior` surrounds on every side: the type in
-    a balloon, not the tail's or the outline's shading that reaches in from the edge."""
-    out: paint.Ink = set()
-    todo = set(marks)
+def groups(marks: paint.Ink) -> list[paint.Ink]:
+    """The 8-connected groups of `marks`."""
+    out, todo = [], set(marks)
     while todo:
         group, stack = set(), [todo.pop()]
         while stack:
@@ -188,50 +459,84 @@ def islands(marks: paint.Ink, interior: paint.Ink) -> paint.Ink:
             for q in paint.grown({p}, 1, 1, 1, 1) & todo:
                 todo.discard(q)
                 stack.append(q)
-        if paint.grown(group, 1, 1, 1, 1) <= interior:
-            out |= group
+        out.append(group)
     return out
 
 
-def widened(canvas: paint.Canvas, button: Button, what: str) -> paint.Box:
-    """Repeat the balloon's centre column `widen.extra` times, moving its right half right, in
-    both the stock view the recipe detects in and the pixels it writes; the new box."""
-    x0, y0, w, h = button.box
-    extra = button.widen.extra
-    spare = (x0 + w, y0, extra, h)
-    if not all(x < canvas.width for x, _ in paint.points(spare)) or any(
-        _colour(canvas, button, p)[3] for p in paint.points(spare)
-    ):
-        raise TextureTextError(
-            f"{what}: the {extra} texels right of the balloon are not free for it to widen into"
-        )
-    split = w // 2
+def islands(marks: paint.Ink, interior: paint.Ink, inked: paint.Ink) -> paint.Ink:
+    """The type in a balloon, not the tail's or the outline's shading that reaches in from the
+    edge: the groups of `marks` that `interior` surrounds on every side and that carry ink
+    (`inked` -- a pale speck of shading is no type), and then any other group on only the rows
+    those span (a stroke that runs out to the outline, as the last kana of リストへ does)."""
+    parts = groups(marks)
+    inner = [g for g in parts if paint.grown(g, 1, 1, 1, 1) <= interior and g & inked]
+    if not inner:
+        return set()
+    _, top, _, h = paint.extent(set().union(*inner))
+    return set().union(*(g for g in parts if all(top <= y < top + h for _, y in g)))
+
+
+BLANK = 0
+"""The entry a widened balloon's old place is cleared to: transparent in every slice used."""
+PAGE = 256
+"""Texels across a texture page at 4bpp. A sprite may not cross one; every widened texture
+here is uploaded at a page's left edge (VRAM x 832), so its x counts from a page edge."""
+
+
+def layout(canvas: paint.Canvas, group: Sequence[tuple[Entry, Button]]) -> dict[Button, paint.Box]:
+    """Widen (and place) every balloon of `group` that has a `Widen`, in both the stock view
+    the recipes detect in and the pixels they write; each button's box afterwards."""
+    widened = [b for _, b in group if b.widen]
+    boxes = {b: b.box for _, b in group}
+    names = {b: e.id for e, b in group}
+    if not widened:
+        return boxes
+    for b in widened:
+        if canvas.palette(b.clut, b.chunk)[BLANK][3]:
+            raise TextureTextError(f"{names[b]}: entry {BLANK} is not transparent to blank with")
     stock = bytearray(canvas.stock)
+    arts = {}
+    for b in widened:
+        x0, y0, w, h = b.box
+        split, extra = b.split, b.widen.extra
+        stretch = stretched(b)
+        if extra % 2 or stretch < extra:
+            raise TextureTextError(f"{names[b]}: widen by an even count, stretch by at least it")
+        rows = [stock[y * canvas.width + x0 : y * canvas.width + x0 + w] for y in range(y0, y0 + h)]
+        art = [r[:split] + r[split : split + 2] * (stretch // 2) + r[split:] for r in rows]
+        palette = canvas.palette(b.clut, b.chunk)
+        if any(palette[v][3] for r in art for v in r[w + extra :]):
+            raise TextureTextError(f"{names[b]}: the stretched art runs past the sprite")
+        arts[b] = [r[: w + extra] for r in art]
+    sources = set().union(*(paint.points(b.box) for b in widened))
+    taken: paint.Ink = set()
+    for b in widened:
+        target = x, y, w, h = b.placed
+        place = set(paint.points(target))
+        if (
+            x + w > canvas.width
+            or (b.drawn_4bpp and x // PAGE != (x + w - 1) // PAGE)
+            or place & taken
+            or any(p not in sources and _colour(canvas, b, p)[3] for p in place)
+        ):
+            raise TextureTextError(f"{names[b]}: the widened balloon's place {target} is not free")
+        taken |= place
+        boxes[b] = target
     for source in (stock, canvas.pixels):
-        for y in range(y0, y0 + h):
-            row = source[y * canvas.width + x0 : y * canvas.width + x0 + w]
-            source[y * canvas.width + x0 : y * canvas.width + x0 + w + extra] = (
-                row[:split] + bytes([row[split]]) * extra + row[split:]
-            )
+        for x, y in sources:
+            source[y * canvas.width + x] = BLANK
+        for b in widened:
+            x, y, w, h = boxes[b]
+            for dy, row in enumerate(arts[b]):
+                source[(y + dy) * canvas.width + x : (y + dy) * canvas.width + x + w] = row
     canvas.stock = bytes(stock)
-    return x0, y0, w + extra, h
+    return boxes
 
 
-def entry_edit(archive: Archive, inv: Inventory, button: Button, what: str) -> ByteEdit:
-    """The atlas entry's width grown by `widen.extra`, its measured bytes checked."""
-    widen = button.widen
-    x_words, y, w_words, h, mode, clut = widen.entry
-    per_word = 2 if mode & 0x80 else 4
-    if widen.extra % per_word:
-        raise TextureTextError(f"{what}: {widen.extra} texels is not whole VRAM words")
-    first = next(o for o in inv.get(button.texture).occurrences if o.file == ARCHIVE_NAME)
-    at = first.file_offset + widen.entry_at
-    old = struct.pack("<6H", *widen.entry)
-    if archive.boku[at : at + len(old)] != old:
-        raise TextureTextError(f"{what}: the atlas entry at BOKU.BIN {at:#x} is not the one "
-                               f"measured")  # fmt: skip
-    new = struct.pack("<6H", x_words, y, w_words + widen.extra // per_word, h, mode, clut)
-    return ByteEdit(ARCHIVE_NAME, at, old, new, f"GFX-07: {what} widened for English")
+def size_edits(archive: Archive, inv: Inventory, button: Button, box, what) -> list[ByteEdit]:
+    move = (box[0] - button.box[0], box[1] - button.box[1])
+    return [size.edit(archive, inv, button.texture, move, button.widen.extra, what)
+            for size in button.widen.sizes]  # fmt: skip
 
 
 NUDGES = sorted(((dx, dy) for dx in range(-2, 3) for dy in range(-2, 3)),
@@ -241,10 +546,11 @@ narrower at the top than the bottom, so two lines centred can graze it where a s
 clears it."""
 
 
-def balloon(canvas: paint.Canvas, button: Button, entry: Entry, face: Face, what: str) -> None:
-    """Blank the balloon's label to paper and set the English inside its outline, a pixel of
-    paper all round every inked pixel; widened first if `button.widen` says so."""
-    box = widened(canvas, button, what) if button.widen else button.box
+def balloon(
+    canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
+) -> None:
+    """Blank the balloon's label to paper and set the English inside its outline (`box`, where
+    `layout` left it), a pixel of paper all round every inked pixel."""
     x0, y0, w, h = box
     pale = [p for p in paint.points(box) if luminance(_colour(canvas, button, p)) > PAPER]
     if not pale:
@@ -256,7 +562,10 @@ def balloon(canvas: paint.Canvas, button: Button, entry: Entry, face: Face, what
         if xs:
             interior |= {(x, y) for x in range(min(xs), max(xs) + 1)}
     marks = {p for p in interior if canvas.at(p, stock=True) != paper}
-    japanese = found(islands(marks, interior), what)
+    if button.text:
+        marks &= set(paint.points(text_area(button, box)))
+    inked = {p for p in marks if luminance(_colour(canvas, button, p)) < SOFT}
+    japanese = found(islands(marks, interior, inked), what)
     darkest = [p for p in japanese if paint.dark(_colour(canvas, button, p))]
     ink_index = canvas.most_used(darkest or japanese, stock=True)
     jx, jy, jw, jh = paint.extent(japanese)
@@ -278,7 +587,7 @@ def balloon(canvas: paint.Canvas, button: Button, entry: Entry, face: Face, what
     )
 
 
-RECIPES = {"stone": stone, "balloon": balloon}
+RECIPES = {"stone": stone, "plank": plank, "plate": plate, "balloon": balloon}
 
 
 def buttons(
@@ -298,10 +607,12 @@ def buttons(
     edits: list[ByteEdit] = []
     for (texture_id, drawn_4bpp), group in by_texture.items():
         canvas = paint.Canvas(inv.get(texture_id), drawn_4bpp=drawn_4bpp)
+        boxes = layout(canvas, group)
         for entry, button in sorted(group, key=lambda eb: eb[0].id):
             what = f"the {entry.id.removeprefix(FAMILY)} button"
-            RECIPES[button.kind](canvas, button, entry, _face(button, face), what)
+            box = boxes[button]
+            RECIPES[button.kind](canvas, button, box, entry, _face(button, face), what)
             if button.widen:
-                edits.append(entry_edit(archive, inv, button, what))
+                edits += size_edits(archive, inv, button, box, what)
         edits += canvas.patches()
     return edits

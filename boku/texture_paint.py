@@ -108,18 +108,19 @@ def paint_out(
 
 
 def fill_from_nearest(
-    pixels: bytearray, width: int, mask: Ink, donors: Ink, *, reach: int = 8
+    pixels: bytearray, width: int, mask: Ink, donors: Ink, *, reach: int = 8, parity: bool = False
 ) -> list[tuple[int, int]]:
     """Replace every masked pixel with the nearest donor's value as it stood before any
     replacement, and return the masked pixels with no donor within `reach` (left as they
     were). Nearest counts a row away as two columns away, so a pixel on a horizontal band
     (a stone's lip, a plank's grain) takes its colour from its own band; and a donor is a
     single nearby pixel, never a run copied from along the row, so a textured ground keeps
-    its texture instead of growing streaks."""
+    its texture instead of growing streaks. `parity` takes only donors an even number of steps
+    away (`dx + dy` even), so a checkerboard dither keeps its phase."""
     source = bytes(pixels)
     order = sorted(
         ((dx, dy) for dx in range(-reach, reach + 1) for dy in range(-reach, reach + 1)
-         if dx or dy),
+         if (dx or dy) and not (parity and (dx + dy) % 2)),
         key=lambda o: (o[0] ** 2 + 4 * o[1] ** 2, abs(o[1]), o),
     )  # fmt: skip
     unfilled = []
@@ -237,8 +238,8 @@ class Canvas:
     def paint_out(self, box: Box, mask: Ink, *, avoid: Ink = frozenset()):
         return paint_out(self.pixels, self.width, box, mask, avoid=avoid)
 
-    def fill_from_nearest(self, mask: Ink, donors: Ink) -> list[tuple[int, int]]:
-        return fill_from_nearest(self.pixels, self.width, mask, donors)
+    def fill_from_nearest(self, mask: Ink, donors: Ink, *, parity: bool = False):
+        return fill_from_nearest(self.pixels, self.width, mask, donors, parity=parity)
 
     def patches(self) -> list[ByteEdit]:
         """The verified byte edits that turn the stock image into this one, at every copy."""

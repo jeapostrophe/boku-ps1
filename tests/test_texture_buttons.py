@@ -84,7 +84,7 @@ def test_a_stone_changes_only_the_japanese_and_the_english():
     pixels, and the stone banded. Only the Japanese's ink and antialias may change, plus the
     English's own pixels; every other pixel of the stone -- its texture, its lip -- stays."""
     canvas, japanese, button = stone_fixture()
-    tb.stone(canvas, button, Entry("btn@x.back", "Back", "b:1"), Blocks(), "the stone")
+    tb.stone(canvas, button, button.box, Entry("btn@x.back", "Back", "b:1"), Blocks(), "the stone")
     pairs = zip(canvas.stock, canvas.pixels, strict=True)
     changed = {(i % canvas.width, i // canvas.width) for i, (a, b) in enumerate(pairs) if a != b}
     english = {p for p in paint.points(button.box) if canvas.at(p) == INK}
@@ -94,7 +94,7 @@ def test_a_stone_changes_only_the_japanese_and_the_english():
 
 def test_a_stone_refills_the_japanese_from_its_own_ground():
     canvas, japanese, button = stone_fixture()
-    tb.stone(canvas, button, Entry("btn@x.back", "Back", "b:1"), Blocks(), "the stone")
+    tb.stone(canvas, button, button.box, Entry("btn@x.back", "Back", "b:1"), Blocks(), "the stone")
     refilled = {canvas.at(p) for p in japanese if canvas.at(p) != INK}
     assert refilled and refilled <= set(GROUND)
     assert not any(canvas.at(p) == SOFT for p in paint.points(button.box))
@@ -103,7 +103,8 @@ def test_a_stone_refills_the_japanese_from_its_own_ground():
 def test_a_stone_line_that_does_not_fit_the_japanese_box_is_refused():
     canvas, _, button = stone_fixture()
     with pytest.raises(TextureTextError, match=r"b:1: 'Back to the desk' is .* nothing is cut"):
-        tb.stone(canvas, button, Entry("btn@x.back", "Back to the desk", "b:1"), Blocks(),
+        entry = Entry("btn@x.back", "Back to the desk", "b:1")
+        tb.stone(canvas, button, button.box, entry, Blocks(),
                  "the stone")  # fmt: skip
 
 
@@ -137,7 +138,9 @@ def balloon_fixture(w=44, h=30, spare=0):
 
 def test_a_balloon_blanks_the_label_and_sets_the_english_inside_its_paper():
     canvas, _, tail, button = balloon_fixture()
-    tb.balloon(canvas, button, Entry("btn@x.a", "Go // on", "b:1"), Blocks(), "the balloon")
+    tb.balloon(
+        canvas, button, button.box, Entry("btn@x.a", "Go // on", "b:1"), Blocks(), "the balloon"
+    )
     marked = {p for p in paint.points(button.box) if canvas.at(p) == MARK}
     assert marked, "no English was set"
     paper = {p for p in paint.points(button.box) if canvas.stock[p[1] * canvas.width + p[0]]
@@ -150,7 +153,14 @@ def test_a_balloon_blanks_the_label_and_sets_the_english_inside_its_paper():
 def test_a_balloon_that_cannot_hold_its_english_with_a_pixel_of_paper_is_refused():
     canvas, _, _, button = balloon_fixture()
     with pytest.raises(TextureTextError, match=r"b:1: .* cannot hold it with a pixel of paper"):
-        tb.balloon(canvas, button, Entry("btn@x.a", "Belongings", "b:1"), Blocks(), "the balloon")
+        tb.balloon(
+            canvas,
+            button,
+            button.box,
+            Entry("btn@x.a", "Belongings", "b:1"),
+            Blocks(),
+            "the balloon",
+        )
 
 
 def test_a_button_nobody_measured_is_refused_not_ignored():
@@ -174,20 +184,28 @@ ENTRY = (8, 0, 11, 30, 0, 0x41)
 TEXTURE_AT = 0x1000
 
 
-def widening(extra: int):
-    canvas, _, _, button = balloon_fixture(spare=extra)
-    wide = tb.Button("x", "balloon", button.box, 0, widen=tb.Widen(extra, -12, ENTRY))
+def widening(extra: int, to=None, spare=None):
+    canvas, _, _, button = balloon_fixture(spare=extra if spare is None else spare)
+    size = tb.AtlasEntry(-12, ENTRY)
+    wide = tb.Button("x", "balloon", button.box, 0, widen=tb.Widen(extra, (size,), to))
     return canvas, wide
+
+
+def laid_out(canvas, button, text="Belongings"):
+    entry = Entry("btn@x.a", text, "b:1")
+    box = tb.layout(canvas, [(entry, button)])[button]
+    tb.balloon(canvas, button, box, entry, Blocks(), "the balloon")
+    return box
 
 
 def test_a_widened_balloon_holds_what_its_own_width_could_not():
     canvas, button = widening(8)
     entry = Entry("btn@x.a", "Belongings", "b:1")
+    narrow, _, _, plain = balloon_fixture()
     with pytest.raises(TextureTextError):
-        tb.balloon(balloon_fixture()[0], balloon_fixture()[3], entry, Blocks(), "the balloon")
-    width = canvas.width
-    tb.balloon(canvas, button, entry, Blocks(), "the balloon")
-    marked = {p for p in paint.points((0, 0, width, canvas.height)) if canvas.at(p) == MARK}
+        tb.balloon(narrow, plain, plain.box, entry, Blocks(), "the balloon")
+    assert laid_out(canvas, button) == (0, 0, 44 + 8, 30)
+    marked = {p for p in paint.points((0, 0, canvas.width, canvas.height)) if canvas.at(p) == MARK}
     assert paint.normalised(marked) == paint.normalised(Blocks().ink("Belongings"))
 
 
@@ -197,22 +215,104 @@ def test_a_balloon_is_widened_only_into_transparent_texels():
     canvas.stock = bytes(PAPER if (x, y) == (x0 + w + 3, y0 + h // 2) else v
                          for y in range(canvas.height) for x in range(canvas.width)
                          for v in [canvas.stock[y * canvas.width + x]])  # fmt: skip
-    with pytest.raises(TextureTextError, match="not free for it to widen into"):
-        tb.balloon(canvas, button, Entry("btn@x.a", "Go", "b:1"), Blocks(), "the balloon")
+    with pytest.raises(TextureTextError, match=r"btn@x.a: the widened balloon's place .* not free"):
+        laid_out(canvas, button, "Go")
 
 
-def test_a_widened_balloon_grows_its_atlas_entry_by_whole_vram_words():
-    _, button = widening(8)
+def test_a_moved_balloon_leaves_its_old_place_blank_and_lands_whole():
+    """A repack (the desk's page-14 band): the balloon is set down elsewhere, widened."""
+    canvas, button = widening(8, to=(56, 0), spare=64)
+    box = laid_out(canvas, button)
+    assert box == (56, 0, 52, 30)
+    assert all(canvas.at(p) == 0 for p in paint.points((0, 0, 44, 30)))
+    assert sum(canvas.at(p) == OUTLINE for p in paint.points(box)) > 40
+
+
+def fake_disc(entry=ENTRY):
     boku = bytearray(TEXTURE_AT + 64)
-    boku[TEXTURE_AT - 12 : TEXTURE_AT] = struct.pack("<6H", *ENTRY)
+    boku[TEXTURE_AT - 12 : TEXTURE_AT] = struct.pack("<6H", *entry)
     place = SimpleNamespace(file=ARCHIVE_NAME, file_offset=TEXTURE_AT)
     inv = SimpleNamespace(get=lambda _id: SimpleNamespace(occurrences=(place,)))
-    edit = tb.entry_edit(SimpleNamespace(boku=bytes(boku)), inv, button, "the balloon")
+    return SimpleNamespace(boku=bytes(boku)), inv
+
+
+def test_a_widened_balloon_grows_and_moves_its_atlas_entry_by_whole_vram_words():
+    _, button = widening(8, to=(56, 4))
+    archive, inv = fake_disc()
+    (edit,) = tb.size_edits(archive, inv, button, (56, 4, 52, 30), "the balloon")
     assert edit.offset == TEXTURE_AT - 12
-    assert struct.unpack("<6H", edit.new) == (8, 0, 11 + 8 // 4, 30, 0, 0x41)
-    boku[TEXTURE_AT - 8] = 12  # a different revision: the width is not the one measured
+    assert struct.unpack("<6H", edit.new) == (8 + 56 // 4, 0 + 4, 11 + 8 // 4, 30, 0, 0x41)
+    archive, inv = fake_disc((8, 0, 12, 30, 0, 0x41))  # not the revision measured
     with pytest.raises(TextureTextError, match="not the one measured"):
-        tb.entry_edit(SimpleNamespace(boku=bytes(boku)), inv, button, "the balloon")
+        tb.size_edits(archive, inv, button, (56, 4, 52, 30), "the balloon")
+
+
+def test_a_sprite_record_grows_its_width_in_texels():
+    record = tb.SpriteRecord("MUSI.OVL", 0x8007A538, 44)
+    boku = bytearray(0x100)
+    boku[0x10 + 8 : 0x10 + 10] = struct.pack("<H", 44)
+    archive = SimpleNamespace(
+        boku=bytes(boku), overlay_offset=lambda _o, ram: ram - 0x8007A538 + 0x10
+    )
+    edit = record.edit(archive, None, "x", (0, 0), 12, "the balloon")
+    assert (edit.offset, struct.unpack("<H", edit.new)[0]) == (0x10 + 8, 56)
+
+
+def test_a_refill_with_parity_keeps_a_checkerboard_in_phase():
+    """The swap plate's ground is a checkerboard of two entries; a refilled pixel must take
+    the entry its own square has."""
+    w = h = 12
+    px = bytearray((x + y) % 2 + 1 for y in range(h) for x in range(w))
+    hole = {(x, y) for x in range(4, 8) for y in range(4, 8)}
+    for x, y in hole:
+        px[y * w + x] = 9
+    donors = {(x, y) for x in range(w) for y in range(h)} - hole
+    assert paint.fill_from_nearest(px, w, hole, donors, parity=True) == []
+    assert all(px[y * w + x] == (x + y) % 2 + 1 for x in range(w) for y in range(h))
+
+
+def test_a_stroke_that_runs_out_to_the_outline_on_the_type_rows_is_type():
+    """リストへ: the last kana's stroke reaches the outline, so it is not an island; it is on
+    the rows the rest of the type spans, so it is blanked with it."""
+    interior = {(x, y) for x in range(1, 19) for y in range(1, 9)}
+    type_ = {(5, y) for y in range(3, 7)}
+    stroke = {(16, 4), (17, 4), (18, 5)}  # (18, 5) sits on the interior's edge
+    tail = {(1, 8), (2, 8)}
+    assert tb.islands(type_ | stroke | tail, interior, type_ | stroke) == type_ | stroke
+
+
+def test_stretched_art_may_only_drop_transparent_columns():
+    canvas, button = widening(8)
+    art = tb.Widen(8, button.widen.sizes, None, stretch=12)
+    wide = tb.Button("x", "balloon", button.box, 0, widen=art)
+    with pytest.raises(TextureTextError, match="runs past the sprite"):
+        tb.layout(canvas, [(Entry("btn@x.a", "Go", "b:1"), wide)])
+
+
+def test_a_pale_speck_of_the_tail_does_not_stretch_the_type_rows():
+    """`M_S01100.rank`: a one-pixel speck of the tail's pale shading, surrounded by paper, sat
+    three rows under the type and pulled the tail's own shading in as type."""
+    interior = {(x, y) for x in range(1, 19) for y in range(1, 12)}
+    type_ = {(5, y) for y in range(3, 7)}
+    speck, tail = {(9, 9)}, {(1, 9), (2, 9)}
+    assert tb.islands(type_ | speck | tail, interior, type_) == type_
+
+
+def test_two_widened_balloons_may_not_be_set_down_on_each_other():
+    canvas, _, _, first = balloon_fixture(spare=64)
+    size = tb.AtlasEntry(-12, ENTRY)
+    a = tb.Button("x", "balloon", first.box, 0, widen=tb.Widen(8, (size,), (56, 0)))
+    b = tb.Button("x", "balloon", (0, 0, 8, 30), 0, widen=tb.Widen(0, (size,), (60, 0)))
+    group = [(Entry("btn@x.a", "Go", "b:1"), a), (Entry("btn@x.b", "Go", "b:2"), b)]
+    with pytest.raises(TextureTextError, match=r"btn@x.b: the widened balloon's place"):
+        tb.layout(canvas, group)
+
+
+def test_an_odd_widening_is_refused_before_it_misaligns_the_art():
+    canvas, button = widening(8)
+    odd = tb.Button("x", "balloon", button.box, 0, widen=tb.Widen(3, button.widen.sizes))
+    with pytest.raises(TextureTextError, match="even count"):
+        tb.layout(canvas, [(Entry("btn@x.a", "Go", "b:1"), odd)])
 
 
 def test_a_stone_keeps_its_outline_where_it_runs_into_the_box():
@@ -226,7 +326,7 @@ def test_a_stone_keeps_its_outline_where_it_runs_into_the_box():
     for x, y in outline:
         canvas.stock = canvas.stock[: y * w + x] + bytes([INK]) + canvas.stock[y * w + x + 1 :]
     canvas.pixels = bytearray(canvas.stock)
-    tb.stone(canvas, button, Entry("btn@x.back", "Back", "b:1"), Blocks(), "the stone")
+    tb.stone(canvas, button, button.box, Entry("btn@x.back", "Back", "b:1"), Blocks(), "stone")
     assert all(canvas.at(p) == INK for p in outline)
 
 
@@ -243,7 +343,7 @@ def test_a_balloon_keeps_a_pixel_of_paper_between_its_english_and_shading_inside
     canvas.pixels = bytearray(canvas.stock)
     entry = Entry("btn@x.a", "Go // on go", "b:1")  # reaches down past the Japanese
     try:
-        tb.balloon(canvas, button, entry, Blocks(), "the balloon")
+        tb.balloon(canvas, button, button.box, entry, Blocks(), "the balloon")
     except TextureTextError:
         return  # refusing is right too
     marked = {p for p in paint.points(button.box) if canvas.at(p) == MARK}

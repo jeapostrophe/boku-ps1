@@ -247,30 +247,43 @@ centred on where it was. `M_S02000` carries a stone too, but nothing loads that 
 `file_load(148)` in the executable or any overlay), so it is not built.
 
 **Balloons.** A balloon is flat paper, so the recipe blanks the Japanese's whole rectangle
-(grown one pixel, inside the paper) to paper before setting the English — the type is the
-islands of non-paper inside the paper, which leaves the tail's shading alone. Lines break at
-` // `, `face.pitch` apart; every inked pixel must keep one pixel of paper between it and the
-outline, or the build refuses. Widening (`Widen`) repeats the centre column into texels that
-must be transparent and grows the atlas entry's `w_words`, checking the entry's bytes first.
+(grown one pixel, inside the paper) to paper before setting the English. The type is the
+groups of non-paper the paper surrounds, and any other group on only the rows those span (a
+stroke that runs out to the outline, as the last kana of リストへ does) — which leaves the
+tail's shading, above or below the type, alone. Lines break at ` // `, `face.pitch` apart;
+every inked pixel must keep one pixel of paper between it and anything not paper, or the build
+refuses. A balloon is set in the game's glyphs where it holds them, widened where its texture
+has free texels, and in Bean where it has none (Jay's ruling, 2026-09-23); only one balloon
+shows at a time on every screen here, the one for the item under the cursor.
 
-* **Diary desk, おやすみ** (`NIKKI_W`, 4bpp, CLUT 1 slice 1): the idle hint, drawn at screen
-  (40, 16) while byte `0x80047E50` is set — after 61 frames with no input. Atlas entry 6 is
-  the 12 bytes in front of the TIM (`{0, 64, 12, 40, 0, 0x41}`; the table's count, 7, is at
-  −0x58). *Good // night* needs 48 px of balloon; the art is x 4–47 of a 48-texel sprite, so
-  the recipe widens it 4 texels into the free x 48–51 and sets `w_words` 12 → 13.
+**Widening** (`Widen`, `layout`) repeats the pair of columns at the balloon's centre (a pair,
+so a dither keeps its phase), may set the widened art down elsewhere in texels that are
+transparent or were widened balloons' own (a repack), and grows — and moves — every stored
+size of the sprite, each checked against its measured bytes first. A sprite may not cross a
+256-texel page. `stretch` inserts more columns than the sprite grows by where the sprite ends
+in transparent columns the art may take.
 
-The other balloons (the desk `SUB`, the bag `PK_WAL`, the kite record `TK_WAL`, the kite book
-`TZICON`, bug sumo `M_S01100`, the insect box `MZ02` / `SAMP`) are `GFX-07`'s remaining work;
-their atlas tables are at `BOKU.BIN` `0x643CF2C` (`SUB`, count 24; the texture has a second
-copy, `SUB.TIM`, which the desk reloads), `0x6133814` (`PK_WAL`), `0x6562014` (`TK_WAL`),
-`0x665A814` (`TZICON`), `SAMP.BIN` +0x28 and +0x104 (`MZ02`'s copy and `SAMP`'s; `u` and `w` in
-halfwords), and `MUSI.OVL` `0x8007A538`.
+| screen | balloons | how |
+|---|---|---|
+| diary desk (`NIKKI_W`) | おやすみ *Good // night* | widened 4 (atlas entry 6, 12 bytes in front of the TIM); the idle hint, drawn at (40, 16) while `0x80047E50` is set, after 61 frames with no input |
+| desk (`SUB`, CLUT 1 slices 2–3; table 0xB4 in front of the texture) | the tackle, cage, glove and net band (page 14, rows 211–250) repacked: tackle +12, glove +4, the others moved right; *Belongings* in Bean, +4 (stretch 8) — the page-15 band holds 96 texels for it and the kite, and 72 would be the game's glyphs; kite, back fit | `SUB.BIN` is loaded once at boot (resident), so a state saved on another image shows the old desk |
+| the bag (`PK_WAL`) | *Belongings* +28 and the two page balloons +4, all moved into the empty rows 154–239 of page 14 | the page balloons are drawn only by an idle hint nothing calls (recon); built so no Japanese is left if it is |
+| kite record (`TK_WAL`) | *Fly a // Kite* | fits |
+| kite book (`TZICON`, a true 4bpp TIM 12 VRAM words wide) | *Make // This Kite* in Bean | no free texels |
+| bug sumo (`M_S01100` `0x164b4`, CLUT 2; `MUSI.OVL` 22-byte records from `0x8007A538`, `{u16 semi, s16 x, y, u8 u, v, u16 w, h, u16 tpage x, y, clut x, y, u8 depth, abr}`, one per balloon in each of the two tables) | *Release* +12 and *Bug // Rank* +8 into the free x 484–511; the rest fit; the swap plate (4bpp, slice 3, record `0x8007A7B4`) +8, set by the `plate` recipe (its ground is a checkerboard: refilled from donors an even number of steps away, only its text area, not the arrow); the とじる board (8bpp, CLUT 5, records `0x8007A742`, `0x8007A786`) by the `plank` recipe, its punched-through Japanese transparent | the stone on this screen is drawn through a CLUT not in its TIM |
+| insect box (`MZ02`, CLUT 4, the same texture as `SAMP.BIN`'s copy; `SAMP` `0x14e48`, CLUT 6 slices 0–1) | *Bug // Cage*, *Bug // Box* in the game's glyphs; the rest in Bean; *Remove // Specimen* in Sprout — one pixel short in Bean | no free texels (one 44×40 slot at x 684, y 160, and nothing wider) |
 
-**Proof.** `tests/test_real_texture_buttons.py`: each stone's ink-dark pixels are exactly its
-English bold in the disc's glyphs, each balloon's type exactly its English lines, the widened
-entry grown; on Beetle (`./make.sh emu-test`) the settings, load (a generated day-5 card) and
-diary-desk screens show every opaque texel of each button's box in its rebuilt colour, and
-the stock image fails it.
+`M_S01100` `0x164b4` also carries the bug-record card (its labels beside numbers drawn at run
+time: the catch date, wins and losses, the value in saw-stag beetles), laid out like `FS_WAL`
+below, not built.
+
+**Proof.** `tests/test_real_texture_buttons.py`: each stone's dark pixels are exactly its
+English bold in the disc's glyphs (only its outline besides), each balloon's type exactly its
+English lines, each board's dark pixels exactly its English, each widened sprite's stored sizes
+grown and moved; on Beetle (`./make.sh emu-test`) settings, load (a generated day-5 card), the
+diary desk, the desk (tackle and belongings), the bag, the kite record, the kite book, bug sumo
+and the insect box show every opaque texel of each button's box in its rebuilt colour (but
+where the hand cursor covers it), and the stock image fails every one.
 
 ## Measured while looking at the rest of `GFX-07`
 

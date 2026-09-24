@@ -17,7 +17,7 @@ this creates"). An id may appear once across all the files.
 
 A string is set in the game's own glyphs unless its texture says otherwise (a button whose
 row in `boku/texture_buttons.py` names one of the pixel faces in `boku/faces/`, which also
-have `-`, `"` and `[ ]`; none does yet), so it may only use characters the glyph sheet has:
+have `-`, `"` and `[ ]`), so it may only use characters the glyph sheet has:
 letters, digits and `! # % & ' ( ) * + , . / : ; < = > ? @ _ |`. There is **no hyphen and no
 double quote** on the sheet, and the build refuses a string that uses one; the sheet's `(` `)`
 are vertical-writing forms that look wrong in a line. A string that does not fit its space is

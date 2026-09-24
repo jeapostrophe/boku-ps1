@@ -17,6 +17,51 @@ btn@PK_WAL.back	Back
 btn@MZ00.back	Back
 btn@SAMP.back	Back
 
-# --- balloons. NIKKI_W.good_night: the diary desk's idle hint (おやすみ), widened 4 texels
-# for two lines in the game's glyphs.
+# --- balloons. NIKKI_W.good_night: the diary desk's idle hint (おやすみ).
 btn@NIKKI_W.good_night	Good // night
+# Which face and width each balloon gets: research/texture-recipes.md § "Buttons". Title
+# case, as the title menu.
+
+# --- the desk (SUB): one balloon shows at a time, for the item under the cursor
+btn@SUB.belongings	Belongings
+btn@SUB.kite	Fly a // Kite
+btn@SUB.tackle	Fishing // Tackle
+btn@SUB.cage	Bug // Cage
+btn@SUB.empty_handed	Hands // Free
+btn@SUB.net	Bug // Net
+btn@SUB.back	Back
+
+# --- the bag (PK_WAL) and the kite record (TK_WAL)
+btn@PK_WAL.belongings	Belongings
+btn@PK_WAL.prev_page	Page // Back
+btn@PK_WAL.next_page	Page // Next
+btn@TK_WAL.kite	Fly a // Kite
+
+# --- the kite book (TZICON): the balloon over the confirm button
+btn@TZICON.make_this_kite	Make // This Kite
+
+# --- bug sumo (M_S01100): the balloons, the swap plate beside its arrow, the Close board.
+# me: 自分, the balloon over Boku's own side.
+btn@M_S01100.release	Release
+btn@M_S01100.swap	Swap
+btn@M_S01100.cage	Bug // Cage
+btn@M_S01100.rank	Bug // Rank
+btn@M_S01100.me	Me
+btn@M_S01100.gong	Gong
+btn@M_S01100.place	Place // Bug
+btn@M_S01100.trade_plate	Swap
+btn@M_S01100.close	Close
+
+# --- the insect box (MZ02, SAMP)
+btn@MZ02.cage	Bug // Cage
+btn@MZ02.release	Release
+btn@MZ02.magnifier	Magnifier
+btn@MZ02.medicine	Medicine
+btn@MZ02.syringe	Syringe
+btn@MZ02.collecting_box	Bug // Box
+btn@MZ02.remove_specimen	Remove // Specimen
+btn@MZ02.prev_page	Page // Back
+btn@MZ02.next_page	Page // Next
+btn@SAMP.species_list	Species // List
+btn@SAMP.medicine	Medicine
+btn@SAMP.syringe	Syringe
