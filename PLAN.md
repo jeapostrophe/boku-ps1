@@ -103,14 +103,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       morning the day chains into the ending movie (~9,500 frames of ○). The DuckStation
       per-game shared-card route is in `research/save-format.md` and README (from source, not
       run). Proven on Beetle.
-- [ ] **[ENV-08]** **Bug sumo, the mantis fight, the shortcut and its well** (Jay,
-      2026-09-23: "worth it to me"). Cage record and bout DONE 2026-09-23: `research/sumo.md`,
-      `boku/sumo.py`, `boku save --bug NAME[:SIZE]`, `sumo-maxed-cage` /
-      `boku-bug-sumo.mcd`, and `./make.sh sumo-bout`, which reaches a bout on Beetle and checks
-      the game's fighter against the decoded formula. Left: a card set up for the mantis fight
-      (story stage `0x8003D27A`, flags 64/65/68/69), the shortcut unlocked (`E1754`), the well
-      on the shortcut (`E4057` → map `E02`) and which clip plays there (`VO-05`). Harmed: Jay's
-      testing, and `VO-06` / `TXT-05` 25/26, which need a bout.
+- [x] **[ENV-08]** **Bug sumo, the mantis, the shortcut and its well.** DONE 2026-09-23: the
+      cage record and fighter formula (`research/sumo.md`, `boku/sumo.py`, `boku save --bug`)
+      with a Beetle bout whose fighter matches the prediction; the mantis chain (stage
+      `0x8003D27A`, flags 64/65/68/69/70); corpus saves `sumo-maxed-cage`, `sumo-mantis-ready`,
+      `shortcut-open` (`boku-bug-sumo.mcd` slots 1–3); `./make.sh sumo-bout --mantis`,
+      measured through `E1754` to `E02`; the shortcut's well is `E08`, and its second
+      examination plays `E2405.0` — a voiced line with text, found by `./make.sh examine`.
 
 ## Recon — where every piece of Japanese lives
 
@@ -803,7 +802,7 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
 - [ ] **[VO-05]** **Listen to what ASR could not settle.** `E2330.11` (Moe reading the English
       letter? no speech found), the words marked `?` in the `M27`/`M28` and potter/dam
       transcripts, the school and place names in `E0305` (the baseball commentary — "Asosan
-      Minami" vs "Aso Minami"), the well narration Jay heard (not an `XA`/`XCH` clip; `E8062` is text), and
+      Minami" vs "Aso Minami"), and
       whether any of the 12 unreferenced `BOKU_XA.XAM` runs with words is played. Needs an ear
       — the model cannot hear. Harmed: the player (a wrong or missing subtitle); the
       translator, working from a guessed word.
