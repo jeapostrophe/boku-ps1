@@ -338,9 +338,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       §10 records 10.1a, 10.2a, 10.3b ("Caught 8/9"), 10.4a, 10.5b; §15 the attendance footer
       "Have a healthy summer!"; §17 balloons — "Stuff" in the normal font for Belongings, "Make
       It" (or "Make") in the normal font for Make This Kite, "Take // Out" (17.6) and the other
-      defaults kept; §19b the diary's first page "staying at Uncle's house" (not "freeloader" —
-      too aggressive for a 9-year-old; the glossary's 居候 row and the style guide's sample
-      follow); §20b "Uncle's Pond" for Ojioji Pond. Kept as built: §12a the tanka slashes, §16a
+      defaults kept; §19b and §20b DONE (`0017485`): the diary's first page "staying at Uncle's
+      house" (glossary 居候 split: "staying at" for Boku, "freeloader" kept in Moe's tease
+      `E0832.2`), "Uncle's Pond" for Ojioji Pond. Kept as built: §12a the tanka slashes, §16a
       "Production and Copyright", §11 the beach sign (painted in the game's own glyphs, doubled).
       Harmed: the player.
 - [x] **[TXT-06]** **The font.** RULED 2026-09-20 (Jay): "The game sheet is good enough and I
