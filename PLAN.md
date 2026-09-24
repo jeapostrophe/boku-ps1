@@ -286,9 +286,14 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       **Done 2026-09-23:** surfaces 9 (`sysmsg_draw` returns a pixel width and
       its five callers take it), 11 and 25/26 installed and tested instruction by instruction
       in `tests/mips.py`; not reached on screen (the cage HUD needs a caught insect; fishing
-      and sumo need days of play). **Left to do:** screen proof of surfaces 9/11/25/26; bug
-      sumo's fixed-x names (`0x8007E6E4` and kin draw the next item 96 px after a name —
-      place it after the measured width instead); the insect box (the two `HHON.OVL` walkers): measured and reached on
+      and sumo need days of play). **Bug sumo DONE 2026-09-24:** the hint and rank board drawn as banners
+      (`asm/musi_text.asm`), the notebook's names end at the item after them
+      (`vwf_name_before_sym`), proven on Beetle; surfaces 25/26 and the debug screen's names are
+      unreachable in retail (`research/sumo.md` § The desk's text). **Left to do:** screen
+      proof of surfaces 9 and 11, and the bout's names right-aligned in their 96-px field
+      (`0x8007D89C`, `0x8007D940`) on screen; **[MINE: product]** the notebook's size badge
+      (x 140–168) under long beetle names — (a) overlap as now, (b) move the badge left of the
+      name, (c) long names in Bean (recommended); the insect box (the two `HHON.OVL` walkers): measured and reached on
       both emulators; the row walkers are designed and parked (`research/vwf-prototype.md` §
       "The HHON walkers") until the entries can grow (`PIPE-07`) and **[MINE: product]** a
       layout that holds the English's 9–15 lines is chosen — the notebook page holds 8 rows
