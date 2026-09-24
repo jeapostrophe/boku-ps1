@@ -63,8 +63,8 @@ btn@MZ02.medicine	Medicine
 btn@MZ02.syringe	Syringe
 btn@MZ02.collecting_box	Bug // Box
 btn@MZ02.remove_specimen	Take // Out
-btn@MZ02.prev_page	Page // Back
-btn@MZ02.next_page	Page // Next
+btn@MZ02.prev_page	Prev
+btn@MZ02.next_page	Next
 btn@SAMP.species_list	Species // List
 btn@SAMP.medicine	Medicine
 btn@SAMP.syringe	Syringe

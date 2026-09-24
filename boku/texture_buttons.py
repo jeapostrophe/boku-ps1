@@ -305,8 +305,8 @@ BUTTONS: dict[str, Button] = {
             "MZ02.syringe": ((640, 80), "bean"),
             "MZ02.collecting_box": ((640, 40), "game"),
             "MZ02.remove_specimen": ((640, 120), "game"),
-            "MZ02.prev_page": ((640, 0), "bean"),
-            "MZ02.next_page": ((640, 160), "bean"),  # as its pair, which only Bean holds
+            "MZ02.prev_page": ((640, 0), "game"),
+            "MZ02.next_page": ((640, 160), "game"),
         },
     ),
     "SAMP.species_list": Button(
