@@ -563,31 +563,17 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `translation/days/arrays.txt` — 308 rows, reviewed against the Japanese (16 findings,
       all applied). What reaches the screen is `PIPE-07`'s and `TXT-05`'s: the build places
       only what fits each item's own bytes, and `boku lint` names every line it cannot place.
-- [ ] **[PIPE-07]** **Array English on screen.** Grown code-file arrays move whole
-      (`boku.array_relocate`, every `lui`/`addiu` pair found by a control-flow scan in
-      `boku.pointers`; regions in `research/text-renderer.md` § 6) — 23 arrays moved, seen in
-      English on Beetle (card check, extras, START help, item names and description).
-      `boku lint --encoder cellmap` over `arrays.txt` (2026-09-23): 0 `array-bytes`; left —
-      the insect book `hhon@5328`'s two copies (grid whole, notebook cut) sit in `HHON.OVL`'s
-      tail (2026-09-24; the diary and delete prompts seen on Beetle) — that tail (`boku.array_relocate.overlay_tail`, 2026-09-24) — arrays read
-      by only one overlay are appended to it (TITLE, TAKO, ZUKAN, HHON);
-      12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
-      surfaces); 69 `array-group` warnings (the fishing messages and the ant count are laid out, 2026-09-23;
-      the fortune and kite-crash banners draw one centred English line in a 120 × 36 panel,
-      proven on Beetle (`asm/banners.asm`, 2026-09-23); the sumo hint and strength rows are drawn
-      by banner routines, proven on Beetle (2026-09-24); the insect box is laid out) and 1 `not-placeable` (the
-      specimen label, dead code); the bug-sumo move names (`musi@2C`) are drawn by no retail
-      path and stay in the original bytes (`boku.arrays.UNREACHABLE`; reopen if a retail path
-      shows them), freeing 690 bytes: code labels are placed by rewriting their immediates, the
-      save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
-      the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
-      uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
-      screen — a new array item. build-days: 2,969 lines laid out,
-      1 refused (2026-09-24): help .11 above. Dialogue lines may draw the sheet's symbol cells
-      (○ × ↓) at the stock 14 px (`boku.layout.WithSheetSymbols`, `E1754.5` seen on Beetle);
-      `exe@code:80037698` (`specimen_label_draw`, no caller, its bytes are `VOICE_OPEN_ISLAND`)
-      is in `boku.arrays.UNREACHABLE`. Done when the lint shows none of these errors and the build refuses no array line.
-      Harmed: the player, who sees Japanese menus around English dialogue.
+- [x] **[PIPE-07]** **Array English on screen.** DONE 2026-09-24: every code-file array's English
+      is on screen. Arrays that outgrow their bytes move whole (`boku.array_relocate`), into
+      resident room or into the one overlay that reads them (`overlay_tail`); regions in
+      `research/text-renderer.md` § 6. Items the box gives more rows are split into items of
+      their own (`boku.row_split`): the card message `.3` via `g_mc_msg` records, and the help
+      screen's bottom sentence on three rows (`boku.help_screen`, `asm/help_resident.asm`).
+      The insect box is written twice into `HHON.OVL` (`boku.insect_box`). Dialogue may draw
+      the sheet's symbol cells (`boku.layout.WithSheetSymbols`). Bug sumo's move names and the
+      specimen label are left retail, never drawn (`boku.arrays.UNREACHABLE`; reopen if a retail
+      path shows them). `boku lint --encoder cellmap`: 0 errors. `build-days`: 2,971 laid out,
+      0 refused. Seen on Beetle. Harmed (was): the player, who saw Japanese menus around English dialogue.
 - [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
       (the whole bible, glossary, style guide and checklist, ~29k tokens, then 599 parts in play
       order) translated in ONE session, days 1–31 plus `shared.txt` and `arrays.txt`, then a
