@@ -40,6 +40,30 @@ SUMO_FIELD equ 8 * 12               ; the right-aligned names' field: eight 12-p
 .endif
 .endarea
 
+; The same row: a bug with no sex mark has its catch number at the name's end, where a
+; Japanese name's last cell left a margin and an English letter leaves none ("Beetle1");
+; it gets the gap the top row's number has after its field (x 282 -> 285).
+SUMO_NUMBER_GAP equ 3
+.org 0x8007D4C8
+.area 4
+.if ORIGINAL
+    addiu   a1, s1, 0x2B            ; stock: the number at the name's end (delay slot of `j`)
+.else
+    addiu   a1, s1, 0x2B + SUMO_NUMBER_GAP
+.endif
+.endarea
+
+; ... and its date, drawn right-aligned by asm/labels.asm to end at x + 77: 8 px further
+; right, so the longest name row still ends before it (research/sumo.md § The desk's text).
+.org 0x8007D57C
+.area 4
+.if ORIGINAL
+    addiu   a0, zero, 0xDB          ; stock: caught_label_draw's x
+.else
+    addiu   a0, zero, 0xDB + 8
+.endif
+.endarea
+
 ; Two names right-aligned in SUMO_FIELD, their count taken by drawing them off screen first
 ; (x 0x258): x = base + 12 * (8 - count). The first multiplies through sllv by s5, which
 ; is 1 there (0x8007D7C8), so both are 12 * (8 - count); now SUMO_FIELD - width.

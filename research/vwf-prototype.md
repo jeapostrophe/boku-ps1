@@ -387,6 +387,14 @@ again before a bout, though the end state is still mode 7 with `g_arena_cur` at 
 screen) **0xFB0 — 4,016 bytes, the same event-path depth as the arrival sequence** — and the
 **item menu 0x3DC8, 15,816 bytes**. Walking and the dinner scene also write exactly `[C, C +
 0x6000)`: `bg_swap_in`'s scratch on a map change, a separate run below the stack's.
+The three left (2026-09-24, Beetle, a sentinel from C + `0x6000`): **a real save** — the
+diary's bedtime prompt (0x308 deep) → Yes → the diary page → the card's own screens to "Save
+complete" and "Continue the game?" — **0xFB0**, the same 4,016 bytes, reached on the diary
+page (what the frames there hold is pixel data, a local buffer); **a sumo bout** — from
+`./make.sh sumo-bout`'s state, the gong, a whole fight won and the next opponent up —
+**0x2E8**, and leaving for the field writes `SUB.TIM` up to `STACK_REACH` (`asm/arena.asm`,
+not the stack); **fishing** — casting, reeling, the catch title and its dismissal — nothing
+below `0x801FFF00`, because the field runs on the scratchpad (below).
 
 The item menu's depth is one frame: mode 4's update (`g_modes[4]`, `0x8004330C`) calls
 `0x80042DDC`, which calls `0x80043608`, whose frame is `0x3CA8` bytes — a local buffer that a
@@ -849,7 +857,7 @@ specification.
 | 6 | EXE `date_label_draw` `0x80037544` | none: five immediates at `x, x+0xD, x+0x25, x+0x3A/0x41` plus sprite digits | — | **C**; a translation re-points the ids and re-tunes the literals | table |
 | 7 | `date_label_draw_b` | unreferenced | — | **C** | table |
 | 8 | EXE `count_label_draw` `0x800377F8` | none: `0x26A`, `0x4B9` at offsets chosen by digit count | — | **C** | table |
-| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with the contract change, installed** (`asm/walkers.asm`): both passes add the glyph's width to `s2`, so the return value is pixels, and the five consumers take it — the cage HUD and HHON's label (`move v1,v0`), MUSI's stat line, and MUSI's two right-aligned names at `SUMO_FIELD − width` (the `sllv … s5` block: `s5` is 1, set at `0x8007D7C8`, so both were 12 × (8 − n); the count comes from drawing the name off screen at x 0x258 first). The down pass (`a3` ≠ 0) is left stock: no call in any image uses it. The cage HUD's date moves a row down, off the name's row (EXE `0x8003FFF8`, HHON `0x8007C4CC`) | **proven** on Beetle (the cage HUD and the insect box's copy, 2026-09-24) |
+| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with the contract change, installed** (`asm/walkers.asm`): both passes add the glyph's width to `s2`, so the return value is pixels, and the five consumers take it — the cage HUD and HHON's label (`move v1,v0`), MUSI's stat line, and MUSI's two right-aligned names at `SUMO_FIELD − width` (the `sllv … s5` block: `s5` is 1, set at `0x8007D7C8`, so both were 12 × (8 − n); the count comes from drawing the name off screen at x 0x258 first). The down pass (`a3` ≠ 0) is left stock: no call in any image uses it. The cage HUD's date moves a row down, off the name's row (EXE `0x8003FFF8`, HHON `0x8007C4CC`) | **proven** on Beetle (the cage HUD, the insect box's copy and the bout's names, 2026-09-24) |
 | 10 | EXE `fortune_draw` `0x8003A7A4` (the fortune result, three glyphs stacked vertically at x `0x9A` in a tall panel) | rows, not a pen | — | **banner**: hooked at its entry to `asm/banners.asm`'s `vwf_fortune_banner`, one centred line in a wide panel (§ "The banners") | **proven** (forced) |
 | 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`); the pen, `0x8003C68C sll s2,v0,0x10` → `jal vwf_fish_title_x`, which centres the name in the catch panel by its width | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | **proven** on Beetle (2026-09-24, forced catch) |
 | 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
@@ -998,17 +1006,11 @@ both seen in English on Beetle, drawn from their overlays' tails.
 
 ## Not done
 
-* **Summer memories' label 5** is proven only by forcing its popup. **`HHON`** is
-  seen on Beetle only (§ "The `HHON` walkers"). **Surfaces 9 and 11**
-  are installed and run in `tests/test_real_walkers.py` but not on screen: the cage HUD
-  needs a caught insect, fishing days of play. Their boxes are not measured, and the English
-  is wider than anything the Japanese drew there — insect names up to 145 px (median 90)
-  against the stock's 96, fish names 90 against 48 (`arrays.txt` through the cell map,
-  2026-09-23). Surfaces 25 and 26 and the debug screen's names are unreachable in retail, and
-  the exchange notebook's names are measured ([sumo.md](sumo.md) § The desk's text). Not
-  measured: the bout's two names right-aligned in `MUSI`'s 96-px `SUMO_FIELD` (drawn at
-  `0x8007D89C`, `0x8007D940`), where a 145-px name starts 49 px left of the field. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
-  route, `work/txt05b/shots/06`.)
+* **Summer memories' label 5** is proven only by forcing its popup, which retail probably
+  never shows (§ "Screens behind a save", the quiz rate). **`HHON`** is seen on Beetle only
+  (§ "The `HHON` walkers"). Surfaces 25 and 26 and the debug screen's names are unreachable
+  in retail ([sumo.md](sumo.md) § The desk's text). (SELECT on Beetle was reached on
+  2026-09-20 through the day-1 living-room route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
   bodies add only the table byte.
 * **Text that grows**: everything is written in place — which is why `--days` writes 67 lines
@@ -1017,8 +1019,6 @@ both seen in English on Beetle, drawn from their overlays' tails.
   The space-padding of array items is a consequence of writing in place and goes away with it.
 * **The speaker label** is done in the pipeline build (§ "The speaker label"); the
   prototype's own `--days --label` path still writes the older "Boku: " form.
-* **`H06001`** — the one pack whose child 6 passes `0x6400` — was not loaded in an emulator
-  (§ "The map work area"); the raise is proven not to break the maps that were.
 * **The 46-row band** is reachable (`--band-y 194 --band-h 46 --pen-y 198`) but was not
   shot; the translucent 37-row band is the default and is what every shot under
   `work/txt05b/shots/` shows.
@@ -1033,6 +1033,5 @@ both seen in English on Beetle, drawn from their overlays' tails.
   runners keep that order; a third caller drawing the box first would see 0 and get the table's
   80 × 40.
 * Free-roam, menus and sumo were not sampled for primitive-buffer headroom (§ Q4). The stack
-  was, under most of them (§ "The map work area"); a real save, a sumo bout and fishing
-  were not.
+  was (§ "The map work area").
 * Confirmed on emulators only; EDC/ECC is regenerated and self-checked, but no disc was burned.

@@ -189,6 +189,21 @@ writing a boy's offered bug to `0x8003DE18`, a cage-format record, before ○ on
   `musi_rank_draw` `0x8007EDB0` draws rows 16 px apart from y 85, each centred on x 108.
   The paper is x 82..134; "Weak", "Strong", "King" (31, 42, 27 px) are drawn centred there
   by `vwf_sumo_rank`, the board unchanged.
+* **The bout's names** (`MUSI` `0x8007D35C` Boku's fighter at the bottom, `0x8007D670` the
+  opponent at the top; measured 2026-09-24 with every fighter's widest case poked into the
+  bug in hand `0x8003E098` and the opponent's roster record). The opponent's name is
+  right-aligned to end at x 282 (266 before a sex mark at 270), the catch number at 285 and
+  the badge 26 px (crown) or 36 px (pink "BIG!") left of the name, so it moves with it:
+  "Red-legged Stag Beetle" with the pink badge starts the row at x 102, over the ring,
+  clear of everything. Boku's row grows from the left: the badge (record `+3`: 1 crown,
+  2 pink) at a fixed x, the name at x 18, 43 or 55 after it, then the sex mark at the
+  name's end (its sprite keeps 5 px of its own margin) and the number 15 px on — or, with
+  no mark (the types outside the two tables at `0x80045B1C`), the number at the name's
+  end, which `asm/musi.asm` moves 3 px on so an English letter does not touch it. The caught date is right-aligned against the screen's edge on the same
+  row: "Date caught 8/31" started at x 184 and "Red-legged Stag Beetle" ran into it, so the
+  label is "Caught" (`arrays.txt`'s NOTE) and `asm/musi.asm` ends it at x 304 instead of 296;
+  with the pink badge, a two-digit number and August 31 the row ends at 217 and the date
+  starts at 222. `tests/test_real_date_labels.py` runs the row for every fighter and badge.
 * **The exchange notebook** (`0x8007E670`: the offered bug, and the one in hand if any)
   draws a name at x 175 and the item after it — the sex mark, then the catch number at
   0x11E — at a fixed x 271: a Japanese name is 8 cells, 96 px, and ends there. Each of its

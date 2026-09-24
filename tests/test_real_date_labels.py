@@ -9,6 +9,7 @@ flush are stubbed to return: they draw sprites, not text, and are the retail rou
 from __future__ import annotations
 
 import json
+import string
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ from boku.archive import EXE_LOAD_BIAS, OVERLAY_LOAD_ADDRESS
 from boku.build import load_edit_set
 from boku.code_text import DATE_LABELS, drawer_of, lay_out_date_label
 from boku.glyphs import END_WORD
+from boku.sumo import TYPES
 from boku.translation import SampleScenes
 from tests.mips import Machine
 from tests.test_real_reinsert import read_back
@@ -93,3 +95,64 @@ def test_the_caught_label_places_its_numbers_after_the_english_and_keeps_its_rig
     assert first_letter < month[1] < day_call[1], "the numbers come after the words"
     right = day_call[1] + SPRITE_DIGIT * len(str(day))
     assert right <= X + CAUGHT_RIGHT and last_letter < X + CAUGHT_RIGHT
+
+
+# --- the bout's own row: the name, its mark and number, then the date ----------------------
+
+BOUT_ROW = 0x8007D35C
+"""`MUSI`: the bottom of the bout screen -- Boku's fighter (the bug in hand, `0x8003E098`):
+its badge, name, sex mark and catch number from the left, the caught label from the right."""
+IN_HAND = 0x8003E098
+SEX_MARK, CATCH_NUMBER = 0x8003FDA8, 0x80040438
+BOUT_STUBS = (
+    0x8002BCF8, 0x8007D27C, 0x8007CF98,  # the frame's sprites and panels
+    0x8003FD30, 0x8003FBE0,  # the badge: crown, pink
+    SEX_MARK, CATCH_NUMBER, 0x80040340, 0x800377F8,  # the mark and the numbers
+    NUMBER_DRAW, GLYPH_FLUSH,
+)  # fmt: skip
+DIGIT_SPRITE = 8
+"""`number_draw`'s digit sprites are 8 px wide, stepped `SPRITE_DIGIT` apart."""
+CLEAR = 3
+"""Pixels kept between the end of the name's row and the date's first letter."""
+
+
+def _bout_row(built, kind: int, badge: int):
+    """Run the bottom row for a fighter of insect type `kind` with badge byte `badge`
+    (0 none, 1 crown, 2 pink), catch number 99, caught August 31: the widest two-digit
+    numbers (100 and up is one 16-px sprite, 1 px wider, which the clearance absorbs)."""
+    machine = Machine(stubs={address: [] for address in BOUT_STUBS})
+    machine.load(EXE_LOAD_BIAS, built.exe)
+    machine.load(OVERLAY_LOAD_ADDRESS, built.blob(built.member("MUSI.OVL")))
+    machine.load(IN_HAND, bytes([kind, 255, 0, badge, 99, 31, 14, 7]))
+    name_ends: list[int] = []
+    machine.on_stub[CATCH_NUMBER] = lambda m: name_ends.append(len(m.draws))
+    machine.call(BOUT_ROW)
+    (number,) = machine.stubs[CATCH_NUMBER]
+    return machine.draws[: name_ends[0]], number[1], machine.draws[name_ends[0] :]
+
+
+@pytest.mark.parametrize("badge", [0, 1, 2])
+@pytest.mark.parametrize("kind", sorted(TYPES.values()))
+def test_the_bout_s_date_clears_the_widest_name_row(built, kind, badge):
+    """The date is right-aligned against the screen's edge and the name row grows from the
+    badge: with a two-digit catch number and a two-digit day the row still ends before the
+    date's first letter."""
+    name, number_x, date = _bout_row(built, kind, badge)
+    assert name and date, "the row drew no name or no date"
+    row_end = number_x + SPRITE_DIGIT + DIGIT_SPRITE
+    assert row_end + CLEAR <= min(x for _, x, _ in date), (
+        f"type {kind}, badge {badge}: the row ends at x {row_end}, the date starts at "
+        f"{min(x for _, x, _ in date)}"
+    )
+
+
+@pytest.mark.parametrize("kind", sorted(TYPES.values()))
+def test_a_bout_number_keeps_a_gap_after_the_name(built, kind):
+    """The number follows the name's measured end -- after the sex mark, or with none, 3 px
+    off the last letter (`SUMO_NUMBER_GAP`, as the top row's number is), never touching it."""
+    encoder = load_edit_set(EDITS).encoder
+    letters = {encoder.glyph(c): c for c in string.ascii_letters}
+    name, number_x, _ = _bout_row(built, kind, 0)
+    last_cell, last_x, _ = name[-1]
+    gap = number_x - (last_x + encoder.advance(letters[last_cell]))
+    assert gap >= 3, f"type {kind}: the number is {gap} px after the name"

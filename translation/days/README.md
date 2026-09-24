@@ -53,7 +53,7 @@ are `./make.sh mockup`'s.
   character per glyph the function draws, runs separated by ` / ` where it draws a number
   in between; more characters than it draws are left in Japanese (`not-placeable`). The
   two date labels are redrawn around their English instead, and their rows mark where the
-  game puts its numbers: `Date caught {month}/{day}`, `August {day}`.
+  game puts its numbers: `Caught {month}/{day}`, `August {day}`.
 * **The card screens' two answers** (`title@7A78.0`, the Japanese "hai" and "iie" side by
   side) are one row written `Yes | No`: the first answer, ` | `, the second. The build places
   the second where the Japanese one began and tells the drawer where the first ends; the two

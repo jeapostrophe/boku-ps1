@@ -6,7 +6,7 @@
 ; (boku/code_text.py, boku/array_relocate.py). An untranslated label runs the retail drawer.
 ;
 ; The text is cells ended by 0x8000, one segment per stretch of label between the numbers
-; the code computes: caught_label "Date caught {month}/{day}" is three segments, save_date
+; the code computes: caught_label "Caught {month}/{day}" is three segments, save_date
 ; "August {day}" two. Each segment is stepped through the advance table and each number is
 ; placed after the measured width -- the retail drawers put them at fixed offsets sized for
 ; two kanji. Glyphs first, then glyph_flush, then the number sprites, in the retail order.

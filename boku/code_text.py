@@ -44,7 +44,7 @@ class DateLabel:
 
 DATE_LABELS: dict[str, DateLabel] = {
     "exe@code:80037544": DateLabel(
-        "vwf_caught_label", ("{month}", "{day}"), "Date caught {month}/{day}"
+        "vwf_caught_label", ("{month}", "{day}"), "Caught {month}/{day}"
     ),
     "title@code:8007BB60": DateLabel("vwf_save_date_label", ("{day}",), "August {day}"),
 }

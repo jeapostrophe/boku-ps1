@@ -212,7 +212,7 @@ DESC_LINE_STEP  equ 12
 .endif
 .endarea
 
-; cage_hud_draw's date ("Date caught", asm/labels.asm) leaves the name's row for the row below
+; cage_hud_draw's date ("Caught 8/9", asm/labels.asm) leaves the name's row for the row below
 ; the size, as far below it as the name is above (text-boxes.tsv, exe@8003D2E0); asm/hhon.asm
 ; moves HHON.OVL's copy of the HUD the same way.
 CAGE_NAME_Y equ 0x1A                ; retail: the name and the date
