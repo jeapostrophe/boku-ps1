@@ -299,6 +299,25 @@ bag, the kite record, the kite book, the insect book, bug sumo and the insect bo
 each button's box in its rebuilt colour (but where the hand cursor covers it; the attendance
 card within its dither), and the stock image fails every one.
 
+## `OTI0n` — the epilogue's closing card (PLAN `GFX-10`)
+
+`_DATA_OTI00.BIN__0261f4`, 276×33 4bpp, one CLUT of greys, the same TIM in each of
+`OTI00`…`OTI04` (one per ending), so one set of edits covers all five. It is the last card
+`ENDOTI` shows ([event-scripts.md](event-scripts.md) § the epilogues): two centred lines of
+pale grey antialiased type on transparent, 製作・著作 (rows 0–11) and the company's name
+(rows 20–31), drawn on black. It is a still, not video — measured on Beetle, stock image,
+day-31 card with no stars: `MOVIE 24`'s scrolling staff credits run ~29000–30500, which stay
+Japanese (they are video), then `ENDOTI`'s stills, then this card at ~32200–32450, then the
+save prompt. It is drawn exactly (no dither; where it lands is the Beetle test's `ON_SCREEN`).
+
+`credits_strip` (`boku/texture_text.py`, strings `tex@OTI.production` / `tex@OTI.company` in
+`ui.txt`) clears the card to transparent and sets each English line in the game's glyphs,
+centred on the rows its Japanese used, in the grey the Japanese's pale core used most.
+
+**Proof.** `tests/test_real_credits_card.py`: the card's opaque texels are exactly the two
+English lines, and all five copies are edited; on Beetle (`./make.sh emu-test`) the ending
+route shows every texel of the card exactly; the stock image fails it.
+
 ## The books — the insect and kite encyclopedias (PLAN `GFX-06`)
 
 `boku/texture_books.py`; the English is `mzkan@<n>.<field>` and `tzkan@<n>.<field>` in

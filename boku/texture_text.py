@@ -574,6 +574,45 @@ def beach_notice(archive: Archive, inv: Inventory, face: Face, entries: Sequence
     return edits
 
 
+# --- OTI0n: the epilogue's closing card ---------------------------------------------------------
+
+
+CREDITS_STRIP = "_DATA_OTI00.BIN__0261f4"
+"""276x33 4bpp: the two-line production and copyright card `ENDOTI` shows on black after its
+stills (`research/texture-recipes.md` § `OTI0n`); the same TIM in each of `OTI00`-`OTI04`."""
+CREDITS_LINES = (("production", (0, 0, 276, 12)), ("company", (0, 20, 276, 12)))
+"""Each line's key and its rows: pale grey type on transparent, a line of glyphs each."""
+
+
+def credits_strip(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Clear the card to transparent and set each English line, in the game's glyphs, centred
+    on the rows the Japanese line used, in the entry the Japanese's pale core (within
+    `CORE_SPREAD` of its palest) used most."""
+    text = keyed("tex@OTI", entries, [key for key, _ in CREDITS_LINES])
+    card = paint.Canvas(inv.get(CREDITS_STRIP))
+    palette = card.palette(0)
+    transparent = next(i for i, c in enumerate(palette) if not c[3])
+    placed = []
+    for key, box in CREDITS_LINES:
+        what = f"the {key} line of the credits card"
+        grey = {p: luminance(palette[card.at(p, stock=True)]) for p in paint.points(box)
+                if palette[card.at(p, stock=True)][3]}  # fmt: skip
+        found(set(grey), what)
+        core = [p for p, v in grey.items() if v >= max(grey.values()) - CORE_SPREAD]
+        ink = paint.normalised(ink_of(face, text[key]))
+        fits(text[key], ink, box, what)
+        placed.append((centred(ink, (0, box[1], card.width, box[3])), ink,
+                       card.most_used(core, stock=True)))  # fmt: skip
+    card.fill((0, 0, card.width, card.height), transparent)
+    for at, ink, index in placed:
+        card.stamp(at, ink, index)
+    return card.patches()
+
+
+CORE_SPREAD = 40
+"""The credits type's own grey: within this much luminance of its palest pixel."""
+
+
 # --- NIKKI: the picture diary --------------------------------------------------------------------
 
 
@@ -671,6 +710,7 @@ FAMILIES: Mapping[str, Family] = {
     "tex@T_MEMORY": memory_album,
     "tex@M_C15": beach_notice,
     "nikki@": diary,
+    "tex@OTI": credits_strip,
     "btn@": buttons,
     "mzkan@": insect_book,
     "tzkan@": kite_book,

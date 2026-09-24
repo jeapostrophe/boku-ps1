@@ -352,7 +352,7 @@ case "$verb" in
     emu-test)
         BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
             tests/test_real_texture_text_beetle.py tests/test_real_texture_buttons.py \
-            tests/test_real_texture_books.py \
+            tests/test_real_texture_books.py tests/test_real_credits_card.py \
             tests/test_real_save_boot.py tests/test_real_sumo_bout.py \
             tests/test_real_voice_subtitle.py tests/test_real_clip_subtitle.py \
             tests/test_real_clip_subtitle_beetle.py tests/test_real_sumo_voice.py "$@"

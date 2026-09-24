@@ -317,11 +317,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_OTI00\.BIN__0261f4$",
         1,
-        "N",
+        "P",
         "publisher production/copyright credit",
-        "-",
-        "the publisher's own credit line, one copy per opening/ending cut. Same charter clause "
-        "as a shop sign; a one-line P if the owner wants it in English",
+        "new (2 lines)",
+        "the last card ENDOTI shows, one copy per ending; a still, so P by Jay's ruling "
+        "(2026-09-23); cleared to transparent and the English set in the game's glyphs "
+        "(research/texture-recipes.md OTI0n)",
     ),
 ]
 

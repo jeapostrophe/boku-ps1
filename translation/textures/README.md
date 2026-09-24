@@ -28,7 +28,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 
 | file | textures | row |
 |---|---|---|
-| [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`), the album heading (`T_MEMORY`) | PLAN `GFX-07` |
+| [ui.txt](ui.txt) | the title menu (`T_TITLE`), the settings screen (`T_CONFIG`), the album heading (`T_MEMORY`), the epilogue's closing card (`OTI0n`) | PLAN `GFX-07`, `GFX-10` |
 | [signs.txt](signs.txt) | the notice board on the path to the beach (`M_C15`) | PLAN `GFX-09` |
 | [buttons.txt](buttons.txt) | the stone "Back" buttons, the speech-balloon buttons and the attendance card's labels (`btn@<member>.<key>`) | PLAN `GFX-07` |
 | [books.txt](books.txt) | the insect book and the kite book, one row per field of a page (`mzkan@<n>.<field>`, `tzkan@<n>.<field>`) | PLAN `GFX-06` |

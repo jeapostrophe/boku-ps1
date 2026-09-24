@@ -4,8 +4,9 @@
 [data/texture-census.tsv](data/texture-census.tsv)): **180 distinct images `yes` + 17 `maybe`
 = 197**. (Ruling 2026-09-22, Jay: the model-kit box `M_I19000` stays Japanese — the narrator
 says what it is — and 2026-09-23, `GFX-09`: the beach notice is frontal, not at an angle, and is
-in both variants of its map, so it is **P** twice — the counts below are now **140 P, 27 R, 0 S,
-31 N** of 198; the tables keep the audit's original split.) This file assigns each of those 197 a **path**, and says where the English comes from.
+in both variants of its map, so it is **P** twice; and `GFX-10`: the epilogue's closing card is translated, **P** — the
+counts below are now **141 P, 27 R, 0 S, 30 N** of 198; the tables keep the audit's original
+split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
 written record of what was looked at, so a census row can never silently lose its decision. The
@@ -301,10 +302,10 @@ question; it is noted here so the two sides do not both assume the other has it.
   translate: it is the font. Latin coverage in it belongs to the font and VWF work
   ([font.md](font.md), [vwf-prototype.md](vwf-prototype.md)). Recorded here only so that a later
   reader does not find it unassigned and assume it was missed.
-* `credits` — the 276×33 4bpp production/copyright strip, one copy in each of `OTI00`…`OTI04`,
-  **N**. It is the publisher's own credit and copyright line, the same charter clause as a shop
-  sign. It is flat plain type on transparent, so it is a one-line **P** the day the owner decides
-  he wants it in English; that is his call, not the audit's.
+* `credits` — the 276×33 4bpp production/copyright strip, one copy in each of `OTI00`…`OTI04`:
+  **P** since Jay's ruling (2026-09-23: translate it if it needs no video re-encode). It is a
+  still, the last card `ENDOTI` shows — `MOVIE 24`'s scrolling credits before it are video and
+  stay. Built in [texture-recipes.md](texture-recipes.md) § `OTI0n`.
 
 ## Composed text — the blind spot the census names
 

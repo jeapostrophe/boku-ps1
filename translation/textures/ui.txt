@@ -31,3 +31,9 @@ tex@T_CONFIG.sub_screen	Sub // Screen
 # game is on the card. Its heading plaque; the six menu labels under it are renderer text.
 # ` // ` breaks the heading onto two lines (it is 107 px on one, the plaque holds 99).
 tex@T_MEMORY.heading	Summer // Memories
+
+# --- OTI: the card ENDOTI shows on black after the epilogue's stills, the same in each of the
+# five epilogues (research/texture-recipes.md § "OTI0n"): 製作・著作 and the company's name.
+# Each is one line in the game's glyphs. M28's scrolling credits before it are video and stay.
+tex@OTI.production	Production and Copyright
+tex@OTI.company	Sony Computer Entertainment Inc.

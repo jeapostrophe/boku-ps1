@@ -304,9 +304,9 @@ so the hooks above never see one. The two `VO-03` owns, measured:
   `41 + n` (`0x80079BE4`). Its update runs at **60 Hz** (its counter advanced 349 in 349
   vsyncs), steps five states on the per-ending thresholds at `0x8007A0C4` (e.g. ending 0:
   600, 690, 1290, 1590 frames), draws the still in two parts and then the credits strip
-  (`OTI0n` child 2, the 276×33 production and copyright line — `textures-plan.md` rules it
-  **N**), and hands over to mode `0x0F` at the last threshold + 120, often while the clip is
-  still playing. The font sheet and its CLUT in VRAM are unchanged throughout (hashed in
+  (`OTI0n` child 2, the 276×33 production and copyright line — set in English,
+  [texture-recipes.md](texture-recipes.md) § `OTI0n`), and hands over to mode `0x0F` at the
+  last threshold + 120, often while the clip is still playing. The font sheet and its CLUT in VRAM are unchanged throughout (hashed in
   three states), so the dialogue renderer can draw there.
 
 How `asm/voice.asm` subtitles them (its header is the design): the English is a clip section
