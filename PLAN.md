@@ -583,9 +583,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
       uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
       screen — a new array item. build-days: 2,969 lines laid out,
-      3 refused (2026-09-24): help .11 above, and two regressions of the `TRN-10` run being fixed —
-      `E1754.5` (the cell map draws no `○`) and `exe@code:80037698` ("Date mounted", 11 glyphs
-      where the code draws 6; the review restored a wording that had been cut to fit). Done when the lint shows none of these errors and the build refuses no array line.
+      1 refused (2026-09-24): help .11 above. Dialogue lines may draw the sheet's symbol cells
+      (○ × ↓) at the stock 14 px (`boku.layout.WithSheetSymbols`, `E1754.5` seen on Beetle);
+      `exe@code:80037698` (`specimen_label_draw`, no caller, its bytes are `VOICE_OPEN_ISLAND`)
+      is in `boku.arrays.UNREACHABLE`. Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
       (the whole bible, glossary, style guide and checklist, ~29k tokens, then 599 parts in play
