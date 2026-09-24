@@ -650,7 +650,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `research/texture-recipes.md` § "The books"); a page that does not fit is refused, never
       cut. Proven on Beetle: both books at page 0. Bean's pitch equals its cell height, so
       descenders touch the next line's capitals; the three longest bodies fill the spread.
-- [ ] **[GFX-07]** **UI plates and the title menu** — 17 programmatic images: `T_TITLE` **first**
+- [x] **[GFX-07]** **UI plates and the title menu** — 17 programmatic images: `T_TITLE` **first**
       (four menu lines on transparent, outlined with a drop shadow — Jay, 2026-09-20: "needs
       to be translated early"), `T_CONFIG` value plates, the oval action buttons across seven
       atlases (`SUB`, `M_S01100`, `M_S02000`, `MZ00`, `MZ02`, `SAMP`; multi-CLUT — the
@@ -682,9 +682,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `TZICON` (Bean), bug sumo `M_S01100` (balloons, swap plate, Close board), insect box
       `MZ02`/`SAMP` (Bean; one in Sprout), proven on Beetle. **Attendance card DONE 2026-09-23:** `PK_ITM 0x6c`
       title and footer in Sprout, proven on Beetle in the bag; the insect book's stone Back
-      (`MZKAN.BIN` `0x48`) with the other stones. Still to do: `FS_WAL`; the
-      bug-record card in `M_S01100` `0x164b4` (labels beside
-      run-time numbers, like `FS_WAL`).
+      (`MZKAN.BIN` `0x48`) with the other stones. **Records DONE 2026-09-24** (`cc3a016`):
+      `FS_WAL` labels and tackle lists (`rec@FS_WAL.*`) with its stone and balloon, the
+      bug-record card `rec@M_S01100.*` (all three copies), and the `T_MEMORY` heading proven on
+      Beetle with a finished-game card — `tests/test_real_texture_records.py`. (`M_S02000`'s stone
+      is never loaded — `research/texture-recipes.md`.)
 - [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
       to the original CLUT and committed as new pixels: three book covers consistently across
       their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
