@@ -344,6 +344,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [x] **[TRN-13]** **The insect box's page pencils: "Prev" / "Next".** DONE 2026-09-24
       (`e5b046f`; Jay's §17.8e): both in the game font, proven on Beetle; the one-font test has no
       exception left. Harmed (was): the player.
+- [ ] **[TRN-15]** **The bug-trading notebook says "Trade" throughout.** Jay, 2026-09-24 (§23b):
+      the exchange balloon matches the cover's "Trading" — "Trade" (fits the balloon), and the
+      plate beside the arrow widened the 1 px "Trade" needs rather than keeping "Swap". Harmed:
+      the player, who sees two words for one thing.
 - [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
       §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
       free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
@@ -699,11 +703,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       board** (`G8-I23`) DONE 2026-09-24 (`ee24b05`): a clean plate refilled from the board (the
       starburst's colours and the bullet trail kept), "DANGER!" / "Homes nearby," / "Fire with
       care!" / "Prefectural // Hunting Assn." in the game's glyphs twice as tall and emboldened,
-      on Beetle — the size put to Jay (§21 G8-I23: tall or bold); **the keep-out sign** (`G8-I18`, "Don't // come in!") and **the
+      on Beetle — tall kept (Jay, 2026-09-24); **the keep-out sign** (`G8-I18`, "Don't // come in!") and **the
       bug-trading notebook cover** (`G8-NB`, "Bug // Trading // Notebook") DONE 2026-09-24
       (`8ec5c76`): marker lettering found by colour, painted out, set in the game's glyphs in the
-      marker's own colour, on Beetle (`research/texture-recipes.md` § "Marker signs"); **the result badges**
-      (`MITIM`) generated programmatically, or left if that looks worse. Harmed: the player who
+      marker's own colour, on Beetle (`research/texture-recipes.md` § "Marker signs"); **`MITIM`** — the result badges and the cage's
+      出す / もどる buttons (it is `KAGO_UV`'s atlas): Jay, 2026-09-24, from the mock-ups — "Take",
+      not "Take Out", and the game-glyph versions. Harmed: the player who
       examines the thing and reads nothing.
 - [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
       the board is frontal wood, painted not captioned, in both map variants (`M_C15000`, which
@@ -809,7 +814,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [ ] **[FMV-10]** **A see-through panel behind the movie songs.** Jay, 2026-09-24, from
       `work/movie-review/`: the opaque black box on `M27`'s and `M28`'s song cues is "a bit too
       jarring" and makes the movies inconsistent (`M260` has none) — a hatched or translucent
-      panel instead, still keeping the credits from showing through the text. Harmed: the
+      panel instead, still keeping the credits from showing through the text.
+      Interim 2026-09-24 (`964f5e7`): a translucent panel (`@@shade`, a quarter of the light) —
+      Redux 10/10, Beetle skip-free. Jay compared it with a hatched build: "The hatched version
+      looks much better" — make hatched fit (its fast path needs ~60 bytes the routine's space
+      lacks), else show him the half-light shade. Harmed: the
       player, watching the opening and the ending.
 - [x] **[FMV-09]** **Jay's §22 movie rulings.** DONE 2026-09-24 (`72e1f71`): 22.1 a panel fills
       both rows of its position; 22.2 `M27`'s song cues at the bottom with `panel`; 22.3 one 『 』
