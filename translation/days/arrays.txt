@@ -150,7 +150,7 @@ exe@8003DA00.0	(unlabelled)	Picture Diary
 exe@8003DA00.1	(unlabelled)	Specimens + Bug Cage
 exe@8003DA00.2	(unlabelled)	Kites
 exe@8003DA00.3	(unlabelled)	Belongings
-exe@8003DA00.4	(unlabelled)	Endings
+exe@8003DA00.4	(unlabelled)	Ending
 exe@8003DA00.5	(unlabelled)	Dinner Quiz Accuracy
 
 # --- exe@8003DA4C: fish names
@@ -318,7 +318,7 @@ hhon@5328.56	(unlabelled)	Miyama Stag Beetle ♀. The females work hard too, lay
 hhon@5328.57	(unlabelled)	Giant Stag Beetle ♀. No big horns, but for sheer body size, it won't lose to the other males!
 hhon@5328.58	(unlabelled)	Saw Stag Beetle ♀. However small it is, it worked hard for two or three years inside a rotting log, from egg to grown beetle.
 hhon@5328.59	(unlabelled)	Rhinoceros Beetle ♀. The female is small, after all, with no horn, so it's weak. At first glance, just a plain scarab.
-hhon@5328.60	(unlabelled)	(empty)
+hhon@5328.60	(unlabelled)	Vacant
 # NOTE hhon@5328.3, .18: the entry is about the Japanese name, so the first line carries both
 #   (glossary § 4a). .10 and .40 pun on cho (butterfly; chotto, "a little"; super): kind 3, the
 #   word showing. Calls stay as the Japanese hears them (style guide § 7).

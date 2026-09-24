@@ -295,10 +295,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       (x 140–168) under long beetle names — (a) overlap as now, (b) move the badge left of the
       name, (c) long names in Bean (recommended); the insect box (the two `HHON.OVL` walkers): measured and reached on
       both emulators; the row walkers are designed and parked (`research/vwf-prototype.md` §
-      "The HHON walkers") until the entries can grow (`PIPE-07`) and **[MINE: product]** a
-      layout that holds the English's 9–15 lines is chosen — the notebook page holds 8 rows
-      and the grid panel 12: a tighter row pitch (ink is 10 px; 10–11 px pitch), a second
-      page, or the grid panel on both screens; untranslated entries keep their columns; the remaining fixed-pitch
+      "The HHON walkers") until the entries can grow (`PIPE-07`); layout RULED (Jay,
+      2026-09-24, from `work/review/decisions.html`): the grid view takes option A (11 px
+      rows from y 16, holding the whole entry) and the notebook shows as much as its 8 rows
+      hold, ending in "..." when the entry goes over — the full text is on the grid, so no
+      extra page; untranslated entries keep their columns; the remaining fixed-pitch
       surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
       the stack under a real save, a sumo bout and fishing (measured 2026-09-23 on Beetle:
       free roam 0x228, item menu 0x3DC8 (one 0x3CA8-byte frame in mode 4 / TAKO, never
@@ -359,12 +360,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, three
       lines, wrapped by the build), summer-memories labels 0–5. Widest English per surface (2026-09-23):
       insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Widened and proven on Beetle
-      (2026-09-23): help .0/.1/.3/.5/.8, config .4, the quiz-rate popup. **[MINE: product]**
-      two look choices: descriptions/captions need 4–5 lines where the box holds 3 — options
-      a (retail pen, 13 px, five lines fill the white), b (x 167, 132 px wide, fewest lines;
-      recommended), c (12 px pitch), shot in `work/lane/desc-options/`; and the surfaces
-      bounded by their panel textures — extras .1 (memory-card .5 reworded to fit, `TXT-11`), item
-      names .0/.1/.3 (136–144 px in 115) — two-line message, condensed glyphs or scrolling.
+      (2026-09-23): help .0/.1/.3/.5/.8, config .4, the quiz-rate popup. RULED
+      (Jay, 2026-09-24): descriptions/captions take option c (retail pen, 12 px pitch — 4–5
+      lines in the white); the panel-bound lines get shorter one-line versions of the
+      translation (extras .1 e.g. "Specimens" / "Bug-Collecting Kit"; item names e.g.
+      "Calisthenics Card"), and the memory-card message goes to two lines. To build.
       Bug sumo's boxes measured (hint, rank board, notebook names).
       Still to measure: kite names and the cage HUD, fishing. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
@@ -672,7 +672,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       picture, ~6 px footer type) — where the 12 px glyphs cannot fit — RULED 2026-09-23 (Jay, from
       `work/smalltype/DECIDE.md`): balloons widened to take the game's own glyphs (our 7 px
       "Bean" face where an atlas has no room), the attendance card in our 5 px "Sprout", the
-      stone Back buttons bigger and bold; clear a flat label's whole area before setting type,
+      stone Back buttons bigger and bold (the settings chart headings stay rotated — Jay,
+      2026-09-24); clear a flat label's whole area before setting type,
       and on textured stone clear only the ink. **DONE 2026-09-23:** the faces tracked (`boku/faces/`),
       the `btn@` family (`boku/texture_buttons.py`, `translation/textures/buttons.txt`); bold
       "Back" on all ten stones; the diary's "Good // night" balloon widened 4 texels; proven on
@@ -692,7 +693,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       Jay, 2026-09-22: the narrator says what it is); the result badges
       (`MITIM`), the bug-swap notebook cover, the brush-lettered plaque. Harmed: the player
       who examines the thing and reads nothing.
-- [x] **[GFX-09]** **The beach notice.** DONE 2026-09-23: seen on Beetle, the board is frontal
+- [ ] **[GFX-09]** **The beach notice — reworded** (Jay, 2026-09-24: the sign is too small
+      for "...orbidden" to really be off-screen): repaint it with wording that fits the visible
+      part, as the mock-up in `work/review/decisions.html` shows. Harmed: the player at the
+      beach. Earlier: DONE 2026-09-23: seen on Beetle, the board is frontal
       wood, not angled, so it is painted, not captioned — in both map variants (`M_C15000`,
       which day 1 loads, and `M_C15100`; the census had missed the first). `beach_notice` in
       `boku/texture_text.py` paints `translation/textures/signs.txt` onto both at 2×, cut by
@@ -781,9 +785,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       its row says what it shows and its cues (`FMV-02`) are timed to that picture through
       `FMV-04`'s hook, checked in the game — Jay's finalized state. Review tooling DONE
       2026-09-23: `./make.sh movie-timing` / `movie-review`, 14 cues retimed, the review page
-      is `work/movie-review/index.html` (`research/movies.md` § 10); for Jay at review: four
-      `M27` cues (1221, 1332, 1629, 1672) read at 17.8–21.3 characters a second with every
-      boundary at its limit — accept, or the wording changes. Harmed: the player.
+      is `work/movie-review/index.html` (`research/movies.md` § 10); the four fast `M27` cues:
+      Jay (2026-09-24) could read 1332, 1629 and 1672 but not 1221 — keep the wording
+      ("authentic") and hold such a cue on screen longer than its speech, out of sync with the
+      audio; to build (a minimum display time the timing tool allows past the speech). Harmed: the player.
 - [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
       2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
       but that review reached the movie through a poked movie table. Reproduce the real

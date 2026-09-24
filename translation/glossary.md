@@ -219,7 +219,7 @@ where the entry jokes about the *Japanese* name (marked ✎) that line carries b
 | 54 | ミンミンゼミ | min-min-zemi | Min-min-zemi | *Hyalessa maculaticollis* | |
 | 55 | ツクツクボウシ | tsukutsuku-bōshi | Tsukutsuku-boshi | *Meimuna opalifera* | "the cicada that announces autumn" |
 | 56 (line) | カマキリ | kamakiri | Mantis | *Tenodera* sp. | insect id 60; sumo moves "Mantis Scissors", "Mantis Buster" |
-| — | 空いています | | (empty) | | `hhon@5328.60` |
+| — | 空いています | | Vacant (Jay, 2026-09-24) | | `hhon@5328.60` |
 
 Other creatures in dialogue: ホタル firefly; アリンコ / 働きアリ / 女王アリ ants / worker ants /
 the queen ant; カミキリ虫 longhorn beetle; 地蜂 ground wasp; 蜂の巣 beehive; 月の輪グマ
