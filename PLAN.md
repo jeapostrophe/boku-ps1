@@ -693,9 +693,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `G8-T` — "not important and conveys the style of the game in Japanese") and the model-kit
       box `M_I19000`. To build, all programmatic (Jay: an image model changed the font and the
       colours; do it ourselves), committed as new pixels:
-      **Saori's farewell note** (`M_I14000`, `G8-I14`) in our glyphs — un-rotate the note's
-      measured rectangle, erase and draw it upright, rotate back and replace, trying to keep the
-      blue ruled lines; the renderer caption (option c) as the fallback; **the hunting-association
+      **Saori's farewell note** (`M_I14000`, `G8-I14`) DONE 2026-09-24 (`ba552f5`, `7f1e781`): the
+      page mapped upright through its fitted corners, the Japanese refilled from the page's own
+      pixels along its rules (the blue lines kept), "Goodbye. / You were / a pretty good / guy." —
+      "From Saori" written on the rules in the game's glyphs and carried back (print font and "guy"
+      accepted by Jay); on Beetle; `research/texture-recipes.md` § `M_I14000`; **the hunting-association
       board** (`G8-I23`) — a clean plate with the writing removed (keeping the explosion's
       colours), then our text in the game's glyphs; **the keep-out sign** (`G8-I18`) and **the
       bug-swap notebook cover** (`G8-NB`) repainted in the game's glyphs; **the result badges**
