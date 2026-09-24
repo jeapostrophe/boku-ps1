@@ -194,7 +194,7 @@ def test_a_line_written_onto_the_curled_corner_is_refused(
         tc.note(archive, texture_inventory, face, note_entries("MMMMMMMM"))
 
 
-def test_the_pen_is_a_stroke_pixel_even_when_there_are_fewer_than_four(texture_inventory):
+def test_the_pen_is_a_stroke_pixel_even_when_there_are_fewer_than_ten(texture_inventory):
     canvas = paint.Canvas(texture_inventory.get(tc.NOTE_TEXTURE))
     one = next(iter(tc.note_japanese(canvas, tc.NOTE.pixels(tc.NOTE_TEXT))[0]))
     assert tc.pen(canvas, {one}) == canvas.at(one)

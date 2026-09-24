@@ -143,10 +143,10 @@ SUBSAMPLES = 4
 def coverage(plane: Plane, ink: paint.Ink, at: Point) -> dict[tuple[int, int], float]:
     """The fraction of each picture pixel that upright `ink`, stamped at upright `at`, covers."""
     ax, ay = at
-    _, _, w, h = paint.extent(ink)
+    x0, y0, w, h = paint.extent(ink)
     n = SUBSAMPLES
     out = {}
-    for x, y in plane.pixels((ax - 1, ay - 1, w + 2, h + 2)):
+    for x, y in plane.pixels((ax + x0 - 1, ay + y0 - 1, w + 2, h + 2)):
         hits = 0
         for j in range(n):
             for i in range(n):
@@ -232,10 +232,10 @@ def note_japanese(canvas: paint.Canvas, area) -> tuple[paint.Ink, paint.Ink]:
 
 
 def pen(canvas: paint.Canvas, strokes: paint.Ink) -> int:
-    """The pen's entry, not its antialiasing's: what the darkest quarter of `strokes` (at
+    """The pen's entry, not its antialiasing's: what the darkest tenth of `strokes` (at
     least one pixel) uses most."""
     by_darkness = sorted(strokes, key=lambda p: luminance(canvas.colour(0, p, stock=True)))
-    return canvas.most_used(by_darkness[: max(1, len(by_darkness) // 4)], stock=True)
+    return canvas.most_used(by_darkness[: max(1, len(by_darkness) // 10)], stock=True)
 
 
 def note(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]) -> list[ByteEdit]:

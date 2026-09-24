@@ -106,3 +106,12 @@ def test_coverage_of_turned_ink_adds_up_to_its_area():
     assert sum(cover.values()) == pytest.approx(18, abs=1.5)
     assert max(cover.values()) <= 1.0
     assert len(cover) > 18
+
+
+def test_coverage_reaches_ink_that_does_not_start_at_the_origin():
+    """A line's ink keeps its glyph cell's rows (a lower-case line starts at row 3 and its
+    descenders reach row 11), so coverage must look where the ink is, not at its size from
+    the origin."""
+    flat = tc.Plane(size=(20, 20), corners=((0, 0), (20, 0), (20, 20), (0, 20)))
+    ink = {(3, 3), (3, 11)}
+    assert tc.coverage(flat, ink, (0.0, 0.0)) == {(3, 3): 1.0, (3, 11): 1.0}

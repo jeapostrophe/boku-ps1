@@ -233,8 +233,9 @@ holes:
   by 1.5 (a one-pixel stroke off the grid covers two pixels by half, which reads grey beside the
   Japanese's strokes; `paint.bold` clogs at this size), mixes the pen over the paper under it,
   and the mix is matched to the nearest entry the page already uses. The pen is the entry the
-  darkest quarter of the Japanese's stroke pixels use most. A line that would be written off
-  the paper — onto the curl or the log — is refused.
+  darkest tenth of the Japanese's stroke pixels use most — its core, (33, 41, 41); the
+  darkest quarter's gave a mid grey (57) that read faint. A line that would be written off the
+  paper — onto the curl or the log — is refused.
 
 Only the Japanese, the pixel round it, and the English change; the rules, the shading and
 everything off the page are the original's.
