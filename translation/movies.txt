@@ -1,4 +1,4 @@
-# The movies' subtitles: movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> position].
+# The movies' subtitles: movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> options].
 # The format and its rules: translation/README.md § "movies.txt". Licence: CC BY-SA 4.0.
 #
 # PLAN FMV-02. Timed against the reviewed transcripts under work/voice/reviewed/ (research/voice-only.md
@@ -29,6 +29,10 @@ M27	2080	2151	『At that moment, the thunderheads | were billowing up in the str
 #   nyudogumo, hachigatsu and wakitachi); the corrected reading is what is translated.
 M27	2152	2217	『glittering white, and somehow the sight made me glad,』
 M27	2218	2292	『and I leaned just a little out of the car window, | not so far as to startle my father.』
+M27	2436	2510	Just what kind of memories | will this summer leave me with, I wonder...	caption
+#   FMV-08: not spoken -- three lines of vertical white writing on black (Boku's thought, built
+#   up one line at a time from frames 2436, 2451 and 2466, gone at 2511), at x 111-207 and rows
+#   35-197, so the bottom rows are clear. Shown whole from the first line.
 M27	2545	2631	『When I sank back into the car seat | and took a deep breath, just a small one,』
 M27	2632	2735	『I had a strange feeling, as if specks of light | were flickering on and off in the middle of my head.』
 #   DOUBT: the noun after "hikari no" is heard as togi / tougi / toki / tori by every ASR pass

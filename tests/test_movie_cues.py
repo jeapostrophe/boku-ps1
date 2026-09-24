@@ -52,6 +52,18 @@ def test_a_fifth_field_places_the_cue_and_anything_but_a_position_is_malformed()
     assert "top" in problems[0].message and "bottom" in problems[0].message
 
 
+def test_the_fifth_field_may_also_mark_a_caption_of_text_in_the_picture():
+    """FMV-08: a cue that translates writing on screen, not speech, says so; with or without
+    a position, but never with two."""
+    text = "M27\t1\t2\ta\tcaption\nM27\t3\t4\tb\ttop caption\nM27\t5\t6\tc\ttop bottom\n"
+    found, problems = mc.parse(text)
+    assert found == [
+        mc.CueRow("M27", 1, 2, "a", 1, caption=True),
+        mc.CueRow("M27", 3, 4, "b", 2, "top", caption=True),
+    ]
+    assert [(p.line, p.check) for p in problems] == [(3, "cue-malformed")]
+
+
 def test_a_files_length_is_the_last_frame_any_id_playing_it_shows():
     """The opening's file is played by an id stopping at 58 and one at 4,239."""
     assert mc.movie_lengths(TSV) == {"M27": 4239, "M60": 362}

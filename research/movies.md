@@ -587,7 +587,8 @@ Jay ruled the song subtitled. Its sixteen rows are in `translation/movies.txt`, 
 `movie-timing` times them against the transcripts' `song` segments as it times narration
 (`boku.movie_timing.SUBTITLED_KINDS`); all sixteen pass.
 
-**The position field.** A cue row may end in `top`, which puts its lines on the same two rows
+**The position field.** A cue row may end in `top` (an option,
+`translation/README.md` § movies.txt), which puts its lines on the same two rows
 mirrored to the top of the frame (`boku.movie_block.POSITIONS`). The block already carried a y per line, so nothing in `asm/movie.asm` changed:
 the blit draws where the line says. The Redux gate's `M60` fixture cue sits at the top and
 is matched pixel for pixel (`tests/test_real_movie_subtitle.py`).

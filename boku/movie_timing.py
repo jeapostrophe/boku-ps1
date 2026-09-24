@@ -100,9 +100,13 @@ def strained(text: str, start: int, end: int) -> bool:
 
 
 def assign(cues: Sequence[CueRow], segments: Sequence[Segment]) -> list[int | None]:
-    """Per cue, the index of the segment it overlaps most, or None if it overlaps none."""
+    """Per cue, the index of the segment it overlaps most, or None if it overlaps none or
+    is a caption of writing in the picture."""
     out: list[int | None] = []
     for cue in cues:
+        if cue.caption:
+            out.append(None)
+            continue
         overlaps = [
             (min(cue.end, seg.end) - max(cue.start, seg.start), -n)
             for n, seg in enumerate(segments)
@@ -135,7 +139,8 @@ def problems(
             say(cue, "cue-fast", f"{float(cps):.1f} characters a second; at most {MAX_CPS}")
         seg_index = owner[n]
         if seg_index is None:
-            say(cue, "cue-unspoken", "overlaps no spoken segment")
+            if not cue.caption:
+                say(cue, "cue-unspoken", "overlaps no spoken segment")
             continue
         seg = segments[seg_index]
         marks = sum(cue.text.count(mark) for mark in NARRATION_MARKS)
@@ -148,8 +153,13 @@ def problems(
                 + ("wrap it in 『 』" if seg.kind == NARRATION else "no 『 』"),
             )
         mine = [m for m, index in enumerate(owner) if index == seg_index]
-        before = cues[n - 1] if n and cues[n - 1].end + 1 == cue.start else None
-        after = cues[n + 1] if n + 1 < len(cues) and cues[n + 1].start == cue.end + 1 else None
+        # A caption's frames are the picture's: no neighbour's drift is excused by them.
+        before = cues[n - 1] if n else None
+        after = cues[n + 1] if n + 1 < len(cues) else None
+        if before is None or before.caption or before.end + 1 != cue.start:
+            before = None
+        if after is None or after.caption or after.start != cue.end + 1:
+            after = None
         lead = cue.start - seg.start
         # Off its speech is allowed if back in the window it would strain a cue: this one if it
         # starts early, the one before if it starts late.
@@ -245,7 +255,10 @@ def _retime_chain(cues, owner, segments, chain, length, before) -> list[CueRow]:
             if nxt is None or not first_of(nxt):
                 # LINGER caps a hold only where no next cue's onset decides the boundary.
                 high = min(high, seg.end + LINGER + 1 + DRIFT)
-        if mine:
+        if any(n is not None and cues[n].caption for n in (prev, nxt)):
+            low = high = original  # a caption's frames are the picture's
+            mine = []
+        elif mine:
             low = max(low, *(rule_low - DRIFT for rule_low, _ in mine))
             high = min(high, *(rule_high + DRIFT for _, rule_high in mine))
         elif prev is None or nxt is None:

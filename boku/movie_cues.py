@@ -22,7 +22,12 @@ from boku.movies import MOVIES_TSV
 CUE_FILE = REPO_ROOT / "translation" / "movies.txt"
 LINE_BREAK = "|"
 FIELDS = 4
-"""A row's fields; a fifth, the position, is optional (`POSITIONS`, default `DEFAULT_POSITION`)."""
+"""A row's fields; a fifth, the options, is optional: space-separated, at most one position
+(`POSITIONS`, default `DEFAULT_POSITION`) and any of `FLAGS`."""
+CAPTION = "caption"
+FLAGS = frozenset({CAPTION})
+"""`caption`: the cue translates writing in the picture, not speech (FMV-08), so
+`boku.movie_timing` holds it to no transcript segment."""
 DEFAULT_POSITION = "bottom"
 MOVIE_BAND = BoxSpec(
     width=LINE_WIDTH, lines=min(map(len, POSITIONS.values())), name="the movie band"
@@ -41,6 +46,8 @@ class CueRow:
     """The row's line number in its file, for a finding to point at."""
     position: str = DEFAULT_POSITION
     """Where the cue sits: a key of `boku.movie_block.POSITIONS`."""
+    caption: bool = False
+    """Whether the cue translates writing in the picture (`CAPTION`) rather than speech."""
 
     @property
     def key(self) -> str:
@@ -73,22 +80,26 @@ def parse(text: str) -> tuple[list[CueRow], list[Problem]]:
                     "-",
                     "cue-malformed",
                     f"{len(fields)} tab-separated fields; a row is "
-                    f"`movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> position]`",
+                    f"`movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> options]`",
                 )
             )
             continue
         movie, start, end, english, *rest = (field.strip() for field in fields)
-        position = rest[0] if rest and rest[0] else DEFAULT_POSITION
-        if position not in POSITIONS:
+        options = rest[0].split() if rest else []
+        positions = [word for word in options if word in POSITIONS]
+        unknown = [word for word in options if word not in POSITIONS and word not in FLAGS]
+        if unknown or len(positions) > 1:
             problems.append(
                 Problem(
                     number,
                     movie,
                     "cue-malformed",
-                    f"position {position!r} is not one of {', '.join(sorted(POSITIONS))}",
+                    f"options {' '.join(options)!r}: at most one position of "
+                    f"{', '.join(sorted(POSITIONS))}, and flags of {', '.join(sorted(FLAGS))}",
                 )
             )
             continue
+        position = positions[0] if positions else DEFAULT_POSITION
         try:
             first, last = int(start), int(end)
         except ValueError:
@@ -96,7 +107,7 @@ def parse(text: str) -> tuple[list[CueRow], list[Problem]]:
                 Problem(number, movie, "cue-malformed", f"frames {start!r}, {end!r} are not whole")
             )
             continue
-        rows.append(CueRow(movie, first, last, english, number, position))
+        rows.append(CueRow(movie, first, last, english, number, position, CAPTION in options))
     return rows, problems
 
 
@@ -193,7 +204,9 @@ def cues_by_movie(rows: Iterable[CueRow], encoder: Encoder) -> dict[str, list[Cu
 
 
 __all__ = [
+    "CAPTION",
     "CUE_FILE",
+    "FLAGS",
     "MOVIE_BAND",
     "CueRow",
     "Problem",

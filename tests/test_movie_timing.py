@@ -243,3 +243,27 @@ def test_a_narrated_cue_takes_the_narration_marks_and_a_sung_one_does_not():
     for wrong in ("『aaaa | aaaa", "『aaaa』 | aaaa"):
         stray = CueRow("M60", 100, 190, wrong, 1)
         assert checks(mt.problems([stray], [spoken])) == ["cue-marks"], wrong
+
+
+def test_a_caption_of_writing_on_screen_is_held_to_no_speech():
+    """FMV-08: a caption over silence is not `cue-unspoken`, carries no marks, and does not
+    take a segment it overlaps from the cue that subtitles it; its reading rate still counts."""
+    caption = CueRow("M27", 300, 374, "a" * 60, 1, caption=True)
+    assert mt.problems([caption], []) == []
+    over = CueRow("M27", 151, 171, "a" * 60, 2, caption=True)
+    found = mt.problems([cue(100, 149, 10, 1), over], [SEG])
+    assert sorted(checks(found)) == ["cue-early-end", "cue-fast", "cue-short"]
+
+
+def test_a_captions_frames_are_the_pictures_and_no_neighbour_borrows_them():
+    """A caption's frames are fixed by the writing on screen: `retime` never moves them, and
+    a narrated cue ending early before one is not excused by the caption's rate."""
+    narrated = cue(100, 160, 10, 1)
+    caption = CueRow("M27", 161, 200, "a" * 60, 2, caption=True)
+    moved = mt.retime([narrated, caption], [SEG], 400)
+    assert moved[1] == caption, [(c.start, c.end) for c in moved]
+    found = mt.problems([narrated, caption], [SEG])
+    assert "cue-early-end" in checks(found)
+    before = CueRow("M27", 40, 99, "a" * 60, 1, caption=True)
+    late = cue(100 + mt.ONSET + 1, 190, 10, 2)
+    assert mt.retime([before, late], [SEG], 400)[0] == before
