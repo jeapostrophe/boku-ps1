@@ -189,6 +189,8 @@ vwf_select_box:
     jr      ra
     nop
 
+.include "hhon_resident.asm"        ; the dead font's block is full
+
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build
 .endarea

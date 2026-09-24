@@ -255,9 +255,10 @@ surface's box is known (`research/data/text-boxes.tsv`; `boku.layout.lay_out_arr
   cells). These are renderer surfaces (`PLAN TXT-05`); the two banners are drawn as one line
   by `asm/banners.asm` ([vwf-prototype.md](vwf-prototype.md) § "The banners"), the bug-sumo
   pair by `asm/musi_text.asm` ([sumo.md](sumo.md) § The desk's text).
-* **Waits for a layout ruling.** The insect box's 60 entries (`hhon@5328`), drawn by
-  `hhon_entry_draw` vertically; English needs the surface redrawn and the array moved into
-  a `HHON.OVL` extension (5,454 bytes, too large for resident space).
+* **Laid out on two screens.** The insect box's 60 entries (`hhon@5328`): whole on the grid,
+  cut to the notebook page's 8 rows in a second copy, both in `HHON.OVL`'s tail
+  (`boku.insect_box`; the walkers: [vwf-prototype.md](vwf-prototype.md) § "The `HHON`
+  walkers").
 
 ## Line ids for these surfaces
 

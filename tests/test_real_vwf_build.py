@@ -49,6 +49,7 @@ from boku.code_text import BANNERS, DATE_LABELS, drawer_of, lay_out_code_label
 from boku.disc import DiscImage
 from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
+from boku.insect_box import is_copy
 from boku.reinsert import check_disjoint
 from boku.relocate import MOVIE_BLOCK_RESERVE
 from boku.sites import RESIDENT_BLOCK_ADDRS, Walk, resident_block_at
@@ -439,6 +440,8 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
             high = int.from_bytes(hook[0:4], "little") & 0xFFFF
             low = int.from_bytes(hook[8:12], "little") & 0xFFFF
             assert ((high << 16) + (low - 0x10000 if low & 0x8000 else low)) & 0xFFFFFFFF == to
+            continue
+        if is_copy(entry["array"]):  # the notebook's own pair: tests/test_insect_box.py
             continue
         if entry["array"] == SAVE_TITLE_LINE_ID:  # a pointer table, not a lui pair
             pointer = built.overlay_bytes("TITLE.OVL", SAVE_TITLE_PARTS_ADDR, 4)

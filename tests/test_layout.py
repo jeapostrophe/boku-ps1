@@ -70,6 +70,7 @@ CELLS = {
     "b": (303, 6),
     "c": (304, 6),
     "!": (19, 2),
+    "-": (20, 4),
 }
 """A cell map in the shape `tools/vwf/build_prototype.py` writes: id and pixel advance."""
 
@@ -114,6 +115,18 @@ def test_a_word_wider_than_the_box_is_reported_and_never_cut():
     assert "does not break" in laid.problems[0]
     assert "abcabc" in laid.problems[0], "the refusal has to name the text it could not fit"
     assert laid.pages == (("abcabc",),), "the English came back whole"
+
+
+def test_a_word_wider_than_the_line_breaks_after_a_hyphen_and_only_then():
+    """Narrowest: a hyphenated word one glyph wider than the line. It breaks after its
+    hyphen, the hyphen kept at the end of the row (the insect box's "min-min-min"); a
+    hyphenated word that fits its line is never split, even at the end of a row."""
+    encoder = cell_encoder()
+    box = BoxSpec(width=measure(encoder, "abc-abc") - 1, lines=4, name="narrow")
+    assert wrap(encoder, "abc-abc", box) == ["abc-", "abc"]
+    assert wrap(encoder, "abc-a-abc", box) == ["abc-a-", "abc"], "as much as fits"
+    assert wrap(encoder, "i abc-ab", box) == ["i", "abc-ab"], "it fits a row of its own"
+    assert wrap(encoder, "abc--abc", box) == ["abc--abc"], "a dash is not a break"
 
 
 def test_the_guarded_lines_get_the_narrower_width_the_pencil_leaves():

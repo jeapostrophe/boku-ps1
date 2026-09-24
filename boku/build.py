@@ -86,6 +86,7 @@ from boku.edc import FORM1_DATA_SIZE
 from boku.events import VOICE_KEY_SIZE, EventError
 from boku.glyphs import GlyphTable, TextError
 from boku.importer import ImportRefused, check_out_dir, sha1_of
+from boku.insect_box import is_copy, notebook_copy
 from boku.layout import (
     ANSWER_PAIR,
     DIALOGUE_BAND,
@@ -1036,6 +1037,7 @@ def build(
                 f"and leave the rest in Japanese, or give the text more room."
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
+        words |= _notebook_copies(lines, encoder)
         moved, the_plan, carry, refused = _place_and_plan(
             archive,
             walk,
@@ -1128,7 +1130,11 @@ def _place_and_plan(
             the_plan, still = _plan_what_fits(
                 archive,
                 walk,
-                {k: v for k, v in words.items() if k not in moved.lines and k not in labels},
+                {
+                    k: v
+                    for k, v in words.items()
+                    if k not in moved.lines and k not in labels and not is_copy(k)
+                },
                 in_place,
                 skip_unfitted,
                 work_area_end,
@@ -1150,6 +1156,15 @@ def _place_and_plan(
         if not coded:
             return moved, the_plan, carry, refused | still
         refused |= {line: still[line] for line in coded if words.pop(line, None)}
+
+
+def _notebook_copies(lines: Sequence[LineResult], encoder: Encoder) -> dict[str, tuple[int, ...]]:
+    """The insect box notebook's copy of each written entry longer than its page."""
+    out: dict[str, tuple[int, ...]] = {}
+    for line in lines:
+        if line.written:
+            out |= notebook_copy(line.line_id, line.laid_out, encoder)
+    return out
 
 
 def _with_refusals(

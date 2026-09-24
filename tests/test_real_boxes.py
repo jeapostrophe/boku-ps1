@@ -213,6 +213,7 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         "exe@8003DA00": step(0x80080790, "TITLE.OVL"),  # extras_draw
         "exe@8003D2E0": step(0x80037B20),  # sysmsg_draw across: the insect names
         "title@7A78": step(0x8007D050, "TITLE.OVL"),  # the answers' drawer
+        "hhon@5328": step(0x8007C2D8, "HHON.OVL"),  # hhon_entry_draw: down a cell
         **dict.fromkeys(BANNERS, LABEL_PITCH),  # asm/banners.asm steps as the labels do
     }
     help_line = step(0x80035490)  # help_line_draw: lines 19, 20

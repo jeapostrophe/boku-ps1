@@ -26,6 +26,7 @@ import pytest
 
 from boku.archive import EXE_NAME, OVERLAY_LOAD_ADDRESS
 from boku.asm_source import asm_equate
+from boku.boxes import box_for
 from boku.glyphs import END_WORD as END
 from boku.glyphs import NEWLINE_WORD as NEWLINE
 from boku.layout import ANSWER_PAIR, CellMapEncoder, answer_pair_code, lay_out_answer_pair
@@ -389,3 +390,80 @@ def test_the_sumo_move_walkers_step_english_by_width_and_japanese_by_12(built, w
         m.halfwords(MOVE_NAMES, [*ids, NEWLINE])
         m.call(walker, 0, 0)
         assert pens(m.draws) == expected(m.draws[0][1], steps), f"{ids}"
+
+
+# --- the insect box: hhon_entry_draw (the grid) and hhon_text_scroll_v (the notebook) ----------
+
+HHON = "HHON.OVL"
+GRID_DRAW = 0x8007C278
+NOTEBOOK_DRAW = 0x8007C1C4
+NOTEBOOK_GLYPH = 0x8002B9FC
+"""The notebook walker's glyph drawer (a clipped `glyph_draw`); recorded as a stub."""
+PLACEHOLDER = 60
+SCROLL = 200
+
+
+def _hhon_draws(image, walker, words, index=0):
+    m = machine(image, HHON)
+    m.stubs[NOTEBOOK_GLYPH] = []
+    text = m.halfwords(TEXT, words)
+    if walker == GRID_DRAW:
+        m.call(GRID_DRAW, text, index)
+        return [(x, y) for _, x, y in m.draws]
+    m.call(NOTEBOOK_DRAW, text, 0, SCROLL, index)
+    return [(x, y) for _, x, y, *_ in m.stubs[NOTEBOOK_GLYPH]]
+
+
+@pytest.mark.parametrize("walker", [GRID_DRAW, NOTEBOOK_DRAW])
+@pytest.mark.parametrize("index", [0, PLACEHOLDER])
+def test_an_untranslated_insect_entry_keeps_its_retail_columns(built, walker, index):
+    """Japanese with a column break: the patched walker draws every glyph where the retail
+    one does -- the stock images' own run is the fixture."""
+    images, stock, _, _, _ = built
+    kana = japanese(stock[EXE_NAME], 3)
+    words = [*kana[:2], NEWLINE, kana[2], END]
+    retail = _hhon_draws(stock, walker, words, index)
+    assert len({x for x, _ in retail}) == 2, "the fixture draws no second column"
+    assert _hhon_draws(images, walker, words, index) == retail
+
+
+@pytest.mark.parametrize(
+    ("walker", "line_id", "pitch"),
+    [(GRID_DRAW, "hhon@5328.0", 11), (NOTEBOOK_DRAW, None, 12)],
+)
+@pytest.mark.parametrize("index", [0, PLACEHOLDER])
+def test_an_english_insect_entry_is_drawn_in_rows(built, walker, line_id, pitch, index):
+    """English: across by each glyph's width, a break down one row (11 px on the grid,
+    Jay's option A; 12 on the notebook) and back to the left edge -- the grid's from its
+    box (`text-boxes.tsv`), the notebook's `HHON_NB_LEFT`."""
+    images, _, _, cells, _ = built
+    first, second = [cells[c][0] for c in "ab"], [cells["c"][0]]
+    draws = _hhon_draws(images, walker, [*first, NEWLINE, *second, END], index)
+    left = box_for(line_id).x if line_id else asm_equate("HHON_NB_LEFT", "hhon_resident.asm")
+    (x0, y0), (x1, y1), (x2, y2) = draws
+    assert (x0, x1 - x0, x2) == (left, cells["a"][1], left)
+    assert (y1, y2 - y0) == (y0, pitch)
+    if line_id:
+        assert y0 == 16, "Jay's option A (2026-09-24): rows from y 16"
+    else:  # the notebook's first row hangs where retail's first column did
+        kana = japanese(built[1][EXE_NAME], 1)
+        assert y0 == _hhon_draws(built[1], walker, [*kana, END], index)[0][1]
+
+
+SEX_MARK = 37
+"""♂ (`GlyphTable`): a sheet cell with no English advance, which real entries draw inside
+English ("Miyama Stag Beetle ♂.")."""
+
+
+@pytest.mark.parametrize(("walker", "pitch"), [(GRID_DRAW, 11), (NOTEBOOK_DRAW, 12)])
+def test_a_sheet_cell_stays_in_an_english_entry_s_row(built, walker, pitch):
+    """Narrowest: one ♂ between two letters. The mark steps across by the sheet's 12 like
+    any cell of the row, not down a column, and the next row starts one pitch below: the
+    entry is English from its first glyph. (An empty row is not drawn: the retail loop
+    draws the word at a break's target before testing it, and no entry has one.)"""
+    images, _, _, cells, _ = built
+    a, b, c = (cells[ch][0] for ch in "abc")
+    draws = _hhon_draws(images, walker, [a, SEX_MARK, b, NEWLINE, c, END])
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = draws
+    assert (x1 - x0, x2 - x1, x3) == (cells["a"][1], 12, x0)
+    assert (y1, y2, y3 - y0) == (y0, y0, pitch)

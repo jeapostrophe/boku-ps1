@@ -415,7 +415,8 @@ class LaidOut:
 
 
 def wrap(encoder: Encoder, text: str, box: BoxSpec, first_line: int = 1) -> list[str]:
-    """Greedy word wrap by pixel width. `\\n` in `text` is a break the translator asked for.
+    """Greedy word wrap by pixel width. `\\n` in `text` is a break the translator asked for;
+    a word wider than a whole line breaks after its own hyphens.
 
     Greedy, not balanced: the engine draws left to right from a fixed pen, so the only
     thing a smarter algorithm would buy is evenness, and evenness is a typographic choice
@@ -430,12 +431,17 @@ def wrap(encoder: Encoder, text: str, box: BoxSpec, first_line: int = 1) -> list
     for paragraph in text.split("\n"):
         line = ""
         for word in paragraph.split(" "):
-            candidate = f"{line} {word}" if line else word
-            if line and measure(encoder, candidate) > box.width_of_line(first_line + len(out)):
-                out.append(line)
-                line = word
-            else:
-                line = candidate
+            # "--" is a dash, not a break; a word that fits is never split.
+            wide = measure(encoder, word) > box.width_of_line(first_line + len(out))
+            pieces = re.split(r"(?<=[^\W_]-)(?=[^\W_])", word) if wide else [word]
+            for number, piece in enumerate(pieces):
+                space = "" if number else " "
+                candidate = f"{line}{space}{piece}" if line else piece
+                if line and measure(encoder, candidate) > box.width_of_line(first_line + len(out)):
+                    out.append(line)
+                    line = piece
+                else:
+                    line = candidate
         out.append(line)
     return out
 

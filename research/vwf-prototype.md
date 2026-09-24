@@ -23,7 +23,7 @@ select geometry are build arguments, and the typeface is an input file.
 | 5 the controls-help screen (START in free roam) | **done, proven on both emulators** (2026-09-22) |
 | 12 item names and descriptions (the bag, △ then ○) | **done, proven on both emulators** — descriptions wrapped to their box (2026-09-23, items poked into the bag: § "Screens behind a save"; five lines at a 12-px pitch since 2026-09-24, Beetle); captions and fishing messages seen on Beetle (2026-09-24); kite names ride the same walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
 | 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
-| 3, 4 the insect book's two walkers (`HHON.OVL`) | measured, and a row version prototyped on both emulators; **not installed** — real English does not fit yet (§ "The `HHON` walkers") |
+| 3, 4 the insect book's two walkers (`HHON.OVL`) | **installed, seen on Beetle** (2026-09-24): English in rows, Japanese in its columns (§ "The `HHON` walkers") |
 | the other fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
 
 ## Build and look
@@ -908,7 +908,7 @@ to `E0112`:
 
 ## The `HHON` walkers
 
-**Measured and prototyped; not installed (2026-09-23).** `HHON.OVL` is the insect box
+`HHON.OVL` is the insect box
 (mode 10). Its two walkers draw an item of `hhon@5328` — one entry per insect id, item 60
 the unseen placeholder; an **E** array, so `0x8001` breaks a line — down columns right to
 left (y += 12 a glyph; a break: x −= 14, back to the top):
@@ -918,28 +918,31 @@ left (y += 12 a glyph; a break: x −= 14, back to the top):
 | `hhon_entry_draw` `0x8007C278` | the grid (`hhon_page_draw`): the entry of the insect under the cursor | columns from (0x124, 0x26); the placeholder from (0x100, 0x2C) | the cream panel at the right, x 214…310, y 12…172 (frame at 311) |
 | `hhon_text_scroll_v` `0x8007C1C4` | the hub scrolled down to its notebook page: the entry of the insect in the selected cage slot | columns from x 0x5A (0x32 for the placeholder), y hanging from the scroll (54 at the page) | the page, x ~18…106 (then the specimen box), y 54 to the count digit near 160 |
 
-**A row version was built and drawn**, and is parked, not committed: both walkers' glyph
-step through the width table (a body in the pointer step's place, as `text_draw_line_h`'s),
-a break moving y down 12 and x back to a left edge — rows from (220, 20) on the grid and
-from (20, 54) on the page. With fixture entries it drew correctly on both emulators. It was
-backed out for two reasons, both measured:
+**Installed (2026-09-24), Jay's layout** (`work/review/decisions.html` § 1): English is
+drawn in rows, Japanese in its retail columns, chosen once per entry by its first glyph
+(`asm/hhon.asm`, bodies in `asm/hhon_resident.asm`, the mode in `vwf_hhon_rows`). In an
+English entry every cell steps x -- by its width, or the sheet's 12 for a cell with none,
+such as the sex marks of "Miyama Stag Beetle ♂" -- and every break starts a row, an empty
+one included. An untranslated entry is drawn exactly as retail draws it
+(`tests/test_real_walkers.py` compares the two).
 
-* **Real English does not fit — in bytes or in the box.** `boku lint` over the translated
-  `hhon@5328` entries in `arrays.txt`: every entry needs roughly 2.5× its bytes (item 0:
-  226 for 90), and at the page's 86 px they wrap to 9–15 rows where the page holds 8 and the
-  grid panel 12 (12-px rows from y 20 to 172). So the build would place none of them.
-* **Untranslated entries got worse.** As rows, each Japanese column (up to eleven glyphs,
-  132 px) runs off both areas, and the sheet's vertical-form marks lie on their sides. With
-  every entry still Japanese, the patch only degraded the screen.
+* **The grid** (option A): the whole entry, rows 11 px apart from (218, 16), 92 px wide to
+  x 310 (`research/data/text-boxes.tsv`, 14 rows). The longest entry at that width is 14
+  rows ("Chinese Peacock…"), whose last row inks to 171, above the panel's foot.
+* **The notebook page**: what its 8 rows hold, 12 px apart from x 16 on the same 92 px
+  (to 108; the paper shades from 110), ending with "..." when the entry goes on
+  (`boku.insect_box.notebook_words`: the eighth row keeps what fits beside it). The full
+  text is on the grid, one button away.
+* **The bytes**: the English is about 2.5× the Japanese (13,700 bytes whole, 12,070 cut),
+  so the build writes two copies into `HHON.OVL`'s tail (`boku.array_relocate`), and each
+  screen's `lui` pair (`boku.insect_box.GRID_PAIR`, `NOTEBOOK_PAIR`) is pointed at its own.
+  `HHON.OVL` grows from 27,660 bytes to 53,468 and moves on the disc.
+* **Words wider than the line** ("Min-min-min-min,", "Tsukutsuku-boshi.", up to 113 px)
+  break after a hyphen between two of their letters (`boku.layout.wrap`); a word that fits
+  is never split.
 
-What installing it needs, in order: `hhon@5328` able to grow — it is in `HHON.OVL`, loaded
-into the overlay area, so the overlay grows or the array moves out (the arrays lane's
-relocation); a layout that holds 9–15 lines (a tighter row pitch — the glyphs' ink is 10 rows
-— or a second page, or the grid's panel for both screens); and a per-entry switch, so an
-untranslated entry keeps its columns: the width routine already knows (`vwf_width_12`
-leaves `at` non-zero exactly when the cell is English), and a break and the origin can
-branch on the entry's first glyph. The parked source is `work/lane/hhon.asm.parked` in this
-lane's worktree, not tracked.
+Seen on Beetle (2026-09-24): entry 0 on both screens, entry 2 (13 rows on the grid, cut to 8
+with "..." on the page) and entry 3 (14 rows).
 
 **Reaching it.** In play the box needs a caught insect; poking the cage slot at
 `0x80046F28` alone, live or through a card, drew nothing. Both emulators force it the way
@@ -953,10 +956,15 @@ DOWN scrolls to the notebook page; the grid opens by writing its sub-state (`0x8
 not register in mode 10, so the scroll (`0x800805DC` = 200) and the grid are written too.
 `tools/vwf/shoot-menus.sh` shoots both screens on both emulators.
 
+The delete prompt (`hhon@6874`, "Delete it?") is sub-state `0x18` of the same word (the
+state table at `0x8007E850`). The diary's bedtime prompt (`ZUKAN.OVL`'s `zukan@32E8`) is
+reached by forcing mode 11 the same way and writing state 200 (`0xC8`) to `0x800459DC`;
+both seen in English on Beetle, drawn from their overlays' tails.
+
 ## Not done
 
 * **Summer memories' label 5** is proven only by forcing its popup. **`HHON`** is
-  measured and prototyped, not installed (§ "The `HHON` walkers"). **Surfaces 9 and 11**
+  seen on Beetle only (§ "The `HHON` walkers"). **Surfaces 9 and 11**
   are installed and run in `tests/test_real_walkers.py` but not on screen: the cage HUD
   needs a caught insect, fishing days of play. Their boxes are not measured, and the English
   is wider than anything the Japanese drew there — insect names up to 145 px (median 90)

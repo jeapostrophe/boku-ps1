@@ -5,7 +5,7 @@
 # bag) -- with items 1-3 poked into it, for their names and a description -- and, from
 # memory cards, "load this file?" and the summer-memories screen; and the insect box's
 # notebook page and grid, forced open (book-pokes.lua on Redux, the same writes as pokes on
-# Beetle) -- still Japanese: the walkers are not installed. PNGs land in
+# Beetle), insect 0's entry in rows. PNGs land in
 # work/txt05/menus/ (gitignored: the game's pixels).
 #
 # The cards come from ./make.sh saves (run it first): day05 for the load flow, and a

@@ -116,6 +116,7 @@ from boku.code_text import (
 )
 from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
+from boku.insect_box import notebook_copy
 from boku.layout import (
     ANSWER_PAIR,
     DIALOGUE_BAND,
@@ -716,6 +717,7 @@ def _check_array(context: _Context, row: Row, record: dict) -> None:
     )
     if not laid.problems:
         context.array_words[row.line_id] = laid.words
+        context.array_words |= notebook_copy(row.line_id, laid, encoder)  # placed too
     for problem in laid.problems:
         detail = problem.split(": ", 1)[-1]
         check = "array-bytes"

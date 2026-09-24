@@ -59,6 +59,7 @@ from boku.code_text import (
 )
 from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
+from boku.insect_box import NOTEBOOK, NOTEBOOK_PAIR
 from boku.pointers import LuiPair, PointerError, repoint, scan
 from boku.reinsert import ByteEdit, Tail
 from boku.sites import RESIDENT_BLOCK_ADDRS, resident_block_at, resident_line_id, walk_block
@@ -274,6 +275,9 @@ class _Unit:
     `(offset of the table word, offset in the blob it must point at)` per word."""
     hook: Callable[[int], list[ByteEdit]] | None = None
     """For a unit its reader is pointed at by a patch: the edits, given where it landed."""
+    pairs: frozenset[int] | None = None
+    """The only `lui`s that address it, when not every pair forming its start does: a copy
+    of an array for one reader (`boku.insect_box`). Those pairs address no other unit."""
 
 
 def _array_units(
@@ -290,6 +294,22 @@ def _array_units(
         laid = {**words, **{s.line_id: s.head for s in split}} if split else words
         extra = b"".join(words_to_bytes(item) for s in split for item in s.rest)
         grown = list(dict.fromkeys([*_grown_items(walked, laid), *(s.line_id for s in split)]))
+        notebook = {  # a refused entry's copy goes with it
+            line: words[line + NOTEBOOK]
+            for line in walked.line_ids
+            if line in words and line + NOTEBOOK in words
+        }
+        if notebook:  # the insect box: the notebook's own copy, read by its own pair
+            yield _Unit(
+                prefix + NOTEBOOK,
+                walked.image,
+                walked.start,
+                walked.end,
+                _array_bytes(archive, walked, {**laid, **notebook}),
+                tuple(grown or notebook),
+                tuple(line + NOTEBOOK for line in notebook),  # written here, not in place
+                pairs=frozenset({NOTEBOOK_PAIR}),
+            )
         if grown:
             yield _Unit(
                 prefix,
@@ -456,8 +476,14 @@ def plan_arrays(
     }
     # Every pair that addresses a moving array, with the arrays it addresses: scanned once,
     # read here for who reads each array and below for the rewrites.
+    claimed = {lui for u in units.values() for lui in u.pairs or ()}
+
+    def reads(prefix: str, lui: int) -> bool:
+        pairs = units[prefix].pairs
+        return lui in pairs if pairs is not None else lui not in claimed
+
     addressing = [
-        (source, pair, _addressed(pair, source[0], spans))
+        (source, pair, [p for p in _addressed(pair, source[0], spans) if reads(p, pair.ram)])
         for source, found in ((scanned or (lambda: scans(archive)))() if spans else ())
         for pair in found
     ]
