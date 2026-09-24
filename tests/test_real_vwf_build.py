@@ -28,6 +28,7 @@ from pathlib import Path
 
 import pytest
 
+from boku import exchange_notebook
 from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, Archive, overlay_read_end_of
 from boku.arrays import (
     ARRAYS,
@@ -321,6 +322,8 @@ def test_every_written_line_reads_back_as_the_words_the_build_laid_out(
     assert written, "nothing was written; this gate would pass over nothing"
     changed = 0
     for line_id in sorted(written - PLACED_IN_CODE):
+        if exchange_notebook.is_variant(line_id):
+            continue  # no text site: read back through its drawer, tests/test_real_sumo_text.py
         sites = built_walk.by_line.get(line_id)
         assert sites, f"{line_id} is not a line of the built image"
         if line_id in walk_reader.voice_only:
@@ -429,13 +432,17 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
     assert moved, "the build moved no array; nothing here would be checked"
     catalogue = {array.line_id_prefix: array for array in ARRAYS}
     blocks = {f"exe@{ram:08X}": ram for ram in RESIDENT_BLOCK_ADDRS}
+    hooked = {*DATE_LABELS, *BANNERS, exchange_notebook.UNIT}
     elsewhere = 0
     for entry in moved:
         to = int(entry["to"], 16)
-        if entry["array"] in DATE_LABELS or entry["array"] in BANNERS:
+        if entry["array"] in hooked:
             # hooked at its drawer's entry: lui t0 / j / addiu
             banner = BANNERS.get(entry["array"])
-            image, function = banner.drawer if banner else drawer_of(entry["array"])
+            if entry["array"] == exchange_notebook.UNIT:
+                image, function = exchange_notebook.NOTEBOOK
+            else:
+                image, function = banner.drawer if banner else drawer_of(entry["array"])
             hook = built.image_bytes(image, function, 12)
             high = int.from_bytes(hook[0:4], "little") & 0xFFFF
             low = int.from_bytes(hook[8:12], "little") & 0xFFFF

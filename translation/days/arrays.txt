@@ -102,6 +102,16 @@ exe@8003D2E0.55	(unlabelled)	Tsukutsuku-boshi
 exe@8003D2E0.56	(unlabelled)	Mantis
 # NOTE exe@8003D2E0: the names of glossary § 4a.
 
+# --- exe@8003D2E0 in bug sumo's exchange notebook alone (boku.exchange_notebook)
+exe@8003D2E0.23@exchange	(unlabelled)	Miyama Stag
+exe@8003D2E0.24@exchange	(unlabelled)	Giant Stag
+exe@8003D2E0.26@exchange	(unlabelled)	Little Stag
+exe@8003D2E0.30@exchange	(unlabelled)	Rhinoceros
+# NOTE exe@8003D2E0.*@exchange: Jay's ruling (2026-09-24, decisions.html § 14): the notebook draws
+#   a sumo beetle's name right of its size badge, and these four are its shorter names there, in
+#   the normal font; every other screen keeps the full name. "Red-legged Stag" (102 px) does not
+#   clear the badge (research/sumo.md § The desk's text); .28 is Jay's pick (decisions.html § 14.1).
+
 # --- exe@8003D5F0: memory-card and save/load messages
 exe@8003D5F0.0	(unlabelled)	Checking MEMORY CARD...
 exe@8003D5F0.1	(unlabelled)	No MEMORY CARD is inserted.

@@ -268,10 +268,6 @@ CAGE_DATE_Y equ (CAGE_SIZE_Y + CAGE_SIZE_Y - CAGE_NAME_Y)
 ; executable's bytes in the repo.
 WALKER_ISLAND     equ DEBUG_FONT_SPLIT
 WALKER_ISLAND_END equ DEBUG_FONT_ISLAND_END
-SYSNAME_DRAW      equ 0x80037BA8    ; sysmsg_line_draw(id, x, y, a3, [16]) -> v0 = its width
-OFFSCREEN_X       equ 0x258         ; where MUSI draws a name to measure it
-OFFSCREEN_Y       equ 0x12C
-NOTEBOOK_SYM_X    equ 0x10F         ; the exchange notebook's item after a name
 
 .if ORIGINAL == 0
 .org WALKER_ISLAND
@@ -371,38 +367,6 @@ vwf_step_sysmsg_across:             ; sysmsg_draw across: s3 += width; s2 += wid
     addu    s3, s3, t9
     jr      t8
     addu    s2, s2, t9
-
-    .align  4
-; MUSI's exchange notebook (0x8007E670) draws an insect's name at x 175 and the item after it
-; at a fixed x 271; at its three name sites (musi.asm) this draws the name to end there
-; instead, measured first as MUSI measures its right-aligned names (0x8007D850: at
-; OFFSCREEN_X, OFFSCREEN_Y, and a fifth argument of 1, which skips the glyph flush). All
-; three pass a3 = 0 and a fifth argument of 0, which the second call passes on. A 96-px
-; Japanese name lands where retail drew it.
-vwf_name_before_sym:
-    addiu   sp, sp, -32
-    sw      ra, 24(sp)
-    sw      s0, 20(sp)
-    sw      s1, 28(sp)
-    move    s0, a0
-    move    s1, a2
-    addiu   t0, zero, 1
-    sw      t0, 16(sp)
-    addiu   a2, zero, OFFSCREEN_Y
-    jal     SYSNAME_DRAW            ; measured: v0 = the width
-    addiu   a1, zero, OFFSCREEN_X
-    addiu   a1, zero, NOTEBOOK_SYM_X
-    subu    a1, a1, v0
-    move    a0, s0
-    move    a2, s1
-    move    a3, zero
-    jal     SYSNAME_DRAW
-    sw      zero, 16(sp)
-    lw      ra, 24(sp)
-    lw      s0, 20(sp)
-    lw      s1, 28(sp)
-    jr      ra
-    addiu   sp, sp, 32
 
 vwf_island_free:                    ; first unclaimed byte, reported by the build
 .endarea

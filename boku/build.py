@@ -40,7 +40,7 @@ from dataclasses import dataclass, field, replace
 from functools import cache
 from pathlib import Path
 
-from boku import __version__, edc
+from boku import __version__, edc, exchange_notebook
 from boku.archive import (
     ARCHIVE_NAME,
     DEFAULT_DISC_DIR,
@@ -534,9 +534,9 @@ class EditSet:
 
     @property
     def label_routines(self) -> dict[str, int]:
-        """The routines this renderer assembled for the date labels (`asm/labels.asm`) and
-        the banners (`asm/banners.asm`), by symbol, read out of the island's record; empty
-        for an edit set without them."""
+        """The routines this renderer assembled for the date labels (`asm/labels.asm`), the
+        banners (`asm/banners.asm`) and the exchange notebook's names (`asm/musi_text.asm`),
+        by symbol, read out of the island's record; empty for an edit set without them."""
         symbols: dict[str, str] = {}
         for record in ("gap", "routines"):
             block = self.document.get(record)
@@ -546,6 +546,7 @@ class EditSet:
             for symbol in (
                 *(label.routine for label in DATE_LABELS.values()),
                 *(banner.routine for banner in BANNERS.values()),
+                exchange_notebook.ROUTINE,
             )
             if symbol in symbols
         }
@@ -761,6 +762,10 @@ def lay_out(
             continue
         if entry.line_id == SAVE_TITLE_LINE_ID:
             laid = lay_out_save_title(entry.line_id, " ".join(entry.pages))
+            out.append(LineResult(entry.line_id, laid, laid.problems))
+            continue
+        if exchange_notebook.is_variant(entry.line_id):
+            laid = exchange_notebook.lay_out(entry.line_id, " ".join(entry.pages), encoder)
             out.append(LineResult(entry.line_id, laid, laid.problems))
             continue
         sites = walk.by_line.get(entry.line_id)

@@ -45,7 +45,7 @@ exe@80036750.*	108	212	12	1	10 fortune banner	the banner panel (boku.code_text B
 tako@440.*	108	212	12	1	22 kite crash banner (TAKO)	the banner panel (boku.code_text BANNERS) less 8 px a side, centred as the line is
 musi@348.*	55	267	12	1	25b bug-sumo button hint (MUSI)	centred on the board's middle (x 161); asm/musi_text.asm widens the board to the line plus the retail 22-px margins, and 212 px keeps it 256 wide at most, on screen
 musi@358.*	83	133	12	1	25c bug-sumo rank board (MUSI)	the board's paper, x 82..134 on Beetle, each row centred on x 108 as the retail rows are
-exe@8003D2E0.23	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	a sumo fighter's name ends at the item after it (x 271, asm/walkers.asm vwf_name_before_sym); the page's paper starts at x 124, and a name past 135 px runs over the top binder hole
+exe@8003D2E0.23	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	a sumo fighter's name ends at the item after it (x 271, asm/musi_text.asm vwf_name_before_sym); the page's paper starts at x 124, and a name past 135 px runs over the top binder hole
 exe@8003D2E0.24	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
 exe@8003D2E0.25	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
 exe@8003D2E0.26	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
@@ -54,6 +54,7 @@ exe@8003D2E0.28	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2
 exe@8003D2E0.29	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
 exe@8003D2E0.30	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
 exe@8003D2E0.56	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.*@exchange	173	271	12	1	25d bug-sumo exchange notebook (MUSI)	a notebook-only name (boku.exchange_notebook) ends at the item after it, x 271, and starts a pixel clear of the pink size badge, which covers x 140..171 with its shadow (the crown 145..165; Beetle, 2026-09-24)
 hhon@5328.*	218	310	12	14	26 insect box entries (HHON)	the grid's cream panel less its frame, 14 rows at 11 px (Jay, 2026-09-24, option A); the notebook takes the first 8 rows (research/vwf-prototype.md § "The `HHON` walkers")
 exe@800461CC.*	40	155	12	1	13 kite names (desk)	the list panel's frame at 155, as the item names'; kite_list_draw's pen moved from 48 to the item list's 40 (asm/walkers.asm) so the widest name, 115 px, ends inside it (Beetle, 2026-09-24)
 exe@80046364.0	40	155	12	1	14 fishing menu words (tackle)	fish_menu_draw's pen (40, 82), in the tackle screen's list panel, frame at 155 (Beetle, 2026-09-24)

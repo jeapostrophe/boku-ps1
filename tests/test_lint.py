@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from boku import REPO_ROOT
+from boku import REPO_ROOT, exchange_notebook
 from boku import layout as layout_module
 from boku import lint as lint_module
 from boku import translation as translation_module
@@ -823,3 +823,19 @@ def test_an_unreachable_surface_is_reported_not_held_to_its_bytes(tmp_path):
     assert checks(findings) == ["unreachable"]
     assert finding.severity == WARNING
     assert "Reopen when" in finding.message
+
+
+def test_a_notebook_name_is_held_to_the_room_beside_the_badge(tmp_path):
+    """`exe@8003D2E0.<n>@exchange` (`boku.exchange_notebook`) names a line of the insect
+    names: it is laid out in the notebook's own box, and one whose line is not in the script
+    is an unknown id like any other."""
+    synth = SynthStore.new(tmp_path)
+    synth.array_item("exe@8003D2E0.23", cells=8)
+    store = load_store(synth.write())
+    room = exchange_notebook.box().spec.width // StockEncoder.load().advance("M")
+    short = [("exe@8003D2E0.23@exchange", "(unlabelled)", "M" * room)]
+    assert run(store, tmp_path, short, label=False) == []
+    wide = run(store, tmp_path, [(short[0][0], "(unlabelled)", "M" * (room + 1))], label=False)
+    assert checks(wide) == ["array-width"]
+    unknown = [("exe@8003D2E0.24@exchange", "(unlabelled)", "M")]
+    assert checks(run(store, tmp_path, unknown, label=False)) == ["unknown-id"]

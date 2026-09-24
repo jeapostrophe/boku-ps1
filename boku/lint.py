@@ -102,7 +102,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from boku import REPO_ROOT, clip_subs, movie_cues
+from boku import REPO_ROOT, clip_subs, exchange_notebook, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
 from boku.arrays import byte_limit, unreachable
 from boku.boxes import TextBox, box_for, box_spec_for
@@ -127,6 +127,7 @@ from boku.layout import (
     CellMapEncoder,
     Encoder,
     LabelledBox,
+    LaidOut,
     LayoutError,
     StockEncoder,
     WithSheetSymbols,
@@ -502,6 +503,11 @@ def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Findi
         if row.entry.voice_only:
             _check_subtitle(context, row)
             continue
+        if exchange_notebook.is_variant(row.line_id):
+            text, encoder = " ".join(row.entry.pages), options.encoder
+            laid = exchange_notebook.lay_out(row.line_id, text, encoder, options.boxes)
+            _say_laid(context, row, laid, "array-width")
+            continue
         record = store.lines.get(row.line_id)
         if record is None:
             continue  # unknown: `_check_ids` has already said so
@@ -523,7 +529,8 @@ def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Findi
 def _check_ids(context: _Context, rows: Sequence[Row], english: Sequence[Row]) -> None:
     legal = context.store.known_ids
     for row in rows:
-        if row.line_id not in legal:
+        variant = exchange_notebook.is_variant(row.line_id)
+        if (exchange_notebook.base_of(row.line_id) if variant else row.line_id) not in legal:
             context.say(
                 row,
                 "unknown-id",
@@ -554,6 +561,17 @@ def _check_subtitle(context: _Context, row: Row) -> None:
         context.say(row, "subtitle-fit", ERROR, problem)
 
 
+def _say_laid(context: _Context, row: Row, laid: LaidOut, check: str) -> None:
+    """Each of `laid`'s problems as an error -- `unencodable` for a cell, else `check` -- or,
+    with none, its words offered to the room check, as an array's are."""
+    for problem in laid.problems:
+        detail = problem.split(": ", 1)[-1]
+        unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
+        context.say(row, "unencodable" if unencodable_cell else check, ERROR, detail)
+    if not laid.problems:
+        context.array_words[row.line_id] = laid.words
+
+
 def _check_row(context: _Context, row: Row, record: dict) -> None:
     shape = select_shape(record)
     if shape is not None:
@@ -578,12 +596,7 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
         return
     if row.line_id in DATE_LABELS:
         laid = lay_out_date_label(row.line_id, " ".join(row.entry.pages), context.options.encoder)
-        for problem in laid.problems:
-            detail = problem.split(": ", 1)[-1]
-            unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
-            context.say(row, "unencodable" if unencodable_cell else "date-label", ERROR, detail)
-        if not laid.problems:
-            context.array_words[row.line_id] = laid.words  # placed like an array
+        _say_laid(context, row, laid, "date-label")
         return
     if banner_of(row.line_id) is not None:
         laid = lay_out_banner(
@@ -592,12 +605,7 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
             context.options.encoder,
             box_spec_for(row.line_id, context.options.boxes),
         )
-        for problem in laid.problems:
-            detail = problem.split(": ", 1)[-1]
-            unencodable_cell = any(said in problem for said in SHEET_CELL_PROBLEMS)
-            context.say(row, "unencodable" if unencodable_cell else "array-width", ERROR, detail)
-        if not laid.problems:
-            context.array_words[row.line_id] = laid.words  # placed like an array
+        _say_laid(context, row, laid, "array-width")
         return
     if record["kind"] == "code-label":
         text = " ".join(row.entry.pages)

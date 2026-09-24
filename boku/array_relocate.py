@@ -27,6 +27,7 @@ from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from itertools import pairwise
 
+from boku import exchange_notebook
 from boku.archive import (
     ARCHIVE_NAME,
     EXE_LOAD_BIAS,
@@ -52,6 +53,7 @@ from boku.code_text import (
     banner_blob,
     banner_edits,
     date_label_hook,
+    drawer_hook,
     drawer_of,
     is_laid_out_banner,
     split_title_blob,
@@ -429,6 +431,35 @@ def _banner_units(
         yield _Unit(prefix, image, drawer, drawer, blob, lines, lines, hook=hook)
 
 
+def _exchange_units(
+    archive: Archive, words: Mapping[str, Sequence[int]], routines: Mapping[str, int]
+) -> Iterator[_Unit]:
+    """The exchange notebook's own names (`boku.exchange_notebook`): their list written
+    anywhere resident, and the notebook's entry hooked to the edit set's routine with `t0`
+    at it. The unit's "old" address is the entry's, which is what the hook replaces."""
+    versions = {line: cells for line, cells in words.items() if exchange_notebook.is_variant(line)}
+    if not versions:
+        return
+    stray = exchange_notebook.undrawn(archive, versions)
+    if stray:
+        lines = sorted(set(exchange_notebook.line_of_type(archive).values()))
+        raise ArrayRoomRefused(
+            f"{', '.join(stray)}: the exchange notebook draws the sumo fighters' names alone "
+            f"(lines {lines})",
+            stray,
+        )
+    image, entry = exchange_notebook.NOTEBOOK
+    routine = routines.get(exchange_notebook.ROUTINE)
+    hook = None
+    if routine is not None:
+        hook = lambda at: [  # noqa: E731
+            drawer_hook(archive, image, entry, at, routine, "the exchange notebook's names")
+        ]
+    blob = exchange_notebook.names_blob(archive, versions)
+    lines = tuple(versions)
+    yield _Unit(exchange_notebook.UNIT, image, entry, entry, blob, lines, lines, hook=hook)
+
+
 def plan_arrays(
     archive: Archive,
     words: Mapping[str, Sequence[int]],
@@ -456,12 +487,17 @@ def plan_arrays(
             *_title_units(archive, words),
             *_date_units(archive, words, routines or {}),
             *_banner_units(archive, words, routines or {}),
+            *_exchange_units(archive, words, routines or {}),
         )
     }
     if not units:
         return ArrayPlan((), (), frozenset(), sum(r.size for r in regions))
 
-    for kinds, what in ((DATE_LABELS, "date label"), (BANNERS, "banner")):
+    for kinds, what in (
+        (DATE_LABELS, "date label"),
+        (BANNERS, "banner"),
+        ({exchange_notebook.UNIT}, "notebook name"),
+    ):
         unhooked = [p for p, u in units.items() if p in kinds and u.hook is None]
         if unhooked:
             raise ArrayRoomRefused(

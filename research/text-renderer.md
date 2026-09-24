@@ -327,7 +327,7 @@ Candidates, cheapest first:
 2. **Dead code, unreferenced by any `jal`, data word or `lui` pair in any image**
    (`work/txt01/dead.py`): `0x80012E04…0x80013070` — 620 contiguous bytes (`cd_dir_sectors_form2`,
    `0x80012E40`, `0x80012E64`, `cd_dir_search_file`, `cd_dir_find`, `0x80012FF8`);
-   `dbg_font_init` `0x800221CC` — 712 bytes (**now split between the movie loader and the walker bodies**, `vwf_name_before_sym` among the latter, at
+   `dbg_font_init` `0x800221CC` — 712 bytes (**now split between the movie loader and the walker bodies**, at
    `DEBUG_FONT_SPLIT`, `asm/vwf.asm`; the 620 bytes at
    `0x80012E04` are the movie hooks', `asm/movie.asm`); `date_label_draw_b` `0x80037698` — 352;
    `0x80037414` — 272; `0x80043928` — 296; `0x8001CA64` 244, `0x8001CDF4` 192, `0x8001CC4C` 168.

@@ -19,12 +19,14 @@ from itertools import pairwise
 
 import pytest
 
+from boku import exchange_notebook
 from boku.archive import EXE_LOAD_BIAS, OVERLAY_LOAD_ADDRESS, Archive
 from boku.asm_source import asm_equate
 from boku.boxes import box_spec_for
 from boku.code_text import BANNERS, LABEL_PITCH, lay_out_banner
 from boku.glyphs import END_WORD
-from boku.layout import measure
+from boku.layout import measure, sheet_cells
+from boku.sumo import TYPES
 from tests import test_real_banners
 from tests.mips import Machine
 from tests.test_pointers import jal
@@ -39,9 +41,9 @@ PANEL_SPRITE = asm_equate("PANEL_SPRITE", "musi_text.asm")
 HINT_LEFT = asm_equate("HINT_LEFT", "musi_text.asm")
 HINT_RIGHT = asm_equate("HINT_RIGHT", "musi_text.asm")
 HINT_MARGINS = asm_equate("HINT_MARGINS", "musi_text.asm")
-OFFSCREEN_X = asm_equate("OFFSCREEN_X", "walkers.asm")
-SYSMSG_LINE_DRAW = asm_equate("SYSNAME_DRAW", "walkers.asm")
-NOTEBOOK = range(0x8007E670, 0x8007EC00)
+OFFSCREEN_X = asm_equate("OFFSCREEN_X", "musi_text.asm")
+SYSMSG_LINE_DRAW = asm_equate("SYSNAME_DRAW", "musi_text.asm")
+NOTEBOOK = range(exchange_notebook.NOTEBOOK[1], 0x8007EC00)
 """The exchange notebook's drawer: its name calls are found in it, not listed here."""
 RECORD = 22
 """A `MUSI.OVL` sprite record: `+2` x, `+6` u, `+8` w (`0x800368C8` reads it)."""
@@ -141,10 +143,14 @@ def test_each_rank_row_is_centred_where_the_retail_rows_are(archive, days_built,
     assert len(machine.stubs[GLYPH_FLUSH]) == 1
 
 
+def _routine(symbol: str) -> int:
+    routines = json.loads(EDITS.read_text(encoding="utf-8"))["routines"]["symbols"]
+    return int(routines[symbol], 16)
+
+
 @pytest.fixture(scope="module")
 def name_routine() -> int:
-    walker = json.loads(EDITS.read_text(encoding="utf-8"))["walker_island"]["symbols"]
-    return int(walker["vwf_name_before_sym"], 16)
+    return _routine("vwf_name_before_sym")
 
 
 def test_the_notebook_sites_call_the_name_that_ends_before_the_next_item(
@@ -185,3 +191,41 @@ def test_the_days_build_leaves_the_move_names_retail_and_does_not_call_them_refu
     left = sorted(line for line in manifest["lines_unreachable"] if line.startswith("musi@2C."))
     assert left == moves
     assert not set(moves) & (set(manifest["lines_refused"]) | set(manifest["lines_written"]))
+
+
+def _hooked_list(archive: Archive) -> int:
+    """Where the notebook's own names are: `t0` of the hook over the notebook's entry."""
+    lui, j, addiu = (_musi_word(archive, NOTEBOOK.start + 4 * i) for i in range(3))
+    assert j == jal(_routine(exchange_notebook.ROUTINE)) - 0x04000000, "the entry is not hooked"
+    assert lui >> 16 == 0x3C08 and addiu >> 16 == 0x2508, "not lui t0 / addiu t0,t0"
+    return ((lui & 0xFFFF) << 16) + ((addiu & 0xFFFF) ^ 0x8000) - 0x8000
+
+
+@pytest.mark.parametrize("kind", sorted(TYPES.values()))
+def test_the_notebook_draws_a_fighter_s_own_name_where_it_has_one(
+    archive, days_built, rows, encoder, name_routine, kind
+):
+    """Each fighter's name in the exchange notebook: its `@exchange` row where arrays.txt
+    has one, else its full name, ending where the item after it begins."""
+    (item_x,) = {_imm(archive, site + 8) for site in _name_sites(archive)}
+    machine = _machine(days_built)
+    machine.write(_routine("vwf_exchange_names"), 4, _hooked_list(days_built))
+    machine.call(name_routine, kind, 175, 0x1C, 0)
+    full = f"{exchange_notebook.ARRAY}.{exchange_notebook.line_of_type(archive)[kind]}"
+    text = rows.get(full + exchange_notebook.VARIANT, rows[full])
+    shown = [d for d in machine.draws if d[1] < OFFSCREEN_X]
+    assert [d[0] for d in shown] == list(sheet_cells(encoder, text).cells), f"not {text!r}"
+    advance = {cell_id: adv for cell_id, adv in encoder.cells.values()}
+    assert shown[-1][1] + advance[shown[-1][0]] == item_x
+    assert len(machine.stubs[GLYPH_FLUSH]) == 1
+
+
+def test_the_notebook_s_entry_hook_makes_the_three_instructions_it_took(archive, days_built):
+    """`vwf_exchange_entry` stores the list, then runs the retail entry's first three
+    instructions -- the third in the delay slot of the jump back past them."""
+    entry = _routine(exchange_notebook.ROUTINE)
+    retail = [_musi_word(archive, NOTEBOOK.start + 4 * i) for i in range(3)]
+    ours = struct.unpack("<4I", days_built.exe_bytes(entry + 8, 16))
+    back = NOTEBOOK.start + 12
+    assert [ours[0], ours[1], ours[3]] == retail
+    assert ours[2] == jal(back) - 0x04000000, "not j back past the three"

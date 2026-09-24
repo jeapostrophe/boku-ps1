@@ -6,6 +6,7 @@ from functools import cache
 
 import pytest
 
+from boku import exchange_notebook
 from boku.archive import (
     ARCHIVE_NAME,
     EXE_LOAD_BIAS,
@@ -288,3 +289,13 @@ def test_an_array_too_big_for_its_overlay_s_tail_does_not_push_the_others_out(ar
     plan = plan_arrays(archive, card_words | config_words, regions=(resident,))
     where = {m.prefix: m.tail for m in plan.moved}
     assert where == {"exe@8003D5F0": None, "exe@8003D9BC": "TITLE.OVL"}
+
+
+@pytest.mark.parametrize("line_id", ["exe@8003D2E0.31@exchange", "exe@8003D2E0.2x@exchange"])
+def test_a_notebook_name_for_a_line_no_fighter_draws_is_refused(archive, line_id):
+    """`boku.exchange_notebook`: the notebook's list holds the sumo fighters' lines alone, so
+    a version of any other line (or of no line) would be written and never drawn."""
+    words = {line_id: (0x100, 0x8000), "exe@8003D2E0.23@exchange": (0x100, 0x8000)}
+    with pytest.raises(ArrayRoomRefused) as refused:
+        plan_arrays(archive, words, routines={exchange_notebook.ROUTINE: 0x80025000})
+    assert refused.value.lines == (line_id,)

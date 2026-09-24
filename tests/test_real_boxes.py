@@ -20,6 +20,7 @@ from boku import REPO_ROOT
 from boku.archive import Archive
 from boku.boxes import EVERY_ITEM, box_for, load_boxes
 from boku.code_text import BANNERS, LABEL_PITCH
+from boku.exchange_notebook import base_of
 from boku.extract import SCRIPT_DIR_NAME
 from boku.layout import ANSWER_PAIR
 from boku.script_store import load_store
@@ -48,7 +49,9 @@ def known_ids(disc_dir) -> set[str]:
 
 
 def test_every_row_names_a_line_or_an_array_the_extract_knows(known_ids):
-    assert set(load_boxes()) - known_ids == set()
+    """Or a notebook-only version of one (`boku.exchange_notebook`)."""
+    rows = {base_of(key) for key in load_boxes()}
+    assert rows - known_ids == set()
 
 
 HELP_LABELS = {

@@ -208,13 +208,19 @@ writing a boy's offered bug to `0x8003DE18`, a cage-format record, before ○ on
   draws a name at x 175 and the item after it — the sex mark, then the catch number at
   0x11E — at a fixed x 271: a Japanese name is 8 cells, 96 px, and ends there. Each of its
   three name calls (`0x8007E6E4`, `E8E0`, `EA48`) now goes to `vwf_name_before_sym`
-  (`asm/walkers.asm`), which measures the name off screen as `MUSI` measures its
+  (`asm/musi_text.asm`), which measures the name off screen as `MUSI` measures its
   right-aligned names and ends it at x 271. The page's paper starts at x 124 with binder
   holes at x 129..134, so a name has 145 px; "Red-legged Stag Beetle" (144) covers the top
-  hole and stays readable. **A size badge** (record byte 3 = 1, the crown at x 0x90; = 2,
-  a pink badge at 0x8C) sits left of the name at x 140..168 and leaves 103 px: every sumo
-  beetle's name but "Oni", "Flat" and "Saw" runs over it then (seen: "Red-legged" over the
-  pink badge).
+  hole and stays readable. **A size badge** (record byte 3 = 1, the crown; = 2, the pink
+  "BIG!") sits left of the name: measured on Beetle 2026-09-24 against a shot with no
+  badge, the pink one covers x 140..171 with its shadow and the crown 145..165, so a name
+  clears both from x 173, 98 px. A name wider than that has a notebook-only version
+  (`boku.exchange_notebook`, Jay 2026-09-24): "Miyama Stag", "Giant Stag", "Little Stag",
+  "Rhinoceros" (`arrays.txt`'s `@exchange` rows); the other screens keep the full names.
+  Without one, "Red-legged Stag Beetle" (144) runs over either badge, "Saw Stag Beetle"
+  (101) over the pink one's last pixels, and "Flat Stag Beetle" (98) starts at x 173, a
+  pixel clear; "Oni Stag Beetle" (94) and "Mantis" clear. A bug with no sex mark (the types outside the two
+  tables at `0x80045B1C`) leaves x 271..285 empty before its number.
 * **The move names** (`musi@2C`, surfaces 25 and 26 of text-renderer.md) are never shown
   in retail: `0x80085580`, the side-by-side pair, is called only from `MUSI`'s update under
   `0x80025938 == 1`, a word nothing but `sw zero` at `0x80011FF0` stores

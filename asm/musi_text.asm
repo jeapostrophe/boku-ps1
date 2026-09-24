@@ -149,3 +149,98 @@ vwf_sumo_rank:
     lw      s3, 16(sp)
     jr      ra
     addiu   sp, sp, 40
+
+; ---- the exchange notebook's names ---------------------------------------------------------
+; MUSI's exchange notebook (0x8007E670) draws an insect's name at x 175 and the item after it
+; at a fixed x 271; at its three name sites (musi.asm) vwf_name_before_sym draws the name to
+; end there instead, measured first as MUSI measures its right-aligned names (0x8007D850: at
+; OFFSCREEN_X, OFFSCREEN_Y, and a fifth argument of 1, which skips the glyph flush). All
+; three pass a3 = 0 and a fifth argument of 0. A 96-px Japanese name lands where retail drew it.
+;
+; A name too wide to clear the size badge has a notebook-only version: a list the build writes
+; and hands vwf_exchange_entry in t0 (boku.exchange_notebook). A type the list has no item for,
+; or an empty one, draws its full name.
+SYSNAME_DRAW   equ 0x80037BA8       ; sysmsg_line_draw(type, x, y, a3, [16]) -> v0 = its width
+SYSMSG_DRAW    equ 0x800379EC       ; sysmsg_draw(list, item, x, y, [16] down) -> v0 = its width
+OFFSCREEN_X    equ 0x258            ; where MUSI draws a name to measure it
+OFFSCREEN_Y    equ 0x12C
+NOTEBOOK_SYM_X equ 0x10F            ; the exchange notebook's item after a name
+NOTEBOOK_ENTRY equ 0x8007E670       ; the notebook's page, hooked by the build
+FIGHTERS_A     equ 23               ; the sumo types: 23..30, the eight beetles ...
+FIGHTERS_A_N   equ 8
+FIGHTERS_B     equ 56               ; ... then 56..60, the females and the mantis
+FIGHTERS_B_N   equ 5
+
+vwf_exchange_entry:                 ; t0 = the list; then the three instructions the hook took
+    lui     at, hi(vwf_exchange_names)
+    sw      t0, lo(vwf_exchange_names)(at)
+    addiu   sp, sp, -0x30
+    move    a0, zero
+    j       NOTEBOOK_ENTRY + 12
+    sw      ra, 0x28(sp)
+
+vwf_exchange_names:                 ; the list, once the hooked notebook has run; 0 before
+    .word   0
+
+vwf_name_before_sym:                ; (type, -, y)
+    addiu   sp, sp, -40
+    sw      ra, 36(sp)
+    sw      s0, 32(sp)
+    sw      s1, 28(sp)
+    sw      s2, 24(sp)
+    sw      s3, 20(sp)
+    move    s0, a0
+    move    s1, a2
+    lui     at, hi(vwf_exchange_names)
+    lw      s2, lo(vwf_exchange_names)(at)
+    sw      zero, 16(sp)            ; down = 0
+    beqz    s2, @@full
+    addiu   s3, s0, -FIGHTERS_A     ; s3 = the type's item in the list
+    sltiu   at, s3, FIGHTERS_A_N
+    bnez    at, @@listed
+    nop
+    addiu   s3, s0, -FIGHTERS_B
+    sltiu   at, s3, FIGHTERS_B_N
+    beqz    at, @@full
+    addiu   s3, s3, FIGHTERS_A_N    ; unused on the way to @@full
+@@listed:
+    move    a0, s2
+    move    a1, s3
+    addiu   a2, zero, OFFSCREEN_X
+    jal     SYSMSG_DRAW             ; measured: v0 = the width, 0 for an empty item
+    addiu   a3, zero, OFFSCREEN_Y
+    beqz    v0, @@full
+    addiu   a2, zero, NOTEBOOK_SYM_X
+    subu    a2, a2, v0
+    move    a0, s2
+    move    a1, s3
+    sw      zero, 16(sp)
+    jal     SYSMSG_DRAW
+    move    a3, s1
+    jal     GLYPH_FLUSH
+    nop
+    b       @@done
+    nop
+@@full:
+    addiu   t0, zero, 1
+    sw      t0, 16(sp)
+    move    a0, s0
+    move    a3, zero
+    addiu   a2, zero, OFFSCREEN_Y
+    jal     SYSNAME_DRAW            ; measured: v0 = the width
+    addiu   a1, zero, OFFSCREEN_X
+    addiu   a1, zero, NOTEBOOK_SYM_X
+    subu    a1, a1, v0
+    move    a0, s0
+    move    a2, s1
+    move    a3, zero
+    jal     SYSNAME_DRAW
+    sw      zero, 16(sp)
+@@done:
+    lw      ra, 36(sp)
+    lw      s0, 32(sp)
+    lw      s1, 28(sp)
+    lw      s2, 24(sp)
+    lw      s3, 20(sp)
+    jr      ra
+    addiu   sp, sp, 40
