@@ -803,10 +803,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       1221 → frames 1214–1288 at 17.0 cps (5.0 s, was 4.5 s); review regenerated. Harmed: the player.
       Jay, 2026-09-24 (§7, `work/movie-review/`): M27's timing is right — "every subtitle
       appears for a good amount of time"; the single 17 cps limit stays, no exemptions.
-- [ ] **[FMV-09]** **Jay's §22 movie rulings.** 2026-09-24, all (b): 22.1 the `M28` song panel two
-      lines tall on every song cue; 22.2 `M27`'s closing song all at the bottom with a panel;
-      22.3 one pair of 『 』 per narrated sentence, opening on its first cue and closing on its
-      last. Harmed: the player.
+- [x] **[FMV-09]** **Jay's §22 movie rulings.** DONE 2026-09-24 (`72e1f71`): 22.1 a panel fills
+      both rows of its position; 22.2 `M27`'s song cues at the bottom with `panel`; 22.3 one 『 』
+      pair per narrated sentence (`movie_timing._marks`, 11 sentences). The two-row panel made
+      the Redux gate drop frames, so a glyph record's byte 1 flags the panel tile `solid` and
+      `movie_sub_blit` fills it without the mask walk; gate 10/10, Beetle skips no STR frame in
+      `M27` or `M28` (`research/movies.md` § 11). Harmed (was): the player.
 - [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
       2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
       but that review reached the movie through a poked movie table. Reproduce the real
@@ -837,14 +839,13 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (whisper.cpp large-v3, a machine tool) read against context: 16 event rows and 46 `XCH`
       rows have words. 446 null entries = stored copies of the 115; 108 = the rows with no
       character speaking. Japanese transcripts under `work/voice/` only.
-- [ ] **[VO-05]** **Listen to what ASR could not settle.** Jay listened, 2026-09-24. Applied
-      (`23b8392`): `E2330.11` is page turns; `XCH.45` Tsukiyono; `XCH.17` a sound of anxiety; the
-      `E0305` names; `XCH.42` reworded "just short of 30" (30を前にして is his age); the 12
-      unreferenced runs identified (`research/voice-only.md` § Unreferenced runs; how they play is
-      `VO-08`). Left: the movie answers (`M27` 41 s "sorosoro jumyō ka na", `M27` 175.4 s 光の
-      *togi*, ガラスに詰めて *tsumete* in `M27` and `M28`) — `FMV-09`'s lane; and `XCH.16`'s second
-      word (Jay hears "kōchō gōjō"; 好調 is "going well", the second is 強情 or 上々 — the English
-      flags it). Harmed: the player (a wrong or missing subtitle).
+- [x] **[VO-05]** **Listen to what ASR could not settle.** DONE 2026-09-24 — Jay listened; applied
+      (`23b8392`, `72e1f71`, `5b6e910`): `E2330.11` is page turns; `XCH.45` Tsukiyono; `XCH.17` a
+      sound of anxiety; `XCH.16` 好調 上々 "going well, first-rate" (a congratulation); the `E0305`
+      names; `XCH.42` reworded "just short of 30" (30を前にして is his age); `M27` 41 s the father's
+      "Guess it's about had it."; *tsumete* ("packed in") in `M28`; 光のトギ stays "specks of
+      light" (Jay: reads right in context); the 12 unreferenced runs identified (`research/
+      voice-only.md` § Unreferenced runs; nothing plays them — `VO-08`). Harmed (was): the player.
 - [x] **[VO-08]** **How map interactions play voice.** Closed NO, 2026-09-24 (`3d69689`): nothing
       plays the unreferenced `BOKU_XA.XAM` runs. `xa_play` holds the only Setfilter and reads keys
       only from the running event's block or `g_xa_clips`; no key or record on the disc names a
