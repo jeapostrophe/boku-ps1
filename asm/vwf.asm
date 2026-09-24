@@ -125,8 +125,9 @@ VOICE_SHOW_ISLAND_END equ 0x80037524
 ; from the g_pc_host branches, which the byte above closes (research/text-renderer.md § 6 has
 ; the measurement and the ownership of every island). The advance table first, then the select's
 ; variables and hook routines (the dialogue advance fits in place and needs none; the
-; fixed-pitch walkers' bodies are in walkers.asm's island). One area, so an overflow is a
-; build error. Not assembled under ORIGINAL: dead retail code, not a site with a stock claim.
+; fixed-pitch walkers' bodies are in walkers.asm's island; the routines are in the dead font
+; below). One area, so an overflow is a build error. Not assembled under ORIGINAL: dead retail
+; code, not a site with a stock claim.
 PC_HOST_ISLAND     equ 0x8005CD44
 PC_HOST_ISLAND_END equ 0x8005DCF8
 .if ORIGINAL == 0
@@ -188,16 +189,33 @@ vwf_select_box:
     jr      ra
     nop
 
+    .align  4
+vwf_free:                           ; first unclaimed byte of the island, reported by the build
+.endarea
+.org PC_HOST_ISLAND_END
+vwf_island_end:                     ; the edit set records it: grown text arrays take the tail
+.endif
+
+; ---- dbg_font_init's 8x8 font: the renderer's routines -------------------------------------
+; 0x80025120..0x80025860, read only by dbg_font_init, which nothing calls (research/text-
+; renderer.md § 6). The routines live here rather than in the PC-host island so that island's
+; tail stays the longest run the grown text arrays get (research/text-renderer.md § 6).
+; This block's own tail goes to the arrays too.
+; DEBUG_FONT_DATA and DEBUG_FONT_DATA_END come from the build (boku.array_relocate.DEAD_REGIONS).
+.if ORIGINAL == 0
+.org DEBUG_FONT_DATA
+.area DEBUG_FONT_DATA_END - DEBUG_FONT_DATA
+vwf_routines:
 .include "labels.asm"
 .include "banners.asm"
 .include "voice_resident.asm"
 .include "musi_text.asm"
 
     .align  4
-vwf_free:                           ; first unclaimed byte of the island, reported by the build
+vwf_routines_free:                  ; first unclaimed byte, reported by the build
 .endarea
-.org PC_HOST_ISLAND_END
-vwf_island_end:                     ; the edit set records it: grown text arrays take the tail
+.org DEBUG_FONT_DATA_END
+vwf_routines_end:
 .endif
 
 .close

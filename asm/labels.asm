@@ -1,5 +1,5 @@
 ; The two date labels drawn from code (PLAN PIPE-07), rebuilt around the English. Included by
-; vwf.asm inside the PC-host island, so everything here is resident and nothing here is a
+; vwf.asm in the dead 8x8 font (vwf_routines), so everything here is resident and nothing is a
 ; site: `boku build` installs the hook -- three words at the drawer's entry,
 ;   lui t0, hi(text) / j <routine> / addiu t0, t0, lo(text)
 ; -- only when the label is translated, with the English text placed where it chose

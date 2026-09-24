@@ -1,7 +1,7 @@
 ; The fortune (exe@80036750, fortune_draw 0x8003A7A4) and the kite crash banner (tako@440,
 ; tako_crash_draw TAKO 0x8007C684), which the retail game stacks a glyph per row in a tall
-; panel, drawn as one centred line (PLAN TXT-05). Included by vwf.asm inside the PC-host
-; island after labels.asm, so TAKO reaches it too. Nothing here is a site: `boku build`
+; panel, drawn as one centred line (PLAN TXT-05). Included by vwf.asm in the resident
+; routines' block after labels.asm, so TAKO reaches it too. Nothing here is a site: `boku build`
 ; hooks the drawer's entry as it hooks the date labels (boku.code_text.drawer_hook) and
 ; widens the panel (boku.code_text.BANNERS), only when the array is translated. The text is
 ; the line's centre x and y, then the items: cells, each ended by 0x8000.

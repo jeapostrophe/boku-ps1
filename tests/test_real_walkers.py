@@ -25,6 +25,7 @@ import struct
 import pytest
 
 from boku.archive import EXE_NAME, OVERLAY_LOAD_ADDRESS
+from boku.asm_source import asm_equate
 from boku.glyphs import END_WORD as END
 from boku.glyphs import NEWLINE_WORD as NEWLINE
 from boku.layout import ANSWER_PAIR, CellMapEncoder, answer_pair_code, lay_out_answer_pair
@@ -143,7 +144,7 @@ def test_a_description_line_break_returns_the_pen_to_the_left_edge(built):
     assert m.draws == [
         (first[0], 184, 126),
         (first[1], 184 + cells["a"][1], 126),
-        (second[0], 184, 142),
+        (second[0], 184, 126 + asm_equate("DESC_LINE_STEP", "walkers.asm")),
     ]
 
 

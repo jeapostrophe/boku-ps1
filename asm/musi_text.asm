@@ -1,5 +1,5 @@
 ; Bug sumo's desk text in English (PLAN TXT-05, PIPE-07; research/sumo.md § The desk's text).
-; Included by vwf.asm inside the PC-host island after banners.asm (whose vwf_centred_cells
+; Included by vwf.asm in the resident routines' block after banners.asm (whose vwf_centred_cells
 ; it uses), so MUSI.OVL reaches it.
 ;
 ; * The button hint and the rank board are raw arrays whose cell counts are their drawers'

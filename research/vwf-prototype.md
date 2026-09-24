@@ -21,7 +21,7 @@ select geometry are build arguments, and the typeface is an input file.
 | 17 memory-card messages, 19 config labels (`TITLE.OVL` walkers) | **done, proven on both emulators** |
 | 20 summer-memories labels (`TITLE.OVL`) | **labels 0–4 done, proven on both emulators** (2026-09-23, a "finished" card: § "Screens behind a save"); label 5 (the dinner-quiz rate, walker 20a) proven on both emulators, forced: § "Screens behind a save" |
 | 5 the controls-help screen (START in free roam) | **done, proven on both emulators** (2026-09-22) |
-| 12 item names and descriptions (the bag, △ then ○) | **done, proven on both emulators** — descriptions wrapped to three lines in their box (2026-09-23, items poked into the bag: § "Screens behind a save"); captions, kite names and fishing ride the same two walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
+| 12 item names and descriptions (the bag, △ then ○) | **done, proven on both emulators** — descriptions wrapped to their box (2026-09-23, items poked into the bag: § "Screens behind a save"; five lines at a 12-px pitch since 2026-09-24, Beetle); captions and fishing messages seen on Beetle (2026-09-24); kite names ride the same walkers, run instruction by instruction in `tests/test_real_walkers.py` but not reached on screen |
 | 2 SELECT menus (`select_draw`) | **done, proven on PCSX-Redux** (`E0112.1`, pad-driven: § "SELECT on screen"); **not reached on Beetle** — the route needs a RAM poke, § "Reaching the living room" |
 | 3, 4 the insect book's two walkers (`HHON.OVL`) | measured, and a row version prototyped on both emulators; **not installed** — real English does not fit yet (§ "The `HHON` walkers") |
 | the other fixed-pitch surfaces | site table with a decision each: § "The fixed-pitch surfaces" |
@@ -522,7 +522,7 @@ ones in any image ([text-renderer.md](text-renderer.md) § "Answers first").
 | `0x800438A4`, `B8` | 12b `text_draw_h` (descriptions, captions; fishing) | the same two | the same two |
 
 **Free space**: `0x8005CD44…` (the PC-host island, [text-renderer.md](text-renderer.md) § 6) the
-table, the select's variables and bodies; `0x800222EC…0x80022494` (the upper part of `dbg_font_init`, dead)
+table, the select's variables and bodies; `0x80025120…` (the dead 8×8 font) the routines; `0x800222EC…0x80022494` (the upper part of `dbg_font_init`, dead)
 the walker bodies.
 
 On the disc this build changed 36 sectors: 7 of the executable, 6 of the font TIM (`ONMEM.BIN`
@@ -723,10 +723,17 @@ re-derives every pen from the game's bytes):
 * **Config labels** (surface 19): pen 40 (line 4 at 84, moved from 88 by `asm/title.asm` so
   "(Vibration)" ends inside the frame); the left panel's frame at 149.
 * **Item names** (surface 12, the bag): pen 40; the list panel's frame at 155.
-* **Item descriptions** (surface 12, `text_draw_h`): pen (184, 126), **three lines** 16 px
-  apart, the picture panel's inner edge at 301 (below the third line is the frame). The
-  build wraps the English to the box by pixels (`boku.layout.lay_out_array`), a `0x8001` at
-  each break. Photo captions use the same drawer and pen, so the same box — not shot.
+* **Item descriptions** (surface 12, `text_draw_h`): retail pen (184, 126), three lines
+  16 px apart; the white under the picture is rows 116–181 and the panel's inner edge is
+  x 301. Jay's option c (2026-09-24): **five lines, 12 px apart, from y 118**
+  (`asm/walkers.asm` `DESC_PEN_Y`, `DESC_LINE_STEP` — the newline in `text_draw_h` and the
+  y both callers pass), so every line inks inside the white (a glyph at pen y inks rows
+  y+1…y+12; `tests/test_real_boxes.py`). The build wraps the English to the box by pixels
+  (`boku.layout.lay_out_array`), a `0x8001` at each break. Photo captions and the fishing
+  messages (`fish_msg_draw`, the tackle box) use the same drawer and pen, so the same box;
+  all three seen on Beetle (2026-09-24: five-line descriptions, a three-line caption,
+  two- and three-line fishing messages — the tackle box opens from the desk, RIGHT from
+  the bag, once `0x80035E52` is 1).
 * **Summer-memories labels 0–4** (surface 20): pen 40 (`extras_draw`'s `addiu s1,zero,0x28`),
   the left panel's frame at 149, as the config screen's. **Label 5**, the quiz rate: pen 114
   (walker 20a's `addiu s1,zero,0x72`) in its popup, a tile at TITLE `0x80081AC4` that
@@ -805,7 +812,7 @@ specification.
 | 10 | EXE `fortune_draw` `0x8003A7A4` (the fortune result, three glyphs stacked vertically at x `0x9A` in a tall panel) | rows, not a pen | — | **banner**: hooked at its entry to `asm/banners.asm`'s `vwf_fortune_banner`, one centred line in a wide panel (§ "The banners") | **proven** (forced) |
 | 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |
 | 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
-| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`) | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | **proven** (descriptions) |
+| 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`; patched to (0xB8, 118) and 12, § "The fixed-pitch boxes") | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | **proven** (descriptions) |
 | 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | tested |
 | 15 | `TITLE 0x8007BB60` (save date) | none: `0x3C` at `s1`, `0x1B8` at `+0xC`, digits, `0x157` at `+0x30` | — | **C** | table |
 | 16 | `TITLE 0x8007C8EC` (slot digits, `0x5B0`) | none | — | **C** | table |

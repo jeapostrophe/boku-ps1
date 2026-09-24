@@ -11,21 +11,31 @@ written, all its items back to back, into resident free space, and every pair th
 addressed the old start is rewritten to the new one -- in the executable and in every
 overlay, since `TITLE` and `HHON` read executable arrays as well as their own.
 
-Where it goes: `SCPS_100.88`'s dead regions (research/text-renderer.md § 6 owns the
-list), the tail of the renderer's island past what its edit set uses, and the spans the
-moved arrays leave behind. All of it is below the overlay region, so it is resident in
-every mode (`boku.build.check_resident`); an overlay's own array may move there too,
-because its reader's pair can point anywhere. Placement is largest-first, best-fit, and
-running out is a refusal with the numbers, never a truncation.
+Where it goes: an array whose every pair is in ONE overlay goes to that overlay's tail
+(`overlay_tail`): appended to the member, so it loads with the only code that reads it,
+and the resident room is kept for what the executable reads. Everything else goes to
+`SCPS_100.88`'s dead regions (research/text-renderer.md § 6 owns the list), the tail of
+the renderer's island past what its edit set uses, and the spans the moved arrays leave
+behind -- all below the overlay region, so resident in every mode
+(`boku.build.check_resident`). Placement is largest-first, best-fit, and running out is a
+refusal with the numbers, never a truncation.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import pairwise
 
-from boku.archive import ARCHIVE_NAME, EXE_LOAD_BIAS, EXE_NAME, OVERLAY_LOAD_ADDRESS, Archive
+from boku.archive import (
+    ARCHIVE_NAME,
+    EXE_LOAD_BIAS,
+    EXE_NAME,
+    OVERLAY_LOAD_ADDRESS,
+    SECTOR,
+    Archive,
+    Member,
+)
 from boku.arrays import (
     SAVE_TITLE_LINE_ID,
     SAVE_TITLE_PARTS_ADDR,
@@ -48,7 +58,7 @@ from boku.code_text import (
 from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
 from boku.pointers import LuiPair, PointerError, repoint, scan
-from boku.reinsert import ByteEdit
+from boku.reinsert import ByteEdit, Tail
 from boku.sites import RESIDENT_BLOCK_ADDRS, resident_block_at, resident_line_id, walk_block
 
 
@@ -86,6 +96,22 @@ variables here. So only an edit set offers it (`boku.build.EditSet.array_regions
 
 ALIGN = 4
 
+HEAP_POINTER = 0x80068AF0
+"""The heap's bump pointer; the executable's initial word is the retail heap's first byte
+(research/text-renderer.md § 6)."""
+
+
+def overlay_tail(archive: Archive, member: Member) -> Region:
+    """The RAM an overlay's arrays may be appended into: from its own end (aligned) to the
+    last whole sector a load can write without passing the retail heap's first byte
+    (research/text-renderer.md § 6 has why that is free). Empty when the overlay already
+    reaches it (`MUSI`)."""
+    heap = int.from_bytes(archive.exe_bytes(HEAP_POINTER, 4), "little")
+    start = -(-(OVERLAY_LOAD_ADDRESS + member.size) // ALIGN) * ALIGN
+    end = OVERLAY_LOAD_ADDRESS + SECTOR * ((heap - OVERLAY_LOAD_ADDRESS) // SECTOR)
+    return Region(start, max(start, end), f"{member.short_name}'s tail")
+
+
 Image = tuple[str, bytes, int, str, int]
 """`(image, code, RAM base, file, offset of the image in that file)`."""
 Scanned = list[tuple[Image, list[LuiPair]]]
@@ -99,6 +125,8 @@ class Moved:
     old: int
     new: int
     size: int
+    tail: str | None = None
+    """The overlay member whose tail it was appended to; `None` for resident room."""
 
 
 @dataclass(frozen=True)
@@ -106,8 +134,12 @@ class ArrayPlan:
     edits: tuple[ByteEdit, ...]
     moved: tuple[Moved, ...]
     lines: frozenset[str]
-    """Every line id of a moved array or block: written by `edits`, not in place."""
+    """Every line id of a moved array or block: written by `edits` or `tails`, not in place."""
     free_left: int
+    """Resident bytes left."""
+    tails: Mapping[str, Tail] = field(default_factory=dict)
+    """`{overlay member: what is appended to it}` for the arrays moved into its tail
+    (`overlay_tail`); the reinserter rebuilds the grown member (`boku.reinsert.plan`)."""
 
 
 def _array_bytes(archive: Archive, walked: ArrayWalk, words: Mapping[str, Sequence[int]]) -> bytes:
@@ -368,9 +400,11 @@ def plan_arrays(
     regions: Sequence[Region] = DEAD_REGIONS,
     scanned: Callable[[], Scanned] | None = None,
     routines: Mapping[str, int] | None = None,
+    no_tail: frozenset[str] = frozenset(),
 ) -> ArrayPlan:
     """Move every relocatable array, and every resident event block, one of whose items
-    `words` grows past its bytes.
+    `words` grows past its bytes. An overlay member in `no_tail` is not grown (the disc had
+    no room for it); its arrays take resident room like any other.
 
     `scanned` supplies `scans(archive)`, called only once something grows; a caller that
     plans more than once memoises it."""
@@ -404,18 +438,71 @@ def plan_arrays(
         for prefix, u in units.items()
         if not u.table and u.hook is None
     }
+    # Every pair that addresses a moving array, with the arrays it addresses: scanned once,
+    # read here for who reads each array and below for the rewrites.
+    addressing = [
+        (source, pair, _addressed(pair, source[0], spans))
+        for source, found in ((scanned or (lambda: scans(archive)))() if spans else ())
+        for pair in found
+    ]
+    readers: dict[str, set[str]] = {prefix: set() for prefix in spans}
+    for (image, *_), _pair, prefixes in addressing:
+        for prefix in prefixes:
+            readers[prefix].add(image)
+    by_overlay: dict[str, list[str]] = {}
+    for prefix, images in readers.items():
+        if len(images) != 1:
+            continue
+        (only,) = images
+        if (
+            only != "exe"
+            and f"{only.upper()}.OVL" not in no_tail
+            and units[prefix].image in ("exe", only)
+        ):
+            by_overlay.setdefault(only, []).append(prefix)
+
+    placed: dict[str, int] = {}
+    tails: dict[str, Tail] = {}
+    in_tail: dict[str, str] = {}
+    for image, candidates in sorted(by_overlay.items()):
+        member = archive.member(f"{image.upper()}.OVL")
+        tail = overlay_tail(archive, member)
+        # Largest first; one that does not fit is tried in the resident room below, and the
+        # rest still take the tail.
+        prefixes: list[str] = []
+        fitted: dict[str, int] = {}
+        for p in sorted(candidates, key=lambda p: (-len(units[p].blob), p)):
+            trial = _allocate([(q, len(units[q].blob)) for q in (*prefixes, p)], [tail])
+            if not isinstance(trial[0], str):
+                prefixes.append(p)
+                fitted = trial[0]
+        if not prefixes:
+            continue
+        placed |= fitted
+        in_tail |= dict.fromkeys(prefixes, member.short_name)
+        end = OVERLAY_LOAD_ADDRESS + member.size
+        grown = bytearray(max(placed[p] + len(units[p].blob) for p in prefixes) - end)
+        for p in prefixes:
+            grown[placed[p] - end : placed[p] - end + len(units[p].blob)] = units[p].blob
+        lines = tuple(line for p in prefixes for line in units[p].grown)
+        tails[member.short_name] = Tail(bytes(grown), lines)
+
     vacated = [
         _padded(archive, Region(u.start, u.end, f"{prefix}'s old bytes"))
         for prefix, u in units.items()
         if u.image == "exe" and u.end > u.start
     ]
-    allocated = _allocate([(p, len(u.blob)) for p, u in units.items()], [*regions, *vacated])
+    resident = [(p, len(u.blob)) for p, u in units.items() if p not in placed]
+    allocated = _allocate(resident, [*regions, *vacated])
     if isinstance(allocated[0], str):
         prefix, why = allocated
         raise refusal(why, [prefix])
-    placed, free_left = allocated
+    placed |= allocated[0]
+    free_left = allocated[1]
 
-    moved = tuple(Moved(p, u.start, placed[p], len(u.blob)) for p, u in units.items())
+    moved = tuple(
+        Moved(p, u.start, placed[p], len(u.blob), in_tail.get(p)) for p, u in units.items()
+    )
     edits = [
         ByteEdit(
             file=EXE_NAME,
@@ -425,6 +512,7 @@ def plan_arrays(
             reason=f"{m.prefix} moved to 0x{m.new:08X} (PLAN PIPE-07)",
         )
         for m in moved
+        if m.tail is None
     ]
     new_start = {m.prefix: m.new for m in moved}
     for prefix, unit in units.items():
@@ -442,20 +530,15 @@ def plan_arrays(
                 )
             )
 
-    for (image, code, base, file, file_base), pairs in (
-        (scanned or (lambda: scans(archive)))() if spans else ()
-    ):
-        for pair in pairs:
-            inside = _interior(pair, image, spans)
-            if inside:
-                raise refusal(
-                    f"the lui at 0x{pair.ram:08X} ({image}) addresses the inside of "
-                    f"{', '.join(inside)}, and only an array's start is rewritten",
-                    inside,
-                )
-            addressed = _addressed(pair, image, spans)
-            if not addressed:
-                continue
+    for (image, code, base, file, file_base), pair, addressed in addressing:
+        inside = _interior(pair, image, spans)
+        if inside:
+            raise refusal(
+                f"the lui at 0x{pair.ram:08X} ({image}) addresses the inside of "
+                f"{', '.join(inside)}, and only an array's start is rewritten",
+                inside,
+            )
+        if addressed:
             moves = {spans[prefix][1]: new_start[prefix] for prefix in addressed}
             try:
                 changed = repoint(pair, lambda t, moves=moves: moves.get(t, t), code, base)
@@ -472,4 +555,4 @@ def plan_arrays(
                     )
                 )
     lines = frozenset(line for u in units.values() for line in u.lines)
-    return ArrayPlan(tuple(edits), moved, lines, free_left)
+    return ArrayPlan(tuple(edits), moved, lines, free_left, tails)

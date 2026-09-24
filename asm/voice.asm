@@ -147,7 +147,7 @@ CLIP_FRAME_ISLAND_END equ 0x8001CEB4
 .if ORIGINAL || MOVIE_SUB_CLIPS == 0
     jal     MUSI_INIT               ; stock
 .else
-    jal     sumo_sub_init           ; vwf.asm's PC-host island (voice_resident.asm)
+    jal     sumo_sub_init           ; vwf.asm's routines' block (voice_resident.asm)
 .endif
 .endarea
 

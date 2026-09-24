@@ -32,6 +32,7 @@ def _build_equates() -> dict[str, int]:
     values["TABLE_IDS"] = 812
     values["ORIGINAL"] = 0
     values.update(vwf_prototype().movie_equates(bytes(4 * 2048)))
+    values.update(vwf_prototype().ROUTINES_EQUATES)
     return values
 
 

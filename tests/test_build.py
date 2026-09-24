@@ -11,6 +11,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -435,6 +436,53 @@ def test_the_two_answers_row_rewrites_the_drawer_s_split_and_count():
     )
 
 
+def test_a_row_the_plan_refuses_carries_no_answer_pair_patch(monkeypatch):
+    """The answer pair's words are carried into the plan (they may sit in an overlay the
+    plan grows), so a plan that then refuses the row must be run again without them: the
+    Japanese row keeps the stock split."""
+    from boku import build as module
+    from boku.array_relocate import ArrayPlan
+
+    row = LineResult(ANSWER_PAIR.line_id, LaidOut(ANSWER_PAIR.line_id, (1, 0x8000), (), (), ()), ())
+    sentinel = ByteEdit(ARCHIVE_NAME, 0, b"\0", b"\1", "the answers' drawer word")
+    carried: list[list[ByteEdit]] = []
+
+    def plan_what_fits(archive, walk, words, *rest):
+        carried.append(list(rest[3]))
+        refuse = len(carried) == 1
+        return SimpleNamespace(carried=()), ({ANSWER_PAIR.line_id: ("no room",)} if refuse else {})
+
+    monkeypatch.setattr(module, "read_code_labels", lambda archive: [])
+    monkeypatch.setattr(module, "code_label_patches", lambda archive, lines: [])
+    monkeypatch.setattr(
+        module,
+        "answer_pair_patches",
+        lambda archive, lines: [sentinel] if any(line.written for line in lines) else [],
+    )
+    monkeypatch.setattr(
+        module,
+        "move_arrays",
+        lambda *a: (ArrayPlan((), (), frozenset(), 0), {}),
+    )
+    monkeypatch.setattr(module, "_plan_what_fits", plan_what_fits)
+    words = {ANSWER_PAIR.line_id: (1, 0x8000)}
+    _, _, carry, refused = module._place_and_plan(
+        None,
+        None,
+        [row],
+        words,
+        [],
+        (),
+        None,
+        skip_unfitted=True,
+        in_place=False,
+        work_area_end=0,
+    )
+    assert sentinel in carried[0] and sentinel not in carried[-1]
+    assert sentinel not in carry
+    assert ANSWER_PAIR.line_id in refused and ANSWER_PAIR.line_id not in words
+
+
 def dressed(original: bytes, speaker: str, label: bool = True):
     """`lay_out`'s MSG branch over one synthetic original, and what it did to the English."""
     walk = OneSite(original)
@@ -675,6 +723,25 @@ def test_an_edit_set_offers_its_island_s_tail_and_the_pc_host_data_to_moved_arra
     older = load_edit_set(write_edit_set(tmp_path / "o.json", EXE_EDIT))
     assert older.array_regions == DEAD_REGIONS
     assert PC_HOST_DATA not in DEAD_REGIONS
+
+
+def test_routines_in_the_dead_font_leave_only_its_tail_to_moved_arrays(tmp_path):
+    """Once the renderer's routines are assembled into `DEAD_REGIONS` (`routines`), the
+    arrays get what the routines left of it, and the routines' symbols are the ones a
+    hooked label or banner is pointed at."""
+    (font,) = DEAD_REGIONS
+    gap = {"symbols": {"vwf_advance": "0x8005CD44"}, "bytes": 956, "island_end": "0x8005DCF8"}
+    routines = {
+        "symbols": {"vwf_routines": f"0x{font.start:08X}", "vwf_fortune_banner": "0x80025200"},
+        "bytes": 1580,
+        "region_end": f"0x{font.end:08X}",
+    }
+    edit_set = load_edit_set(
+        write_edit_set(tmp_path / "e.json", EXE_EDIT, gap=gap, routines=routines)
+    )
+    assert edit_set.array_regions[0] == Region(font.start + 1580, font.end, "the dead font's tail")
+    assert font not in edit_set.array_regions
+    assert edit_set.label_routines == {"vwf_fortune_banner": 0x80025200}
 
 
 def test_an_unreachable_array_item_is_left_retail_and_not_counted_refused():

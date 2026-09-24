@@ -63,6 +63,7 @@ sys.path.insert(0, str(REPO))
 
 from boku import clip_subs, edc  # noqa: E402
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, dir_arrays, parse_pack  # noqa: E402
+from boku.array_relocate import DEAD_REGIONS  # noqa: E402
 from boku.boxes import box_for  # noqa: E402
 from boku.build import verify_sectors  # noqa: E402
 from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
@@ -998,6 +999,12 @@ if 1 << MOVIE_SUB_RECORD_SHIFT != RECORD_SIZE:
     raise BuildRefused(f"a glyph record is {RECORD_SIZE} bytes; the blit indexes it by shift")
 
 
+(_DEAD_FONT,) = DEAD_REGIONS
+ROUTINES_EQUATES = {"DEBUG_FONT_DATA": _DEAD_FONT.start, "DEBUG_FONT_DATA_END": _DEAD_FONT.end}
+"""Where `asm/vwf.asm` assembles the renderer's routines: the dead 8x8 font, whose bounds
+`boku.array_relocate.DEAD_REGIONS` owns."""
+
+
 def movie_equates(block: bytes) -> dict[str, int]:
     """The `-equ`s the movie and clip subtitles take (`asm/movie.asm`, `asm/voice.asm`):
     where this block is, the numbers of its format, and bug sumo's pen indent.
@@ -1483,7 +1490,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
         Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
-    extra = movie_equates(block) | {"CD_DIR_SIZE": dir_arrays(stock_exe).size + EXE_LOAD_BIAS}
+    extra = movie_equates(block) | ROUTINES_EQUATES
+    extra["CD_DIR_SIZE"] = dir_arrays(stock_exe).size + EXE_LOAD_BIAS
     patched, symbols = assemble(
         Path(args.armips), Path(args.asm), images, bytes(table), layout, work, extra
     )
@@ -1513,6 +1521,14 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         ),
     ]
     movie_subtitles["islands"] = [island.record for island in islands]
+    routines = hashed_region(
+        "the renderer's routines",
+        "vwf_routines",
+        "vwf_routines_free",
+        "vwf_",
+        symbols,
+        patched_exe,
+    )
     walkers = hashed_region(
         "the walker island",
         "vwf_island",
@@ -1543,6 +1559,8 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         },
         # boku.build.EditSet.array_regions: grown text arrays take [vwf_free, island_end).
         "gap": gap.record | {"island_end": f"0x{symbols['vwf_island_end']:08X}"},
+        # ... and [vwf_routines_free, region_end) of the dead font the routines live in.
+        "routines": routines.record | {"region_end": f"0x{symbols['vwf_routines_end']:08X}"},
         "walker_island": walkers.record,
         "cells": {
             character: {"id": cells[character], "advance": font[character].advance}
@@ -1656,7 +1674,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
 
     manifest = provenance | {
         "result_sha1": sha1_of(image),
-        "exe_words": changed_words(stock_exe, patched_exe, gap, walkers, *islands),
+        "exe_words": changed_words(stock_exe, patched_exe, gap, routines, walkers, *islands),
         "lines": [
             {
                 "site": spec.site_id,
@@ -1757,6 +1775,10 @@ def main() -> int:
         f"  advance table: {table['ids']} bytes at {table['ram']}, then {' '.join(hooks)}; "
         f"gap free from 0x{int(table['ram'], 16) + gap['bytes']:08X}"
     )
+    routines = manifest["routines"]
+    names = [name for name in routines["symbols"] if name != "vwf_routines"]
+    start = int(routines["symbols"]["vwf_routines"], 16)
+    print(f"  routines: {' '.join(names)}; free from 0x{start + routines['bytes']:08X}")
     walkers = manifest["walker_island"]
     first = int(walkers["symbols"]["vwf_island"], 16)
     print(

@@ -1,4 +1,4 @@
-; Voice-subtitle routines kept in vwf.asm's PC-host island because voice.asm's own islands
+; Voice-subtitle routines kept in vwf.asm's resident routines' block because voice.asm's islands
 ; are full (PLAN VO-06); voice.asm's header is the design.
 
 ; The block from its sectors to a0, as movie_sub_load reads it (asm/movie.asm): up to 8

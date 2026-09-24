@@ -37,6 +37,7 @@ import json
 import shutil
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
+from functools import cache
 from pathlib import Path
 
 from boku import __version__, edc
@@ -112,6 +113,7 @@ from boku.reinsert import (
     ByteEdit,
     Plan,
     ReinsertRefused,
+    Tail,
     check_disjoint,
     check_no_double_write,
     plan,
@@ -510,27 +512,34 @@ class EditSet:
 
     @property
     def array_regions(self) -> tuple[Region, ...]:
-        """Where grown arrays may move with this renderer installed: `DEAD_REGIONS`, the
-        PC-host module's data (dead only because this patch clears `g_pc_host`), and the
-        island's tail from `vwf_free` to `island_end`, both recorded in `gap` by the build
-        that assembled the island (research/text-renderer.md § 6). An edit set without
-        the island adds nothing."""
+        """Where grown arrays may move with this renderer installed: `DEAD_REGIONS` -- or,
+        once the renderer's routines live in them (`routines`), their tail from
+        `vwf_routines_free` to `region_end` -- the PC-host module's data (dead only because
+        this patch clears `g_pc_host`), and the island's tail from `vwf_free` to
+        `island_end`, both recorded in `gap` by the build that assembled the island
+        (research/text-renderer.md § 6). An edit set without the island adds nothing."""
         gap = self.document.get("gap")
         if not isinstance(gap, dict) or "island_end" not in gap:
             return DEAD_REGIONS
-        free = int(gap["symbols"]["vwf_advance"], 16) + int(gap["bytes"])
-        end = int(gap["island_end"], 16)
-        if free > end:
-            raise BuildRefused(f"the edit set's gap ends at 0x{free:08X}, past its island's end")
-        return (*DEAD_REGIONS, PC_HOST_DATA, Region(free, end, "the renderer island's tail"))
+        tail = _tail(gap, "vwf_advance", "island_end", "the renderer island's tail")
+        routines = self.document.get("routines")
+        if not isinstance(routines, dict):
+            return (*DEAD_REGIONS, PC_HOST_DATA, tail)
+        font = _tail(routines, "vwf_routines", "region_end", "the dead font's tail")
+        others = [r for r in DEAD_REGIONS if not r.start <= font.start < r.end]
+        if len(others) == len(DEAD_REGIONS):
+            raise BuildRefused(f"the edit set's routines are not in a dead region: {font}")
+        return (*others, font, PC_HOST_DATA, tail)
 
     @property
     def label_routines(self) -> dict[str, int]:
         """The routines this renderer assembled for the date labels (`asm/labels.asm`) and
         the banners (`asm/banners.asm`), by symbol, read out of the island's record; empty
         for an edit set without them."""
-        gap = self.document.get("gap")
-        symbols = gap.get("symbols", {}) if isinstance(gap, dict) else {}
+        symbols: dict[str, str] = {}
+        for record in ("gap", "routines"):
+            block = self.document.get(record)
+            symbols |= block.get("symbols", {}) if isinstance(block, dict) else {}
         return {
             symbol: int(symbols[symbol], 16)
             for symbol in (
@@ -568,6 +577,15 @@ class EditSet:
         """Whether the executable carries `asm/voice.asm`, without which nothing draws a
         `(voice only)` row's English (`tools/vwf/build_prototype.py` records it)."""
         return self.document.get("voice_subtitles") is True
+
+
+def _tail(record: dict, first: str, end: str, name: str) -> Region:
+    """`[first + bytes, end)` of a block the font build recorded: what its code left free."""
+    free = int(record["symbols"][first], 16) + int(record["bytes"])
+    stop = int(record[end], 16)
+    if free > stop:
+        raise BuildRefused(f"the edit set's {name} starts at 0x{free:08X}, past its end")
+    return Region(free, stop, name)
 
 
 def load_edit_set(path: Path) -> EditSet:
@@ -1018,29 +1036,22 @@ def build(
                 f"and leave the rest in Japanese, or give the text more room."
             )
         words = {line.line_id: line.laid_out.words for line in lines if line.written}
-        labels = {label.line_id for label in read_code_labels(archive)}  # code_label_patches'
-        moved, refused = move_arrays(archive, words, array_regions, skip_unfitted, label_routines)
-        binary_patches = [*binary_patches, *moved.edits]
-        the_plan, still = _plan_what_fits(
+        moved, the_plan, carry, refused = _place_and_plan(
             archive,
             walk,
-            {k: v for k, v in words.items() if k not in moved.lines and k not in labels},
-            in_place,
-            skip_unfitted,
-            work_area_end,
+            lines,
+            words,
             binary_patches,
+            array_regions,
+            label_routines,
+            skip_unfitted=skip_unfitted,
+            in_place=in_place,
+            work_area_end=work_area_end,
         )
-        refused |= still
         carried = set(the_plan.carried)  # already inside a rebuilt member (reinsert.plan)
-        binary_patches = [p for p in binary_patches if p not in carried]
-        edits = list(binary_patches)
-        lines = [
-            replace(line, problems=line.problems + refused.get(line.line_id, ())) for line in lines
-        ]
-        answers = answer_pair_patches(archive, lines)
-        labelled = code_label_patches(archive, lines)
-        binary_patches = [*binary_patches, *answers, *labelled]
-        edits += [*answers, *labelled, *the_plan.edits]
+        binary_patches = [p for p in carry if p not in carried]
+        edits = [*binary_patches, *the_plan.edits]
+        lines = _with_refusals(lines, refused)
 
     edits.sort(key=lambda e: (e.file, e.offset))
     # `plan` checks its own edits are disjoint; the caller's binary patches (less the ones
@@ -1077,6 +1088,76 @@ def build(
     return result
 
 
+def _place_and_plan(
+    archive: Archive,
+    walk: Walk,
+    lines: Sequence[LineResult],
+    words: dict[str, tuple[int, ...]],
+    binary_patches: Sequence[ByteEdit],
+    array_regions: Sequence[Region],
+    label_routines: Mapping[str, int] | None,
+    *,
+    skip_unfitted: bool,
+    in_place: bool,
+    work_area_end: int,
+) -> tuple[ArrayPlan, Plan, list[ByteEdit], dict[str, tuple[str, ...]]]:
+    """Move the grown arrays, then plan the reinsertion carrying every patch it may absorb:
+    `(arrays, plan, carry, refused)`. `words` loses every refused line.
+
+    The overlay words the answer pair and the code labels rewrite may be in a member the
+    plan grows (an overlay's tail), so they are carried into it; a line the plan then
+    refuses is taken out and the round runs again, so no patch outlives its line. A refusal
+    of an overlay's growth names the items in its tail: the arrays are placed again with
+    that overlay not grown, and only if resident room cannot hold them either do they
+    leave `words`.
+    """
+    labels = {label.line_id for label in read_code_labels(archive)}  # code_label_patches'
+    refused: dict[str, tuple[str, ...]] = {}
+    scanned = cache(lambda: scans(archive))  # no translation changes it
+    no_tail: frozenset[str] = frozenset()
+    while True:
+        moved, room = move_arrays(
+            archive, words, array_regions, skip_unfitted, label_routines, scanned, no_tail
+        )
+        refused |= room  # move_arrays popped these, so a later round cannot report them
+        kept = _with_refusals(lines, refused)
+        code_patches = [*answer_pair_patches(archive, kept), *code_label_patches(archive, kept)]
+        carry = [*binary_patches, *moved.edits, *code_patches]
+        try:
+            the_plan, still = _plan_what_fits(
+                archive,
+                walk,
+                {k: v for k, v in words.items() if k not in moved.lines and k not in labels},
+                in_place,
+                skip_unfitted,
+                work_area_end,
+                carry,
+                moved.tails,
+            )
+        except ReinsertRefused as error:
+            grown = {
+                name for name, tail in moved.tails.items() if set(error.lines) & set(tail.lines)
+            }
+            if grown - no_tail:  # the disc had no room for a grown overlay: resident, then
+                no_tail |= grown
+                continue
+            if not skip_unfitted or not set(error.lines) & set(words):
+                raise
+            refused |= {line: (str(error),) for line in error.lines if words.pop(line, None)}
+            continue
+        coded = set(still) & ({ANSWER_PAIR.line_id} | labels)
+        if not coded:
+            return moved, the_plan, carry, refused | still
+        refused |= {line: still[line] for line in coded if words.pop(line, None)}
+
+
+def _with_refusals(
+    lines: Sequence[LineResult], refused: Mapping[str, tuple[str, ...]]
+) -> list[LineResult]:
+    """`lines` with each refusal added to its line's problems (so it is no longer written)."""
+    return [replace(line, problems=line.problems + refused.get(line.line_id, ())) for line in lines]
+
+
 def code_label_patches(archive: Archive, lines: Sequence[LineResult]) -> list[ByteEdit]:
     """The immediates of every written code label (`boku.code_text`), each expecting the
     retail instruction there."""
@@ -1092,7 +1173,7 @@ def code_label_patches(archive: Archive, lines: Sequence[LineResult]) -> list[By
 def answer_pair_patches(archive: Archive, lines: Sequence[LineResult]) -> list[ByteEdit]:
     """The drawer's two constants for a written `Yes | No` row (`boku.layout.ANSWER_PAIR`):
     edits in `BOKU.BIN` over the overlay's own words, each expecting the retail word there.
-    Call it with the lines the plan kept, so a refused row leaves the stock split behind."""
+    Call it with the lines the build kept, so a refused row leaves the stock split behind."""
     laid = next(
         (line.laid_out for line in lines if line.line_id == ANSWER_PAIR.line_id and line.written),
         None,
@@ -1121,6 +1202,8 @@ def move_arrays(
     regions: Sequence[Region],
     skip_unfitted: bool,
     routines: Mapping[str, int] | None = None,
+    scanned: Callable[[], Scanned] | None = None,
+    no_tail: frozenset[str] = frozenset(),
 ) -> tuple[ArrayPlan, dict[str, tuple[str, ...]]]:
     """Move the grown arrays (`boku.array_relocate`), popping from `words` what cannot move.
 
@@ -1129,16 +1212,11 @@ def move_arrays(
     placed again, so every refusal is found, not only the first. The lint runs this too.
     """
     refused: dict[str, tuple[str, ...]] = {}
-    memo: list[Scanned] = []
-
-    def scanned() -> Scanned:
-        if not memo:
-            memo.append(scans(archive))
-        return memo[0]
+    once = scanned or cache(lambda: scans(archive))  # no translation changes the scan
 
     while True:
         try:
-            return plan_arrays(archive, words, regions, scanned, routines), refused
+            return plan_arrays(archive, words, regions, once, routines, no_tail), refused
         except ArrayRoomRefused as error:
             popped = [line for line in error.lines if words.pop(line, None) is not None]
             if not skip_unfitted or not popped:
@@ -1155,13 +1233,15 @@ def _plan_what_fits(
     skip_unfitted: bool,
     work_area_end: int = MAP_WORK_AREA_END,
     carry: Sequence[ByteEdit] = (),
+    tails: Mapping[str, Tail] | None = None,
 ) -> tuple[Plan, dict[str, tuple[str, ...]]]:
     """Plan the reinsertion, optionally dropping the lines that do not fit and retrying.
 
     A refusal names the logical lines it is about, and a dropped line is dropped **at
     every copy**: half-writing a line would leave two map variants of one event disagreeing
     in their text, which is exactly the invariant `boku.sites.Walk.conflicts` exists to
-    assert. Each round removes at least one line, so the loop ends.
+    assert. Each round removes at least one line, so the loop ends; a refusal naming none
+    of `words` (an overlay's tail) goes to the caller, who placed it.
     """
     refused: dict[str, tuple[str, ...]] = {}
     while True:
@@ -1174,14 +1254,15 @@ def _plan_what_fits(
                     in_place=in_place,
                     work_area_end=work_area_end,
                     carry=carry,
+                    tails=tails,
                 ),
                 refused,
             )
         except ReinsertRefused as error:
-            if not skip_unfitted or not error.lines:
+            popped = [line for line in error.lines if words.pop(line, None) is not None]
+            if not skip_unfitted or not popped:
                 raise
-            for line_id in error.lines:
-                words.pop(line_id, None)
+            for line_id in popped:
                 refused[line_id] = (str(error),)
 
 
@@ -1229,7 +1310,13 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
             )
         ],
         "arrays_moved": [
-            {"array": m.prefix, "from": f"0x{m.old:08X}", "to": f"0x{m.new:08X}", "bytes": m.size}
+            {
+                "array": m.prefix,
+                "from": f"0x{m.old:08X}",
+                "to": f"0x{m.new:08X}",
+                "bytes": m.size,
+                "tail": m.tail,
+            }
             for m in (result.arrays.moved if result.arrays else ())
         ],
         "rebased_containers": (
@@ -1314,7 +1401,8 @@ def format_summary(result: BuildResult) -> str:
             )
     if result.arrays and result.arrays.moved:
         for m in result.arrays.moved:
-            out.append(f"    {m.prefix}: moved to 0x{m.new:08X}, {m.size} bytes")
+            where = f" ({m.tail}'s tail)" if m.tail else ""
+            out.append(f"    {m.prefix}: moved to 0x{m.new:08X}{where}, {m.size} bytes")
         out.append(f"    array room: {result.arrays.free_left} bytes left")
     if result.written:
         out.append(f"  {len(result.written.sectors)} sectors changed; {result.written.manifest}")

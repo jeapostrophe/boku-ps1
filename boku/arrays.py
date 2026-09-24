@@ -334,7 +334,8 @@ class ArrayWalk:
     strings: tuple[tuple[int, int], ...]
     """`(start, end)` RAM spans of the translatable units — a select is one span."""
     image: str
-    """Where the walk found it: `array.image`, or `"exe"` for an array a build moved there."""
+    """Where the walk found it: `array.image`; `"exe"` for an array a build moved into
+    resident room; the anchor's overlay for one a build appended to that overlay's tail."""
     start: int
     """RAM address it starts at: `array.ram`, unless a build moved it."""
 
@@ -356,7 +357,7 @@ def locate(archive: Archive, array: ArrayDef) -> tuple[str, int]:
         return array.image, array.ram
     image, lui = anchor
     ram = resolve_at(lambda at, n: archive.image_bytes(image, at, n), lui)
-    return ("exe" if ram < OVL else array.image), ram
+    return ("exe" if ram < OVL else image), ram  # past OVL: the anchor's own overlay
 
 
 def walk_array(archive: Archive, array: ArrayDef, select_lines) -> ArrayWalk:

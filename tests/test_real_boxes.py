@@ -124,6 +124,28 @@ def test_the_quiz_rate_s_box_is_the_built_popup_s_rectangle(days_built):
     assert box_for("exe@8003DA00.5").right == x + w
 
 
+PICTURE_PANEL_WHITE = (116, 181)
+"""The white under the bag's picture, first and last row (Beetle, stock disc, 2026-09-23)."""
+INK_ROWS = (1, 12)
+"""A game glyph drawn at pen y inks rows y+1 .. y+12, descender and shadow included
+(Beetle, 2026-09-24: five-line descriptions drawn from y 118)."""
+
+
+def test_every_description_line_the_box_holds_is_drawn_in_the_white(days_built):
+    """Descriptions, captions and the fishing messages (Jay, 2026-09-24, option c): the
+    box's `lines` lines, from the y `bag_draw` and `fish_msg_draw` hand `text_draw_h` and
+    stepped by its newline (`addiu s2,s2,step`, 0x800438C4), all ink inside the white."""
+    step = word(days_built, 0x800438C4)
+    assert step >> 16 == 0x2652, "not addiu s2,s2,step"
+    top, bottom = PICTURE_PANEL_WHITE
+    for site, prefix in ((0x80041858, "exe@80046398"), (0x80043F48, FISH[0])):
+        pen = word(days_built, site)
+        assert pen >> 16 == 0x2406, f"0x{site:08X} is not addiu a2,zero,y"
+        last = (pen & 0xFFFF) + (box_for(f"{prefix}.0").lines - 1) * (step & 0xFFFF)
+        assert top <= (pen & 0xFFFF) + INK_ROWS[0], f"{prefix}: line 1 starts above the white"
+        assert last + INK_ROWS[1] <= bottom, f"{prefix}: the last line runs past the white"
+
+
 def test_the_help_screen_s_right_column_ends_at_the_box_less_the_stock_margin(archive):
     """Lines 4-12 (the right column and the two bottom lines), and lines 1 and 3, alone on
     their rows, end where the help box (`g_select_rect[6]`) ends less the margin the retail

@@ -137,6 +137,16 @@ class ReinsertRefused(Exception):
 
 
 @dataclass(frozen=True)
+class Tail:
+    """Bytes appended to an overlay member (arrays moved into it, `boku.array_relocate`),
+    from its last byte, alignment pad included; `lines` are the grown items they hold --
+    what a refusal of the grown member leaves in Japanese."""
+
+    data: bytes
+    lines: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class ByteEdit:
     """One byte range of one file, with what has to be there first.
 
@@ -453,16 +463,19 @@ def _with_carried(
     A map pack's rebuild copies every child but the pack table and child 1 byte for byte,
     so a patch applied here goes wherever its child goes. A patch touching the pack table
     or child 1 (the parts the rebuild rewrites), spanning two children or their padding, or
-    inside a bare `EV.BIN` block has no such place and is refused. A refusal names `lines`
-    -- the ones that made the rebuild -- so `--skip-unfitted` can leave them in Japanese.
+    inside a bare `EV.BIN` block has no such place and is refused. An overlay grown by a
+    tail keeps every byte where it was, so any patch inside it applies. A refusal names
+    `lines` -- the ones that made the rebuild -- so `--skip-unfitted` can leave them in
+    Japanese.
     """
     where = f"{member.short_name} is rebuilt by the translation"
+    if member.short_name.endswith(".OVL"):
+        return _patched(member, blob, edits, where, lines)
     if member.dir_index == EV_DIR_INDEX:
         raise ReinsertRefused(f"{where}, and a patch cannot follow text inside an EV block", lines)
     pack = parse_pack(blob)
     if pack is None:
         raise ReinsertRefused(f"{where}, and it is not a pack a patch can follow", lines)
-    out = bytearray(blob)
     for edit in edits:
         start, end = edit.offset - member.offset, edit.end - member.offset
         child = next(
@@ -480,6 +493,17 @@ def _with_carried(
             raise ReinsertRefused(
                 f"{where}; the patch at {edit.offset:#x} ({edit.reason}) lies {place}", lines
             )
+    return _patched(member, blob, edits, where, lines)
+
+
+def _patched(
+    member: Member, blob: bytes, edits: Sequence[ByteEdit], where: str, lines: tuple[str, ...]
+) -> bytes:
+    """`blob` with `edits` written at their offsets in `member`, each checked against the
+    bytes it names."""
+    out = bytearray(blob)
+    for edit in edits:
+        start, end = edit.offset - member.offset, edit.end - member.offset
         if out[start:end] != edit.old:
             raise ReinsertRefused(
                 f"{where}; the patch at {edit.offset:#x} ({edit.reason}) does not match the "
@@ -577,8 +601,12 @@ def _sec_edit(
     )
 
 
-def directory_edits(archive: Archive, layout: Layout) -> list[ByteEdit]:
-    """The `g_cd_dir` words a layout changes: a moved member's pair, a rebase's `lba`.
+def directory_edits(
+    archive: Archive, layout: Layout, resized: Mapping[str, int] | None = None
+) -> list[ByteEdit]:
+    """The `g_cd_dir` words a layout changes: a moved member's pair, a rebase's `lba`,
+    and the `size` of a top-level member in `resized` whose size changed inside its own
+    sectors (a sub-archive member's is its `.SEC` record's, `_sec_edit`).
 
     A top-level member *is* its two directory words — `cd_load_sync` reads `size[i]`
     sectors from `lba[i]` — so relocating one is exactly this write.
@@ -614,6 +642,19 @@ def directory_edits(archive: Archive, layout: Layout) -> list[ByteEdit]:
         reason = f"g_cd_dir[{index}] {placement.member} -> LBA {placement.lba}"
         word(index, arrays.lba_offset(index), entry.lba, placement.lba, reason)
         word(index, arrays.size_offset(index), entry.size, placement.size, reason)
+    moved = {placement.member for placement in layout.placements}
+    for short_name, size in sorted((resized or {}).items()):
+        member = archive.member(short_name)
+        if short_name in moved or member.sub_index is not None:
+            continue
+        entry = entries[member.dir_index]
+        word(
+            member.dir_index,
+            arrays.size_offset(member.dir_index),
+            entry.size,
+            size,
+            f"g_cd_dir[{member.dir_index}] {short_name} grows to {size} bytes in place",
+        )
     for index in sorted(layout.bases):
         entry = entries[index]
         name = entry.name.rsplit("\\", 1)[-1]
@@ -640,8 +681,14 @@ def plan(
     arena: Sequence[Run] | None = None,
     work_area_end: int = MAP_WORK_AREA_END,
     carry: Sequence[ByteEdit] = (),
+    tails: Mapping[str, Tail] | None = None,
 ) -> Plan:
     """Every byte range one set of new lines would change, with nothing written yet.
+
+    `tails` maps an overlay member to a `Tail`: the member is rebuilt as its bytes, with
+    `carry` and any line written in place inside it applied, then the tail's; its
+    `g_cd_dir` size grows to cover it. A refusal of that member names the tail's lines,
+    not the lines written in place inside it.
 
     `carry` is the caller's own byte patches (textures typeset in English). One inside a
     member this plan rebuilds is applied to the member before the rebuild
@@ -706,11 +753,14 @@ def plan(
     by_member: dict[str, set[str]] = {}
     for site in sites:
         by_member.setdefault(site.member, set()).add(site.line_id)
+    tails = tails or {}
+    for short_name, tail in tails.items():
+        by_member[short_name] = set(tail.lines)
     blobs: dict[str, bytes] = {}
     carried: list[ByteEdit] = []
     in_archive = sorted((e for e in carry if e.file == ARCHIVE_NAME), key=lambda e: e.offset)
     starts = [e.offset for e in in_archive]
-    for short_name in sorted(structural):
+    for short_name in sorted({*structural, *tails}):
         member = archive.member(short_name)
         blob = archive.blob(member)
         lines = tuple(sorted(by_member.get(short_name, ())))
@@ -726,10 +776,19 @@ def plan(
                     f"which the translation rebuilds",
                     lines,
                 )
-        if touching:
-            blob = _with_carried(member, blob, touching, lines)
-            carried += touching
-        if member.dir_index == EV_DIR_INDEX:
+        carried += touching
+        own: list[ByteEdit] = []
+        if short_name in tails:
+            if short_name in structural or not short_name.endswith(".OVL"):
+                raise ReinsertRefused(f"{short_name} is given a tail and is not an overlay")
+            # An item written in place inside it (an array that did not move) goes with it.
+            own = [e for e in edits if e.file == ARCHIVE_NAME and archive.owner(e.offset) == member]
+            edits = [e for e in edits if e not in set(own)]
+        if touching or own:
+            blob = _with_carried(member, blob, [*touching, *own], lines)
+        if short_name in tails:
+            rebuilt = blob + tails[short_name].data
+        elif member.dir_index == EV_DIR_INDEX:
             rebuilt = _rebuilt_block(blob, structural[short_name][0], f"{short_name} (EV.BIN)")
         else:
             rebuilt = _rebuilt_map(member, blob, structural[short_name], work_area_end)
@@ -766,7 +825,7 @@ def plan(
         sec = _sec_edit(archive, names[index_of], index_of, changed, by_member, layout)
         if sec is not None:
             edits.append(sec)
-    edits += directory_edits(archive, layout)
+    edits += directory_edits(archive, layout, sizes)
 
     sectors = relocation_edits(archive, layout, blobs)
     edits = [e for e in edits if e.changes]

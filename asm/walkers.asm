@@ -131,6 +131,39 @@ help_pen 8, 172, 132
 .endif
 .endarea
 
+; Descriptions, captions and the fishing messages take five lines at a 12-px pitch in the
+; white under the picture, starting 8 px higher (Jay, 2026-09-24, option c;
+; research/data/text-boxes.tsv). A Japanese entry's three lines move with them.
+DESC_PEN_Y      equ 118
+DESC_LINE_STEP  equ 12
+
+.org 0x800438C4
+.area 4
+.if ORIGINAL
+    addiu   s2, s2, 0x10            ; stock: text_draw_h's newline, y += 16
+.else
+    addiu   s2, s2, DESC_LINE_STEP
+.endif
+.endarea
+
+.org 0x80041858                     ; bag_draw -> text_draw_h(text, 0xB8, y)
+.area 4
+.if ORIGINAL
+    addiu   a2, zero, 0x7E          ; stock: y 126, in the jal's delay slot
+.else
+    addiu   a2, zero, DESC_PEN_Y
+.endif
+.endarea
+
+.org 0x80043F48                     ; fish_msg_draw -> text_draw_h(msg, 0xB8, y)
+.area 4
+.if ORIGINAL
+    addiu   a2, zero, 0x7E
+.else
+    addiu   a2, zero, DESC_PEN_Y
+.endif
+.endarea
+
 ; ---- surface 9: sysmsg_draw 0x800379EC (insect names; wrapper sysmsg_line_draw 0x80037BA8) ---
 ; The across pass counts glyphs in s2 and returns the count, which five callers turn into
 ; pixels (x 12) to place what follows the name or to right-align it (MUSI measures a name by

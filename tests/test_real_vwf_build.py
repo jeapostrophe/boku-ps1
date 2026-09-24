@@ -261,13 +261,23 @@ def test_every_sector_the_days_build_wrote_carries_the_right_edc_and_ecc(
     assert verify_written_sectors(days_image, records) == []
 
 
-def test_the_renderer_patch_is_really_in_the_built_image(days_image: Path, edit_set: EditSet):
-    """The `new` bytes, read back out of the image through its own filesystem."""
+def test_the_renderer_patch_is_really_in_the_built_image(
+    days_image: Path, days_read_back: tuple[Archive, Walk], archive: Archive, edit_set: EditSet
+):
+    """The `new` bytes, read back out of the image: the executable's through its own
+    filesystem, an overlay's through the member it patches, wherever the build put that
+    member (one grown by an overlay tail moves)."""
+    built, _ = days_read_back
     with DiscImage(days_image) as opened:
         entries = {entry.name: entry for entry in opened.walk() if not entry.is_dir}
         for edit in edit_set.edits:
-            entry = entries[edit.file]
-            found = opened.read_file_bytes(entry.lba, edit.offset, len(edit.new))
+            member = archive.owner(edit.offset) if edit.file == ARCHIVE_NAME else None
+            if member is None:
+                entry = entries[edit.file]
+                found = opened.read_file_bytes(entry.lba, edit.offset, len(edit.new))
+            else:
+                at = edit.offset - member.offset
+                found = built.blob(built.member(member.short_name))[at : at + len(edit.new)]
             assert found == edit.new, f"{edit.reason} is not in the built image"
 
 
@@ -440,7 +450,9 @@ def test_every_moved_array_is_found_where_its_readers_now_point(
         else:
             array = catalogue[entry["array"]]
             retail = array.ram
-            assert locate(built, array) == ("exe", to), entry
+            tail = entry["tail"]  # an overlay's member name, or None for resident room
+            image = tail.removesuffix(".OVL").lower() if tail else "exe"
+            assert locate(built, array) == (image, to), entry
         elsewhere += to != retail  # a repack that still fits may be written where it was
     assert elsewhere, "every 'moved' array stayed put; the pairs were never exercised"
 

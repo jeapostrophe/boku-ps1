@@ -2,11 +2,21 @@
 
 from __future__ import annotations
 
+from functools import cache
+
 import pytest
 
-from boku.archive import EXE_LOAD_BIAS, EXE_NAME
+from boku.archive import (
+    ARCHIVE_NAME,
+    EXE_LOAD_BIAS,
+    EXE_NAME,
+    OVERLAY_LOAD_ADDRESS,
+    SECTOR,
+    overlay_read_end,
+)
 from boku.array_relocate import (
     ALIGN,
+    HEAP_POINTER,
     ArrayRoomRefused,
     Region,
     _addressed,
@@ -15,8 +25,9 @@ from boku.array_relocate import (
     _interior,
     _padded,
     plan_arrays,
+    scans,
 )
-from boku.arrays import relocatable, walk_all
+from boku.arrays import ANCHORS, relocatable, walk_all
 from boku.events import Block
 from boku.glyphs import END_WORD, words_of
 from boku.pointers import LuiPair, Use, resolve_at
@@ -180,3 +191,100 @@ def test_the_lint_s_room_check_lays_out_a_resident_block_s_rows_too(disc_dir, mo
     room = _array_room(disc_dir, "stock", None, options)
     assert room({}, {line: entry}) is None
     assert line in offered, "the block's words never reached the room check"
+
+
+def _grown_first_item(archive, prefix, extra_cells=1):
+    """`prefix`'s walk and words growing its item 0 `extra_cells` past its own bytes."""
+    walked = next(w for w in walk_all(archive) if w.array.line_id_prefix == prefix)
+    start, end = walked.strings[0]
+    words = {walked.line_ids[0]: (0x100,) * ((end - start) // 2 - 1 + extra_cells) + (0x8000,)}
+    return walked, words
+
+
+def _overlay_code(archive, plan, name):
+    """`name`'s stored bytes with the plan's edits inside it applied, then its tail."""
+    member = archive.member(name)
+    code = bytearray(archive.blob(member))
+    for e in plan.edits:
+        if e.file == ARCHIVE_NAME and member.offset <= e.offset < member.offset + member.size:
+            code[e.offset - member.offset : e.end - member.offset] = e.new
+    tail = plan.tails.get(name)
+    return bytes(code) + (tail.data if tail else b"")
+
+
+def test_an_array_only_one_overlay_reads_moves_into_that_overlay_s_tail(archive):
+    """Narrowest: the memory-card messages, read only by `TITLE.OVL`, one item one cell
+    over, and no resident room at all. The array still moves -- into the tail of the
+    overlay that reads it, which loads with it -- and `TITLE`'s own pair forms the new
+    address; nothing is written to the executable for it."""
+    walked, words = _grown_first_item(archive, "exe@8003D5F0")
+    plan = plan_arrays(archive, words, regions=())
+    (moved,) = plan.moved
+    title = archive.member("TITLE.OVL")
+    assert moved.new >= OVERLAY_LOAD_ADDRESS + title.size, "not past the overlay's own bytes"
+    code = _overlay_code(archive, plan, "TITLE.OVL")
+
+    def read(at, n):
+        return code[at - OVERLAY_LOAD_ADDRESS : at - OVERLAY_LOAD_ADDRESS + n]
+
+    assert resolve_at(read, ANCHORS["exe@8003D5F0"][1]) == moved.new
+    first = words[walked.line_ids[0]]
+    assert words_of(read(moved.new, 2 * len(first))) == first
+    assert not [e for e in plan.edits if e.file == EXE_NAME], "the executable was written"
+
+
+def test_an_array_the_executable_reads_never_moves_into_an_overlay(archive):
+    """The item names are read by `bag_draw` in the executable, and no overlay is loaded
+    in every mode: with no resident room they are refused, however much tail room an
+    overlay has."""
+    _, words = _grown_first_item(archive, "exe@80046214", extra_cells=2)  # past its pad
+    with pytest.raises(ArrayRoomRefused):
+        plan_arrays(archive, words, regions=())
+
+
+def test_an_overlay_s_tail_stops_where_its_load_would_pass_the_retail_heap(archive):
+    """A load writes whole sectors (`research/text-renderer.md` § 6): the grown member's
+    last sector must end at or below the retail heap's first byte, the word `g_heap_base`
+    starts at in the executable -- the most a retail load ever left to the overlays -- and
+    the tail is not cut short of it: the longest item that still moves fills the last
+    sector below the heap. Found by search, not by restating the bound."""
+    heap = int.from_bytes(archive.exe_bytes(HEAP_POINTER, 4), "little")
+    title = archive.member("TITLE.OVL")
+    walked = next(w for w in walk_all(archive) if w.array.line_id_prefix == "exe@8003D5F0")
+    scanned = cache(lambda: scans(archive))
+
+    def plan_with(n):
+        words = {walked.line_ids[0]: (0x100,) * n + (0x8000,)}
+        try:
+            return plan_arrays(archive, words, regions=(), scanned=scanned)
+        except ArrayRoomRefused:
+            return None
+
+    low, high = 1, (heap - OVERLAY_LOAD_ADDRESS) // 2  # fits; cannot fit in all of RAM
+    assert plan_with(low) is not None and plan_with(high) is None
+    while high - low > 1:
+        middle = (low + high) // 2
+        low, high = (middle, high) if plan_with(middle) is not None else (low, middle)
+    load_end = overlay_read_end([title.size + len(plan_with(low).tails["TITLE.OVL"].data)])
+    assert load_end <= heap, "the load runs past the heap's first byte"
+    assert load_end + SECTOR > heap, "a whole sector below the heap was left unused"
+
+
+def test_an_overlay_the_disc_could_not_grow_leaves_its_arrays_to_resident_room(archive):
+    """`no_tail` names an overlay the reinserter refused to grow: its arrays are placed
+    in resident room instead of being left in Japanese."""
+    _, words = _grown_first_item(archive, "exe@8003D9BC")
+    (moved,) = plan_arrays(archive, words, no_tail=frozenset({"TITLE.OVL"})).moved
+    assert moved.tail is None and moved.new < OVERLAY_LOAD_ADDRESS
+
+
+def test_an_array_too_big_for_its_overlay_s_tail_does_not_push_the_others_out(archive):
+    """The memory-card messages grown past `TITLE.OVL`'s whole tail go to resident room
+    (a large one, for the test); the config labels, which `TITLE` alone reads too, still
+    take the tail."""
+    _, card_words = _grown_first_item(archive, "exe@8003D5F0", extra_cells=40_000)
+    _, config_words = _grown_first_item(archive, "exe@8003D9BC")
+    resident = Region(0x80020000, 0x80020000 + 0x20000, "a large resident run")
+    plan = plan_arrays(archive, card_words | config_words, regions=(resident,))
+    where = {m.prefix: m.tail for m in plan.moved}
+    assert where == {"exe@8003D5F0": None, "exe@8003D9BC": "TITLE.OVL"}

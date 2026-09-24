@@ -23,7 +23,15 @@ from typing import NamedTuple
 import pytest
 
 from boku import REPO_ROOT
-from boku.archive import EV_DIR_INDEX, MAP_DIR_INDEX, SECTOR, Archive
+from boku.archive import (
+    ARCHIVE_NAME,
+    EV_DIR_INDEX,
+    EXE_NAME,
+    MAP_DIR_INDEX,
+    SECTOR,
+    Archive,
+    read_exe_dir,
+)
 from boku.build import ARENA_FILE, BuildRefused, BuildResult, build, verify_written_sectors
 from boku.disc import DiscImage, form1_sectors
 from boku.glyphs import (
@@ -40,6 +48,7 @@ from boku.reinsert import (
     EVENT_BLOCK_LIMIT,
     ByteEdit,
     ReinsertRefused,
+    Tail,
     map_head_room,
     plan,
     sector_head_room,
@@ -928,3 +937,55 @@ def test_a_texture_patch_inside_a_rebuilt_map_is_carried_by_the_build_and_record
         manifest_json(SimpleNamespace(source_sha1="", result_sha1="", sectors=()), result, "t")
     )
     assert [p["offset"] for p in document["carried_patches"]] == [f"0x{at:x}"]
+
+
+def _dir_after(archive: Archive, edits) -> dict[str, tuple[int, int]]:
+    """`{name: (lba, size)}` of `g_cd_dir` once `edits`' executable writes are applied."""
+    exe = bytearray(archive.exe)
+    for e in edits:
+        if e.file == EXE_NAME:
+            exe[e.offset : e.end] = e.new
+    return {e.name.rsplit("\\", 1)[-1]: (e.lba, e.size) for e in read_exe_dir(bytes(exe))}
+
+
+@pytest.mark.parametrize("extra", [4, SECTOR])
+def test_an_overlay_given_a_tail_loads_it(archive: Archive, walk_reader, extra):
+    """`TITLE.OVL` with `extra` bytes appended: inside its sector slack (4) and past it
+    (a sector), `g_cd_dir` names a size that covers the tail -- `cd_load_sync` reads
+    `size` -- and the tail is written where that entry points, after the member's own
+    bytes with a patch inside them carried along."""
+    title = archive.member("TITLE.OVL")
+    tail = (bytes(range(1, 256)) * (extra // 255 + 1))[:extra]
+    was = archive.blob(title)
+    patch = ByteEdit(ARCHIVE_NAME, title.offset + 16, was[16:20], b"\x01\x02\x03\x04", "a patch")
+    p = plan(archive, walk_reader, {}, carry=[patch], tails={"TITLE.OVL": Tail(tail, ())})
+    assert p.carried == (patch,)
+    lba, size = _dir_after(archive, p.edits)["TITLE.OVL"]
+    assert size == title.size + extra
+    if lba == title.lba:
+        written = bytearray(archive.boku)
+        for e in p.edits:
+            if e.file == ARCHIVE_NAME:
+                written[e.offset : e.end] = e.new
+        got = bytes(written[title.offset : title.offset + size])
+    else:
+        (home,) = [s for s in p.sectors if s.lba == lba]
+        got = home.new[:size]
+    assert got == was[:16] + patch.new + was[20:] + tail
+
+
+def test_an_overlay_tail_with_no_room_on_the_disc_names_the_tail_s_items(
+    archive: Archive, walk_reader
+):
+    """With no arena and nothing else moving, `TITLE.OVL` a sector longer has nowhere to
+    go: the refusal names the items in its tail -- what `--skip-unfitted` can take back
+    out -- and not the lines written in place inside the overlay."""
+    with pytest.raises(ReinsertRefused) as refused:
+        plan(
+            archive,
+            walk_reader,
+            {},
+            arena=(),
+            tails={"TITLE.OVL": Tail(bytes(SECTOR), ("exe@8003D5F0.3",))},
+        )
+    assert refused.value.lines == ("exe@8003D5F0.3",)

@@ -33,12 +33,12 @@ exe@8003DA00.1	40	149	12	1	20 summer-memories labels (TITLE)	the left panel's fr
 exe@8003DA00.2	40	149	12	1	20 summer-memories labels (TITLE)	the left panel's frame, as the config screen's
 exe@8003DA00.3	40	149	16	1	20 summer-memories labels (TITLE)	the left panel's frame, as the config screen's; the stock walker letter-spaces this line 16
 exe@8003DA00.4	40	149	12	1	20 summer-memories labels (TITLE)	the left panel's frame, as the config screen's
-exe@80046398.*	184	301	12	3	12 item descriptions (bag)	the picture panel's inner edge; three 16-px lines above the frame
-exe@80046614.*	184	301	12	3	12 photo captions (bag)	the descriptions' drawer and pen (bag_draw); not shot
-exe@800462C8.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
-exe@800462E4.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
-exe@80046314.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
-exe@80046334.0	184	301	12	3	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, 0x7E) as bag_draw draws the descriptions: their box
+exe@80046398.*	184	301	12	5	12 item descriptions (bag)	the picture panel's inner edge; five 12-px lines from y 118 in the white (asm/walkers.asm DESC_PEN_Y; Jay, 2026-09-24)
+exe@80046614.*	184	301	12	5	12 photo captions (bag)	the descriptions' drawer and pen (bag_draw)
+exe@800462C8.0	184	301	12	5	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, y) with the descriptions' pen (asm/walkers.asm): their box
+exe@800462E4.0	184	301	12	5	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, y) with the descriptions' pen (asm/walkers.asm): their box
+exe@80046314.0	184	301	12	5	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, y) with the descriptions' pen (asm/walkers.asm): their box
+exe@80046334.0	184	301	12	5	12 fishing messages (tackle)	fish_msg_draw 0x80043ED8 calls text_draw_h(msg, 0xB8, y) with the descriptions' pen (asm/walkers.asm): their box
 title@7A78.0	112	299	12	1	18 the card screens' two answers (TITLE)	the card panel's inner edge, as the messages'; the second answer starts at 0xAC (boku.layout.ANSWER_PAIR)
 exe@8003DA00.5	114	248	12	1	20 summer-memories quiz rate (TITLE)	the quiz-rate popup's tile, x 112..248 (asm/title.asm); the label shares it with the day count and the percentage below
 exe@80036750.*	108	212	12	1	10 fortune banner	the banner panel (boku.code_text BANNERS) less 8 px a side, centred as the line is
