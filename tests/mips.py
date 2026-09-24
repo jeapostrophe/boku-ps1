@@ -61,6 +61,11 @@ class Machine:
     stubs: dict[int, list[tuple[int, ...]]] = field(default_factory=dict)
     """Functions not run but recorded like `glyph_draw`: address -> the calls made to it,
     each `(a0, a1, a2, a3, [sp+16], [sp+20])` -- the o32 fifth and sixth arguments."""
+    returns: dict[int, int] = field(default_factory=dict)
+    """A stub's `v0`, for the stubs whose answer the caller branches on; any other stub
+    returns garbage with the rest of `CLOBBERED`."""
+    order: list[int] = field(default_factory=list)
+    """Every stub call's address, in the order they were made."""
     hi: int = 0
     lo: int = 0
     _written: int | None = None
@@ -120,8 +125,11 @@ class Machine:
                 self.stubs[pc].append(
                     (*self.regs[4:8], self.read(sp + 16, 4), self.read(sp + 20, 4))
                 )
+                self.order.append(pc)
                 for number in CLOBBERED:
                     self.regs[number] = POISON
+                if pc in self.returns:
+                    self.regs[2] = self.returns[pc] & 0xFFFFFFFF
                 pc, next_pc = self.regs[31], self.regs[31] + 4
                 continue
             if pc == GLYPH_DRAW:

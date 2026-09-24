@@ -83,3 +83,52 @@ HEAP_RAISE equ (HEAP_START_NEW - HEAP_START_STOCK)
     addiu   a2, zero, MAP_AREA
 .endif
 .endarea
+
+; ---- SUB.TIM's reload (0x80014E60): the stack's side of the raise ---------------------------
+; A mode's way out reloads SUB.TIM's 50 sectors at g_arena_cur, and the raises move that up;
+; from bug sumo the load ran through the stack (research/loading-and-memory.md § Leaving a
+; mode). sub_tim_floor lowers the destination, only when it must, to the highest one whose
+; sectors end under the stack's measured reach. The three instructions after the frame's
+; `sw s0` become: save ra, jal sub_tim_floor with `move s0, a0` in its delay slot, and
+; sub_tim_floor does the displaced `addiu a0, zero, 0xE1`.
+SUB_TIM     equ 0xE1                ; g_cd_dir index of SUB.TIM
+STACK_TOP   equ 0x801FFFF0
+STACK_REACH equ (STACK_TOP - STACK_DEPTH)
+
+.org 0x80014E68
+.area 12
+.if ORIGINAL
+    move    s0, a0                  ; stock: s0 = the destination
+    addiu   a0, zero, SUB_TIM       ; stock: file_load's index
+    sw      ra, 0x1C(sp)            ; stock
+.else
+    sw      ra, 0x1C(sp)            ; first: the jal below overwrites ra
+    jal     sub_tim_floor
+    move    s0, a0
+.endif
+.endarea
+
+.if ORIGINAL == 0
+.org VOICE_SHOW_SPLIT
+.area VOICE_SHOW_ISLAND_END - VOICE_SHOW_SPLIT
+; s0 = the destination; returns a0 = SUB_TIM and s0 no higher than STACK_REACH less the
+; file's sectors (its size from g_cd_dir, which a build that moves it keeps true). Clobbers
+; v0 and at, which are dead in 0x80014E60 here.
+sub_tim_floor:
+    lui     at, hi(CD_DIR_SIZE + 4 * SUB_TIM)
+    lw      v0, lo(CD_DIR_SIZE + 4 * SUB_TIM)(at)
+    lui     at, hi(STACK_REACH)
+    addiu   v0, v0, 2047
+    srl     v0, v0, 11
+    sll     v0, v0, 11              ; whole sectors: what the load writes
+    addiu   at, at, lo(STACK_REACH)
+    subu    at, at, v0
+    sltu    v0, at, s0
+    beqz    v0, @@fits
+    addiu   a0, zero, SUB_TIM
+    move    s0, at
+@@fits:
+    jr      ra
+    nop
+.endarea
+.endif

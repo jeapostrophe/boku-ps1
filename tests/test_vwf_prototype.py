@@ -541,17 +541,19 @@ def test_a_cue_file_that_is_not_there_is_a_refusal(tmp_path):
 
 
 def test_the_build_defines_every_equate_movie_asm_leaves_to_it():
-    """The `-equ` contract, read from the assembly's half of it: the `MOVIE_SUB_*` names
-    `movie.asm` and `voice.asm` (the clip subtitles, which read the same block) use and never
+    """The `-equ` contract, read from the assembly's half of it: the `MOVIE_SUB_*` names (and
+    bug sumo's `SUMO_PEN_INDENT`) that `movie.asm` and the clip subtitles' `voice.asm` and
+    `voice_resident.asm`, which read the same block, use and never
     define themselves are exactly the ones `movie_equates` supplies, so one added there fails
     here rather than inside armips."""
     tool = vwf_prototype()
     source = "\n".join(
-        (tool.ASM.parent / name).read_text(encoding="utf-8") for name in ("movie.asm", "voice.asm")
+        (tool.ASM.parent / name).read_text(encoding="utf-8")
+        for name in ("movie.asm", "voice.asm", "voice_resident.asm")
     )
     code = "\n".join(line.split(";", 1)[0] for line in source.splitlines())
     defined = set(re.findall(r"^\s*(\w+)\s+equ\s", code, re.M))
-    used = set(re.findall(r"\bMOVIE_SUB_\w+", code)) - defined
+    used = set(re.findall(r"\b(?:MOVIE_SUB|SUMO_PEN)_\w+", code)) - defined
     assert used, "movie.asm defines every name it uses; the parse lost the source"
     assert set(tool.movie_equates(bytes(FORM1_DATA_SIZE))) == used
     equates = tool.movie_equates(bytes(FORM1_DATA_SIZE + 1))

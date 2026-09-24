@@ -81,6 +81,12 @@ DEBUG_FONT_ISLAND     equ 0x800221CC
 DEBUG_FONT_SPLIT      equ 0x800222EC    ; 288 bytes for the movie loader
 DEBUG_FONT_ISLAND_END equ 0x80022494
 
+; 0x80037414..0x80037524: 272 bytes of dead code (voice.asm's list), shared the same way:
+; voice.asm's voice_sub_show takes [ISLAND, SPLIT), arena.asm's sub_tim_floor [SPLIT, END).
+VOICE_SHOW_ISLAND     equ 0x80037414
+VOICE_SHOW_SPLIT      equ 0x800374EC
+VOICE_SHOW_ISLAND_END equ 0x80037524
+
 .include "dialogue.asm"
 .include "select.asm"
 .include "arena.asm"
@@ -184,6 +190,7 @@ vwf_select_box:
 
 .include "labels.asm"
 .include "banners.asm"
+.include "voice_resident.asm"
 
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from boku import REPO_ROOT
@@ -23,6 +23,27 @@ from boku.voice import VoiceNode, sector_ticks
 
 CLIP_FILE = REPO_ROOT / "translation" / "clips.txt"
 CLIP_ID = re.compile(r"XCH\.(\d{2})")
+OUTSIDE_SUMO = frozenset({34, *range(41, 46)})
+"""The clips known to play outside bug sumo: the bedtime clip in movie mode and the five
+epilogues in `ENDOTI` (research/event-scripts.md § Native clips). Every other clip is laid
+out for bug sumo's pen, which is the safe side: a clip laid out narrower than its mode needs
+is only shorter lines."""
+SUMO_PEN_INDENT = 42
+"""Pixels bug sumo's subtitle pen starts right of the dialogue pen (`asm/voice.asm`,
+`voice_sub_show`): clear of Boku's 44 x 44 portrait at (18, 161), which a bout draws in
+front of the band's first line (research/sumo.md § Subtitles)."""
+
+
+def clip_box(index: int, box: BoxSpec = DIALOGUE_BAND) -> BoxSpec:
+    """The box clip `index` is laid out in: `box`, or in bug sumo `box` less the indent."""
+    if index in OUTSIDE_SUMO:
+        return box
+    return replace(
+        box,
+        width=box.width - SUMO_PEN_INDENT,
+        guarded_width=max(box.guarded_width - SUMO_PEN_INDENT, 0),
+        name=f"{box.name} in bug sumo",
+    )
 
 
 @dataclass(frozen=True)
@@ -68,7 +89,7 @@ def lay_out_clips(
             continue
         index = int(match[1])
         ticks = sector_ticks(clips[index].sectors)
-        laid = lay_out_subtitle(entry.line_id, entry.pages, ticks, encoder, box)
+        laid = lay_out_subtitle(entry.line_id, entry.pages, ticks, encoder, clip_box(index, box))
         problems += [ClipProblem(entry.line_id, entry.origin, p) for p in laid.problems]
         if not laid.problems:
             words[index] = laid.words

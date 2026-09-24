@@ -62,7 +62,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 from boku import clip_subs, edc  # noqa: E402
-from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, parse_pack  # noqa: E402
+from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, dir_arrays, parse_pack  # noqa: E402
 from boku.boxes import box_for  # noqa: E402
 from boku.build import verify_sectors  # noqa: E402
 from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
@@ -999,10 +999,11 @@ if 1 << MOVIE_SUB_RECORD_SHIFT != RECORD_SIZE:
 
 
 def movie_equates(block: bytes) -> dict[str, int]:
-    """The `-equ`s `asm/movie.asm` takes: where this block is, and the numbers of its format.
+    """The `-equ`s the movie and clip subtitles take (`asm/movie.asm`, `asm/voice.asm`):
+    where this block is, the numbers of its format, and bug sumo's pen indent.
 
-    Every one of them is `boku.movie_block`'s, not retyped in the assembly, so a
-    change to the block's layout cannot leave the routine reading the old one.
+    Every one of them is `boku.movie_block`'s or `boku.clip_subs`'s, not retyped in the
+    assembly, so a change to the block's layout cannot leave the routine reading the old one.
     """
     return {
         "MOVIE_SUB_BLOCK": BLOCK_RAM,
@@ -1016,6 +1017,7 @@ def movie_equates(block: bytes) -> dict[str, int]:
         "MOVIE_SUB_CLIP_HEADER": CLIP_HEADER_SIZE,
         "MOVIE_SUB_CLIP_ROW": CLIP_ROW_SIZE,
         "MOVIE_SUB_CLIPS": clip_count(block),
+        "SUMO_PEN_INDENT": clip_subs.SUMO_PEN_INDENT,
     }
 
 
@@ -1481,8 +1483,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
         Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
+    extra = movie_equates(block) | {"CD_DIR_SIZE": dir_arrays(stock_exe).size + EXE_LOAD_BIAS}
     patched, symbols = assemble(
-        Path(args.armips), Path(args.asm), images, bytes(table), layout, work, movie_equates(block)
+        Path(args.armips), Path(args.asm), images, bytes(table), layout, work, extra
     )
     patched_exe = patched[EXE_NAME]
     patched_overlays = {

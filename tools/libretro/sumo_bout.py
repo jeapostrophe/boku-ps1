@@ -15,6 +15,16 @@ it); 12 if the fighter's stats disagree; 13 if the card or import cannot be read
 With `--mantis` the gate is the story instead (no stats are checked): King on the rank board,
 the bout won, `E1754` followed until Boku stands in `E02` with `g_flags[69]` and `[70]` set.
 Exit 0 then, with `mantis.png`, `shortcut.png` and `shortcut.state`.
+
+`--gong` then strikes the gong, which starts the fight with a boy's voice (`XCH.nn`), and
+checks that clip's subtitle (PLAN `VO-06`): it must open while the clip plays with its words
+in bug sumo's home for them (level C's base, `asm/voice.asm`) and the band up, and be down
+again when the clip ends -- `clip.png` shows it, `after.png` the frame after. Exit 14 if not.
+Run it on an image built with clip subtitles.
+
+`--leave` then lets the fight end, backs out to the desk's "もどる" and leaves bug sumo: the
+field must come back (a build whose SUB.TIM reload ran into the stack hung here on a black
+screen -- research/loading-and-memory.md § Leaving a mode). Exit 15 if it does not.
 """
 
 from __future__ import annotations
@@ -29,6 +39,7 @@ REPO = HERE.parent.parent
 sys.path.insert(0, str(REPO))
 
 from field import (  # noqa: E402 -- beside this file, so on sys.path when run as a script
+    FIELD,
     MAP_NAME,
     MODE_ACTIVE,
     Game,
@@ -39,10 +50,12 @@ from field import (  # noqa: E402 -- beside this file, so on sys.path when run a
 )  # fmt: skip
 
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError  # noqa: E402
+from boku.asm_source import asm_equate  # noqa: E402
+from boku.movie_block import MAGIC  # noqa: E402
 from boku.save import G_FLAGS, GameTables, SaveError, body_of, read_card  # noqa: E402
 from boku.sumo import CAGE, EMPTY, RECORD, SumoTables, bout_hp  # noqa: E402
 
-EXIT_STEP, EXIT_STATS, EXIT_INPUT = 11, 12, 13
+EXIT_STEP, EXIT_STATS, EXIT_INPUT, EXIT_SUBTITLE, EXIT_LEAVE = 11, 12, 13, 14, 15
 
 SUMO = 7
 DESK_EVENT = 4025
@@ -62,6 +75,19 @@ SHORTCUT = G_FLAGS + 70
 FIGHTER = 0x8008F018
 """Boku's fighter in `MUSI`: `+8 s32` HP, `+0xC` HP before the training bonus, `+0x10` STR,
 `+0x12` DEF0, `+0x13` DEF1 (`sumo_stats` `0x80081380`)."""
+XA_STATUS = 0x800359D8
+"""The XA status word: bits 0 and 2 while a clip plays (what `XAMSG` waits on)."""
+TEXT_PAGE = 0x800359EC
+"""`g_text_page`: the page the dialogue renderer draws, NULL when none."""
+PANEL_VISIBLE = 0x8002911E
+LEVEL_C = asm_equate("LEVEL_C_BASE", "voice.asm")
+"""`g_arena_lvl_c` -> level C's base: bug sumo's copy of the subtitle block."""
+HOME_BYTES = asm_equate("SUMO_HOME_BYTES", "voice.asm")
+"""The room the block may take there."""
+SUBTITLE_LAG = 4
+"""Frames the subtitle may trail the clip's start or end (it is served once a frame)."""
+DESK_CURSOR, BACK = 0x8008EF78, 3
+"""The desk's cursor (`MUSI` `0x8007C77C`); 3 is "もどる"."""
 
 
 def enter_desk(game: Game) -> None:
@@ -128,6 +154,46 @@ def fight_to_the_shortcut(game: Game) -> None:
     raise StepError("E1754 did not reach the shortcut (E02)")
 
 
+def gong(game: Game, work: Path) -> None:
+    """Strike the gong and watch the first clip's subtitle."""
+    game.run(200)
+    game.press("RIGHT", 60)  # the drum to the gong
+    game.press("CIRCLE", 0)
+    playing = lambda: game.u32(XA_STATUS) & 5  # noqa: E731
+    game.until("the gong's clip", playing, 600)
+    start, home = game.frame, game.u32(LEVEL_C)
+    if game.u32(home) != MAGIC:
+        raise StepError(f"no subtitle block at level C's base 0x{home:08X} when the clip started")
+    game.run(SUBTITLE_LAG)
+    page, panel = game.u32(TEXT_PAGE), game.read(PANEL_VISIBLE, 1)[0]
+    if not (home <= page < home + HOME_BYTES and panel):
+        raise StepError(f"clip at frame {start}: page 0x{page:08X}, band {panel} -- no subtitle up")
+    game.run(16)
+    game.fe.screenshot(work / "clip.png")
+    game.until("the clip's end", lambda: not playing(), 1200)
+    end = game.frame
+    game.run(SUBTITLE_LAG)
+    game.fe.screenshot(work / "after.png")
+    page, panel = game.u32(TEXT_PAGE), game.read(PANEL_VISIBLE, 1)[0]
+    if page or panel:
+        raise StepError(f"clip ended at frame {end}: page 0x{page:08X}, band {panel} -- still up")
+    print(f"sumo-bout: the gong's clip, frames {start}-{end}: subtitle from 0x{home:08X}")
+
+
+def leave(game: Game, work: Path) -> None:
+    """From the fight: its end, ✕ back to the desk's "もどる", ○, and the field again."""
+    game.run(1800)  # the fight and its clips (the maxed bug wins in ~1,000 frames)
+    for _ in range(2):
+        for _ in range(10):
+            game.press("CROSS", 4)
+        game.run(120)
+    game.until("the desk's back button", lambda: game.read(DESK_CURSOR, 1)[0] == BACK, 300)
+    game.press("CIRCLE", 0)
+    game.until("the field after bug sumo", lambda: game.read(MODE_ACTIVE, 1)[0] == FIELD, 900)
+    game.fe.screenshot(work / "field.png")
+    print(f"sumo-bout: back in the field at frame {game.frame}")
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -142,7 +208,13 @@ def main(argv: list[str]) -> int:
         help="the card is set up for the mantis fight: choose King, win it, and follow E1754 "
         "to the shortcut (research/sumo.md § The mantis and the shortcut)",
     )
+    p.add_argument("--gong", action="store_true", help="then strike the gong: VO-06's gate")
+    p.add_argument("--leave", action="store_true", help="after --gong, leave bug sumo")
     args = p.parse_args(argv)
+    if args.leave and not args.gong:
+        p.error("--leave runs after --gong's fight; give both")
+    if args.gong and args.mantis:
+        p.error("--gong fights the stats bout; --mantis fights its own")
     try:
         archive = Archive(args.disc)
         tables, sumo = GameTables.read(archive), SumoTables.read(archive)
@@ -188,6 +260,15 @@ def main(argv: list[str]) -> int:
     )
     if got != (want.hp, want.strength, want.defence) or hp != bout_hp(want.hp, record[8]):
         return EXIT_STATS
+    steps = [(gong, EXIT_SUBTITLE)] if args.gong else []
+    steps += [(leave, EXIT_LEAVE)] if args.leave else []
+    for step, code in steps:
+        try:
+            step(game, work)
+        except StepError as exc:
+            game.fe.screenshot(work / "stuck.png")
+            print(f"sumo-bout: {exc}", file=sys.stderr)
+            return code
     return 0
 
 

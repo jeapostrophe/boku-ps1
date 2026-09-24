@@ -91,6 +91,12 @@ cage. In DuckStation: walk to the secret base and examine the table.
   first zone lies within Megane's reach, where ○ talks to him instead.
 * The desk, cage and drum presses then follow; `sumo-bout` checks the fighter against
   `boku.sumo` and saves `bout.state`, ~12,100 frames from power-on.
+* The bout flag rising is both bugs on the drum (`0x8008EF84`/`85` = 1/1), not yet the fight:
+  RIGHT moves the hand to the **gong** (desk cursor `0x8008EF78` = 6) and ○ strikes it
+  (the desk's input routine, `MUSI` `0x8007C77C`, case 6), which plays a boy's clip and starts the fight;
+  the rest of the bout plays its clips by itself (measured: four more in ~1,000 frames, the
+  maxed bug winning). △ only zooms the view. `sumo-bout --gong` does this.
+
 
 ## The mantis and the shortcut
 
@@ -132,3 +138,35 @@ its `+10` is 1).
 `B06`'s well, for the record: with flag 36 = 0 (before the uncle's gossip, `E0705`) `E8062`
 shows its line with no voice; with 36 = 1, `E0809` plays `MOVIE 8` (`M100`, 4.5 s, no speech —
 Whisper hears nothing but the echo) and no clip.
+
+## Subtitles for the boys' voices (PLAN `VO-06`)
+
+Every clip bug sumo plays goes through `xa_play_indexed`, so `VO-03`'s hook sees it; what
+`asm/voice.asm` needed was a home for the words and a frame that draws them. Measured on
+Beetle, 2026-09-23, with the maxed cage:
+
+* **Where the words live.** `MOVIE_SUB_BLOCK` is bug sumo's own memory (event-scripts.md §
+  Native clips). Mode 7 is a level-B mode: `g_arena_cur` is `0x801E7AC0` from the end of its
+  init to the end of a bout and never moves; a sentinel written over **level C's base
+  (`0x801F7650` under the map-area raise) to `0x801FE000`** at the switch to mode 7 was
+  untouched through the desk, a whole fight and sixty more presses -- the stack stays above
+  it too. Level C's first `0x6000` bytes are `bg_swap_in`'s scratch, holding nothing between
+  map changes. So `g_modes[7]`'s init calls `sumo_sub_init` instead of `MUSI`'s init: that
+  init, then the movie-subtitle block (7 sectors today) from the disc to level C's base,
+  read on every entry, while the screen is still loading. The assembly refuses a block
+  larger than those `0x6000` bytes.
+* **Who owns the text.** The runner's flags (`0x8003637C`) read 5 all through a bout: bit 0,
+  "an event owns the text", stays set by `E4025`, which is suspended -- `MUSI` never calls
+  `event_update` or the dialogue renderer. `clip_sub_owned` (`VO-07`) leaves a native clip's
+  subtitle to the main loop whatever the bit says, and `clip_sub_block` does not test it.
+* **Where it draws.** `MUSI`'s init sets the mode's vsync count to 0, so the main loop runs
+  at 60 Hz. A bout adds its HUD sprites to ordering-table slot 0 -- Boku's portrait 44 × 44 at
+  (18, 161), the opponent's at (255, 38), the gong -- and its text to slot 1, so the subtitle
+  draws in slot 0 (text in front of its band, both in front of the HUD text) and its pen
+  starts `boku.clip_subs.SUMO_PEN_INDENT` (42) px right of the band's, clear of the portrait,
+  which a slot-0 prim added earlier still covers. Clips are laid out 42 px narrower
+  accordingly (`clip_box`).
+* `./make.sh sumo-bout CARD --gong` is the gate: the gong's clip must open its subtitle from
+  level C's base with the band up, and it must be down when the clip ends (`--leave` then
+  leaves bug sumo: loading-and-memory.md § Leaving a mode). `tools/redux/sumo-clip.lua`
+  reaches the desk on PCSX-Redux from a cold boot and plays a clip by the same call.

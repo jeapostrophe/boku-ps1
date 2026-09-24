@@ -354,7 +354,7 @@ case "$verb" in
             tests/test_real_texture_text_beetle.py tests/test_real_texture_buttons.py \
             tests/test_real_save_boot.py tests/test_real_sumo_bout.py \
             tests/test_real_voice_subtitle.py tests/test_real_clip_subtitle.py \
-            tests/test_real_clip_subtitle_beetle.py "$@"
+            tests/test_real_clip_subtitle_beetle.py tests/test_real_sumo_voice.py "$@"
         ;;
     lint)
         uv run ruff check .

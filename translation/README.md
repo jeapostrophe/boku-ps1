@@ -102,8 +102,8 @@ Subtitles for the voice clips the game plays from its own code rather than from 
 the table `BOKU_XA.XCH`, clips `XCH.00`–`XCH.47`
 ([research/data/voice-only.tsv](../research/data/voice-only.tsv) says what each one says):
 the first night's narration going to sleep (`XCH.34`), the five epilogues (`XCH.41`–`.45`)
-and the bug-sumo voices (`XCH.00`–`.40`; drawn once PLAN `VO-06` is done). A day file's row,
-keyed by the clip:
+and the bug-sumo voices (`XCH.00`–`.40`, laid out 42 px narrower: bug sumo starts its pen
+right of Boku's portrait — `boku.clip_subs.clip_box`). A day file's row, keyed by the clip:
 
 ```
 XCH.34	Narrator	And so the first day of that summer vacation came to an end.

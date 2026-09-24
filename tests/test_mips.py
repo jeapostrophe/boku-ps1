@@ -83,3 +83,20 @@ def test_div_and_divu_leave_the_quotient_in_lo_and_the_remainder_in_hi(
     )
     m.call(CODE, a & 0xFFFFFFFF, b & 0xFFFFFFFF)
     assert (m.regs[2], m.regs[3]) == (quotient & 0xFFFFFFFF, remainder & 0xFFFFFFFF)
+
+
+def test_a_stub_returns_what_it_is_given_and_its_calls_are_ordered():
+    """`Machine.returns` and `Machine.order`, which the bug-sumo init test reads."""
+    first, second = CODE + 0x100, CODE + 0x200
+    m = Machine(stubs={first: [], second: []}, returns={second: 0})
+    # addiu sp,-24; sw ra,16(sp); jal second; nop; jal first; nop; lw ra,16(sp); nop; jr ra;
+    # addiu sp,24
+    jal = lambda target: 0x0C000000 | (target & 0x0FFFFFFF) >> 2  # noqa: E731
+    code = [0x27BDFFE8, 0xAFBF0010, jal(second), NOP, jal(first), NOP, 0x8FBF0010, NOP]
+    m.load(CODE, struct.pack(f"<{len(code) + 2}I", *code, JR_RA, 0x27BD0018))
+    assert m.call(CODE) == 0xDEADBEEF, "a stub with no return value leaves garbage in v0"
+    assert m.order == [second, first]
+    m.order.clear()
+    code[4:6] = [NOP, NOP]
+    m.load(CODE, struct.pack(f"<{len(code) + 2}I", *code, JR_RA, 0x27BD0018))
+    assert m.call(CODE) == 0 and m.order == [second]

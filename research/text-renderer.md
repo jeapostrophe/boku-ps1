@@ -335,7 +335,8 @@ Candidates, cheapest first:
    used.) **Taken:** `0x80012E04` and `dbg_font_init` `0x800221CC` hold the movie-subtitle
    hooks' code (`asm/movie.asm`; `research/movies.md` § 7–8, where each was watched dead).
    `date_label_draw_b`, `0x80043928`, `0x80037414`, `0x8001CA64`, `0x8001CC4C` and
-   `0x8001CDF4` hold the voice-only subtitle hooks (`asm/voice.asm`; bounds re-read there, and
+   `0x8001CDF4` hold the voice-only subtitle hooks (`asm/voice.asm`; `0x80037414`'s tail from
+`VOICE_SHOW_SPLIT` is `asm/arena.asm`'s `sub_tim_floor`; bounds re-read there, and
    a scan of the EXE and all seven overlays found no `jal`, `j`, data word or `lui` pair into
    any of them).
 3. **The house debug printer** `0x80022494…0x80022D64` (~2 KB) plus its 8×8 font data at
@@ -358,7 +359,7 @@ reference scan over the executable and all seven overlays (`jal`/`j`, `lui` pair
 
 | region | bytes | what it was | owner |
 |---|---:|---|---|
-| `0x8005CD44…0x8005DCF8` | 4,020 | the PC-host module (`PCload`/`PCsave`, libsn `PCopen`/`PCread`/…), reached only from `g_pc_host` branches; `asm/vwf.asm` clears `g_pc_host` (`0x80023830`) in the file, so no branch can be taken even before `sys_init`. On the stock image an exec watch (`tools/vwf/island-watch.lua`, `BOKU_ISLAND_RANGE=8005CD44,8005DCF8`, under `drive.lua` with the boot presses to 19,300 frames) saw no hit through boot, the arrival sequence, free roam, START and the item menu; sumo, fishing and a save were not walked | renderer (`asm/vwf.asm`: advance table, select hooks; `asm/labels.asm`: the date labels' routines; `asm/banners.asm`: the banners'), from its start to `vwf_free` |
+| `0x8005CD44…0x8005DCF8` | 4,020 | the PC-host module (`PCload`/`PCsave`, libsn `PCopen`/`PCread`/…), reached only from `g_pc_host` branches; `asm/vwf.asm` clears `g_pc_host` (`0x80023830`) in the file, so no branch can be taken even before `sys_init`. On the stock image an exec watch (`tools/vwf/island-watch.lua`, `BOKU_ISLAND_RANGE=8005CD44,8005DCF8`, under `drive.lua` with the boot presses to 19,300 frames) saw no hit through boot, the arrival sequence, free roam, START and the item menu; sumo, fishing and a save were not walked | renderer (`asm/vwf.asm`: advance table, select hooks; `asm/labels.asm`: the date labels' routines; `asm/banners.asm`: the banners'; `asm/voice_resident.asm`: the clip subtitles' block read and bug sumo's init), from its start to `vwf_free` |
 | `0x8005D494…0x8005DCF8` today | 2,148 | the island's tail, from `vwf_free` (the edit set's `gap`) to `PC_HOST_ISLAND_END` | relocated text arrays (`PLAN PIPE-07`, `boku.build.EditSet.array_regions`); the renderer has priority and the array allocator refuses with numbers if they collide |
 | `0x80025120…0x80025860` | 1,856 | `dbg_font_init`'s 8×8 font and CLUT (only it refers to them) | relocated text arrays (`boku.array_relocate.DEAD_REGIONS`) |
 | `0x8007224C…0x80072670` | 1,060 | the PC-host module's data: its header string, `$gp` variables `0x8007228C…BC` and the `PCload`/`PCsave` messages; every reference, `$gp` ones included, is from the module | relocated text arrays (`DEAD_REGIONS`) |

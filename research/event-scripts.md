@@ -322,8 +322,9 @@ of the movie-subtitle block (`boku.movie_block`), which `movie_sub_load` reads t
   byte of the block, not only its first word, then stays unchanged while the subtitle is up
   in both modes (compared each frame by the gate below).
 * **The main loop's last call before `frame_flip` (`0x80011E44`)** draws the subtitle and its
-  band into OT slot 1, in front of `ENDOTI`'s stills (slot 2), and counts its page timers at
-  30 Hz. When the game mode changes — `ENDOTI` handing over to the save prompt, which reuses
+  band into OT slot 0, in front of `ENDOTI`'s stills (slot 2) and of whatever else a mode
+  draws in slot 1 (bug sumo's HUD text: [sumo.md](sumo.md) § Subtitles), and counts its page
+  timers at 30 Hz. When the game mode changes — `ENDOTI` handing over to the save prompt, which reuses
   the block's memory — the subtitle comes down.
 * **The bedtime loop draws nothing**, so while a subtitle is up `clip_sub_wait` builds and
   flips its own frame in place of the loop's `VSync(0)`, and its closing `xa_stop` flips one
@@ -357,16 +358,14 @@ its page turns on the clip's 30 Hz timer (so nothing counts it twice) and it is 
 mode changes. How play itself enters the diary was not walked; the gate requires the bit set
 at the clip, so a route that stopped exercising it fails rather than passing vacuously.
 
-**Bug sumo (`VO-06`).** The boys' voices (`XCH.00`–`.40`) go through the same hook, but mode 7
-stays off in `clip_sub_block`, measured on PCSX-Redux by `tools/redux/to-sumo.lua` (the route
-is [save-format.md](save-format.md) § Reaching the scenes other lanes asked for). In one run —
-hand-over to the field at vsync 3617, `E4025`'s mode 7 at 3921 — the block's first word changed
-at 3638, 3681 and 3816, while the field loaded `A18`, and again at 3974 and 4033, in mode 7: the
-block is gone before bug sumo starts, and mode 7 writes there too. That RAM is mode 7's own (arena level B from `0x801B3DF4`,
-[loading-and-memory.md](loading-and-memory.md); the game prints its cage work buffer at
-`0x801E7AA0`), so re-reading the block there, as `ENDOTI` does, would write over bug sumo's
-data. The subtitles need a home mode 7 does not use, and a bout to be proven in — neither is
-found yet.
+**Bug sumo (`VO-06`).** The boys' voices (`XCH.00`–`.40`) go through the same hook, but the
+block does not survive into mode 7: measured on PCSX-Redux by `tools/redux/to-sumo.lua`, its
+first word changed while the field loaded `A18` and again in mode 7, whose arena (level B from
+`0x801B3DF4`, [loading-and-memory.md](loading-and-memory.md)) covers `0x801C0000`. Bug sumo
+therefore reads the block to level C's base as it starts, and draws the subtitle clear of its
+HUD: [sumo.md](sumo.md) § Subtitles is the measurement and the design. The runner's bit is
+set all through a bout too (`E4025` is suspended, not ticked), which `VO-07`'s
+`clip_sub_owned` already leaves to the native clip.
 
 ## Speakers
 

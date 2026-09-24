@@ -89,6 +89,29 @@ everything above its level**, and a mode's loads bump-allocate from there with
 | B `0x800258F8` | `0x801B3DF4` | 279,036 | 3, 4 (menus), 6 `TAKO`, 7 `MUSI`, 10 `HHON`, 15 `TITLE` (saving from the game) | the other-map half and the saved background are overwritten; A and the models survive |
 | C `0x800258FC` | `0x801F41F4` | 15,868 | 5 (field), 9, 17 | nothing |
 
+### Leaving a mode: `SUB.TIM` is reloaded at `g_arena_cur`
+
+Seven calls in the overlays (`MUSI`, `TAKO` ×2, `HHON`, `TITLE` ×2, `ZUKAN`) and two in the
+executable, on the way out of a mode, are `0x80014E60(g_arena_cur)`: `file_load(225 = SUB.TIM, g_arena_cur)`, then the TIM
+to VRAM at (0x340, 0). `SUB.TIM` is 100,896 bytes, so the load writes 50 sectors, 102,400
+bytes, from wherever the leaving mode's allocations ended. Retail bug sumo leaves at
+`g_arena_cur` `0x801E5E64` (measured, Beetle) and its load ends at `0x801FEE64`, 476 bytes
+under the field's measured stack low-water mark (`0x801FF040`). The map-area and heap raises
+(`asm/arena.asm`, `asm/vwf.asm`) move level B up by `MAP_AREA_EXTRA + HEAP_RAISE` = `0x1C5C`
+(`0x801B3DF4` → `0x801B5A50`; level C by `0x345C`), and every level-B allocation with it, so
+bug sumo leaves at `0x801E7AC0`: the load ran past the top of RAM through the stack and the
+game hung on a black screen after "もどる" (measured on Beetle; stock leaves to the field).
+`asm/arena.asm` (`sub_tim_floor`) lowers the destination, only when the sectors would end
+above `0x801FFFF0 - STACK_DEPTH`, to the highest one that ends below it -- over the leaving
+mode's own last allocations, which it abandons next (bug sumo resets `g_arena_cur` right
+after the call, and the mode it switches to resets it again). Loading at level B's base
+instead also avoids the stack but the field did not come back; the floor keeps the retail
+neighbourhood. The floor applies to every caller but fires only for a load that would end
+above the reach; measured, only bug sumo's does (the kite's and the insect box's modes end at
+`0x801C4954` and `0x801C2F3C`, § "The map work area" of vwf-prototype.md). Two callers go on
+after the reload (`TAKO` and the item menu call `0x800436EC`, `TITLE` `0x8007F818`); one of
+them leaving from above `0x801E6040` would find its last allocations overwritten -- not seen. `tools/libretro/sumo_bout.py --gong --leave` is the gate.
+
 ## Map packs
 
 1. `map_load` / `map_load_async` (`0x80017534` / `0x8001756C`): `map_select(name)`, then

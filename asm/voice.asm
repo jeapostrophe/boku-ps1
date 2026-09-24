@@ -9,11 +9,12 @@
 ;                     text -- unless its offset is null (every stock entry) or g_ev_notext
 ;                     is set (XAMSG skips msg_open then too)
 ;     event_update    jal text_set_light -> voice_sub_tick, once per event tick
-; * A native play of g_xa_clips (XCH.nn): the day-1 bedtime clip in movie mode and the
-;   epilogues in ENDOTI (the bug-sumo voices take the same hook; PLAN VO-06). Its English is
-;   a row of the movie-subtitle block (boku.movie_block, "clips"), which movie_sub_load
-;   reads before every movie -- and a movie plays before both (research/event-scripts.md
-;   § Native clips). No event runs, so nothing else draws it:
+; * A native play of g_xa_clips (XCH.nn): the day-1 bedtime clip in movie mode, the
+;   epilogues in ENDOTI and the boys' voices in bug sumo. Its English is a row of the
+;   movie-subtitle block (boku.movie_block, "clips"), which movie_sub_load reads before every
+;   movie -- and a movie plays before the first two (research/event-scripts.md § Native
+;   clips); bug sumo reads its own copy (clip_sub_block, research/sumo.md § Subtitles). No
+;   event draws it, so:
 ;     xa_play_indexed jal xa_play -> clip_sub_play: the call it replaces, then the block's
 ;                     row for this clip, if there is one (clip_sub_block: movie mode and
 ;                     ENDOTI only, whatever the event runner's stale flag says -- VO-07)
@@ -22,6 +23,8 @@
 ;     day-1 bedtime   the VSync of 0x8002E568's wait loop -> clip_sub_wait: that loop draws
 ;                     nothing, so while a subtitle is up it builds and flips its own frame;
 ;                     and its closing xa_stop -> clip_sub_done, which flips an empty one
+;     g_modes[7] init jal MUSI's init -> sumo_sub_init (voice_resident.asm): that init, then
+;                     the block to level C's base, bug sumo's home for it
 ;
 ; Both kinds share one state and one server (voice_sub_service): the subtitle comes down when
 ; the XA status word clears (no script closes text after a clip), when the game mode changes
@@ -50,6 +53,17 @@ OT_LENGTH         equ 0x2000        ; what the main loop clears and draws (0x800
 CD_INT_TO_POS     equ 0x8004CAEC    ; DsIntToPos, DsRead, DsReadSync: the calls
 CD_READ           equ 0x800506CC    ; movie_sub_load reads the block with (asm/movie.asm)
 CD_READ_SYNC      equ 0x80050A7C
+SUMO_MODE         equ 7             ; bug sumo, MUSI.OVL
+MUSI_INIT         equ 0x8007BE60    ; MUSI.OVL's init, called by g_modes[7]'s after the load
+LEVEL_C_BASE      equ 0x800258FC    ; g_arena_lvl_c: -> level C's base
+SUMO_HOME_BYTES   equ 0x6000        ; from level C's base: bg_swap_in's scratch, which holds
+                                    ; nothing between map changes; no byte of it changed
+                                    ; through a bout (research/sumo.md § Subtitles)
+
+; sumo_sub_init reads whole sectors from level C's base up.
+.if MOVIE_SUB_SECTORS * 2048 > SUMO_HOME_BYTES
+    .error "the movie-subtitle block outgrew bug sumo's home for it; re-measure (VO-06)"
+.endif
 
 ; Dead retail code (research/text-renderer.md § 6 candidate 2), unreferenced by any jal, j,
 ; data word or lui pair in the EXE or any overlay; each ends at the next function's addiu sp.
@@ -57,8 +71,6 @@ VOICE_OPEN_ISLAND     equ 0x80037698  ; date_label_draw_b
 VOICE_OPEN_ISLAND_END equ 0x800377F8
 VOICE_TICK_ISLAND     equ 0x80043928  ; the routine after text_nth
 VOICE_TICK_ISLAND_END equ 0x80043A50
-VOICE_SHOW_ISLAND     equ 0x80037414
-VOICE_SHOW_ISLAND_END equ 0x80037524
 CLIP_PLAY_ISLAND      equ 0x8001CA64
 CLIP_PLAY_ISLAND_END  equ 0x8001CB58
 CLIP_DRAW_ISLAND      equ 0x8001CC4C
@@ -125,6 +137,17 @@ CLIP_FRAME_ISLAND_END equ 0x8001CEB4
     jal     0x8002B518              ; stock: xa_stop()
 .else
     jal     clip_sub_done
+.endif
+.endarea
+
+; ---- g_modes[7]'s init (0x80013824): file_load(MUSI), then MUSI's init ---------------------
+; A build with no clip subtitles keeps it: there is nothing to read.
+.org 0x8001383C
+.area 4
+.if ORIGINAL || MOVIE_SUB_CLIPS == 0
+    jal     MUSI_INIT               ; stock
+.else
+    jal     sumo_sub_init           ; vwf.asm's PC-host island (voice_resident.asm)
 .endif
 .endarea
 
@@ -197,27 +220,38 @@ voice_sub_drop:
     jr      ra
     nop
 
-; v0 -> the movie-subtitle block, or 0: when there is no block, and in any mode but movie
-; mode (whose movie has just read it) and ENDOTI (mode 0x10), which writes over it while it
-; starts (research/event-scripts.md § Native clips) and plays its clip once the drive is
-; idle, so there it is read again first -- before xa_play, since a read after it would break
-; the stream. No event runs in either mode, whatever the event runner's bit says
-; (research/event-scripts.md § Native clips). Bug sumo's is PLAN VO-06.
+; v0 -> the block holding the clips' words, or 0: when there is no block, and in any mode but
+; three. Movie mode's movie has just read it to MOVIE_SUB_BLOCK. ENDOTI (mode 0x10) writes
+; over it there while it starts (research/event-scripts.md § Native clips) and plays its clip
+; once the drive is idle, so there it is read again first -- before xa_play, since a read
+; after it would break the stream. Bug sumo (mode 7) uses MOVIE_SUB_BLOCK's memory as its
+; own, so sumo_sub_init has read the block to level C's base as the mode started
+; (research/sumo.md § Subtitles). No event runs in any of the three, whatever the event
+; runner's bit says (research/event-scripts.md § Native clips).
 clip_sub_block:
     addiu   sp, sp, -24
     sw      ra, 16(sp)
     lui     v1, 0x8002
     lbu     v1, 0x37E0(v1)          ; the game mode
+    addiu   at, zero, SUMO_MODE
+    bne     v1, at, @@movie_home
+    lui     t0, 0x8002
+    lw      t0, LEVEL_C_BASE & 0xFFFF(t0)
+    b       @@check
+    nop
+@@movie_home:
+    lui     t0, hi(MOVIE_SUB_BLOCK)
     addiu   at, zero, 0x0E
     beq     v1, at, @@check         ; movie mode
+    addiu   t0, t0, lo(MOVIE_SUB_BLOCK)
     addiu   at, zero, 0x10
     bne     v1, at, @@none
     nop
     jal     clip_sub_read           ; ENDOTI
-    nop
-@@check:
+    move    a0, t0
     lui     t0, hi(MOVIE_SUB_BLOCK)
     addiu   t0, t0, lo(MOVIE_SUB_BLOCK)
+@@check:
     lw      v1, 0(t0)
     lui     at, MOVIE_SUB_MAGIC >> 16
     ori     at, at, MOVIE_SUB_MAGIC & 0xFFFF
@@ -234,21 +268,11 @@ clip_sub_block:
 clip_sub_loc:                       ; DslLOC of the block's first sector (clip_sub_read)
     .dw     0
 
-; clip_sub_read's tail when every try failed: no block rather than part of one, as
-; movie_sub_load leaves it. Here only because its own island is full.
-clip_sub_give_up:
-    lui     at, hi(MOVIE_SUB_BLOCK)
-    sw      zero, lo(MOVIE_SUB_BLOCK)(at)
-    lw      ra, 28(sp)
-    lw      s0, 24(sp)
-    jr      ra
-    addiu   sp, sp, 32
-
 voice_sub_open_end:
 .endarea
 
 .org VOICE_SHOW_ISLAND
-.area VOICE_SHOW_ISLAND_END - VOICE_SHOW_ISLAND
+.area VOICE_SHOW_SPLIT - VOICE_SHOW_ISLAND
 
 ; Put the words at a0 up as the subtitle: remember how the band was, find their end, open
 ; them in the band where msg_open would, and raise it (msg_open raises it only when its
@@ -282,54 +306,20 @@ voice_sub_show:
     sb      v0, lo(voice_sub_live)(t4)
     addiu   sp, sp, -24
     sw      ra, 16(sp)
+    lbu     v0, lo(voice_sub_mode)(t4)
     move    a3, a0
     addiu   a0, zero, PEN_X
+    xori    v0, v0, SUMO_MODE
+    bnez    v0, @@pen
     addiu   a1, zero, PEN_Y
+    addiu   a0, zero, PEN_X + SUMO_PEN_INDENT   ; right of Boku's portrait in a bout
+@@pen:
     jal     DIALOG_OPEN
     move    a2, zero                ; horizontal, as dialogue.asm has msg_open pass
-    jal     DIALOG_PANEL_SHOW
-    nop
     lw      ra, 16(sp)
-    nop
-    jr      ra
     addiu   sp, sp, 24
-
-; The block from its sectors, as movie_sub_load reads it (asm/movie.asm): up to 8 tries.
-clip_sub_read:
-    addiu   sp, sp, -32
-    sw      ra, 28(sp)
-    sw      s0, 24(sp)
-    addiu   s0, zero, 8
-@@read:
-    beqz    s0, clip_sub_give_up
-    addiu   s0, s0, -1
-    addiu   a0, zero, MOVIE_SUB_LBA
-    lui     a1, hi(clip_sub_loc)
-    jal     CD_INT_TO_POS
-    addiu   a1, a1, lo(clip_sub_loc)
-    lui     a0, hi(clip_sub_loc)
-    addiu   a0, a0, lo(clip_sub_loc)
-    addiu   a1, zero, MOVIE_SUB_SECTORS
-    lui     a2, hi(MOVIE_SUB_BLOCK)
-    addiu   a2, a2, lo(MOVIE_SUB_BLOCK)
-    jal     CD_READ
-    addiu   a3, zero, 0x80
-    beqz    v0, @@read
+    j       DIALOG_PANEL_SHOW       ; which returns to our caller
     nop
-@@sync:
-    jal     CD_READ_SYNC
-    addiu   a0, sp, 16              ; its 8-byte result buffer
-    beqz    v0, @@out
-    addiu   at, zero, -1
-    beq     v0, at, @@read
-    nop
-    b       @@sync
-    nop
-@@out:
-    lw      ra, 28(sp)
-    lw      s0, 24(sp)
-    jr      ra
-    addiu   sp, sp, 32
 
 voice_sub_show_end:
 .endarea
@@ -525,9 +515,11 @@ clip_sub_play_end:
 .org CLIP_DRAW_ISLAND
 .area CLIP_DRAW_ISLAND_END - CLIP_DRAW_ISLAND
 
-; The subtitle's text into OT slot 1, as event_update draws it, and then its band into slot 1
-; as well (drawn first, so behind the text and in front of every picture in slot 2 and up --
-; ENDOTI's stills are slot 2). dialog_draw counts no timer: voice_sub_service has.
+; The subtitle's text into OT slot 0, one in front of where event_update draws it, and then
+; its band into slot 0 as well (added later, so drawn first: behind the text). Slot 0 puts
+; both in front of ENDOTI's stills (slot 2) and of a bout's HUD text (slot 1; its portraits
+; are slot 0 too, added earlier, so they still cover -- research/sumo.md § Subtitles).
+; dialog_draw counts no timer: voice_sub_service has.
 clip_sub_draw:
     lui     t0, hi(voice_sub_native)
     lbu     v1, lo(voice_sub_native)(t0)
@@ -542,6 +534,11 @@ clip_sub_draw:
     nop
     sw      v0, 20(sp)
     sb      zero, 0x59F6(s0)
+    lui     t0, 0x8002
+    lw      v1, 0x593C(t0)          ; g_ot, one slot lower while this draws
+    nop
+    addiu   v1, v1, -4
+    sw      v1, 0x593C(t0)
     jal     TEXT_SET_LIGHT
     move    a0, zero
     jal     DIALOG_DRAW
@@ -549,7 +546,7 @@ clip_sub_draw:
     lw      v0, 20(sp)
     lui     t0, 0x8002
     sb      v0, 0x59F6(s0)
-    lw      v1, 0x593C(t0)          ; g_ot: dialog_panel_draw adds to its slot 2
+    lw      v1, 0x593C(t0)          ; g_ot: dialog_panel_draw adds to its slot 2, so 2 lower
     nop
     addiu   v1, v1, -4
     jal     DIALOG_PANEL_DRAW
@@ -557,7 +554,7 @@ clip_sub_draw:
     lui     t0, 0x8002
     lw      v1, 0x593C(t0)
     nop
-    addiu   v1, v1, 4
+    addiu   v1, v1, 8
     sw      v1, 0x593C(t0)
     lw      ra, 28(sp)
     lw      s0, 24(sp)

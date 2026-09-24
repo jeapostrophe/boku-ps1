@@ -12,8 +12,8 @@ import struct
 import pytest
 
 from boku import clip_subs
-from boku.glyphs import END_WORD, PAGE_WORD
-from boku.layout import StockEncoder
+from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD
+from boku.layout import DIALOGUE_BAND, StockEncoder, lay_out_subtitle
 from boku.voice import clip_ticks, parse_xch, subtitle_waits
 from tests import synth_archive as synth
 
@@ -89,3 +89,19 @@ def test_the_committed_clips_fit_the_band_in_the_builds_own_font(disc_dir):
         pytest.skip(f"{DEFAULT_CELLS} is not built; run ./make.sh build-days")
     encoder = make_encoder("cellmap", None)
     assert lint_clip_file(clip_subs.CLIP_FILE, Options(encoder=encoder), disc_dir) == []
+
+
+def test_a_bug_sumo_clip_wraps_clear_of_boku_s_portrait(tmp_path):
+    """`VO-06`: bug sumo draws the subtitle `SUMO_PEN_INDENT` px right of the band's pen, so
+    a line the band holds whole at its own pen wraps there -- the longest one-line text of
+    the band's width is the fixture, found against the band itself."""
+    encoder = StockEncoder.load()
+    ticks = clip_ticks(KEYS[0])
+    text = "go"
+    while NEWLINE_WORD not in lay_out_subtitle("x", [text + " go"], ticks, encoder).words:
+        text += " go"
+    assert clip_subs.clip_box(34) == DIALOGUE_BAND, "the bedtime clip keeps the band's width"
+    entries, _ = rows(tmp_path, f"XCH.00\tBoy\t{text}\n")
+    words, found = clip_subs.lay_out_clips(entries, CLIPS, encoder)
+    assert found == []
+    assert NEWLINE_WORD in words[0], "a bug-sumo clip was laid out at the band's full width"
