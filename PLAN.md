@@ -848,16 +848,15 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       opened; `clip_sub_block` no longer tests it and `clip_sub_frame` defers only for an
       event's own subtitle (`clip_sub_owned`). Gated on Beetle down the diary → good-night
       route and the real `E3182` ending (`tests/test_real_clip_subtitle_beetle.py`).
-- [ ] **[VO-04]** **Translate the voice-overs.** The worded rows of `VO-01`, transcribed and
-      translated like a day file — the `(voice only)` rows gain English in place, and the
-      epilogues get their own file keyed by ending and time — reviewed against the
-      Japanese, then checked in the game through `VO-02`/`VO-03`. **Done 2026-09-22** for the worded clips that have rows in
-      the day files so far — `E0305.0`–`.4`, `E0606.0`, `E4052.2`–`.5`, reviewed against the
-      transcripts, laid out by the build. Left: the other worded event clips as their days
-      are translated (`E0905`, `E1505`, `E1861.30`–`.32`, `E2305.0`). **Done** too, in
-      `translation/clips.txt` (2026-09-23): the bedtime line `XCH.34`, the five
-      epilogues `XCH.41`–`.45`, the 40 bug-sumo lines — reviewed; the sumo lines reach the
-      screen with `VO-06`. Harmed: the player.
+- [x] **[VO-04]** **Translate the voice-overs.** DONE 2026-09-24: every worded row of `VO-01`
+      has English — the event clips in place in the day files (`E0305.0`–`.4`, `E0606.0`,
+      `E0905.1`, `E1505.0`, `E1861.30`–`.32`, `E2305.0`, `E4052.2`–`.5`; `E0905.0` is the
+      bells alone), the native clips in `translation/clips.txt` (`XCH.34`, the epilogues
+      `XCH.41`–`.45`, the 40 bug-sumo lines) — reviewed against the transcripts, laid out by the
+      build, checked on Beetle through `VO-02` (`E1505.0`, `E0905.1`) and `VO-03`/`VO-06`. Gate:
+      `tests/test_voice_only.py` holds the translated set equal to `voice-only.tsv`'s worded
+      rows. `E1861.30`–`.32` and `E2305.0` repeat the English of the lines they replay
+      (`E1861.0`–`.2`, `E2204.6`). Harmed (was): the player.
 
 ## Release
 
