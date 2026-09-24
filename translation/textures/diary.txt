@@ -6,13 +6,216 @@
 # Each entry is set in the game's own glyphs on five ruled lines of about 32 characters;
 # the build refuses an entry that does not fit rather than shortening it. The date strip
 # at the right of the page stays as it is (Jay, 2026-09-21). NIKKI_000 is the unused dummy
-# page and takes no entry. The rest of the 94 entries are PLAN TRN-04's to translate.
+# page and takes no entry. Translated in the TRN-04 maximal session (2026-09-24) from the
+# page images, each with the scene that proposes the page, and reviewed against the Japanese.
+# Pages 072-099 are the generic pool (a day when nothing happened) and carry one text.
 
-# --- NIKKI_001: the first night (August 1).
-nikki@NIKKI_001	Mom is having a baby, so it's a big fuss! I'm staying at Uncle's house. I wonder if there will be lots of fun things?
-
-# --- NIKKI_002: the bugs got away.
-nikki@NIKKI_002	The bugs are fast. I am slow. I only have 2 legs. They have lots. I lost.
-
-# --- NIKKI_072: one of the pages for a day when nothing in particular happened.
-nikki@NIKKI_072	Today nothing happened at all. It was a wonderful day.
+# --- NIKKI_001: day 1, Mom's baby and staying at Uncle's
+# NOTE NIKKI_001: "isoro" is "freeloader" by glossary 3, which names this page; the style guide 14 sample ("I'm staying at Uncle's house") predates that entry.
+nikki@NIKKI_001	Mom is having a baby, so it's a big fuss! I'm a freeloader at Uncle's house. I wonder if there will be lots of fun things?
+# --- NIKKI_002: generic, bugs are faster than me
+# NOTE NIKKI_002: the page writes the bugs as a doubled "mushi-mushi", Boku's child word for bugs (again on NIKKI_010); rendered plain "bugs".
+nikki@NIKKI_002	Bugs are fast. I am slow. I only have 2 legs. Those guys have lots. I lose.
+# --- NIKKI_003: first time fishing
+nikki@NIKKI_003	I went fishing for the first time. A fish that bites even fake bait is a tiny bit greedier than me.
+# --- NIKKI_004: the walk with Pipsqueak
+nikki@NIKKI_004	I walked through the hills and fields with Pipsqueak. The sun shone bright. We walked and walked. The wind felt really good.
+# --- NIKKI_005: Auntie's photograph in the sunflowers
+# NOTE NIKKI_005: "choki" is the scissors hand of rock-paper-scissors, the V a child makes for a photo. The last sentence keeps the child's odd "even though" (nanoni).
+nikki@NIKKI_005	Auntie took my picture. She took it with me making a V sign. Even though Auntie is pretty, she has a camera too.
+# --- NIKKI_006: day 5, sneaking out to the fireflies
+nikki@NIKKI_006	Uncle was out, so I snuck out of the house to catch fireflies. Even when their bottoms light up, they don't get burned.
+# --- NIKKI_007: generic, a huge fish
+nikki@NIKKI_007	I caught a really, really big fish, so I got too surprised and wet my pants a little.
+# --- NIKKI_008: knocking down the beehive
+nikki@NIKKI_008	When I poked the beehive with the rod and knocked it down, the bees were surprised. I was surprised too.
+# --- NIKKI_010: the first stag beetle
+nikki@NIKKI_010	At last I caught a stag beetle. It's black and pretty cool. It's my Bug Number One!
+# --- NIKKI_011: flying Uncle's kite on the hill
+nikki@NIKKI_011	On top of the hill. I flew the kite Uncle gave me. It was really hard, but it went up high into the blue sky.
+# --- NIKKI_012: the daytime shooting star on the kite hill (the satellite)
+nikki@NIKKI_012	On top of the kite hill, a shooting star in the daytime. What it really was: a satellite, friends with UFOs too. On the other side of the blue sky, the great big universe.
+# --- NIKKI_013: Uncle's special fly
+# NOTE NIKKI_013: "Ojioji Pond" (o-ji-o-ji-ike) is what the page says, confirmed against the image; the name is nowhere in the script, so it is Boku's own name for the pond of the giant fish, kept as a sound. "The big yamame" is the fish the uncle calls the master of the pond.
+nikki@NIKKI_013	The special fly Uncle gave me. With this, the big yamame in Ojioji Pond is mine. All of it, all of it is mine.
+# --- NIKKI_016: the morning glory bloomed
+nikki@NIKKI_016	The morning glory I grew bloomed. It bloomed really pretty. But when it gets to be noon, it wilts. Is it not getting enough nutrients?
+# --- NIKKI_017: the sun sinking into the sea
+# NOTE NIKKI_017: "doppun" is the sound of something heavy plunging into water. "Transformed" is henshin, the word for a TV hero's transformation.
+nikki@NIKKI_017	Kerplunk, kerplunk. The sun sank into the sea. It's a secret that it transformed into seven colors.
+# --- NIKKI_018: naming clouds, hungry, missing Mom
+nikki@NIKKI_018	I looked at the sky and thought up names for the newest model of clouds. Sometimes I got hungry, and sometimes I wanted to see Mom.
+# --- NIKKI_020: day 15, alone in the house
+nikki@NIKKI_020	Today I looked after the house. By myself, all alone. By myself, all alone. I'm not lonely or anything.
+# --- NIKKI_021: the whale's ear bone
+nikki@NIKKI_021	That mystery object was, would you believe it, a whale's ear bone. Hey, tell me stories of the far, far away sea.
+# --- NIKKI_022: the thing in the woods howled
+nikki@NIKKI_022	There was something weird in the woods, and it howled at me. Anyway, it's scary. I ran away as fast as I could.
+# --- NIKKI_023: the swing
+nikki@NIKKI_023	The swing goes whoosh, whoosh. What fun! I spin right around and I'm Tarzan! A wild yell!
+# --- NIKKI_024: day 2, morning glory captain
+nikki@NIKKI_024	My first job is morning glory captain. I hope lots and lots of pretty flowers bloom.
+# --- NIKKI_025: day 2, the secret base and the half-eaten watermelon
+nikki@NIKKI_025	I secretly discovered a secret base! There was a watermelon, half eaten, too. Whooo's the culprit?
+# --- NIKKI_026: day 3, helping Uncle in the corn field
+# NOTE NIKKI_026: "What a good boy I am" is "boku tte erai", the aunt's word of praise (erai) turned on himself.
+nikki@NIKKI_026	Huff, puff, hard labor is tough. I helped Uncle in the field. What a good boy I am!
+# --- NIKKI_027: day 4, shaved ice
+# NOTE NIKKI_027: "gakin-gakin" is the hard, icy grind of the shaver; rendered "crunch, crunch".
+nikki@NIKKI_027	Crunch, crunch, shaved ice. If you pour on lots of strawberry and melon syrup, your tongue turns the color of a space alien.
+# --- NIKKI_028: the watermelon thief got away
+nikki@NIKKI_028	The watermelon thief sure is fast at running away. Next time I'm definitely not letting him get away. I think.
+# --- NIKKI_029: the pact with Guts, the watermelon thief
+nikki@NIKKI_029	I ended up making friends with a thief... Life is like that.
+# --- NIKKI_030: what rhino beetles eat
+# NOTE NIKKI_030: "rhino beetles", as Boku says it in the dinner scene (E0604.2); the glossary allows it in the boys' mouths. The last clause is the child's aside that "us" too forget to brush and get told off.
+nikki@NIKKI_030	Rhino beetles love sweet things. Huh, they're the same as us. Forgetting to brush our teeth and getting scolded.
+# --- NIKKI_031: bug sumo
+# NOTE NIKKI_031: "Hakkeyoi, nokotta!" is the sumo referee's call, kept as the style guide keeps real sumo terms (section 15, Q10.9). "Clack" is the kacha-kacha of the bugs grappling.
+nikki@NIKKI_031	Bug sumo is life or death. How hard you dig in decides who wins. Hakkeyoi, nokotta! Clack clack, clack clack clack.
+# --- NIKKI_033: the sugar-water trap for rhino beetles
+nikki@NIKKI_033	A rhino beetle trap! Lots of sugar water! I wonder if lots of bugs will come now?
+# --- NIKKI_034: day 8, fireworks from the window
+nikki@NIKKI_034	Pop! Pretty fireworks far away. Crackle... Lots of fireworks bloomed in the quiet night sky.
+# --- NIKKI_035: day 31, goodbye to everyone
+nikki@NIKKI_035	Everyone, everyone, goodbye. Everyone, everyone, do your best. Everyone, everyone, I love you all.
+# --- NIKKI_036: the old well
+nikki@NIKKI_036	Dark, dark, the bottom of the well. Scary, scary, a ghost is going to come out. Lots and lots of scary things are going to come out.
+# --- NIKKI_037: first sight of the giant fish
+nikki@NIKKI_037	In the pond. A big yamame gleamed, all slippery. I bet it was looking at me.
+# --- NIKKI_038: day 11, the yukata
+nikki@NIKKI_038	The yukata smells like the clothes chest. It reminds me of Grandma's house. I wonder how the fat calico cat is doing.
+# --- NIKKI_039: day 11, sparklers
+nikki@NIKKI_039	The glow of the sparklers. Even a kid in grade school gets sad, in his own way... I gaze hard at how fleeting it is.
+# --- NIKKI_040: bug sumo against a big rhino beetle
+nikki@NIKKI_040	A rhino beetle that breaks the rules. It's huge and it's heavy, it's a real handful. It sure does some flashy stuff!
+# --- NIKKI_041: the log bridge finished
+# NOTE NIKKI_041: "jinrui no ookina ippo" is the standard Japanese rendering of Armstrong's "giant leap for mankind"; the English quotes the English.
+nikki@NIKKI_041	At last it's finished: the log bridge. A giant leap for mankind has begun.
+# --- NIKKI_042: the morning glory withered
+# NOTE NIKKI_042: the page turns polite (shimaimashita) for the sad news; "has withered away" carries the regret. The hunger answers NIKKI_016's "not enough nutrients".
+nikki@NIKKI_042	The morning glory has withered away. I wonder if it was hungry.
+# --- NIKKI_044: Guts's secret weapon, the mantis
+# NOTE NIKKI_044: the page writes Gattsu-kun, as Boku says it in E0541.6; the game face draws a hyphen, so every honorific is written as the day files write it (Guts-kun, Moe-neechan).
+nikki@NIKKI_044	The first mantis I ever saw was Guts-kun's secret weapon.
+# --- NIKKI_045: the camera trap's flash in the woods
+nikki@NIKKI_045	Something in the woods went flash! And that's why my heart jumped, see.
+# --- NIKKI_046: the red tent by the pond (Saori's)
+nikki@NIKKI_046	A bright red tent on the bank of the pond. Who put it up? A tent the color of autumn.
+# --- NIKKI_047: day 18, Moe read her letter
+nikki@NIKKI_047	Moe-neechan read the letter. She's lost her pep. What's wrong? A maiden's heart is complicated.
+# --- NIKKI_048: goodbye to the morning glory
+# NOTE NIKKI_048: "Asagao-san", the flower addressed with -san, is rendered by capitalising it as a name.
+nikki@NIKKI_048	Goodbye, Morning Glory. Bloom somewhere again next year too, okay? For sure. It's a promise.
+# --- NIKKI_049: meeting Saori, a new young lady
+# NOTE NIKKI_049: "oneesan" here is descriptive (a young woman), as in Shirabe's "Bath Lady"; not the kin name.
+nikki@NIKKI_049	Thump! Thump thump! A new lady. She's a beauty, so I'll brag about her to Dad. And keep her a secret from Mom.
+# --- NIKKI_050: day 19, Moe still low
+# NOTE NIKKI_050: the page is polite (arimasen), and uses a different word for "complicated" than NIKKI_047 (yayakoshii, "tangled", after fukuzatsu); "confusing" keeps the two apart.
+nikki@NIKKI_050	Lately, Moe-neechan still has no pep. A maiden's heart is confusing.
+# --- NIKKI_051: day 19, nobody believes the ghost
+nikki@NIKKI_051	Nobody believes me at all, not one bit. I'm going to go bad, just a little. Just a little.
+# --- NIKKI_052: day 20, the family meeting about Moe
+# NOTE NIKKI_052: Boku writes the word he misheard at E1912.3, "shushinki" for shishunki (adolescence); the day file renders it "Addle-essence", and so does this page.
+nikki@NIKKI_052	Uncle, Auntie and Moe-neechan are in a meeting. It's that addle-essence thing, see.
+# --- NIKKI_053: the weird thing again, at the tyre pile
+nikki@NIKKI_053	I ran into that strange, weird thing again, in the woods. The weird thing loves sweet stuff.
+# --- NIKKI_054: the plan to lure the ghost to Saori's camera
+nikki@NIKKI_054	The Wolf Girl's machine. I'll lure that ghost into it and take its picture. What a great idea!
+# --- NIKKI_055: day 21, the bath with Moe
+# NOTE NIKKI_055: "shushinki" again, Boku's mishearing of adolescence (NIKKI_052); "nobosete" is the dizziness of staying too long in a hot bath.
+nikki@NIKKI_055	I got dizzy in the hot bath and had a weird dream. After all, I'm in my addle-essence too. A grade schooler's heart is a subtle thing.
+# --- NIKKI_056: the sugar-water trap at Saori's camera
+nikki@NIKKI_056	So exciting, so exciting. But if it's a space alien, its revenge will be scary. So scary.
+# --- NIKKI_057: day 22, Uncle and Auntie's wedding anniversary
+nikki@NIKKI_057	Uncle, Auntie, happy wedding anniversary. You two will be happy for ever and ever, always.
+# --- NIKKI_058: day 22, the snake
+nikki@NIKKI_058	I hate snakes. But I like eel, so it's difficult.
+# --- NIKKI_059: the photograph from Saori's camera
+nikki@NIKKI_059	The big operation: a success? A failure? What was in the photo was a Japanese wolf.
+# --- NIKKI_060: the book from the shelter was an English dictionary
+# NOTE NIKKI_060: Boku calls the air-raid shelter "doukutsu", a cave; kept as he writes it. "Would you believe it" is nanto, as on NIKKI_021.
+nikki@NIKKI_060	The secret book I found in the cave. A child's treasure from during the war. It was, would you believe it, an English dictionary.
+# --- NIKKI_061: Moe will go to high school after all
+nikki@NIKKI_061	Moe-neechan got her pep back. Even when you're in high school, play with me, okay? For sure, okay?
+# --- NIKKI_063: the top of Mt. Teppen
+# NOTE NIKKI_063: "Teppen-yama no teppen" plays on teppen, "the very top"; rendered as the narrator's line at E2505.1 renders it. "zukkon to" and "dokkan to" are Boku's own booming intensifiers.
+nikki@NIKKI_063	At the very top of Mt. Teppen, the air tastes really, really good, and you can see far away, boom!
+# --- NIKKI_064: the sun shower and the rainbow
+# NOTE NIKKI_064: the last sentence is polite (miemashita), the diary's schoolroom form.
+nikki@NIKKI_064	Rain pouring down. Taking shelter from the rain. When it stopped, a glittering rainbow bridge. The air was clear, and I could see clearly all the way to the faraway forest.
+# --- NIKKI_065: day 22, Saori's kiss
+# NOTE NIKKI_065: "kon'yaku shita" is "got engaged"; Boku takes Saori's joke at E6004.26 at its word. "yashinau" is to support a wife.
+nikki@NIKKI_065	Today I got engaged to the Wolf Girl. I'm worried whether I can support her properly.
+# --- NIKKI_066: the hollow trunk in the secret shortcut
+nikki@NIKKI_066	Inside a great, great big tree, lots and lots of water flows. I can hear it, trickle trickle, trickle trickle.
+# --- NIKKI_067: day 27, Saori leaves
+# NOTE NIKKI_067: "oneesan" is descriptive here, as on NIKKI_049.
+nikki@NIKKI_067	Goodbye, lady I loved. You liked the Japanese wolf better than me, didn't you?
+# --- NIKKI_068: generic, dizzy
+nikki@NIKKI_068	Round and round, I'm getting dizzy. Round and round. The flowers, the sky, let it all spin around!
+# --- NIKKI_069: day 28, the fever
+# NOTE NIKKI_069: the doki-doki column stands between the cold and Auntie's forehead; it is his heart at her touch, not at the cold. "Naru te mo ii" is "wouldn't mind being".
+nikki@NIKKI_069	Cough, cough. When I caught a summer cold, Auntie put her forehead on mine, and my heart went thump thump... I wouldn't mind being a kid of this house.
+# --- NIKKI_070: day 29, a baby brother
+nikki@NIKKI_070	My little brother was born. I'm happy. But summer vacation is almost over too. I'm happy. I'm sad.
+# --- NIKKI_071: day 30, Shirabe found in the sunflowers
+nikki@NIKKI_071	She went missing looking for sunflowers. They were a present for me. Shirabe, thank you, thank you.
+# --- NIKKI_072: generic, a wonderful day with nothing in it
+nikki@NIKKI_072	Today was a wonderful day with nothing at all.
+# --- NIKKI_073: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_073	Today was a wonderful day with nothing at all.
+# --- NIKKI_074: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_074	Today was a wonderful day with nothing at all.
+# --- NIKKI_075: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_075	Today was a wonderful day with nothing at all.
+# --- NIKKI_076: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_076	Today was a wonderful day with nothing at all.
+# --- NIKKI_077: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_077	Today was a wonderful day with nothing at all.
+# --- NIKKI_078: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_078	Today was a wonderful day with nothing at all.
+# --- NIKKI_079: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_079	Today was a wonderful day with nothing at all.
+# --- NIKKI_080: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_080	Today was a wonderful day with nothing at all.
+# --- NIKKI_081: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_081	Today was a wonderful day with nothing at all.
+# --- NIKKI_082: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_082	Today was a wonderful day with nothing at all.
+# --- NIKKI_083: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_083	Today was a wonderful day with nothing at all.
+# --- NIKKI_084: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_084	Today was a wonderful day with nothing at all.
+# --- NIKKI_085: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_085	Today was a wonderful day with nothing at all.
+# --- NIKKI_086: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_086	Today was a wonderful day with nothing at all.
+# --- NIKKI_087: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_087	Today was a wonderful day with nothing at all.
+# --- NIKKI_088: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_088	Today was a wonderful day with nothing at all.
+# --- NIKKI_089: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_089	Today was a wonderful day with nothing at all.
+# --- NIKKI_090: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_090	Today was a wonderful day with nothing at all.
+# --- NIKKI_091: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_091	Today was a wonderful day with nothing at all.
+# --- NIKKI_092: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_092	Today was a wonderful day with nothing at all.
+# --- NIKKI_093: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_093	Today was a wonderful day with nothing at all.
+# --- NIKKI_094: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_094	Today was a wonderful day with nothing at all.
+# --- NIKKI_095: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_095	Today was a wonderful day with nothing at all.
+# --- NIKKI_096: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_096	Today was a wonderful day with nothing at all.
+# --- NIKKI_097: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_097	Today was a wonderful day with nothing at all.
+# --- NIKKI_098: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_098	Today was a wonderful day with nothing at all.
+# --- NIKKI_099: generic, the same words as NIKKI_072 (a different picture)
+nikki@NIKKI_099	Today was a wonderful day with nothing at all.
+# --- NIKKI_100: generic, kept for the last day when every earlier page was generic
+nikki@NIKKI_100	This summer vacation was a wonderful summer vacation with nothing at all.

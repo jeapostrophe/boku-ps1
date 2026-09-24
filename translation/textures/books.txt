@@ -8,114 +8,100 @@
 # An insect page has a photo and, to its right, a header of four lines (name, family, size,
 # what it likes) above a rule, then a body. The Japanese body starts under the rule and runs
 # on under the photo, in vertical columns; the English runs down the left page, under the
-# photo, and on to the right page, as an English book reads. Species names follow glossary 4a. A family is named in English after its best known
-# member, as the Japanese names it; where that member is in glossary 4a, it is that name.
+# photo, and on to the right page, as an English book reads. Species names follow glossary 4a.
+# A family takes its usual English name where English has one (Swallowtail, Brushfoot,
+# Gossamer-wing, Skipper, Clubtail); where it has none, it is named after its member, as the
+# Japanese names it (Tengu Butterfly, Ancient Dragonfly).
 # The likes line sometimes names a place, not a food, because the source does.
 #
-# A kite page has the kite's brush lettered name, a difficulty (set in brackets by the build),
-# and a body saying how to make or fly it. Kite names follow glossary 4d, less the hyphen the sheet lacks.
+# A kite page has the kite's brush-lettered name, a difficulty (set in brackets by the build),
+# and a body saying how to make or fly it. Kite names follow glossary 4d.
 
-# --- Insect page 0: Musk Swallowtail. The caterpillars' food plant is spelled
-# umanomizukusa on the page; the plant is umanosuzukusa, birthwort, and that is translated.
+# --- Insect page 0: Musk Swallowtail. Plants: gumi is silverberry (Elaeagnus), noazami the Japanese thistle, tsutsuji azalea. The caterpillars' food plant reads "umanomizukusa" on the page (checked against the image); the plant is umanosuzukusa (Aristolochia), birthwort, and that is translated.
 mzkan@0.name	Musk Swallowtail
 mzkan@0.family	Swallowtail family
 mzkan@0.size	Wingspan 100 to 120 mm
 mzkan@0.food	Likes the nectar of flowers such as silverberry, Japanese thistle and azalea
 mzkan@0.body	It does not like cold places and its food is limited, so in some regions it is a rare butterfly. It flies low and slowly over roadsides and grassy fields. The male's wings have a silky sheen, and it gives off a scent when caught, which is how it got the name Musk Swallowtail. The caterpillars eat birthwort, and they also have a strong habit of eating each other.
 
-# --- Insect page 1: Mikado Swallowtail. Plants: tobera is Japanese pittosporum, yabugarashi
-# bushkiller, ogatama no ki Michelia compressa, kept as the ogatama tree.
+# --- Insect page 1: Mikado Swallowtail. Plants: tobera is Japanese pittosporum (Pittosporum tobira) and yabugarashi bushkiller (Cayratia japonica); ogatama no ki (Michelia compressa) has no common English name, so it is the ogatama tree. Ise Jingu is the Ise Grand Shrine, its usual English name.
 mzkan@1.name	Mikado Swallowtail
 mzkan@1.family	Swallowtail family
 mzkan@1.size	Wingspan 70 mm
 mzkan@1.food	Likes the nectar of flowers such as Japanese pittosporum and bushkiller
-mzkan@1.body	A common butterfly in places like Southeast Asia, but Japan is the northern edge of its range, and here it is scarce and has been named a Natural Monument in many places. The area around Ise Shrine is especially famous for it. Its caterpillars feed on the ogatama tree, a tree often planted in the grounds of shrines.
+mzkan@1.body	It is a common butterfly in places like Southeast Asia, but in Japan, the northern edge of its range, there are few of them, and it has been named a natural monument in many places. The area around the Ise Grand Shrine is especially famous as a place to find it. The caterpillars' food plant is the ogatama tree. This is a tree often planted in the grounds of shrines and such places.
 
-# --- Insect page 2: Peacock. Family tateha, the brushfoots, spelled without the usual
-# hyphen. The wing sound is spelled shasha in the source, a mimetic word, so translated
-# (style guide 7). Food line: the source word is filth, kept.
+# --- Insect page 2: Peacock. The family, tateha-cho, is the brushfoots (Nymphalidae), their English name; tateha is not one species, and "Admiral family" would name a group English books do not have. Plants: matsumushisou is scabious, azami thistle; the likes line is read as the nectar of both, then filth, then rotting fruit. The wing sound is spelled shasha in quotation marks in the source, a mimetic word, so translated (style guide 7); the sheet has no double quote.
 mzkan@2.name	Peacock
 mzkan@2.family	Brushfoot family
 mzkan@2.size	Wingspan 55 to 65 mm
 mzkan@2.food	Likes the nectar of highland scabious and thistles, filth, and rotting fruit
 mzkan@2.body	A butterfly with an unusual skill: when it takes off, for instance, it rubs its wings together and makes a swish, swish sound. It carries eyespots like a peacock's on its wings, which is how it got its name. It likes mountains and cold places, and is often found where it is fairly easy to see, such as on roads and on top of rocks.
 
-# --- Insect page 3: Great Purple Emperor. The food line is read as treetops of mixed woods,
-# and the sap of sawtooth oak and the like; it could also be read as the sap of both.
+# --- Insect page 3: Great Purple Emperor. Family as page 2. "As its name says" refers to murasaki, purple, which the English name also has. The likes line is the treetops of mixed woods (zokibayashi), where it lives, and the sap of trees such as the sawtooth oak (kunugi, glossary 7).
 mzkan@3.name	Great Purple Emperor
 mzkan@3.family	Brushfoot family
 mzkan@3.size	Wingspan 100 to 120 mm
-mzkan@3.food	Likes woodland treetops, and the sap of trees such as sawtooth oak
+mzkan@3.food	Likes the treetops of mixed woods and the sap of trees such as the sawtooth oak
 mzkan@3.body	A very beautiful butterfly that stands for the nation of Japan. As its name says, the male wears wings that shine bluish purple on its back. It flies high over the trees, so catching one in the air is very hard. Because it loves sap, the few chances to catch one come when it has landed on a tree and is feeding.
 
-# --- Insect page 4: Loomis's Blue. Family shijimi, the gossamer wings, again without the
-# hyphen. The food plant is ichiigashi, Quercus gilva, an evergreen oak.
+# --- Insect page 4: Loomis's Blue. The family, shijimi-cho, is the gossamer-winged butterflies (Lycaenidae), their English name. The food plant is ichiigashi (Quercus gilva), an evergreen oak with no common English name, kept as the ichii oak (gashi is oak); buna-ka is the beech family. Kasugayama in Nara Prefecture is Mount Kasuga.
 mzkan@4.name	Loomis's Blue
-mzkan@4.family	Gossamer wing family
+mzkan@4.family	Gossamer-wing family
 mzkan@4.size	Wingspan 30 mm
 mzkan@4.food	The caterpillars feed on the ichii oak, of the beech family
 mzkan@4.body	Butterflies that have lived through the winter lay eggs in spring, and in early summer these emerge as new butterflies. It likes to perch on leaves, and on hot midsummer days it comes along the streams to drink water. Pesticides and typhoons have made it scarce, and it is a rare butterfly, named a Natural Monument on Mount Kasuga in Nara Prefecture.
 
-# --- Insect page 5: Tengu Butterfly. Family named after it, as the Japanese is (English
-# books say snout butterflies). Food plants: enoki is Chinese hackberry; the second is
-# spelled ezonoki on the page, taken to be ezoenoki, Ezo hackberry, which the caterpillars eat.
+# --- Insect page 5: Tengu Butterfly. Family named after it, as the Japanese is (English books say snout butterflies). Food plants: enoki is Chinese hackberry (Celtis sinensis); the second reads "ezonoki" on the page (checked against the image), taken to be ezo-enoki, the Ezo hackberry (Celtis jessoensis), which the caterpillars eat. The adults rest on the earth of roads, cliffs and the like: the ground. Susuki is Japanese silver grass.
 mzkan@5.name	Tengu Butterfly
 mzkan@5.family	Tengu Butterfly family
 mzkan@5.size	Wingspan 40 to 50 mm
 mzkan@5.food	The caterpillars eat Chinese hackberry and Ezo hackberry
-mzkan@5.body	Its name comes from the small bump on its head, like a tengu's nose. The adults rest on roads, and on bare earth such as cliffs. It also has the curious habit of liking thin twigs and silver grass leaves. It goes dormant in midsummer, and spends the winter as an adult. In the cool seasons of spring and autumn, you can see it flying to flowers to drink nectar.
+mzkan@5.body	Its name comes from the small bump on its head, like a tengu's nose. Adults rest on the ground, such as on roads or cliffs. They also have the interesting habit of liking thin twigs and silver grass leaves. It goes dormant in midsummer and lives through the winter as an adult. In the cool of spring and autumn, you can see it flying to flowers to drink nectar.
 
-# --- Insect page 6: Green Skipper.
+# --- Insect page 6: Green Skipper. The last sentence addresses the reader (tsukamaeyo, "let's catch it"), as the Japanese does.
 mzkan@6.name	Green Skipper
 mzkan@6.family	Skipper family
 mzkan@6.size	Wingspan 50 mm
 mzkan@6.food	Likes all kinds of flowers, and places near wetlands
 mzkan@6.body	A butterfly with very distinctive wings: deep green with orange spots. When a male finds a suitable spot, such as a clearing in the woods, it seems to have a habit of flying round and round the same course for a long time. Let's use this to catch it.
 
-# --- Insect page 7: Ancient Dragonfly. The Himalayan species is capitalised as a common name,
-# as every other species name in the book is. Two size lines in the source, body length then hind
-# wing length, both about. Sanae is a clubtail, yanma a darner. The source writes the word
-# for features with a wrong first character; the sense is not in doubt.
+# --- Insect page 7: Ancient Dragonfly. The Himalayan species is capitalised as a common name, as every other species name in the book is. Two size lines in the source, body length then hind wing length, both about. Sanae is a clubtail, yanma a darner, ito-tonbo a damselfly. The source writes the word for features with a wrong first character; the sense is not in doubt.
 mzkan@7.name	Ancient Dragonfly
 mzkan@7.family	Ancient Dragonfly family
 mzkan@7.size	Body length about 50 mm, hind wing about 38 mm
 mzkan@7.food	Likes the headwaters of mountain streams
 mzkan@7.body	At first glance it looks like a clubtail or a small darner, but its eyes are set far apart, and the structure of its wings is like a damselfly's. Nearly 60 species of fossil dragonfly with the same features have been found, but the only living species are this one and the Himalayan Ancient Dragonfly. Truly a living fossil, and a very rare dragonfly.
 
-# --- Insect page 8: Mountain Clubtail. Two size lines, as page 7. The Oniyanma family is
-# the spiketails; named after glossary 4a's Oniyanma, as the families above are.
+# --- Insect page 8: Mountain Clubtail. Two size lines, as page 7. The Oniyanma family is the spiketails; named after glossary 4a's Oniyanma.
 mzkan@8.name	Mountain Clubtail
 mzkan@8.family	Clubtail family
 mzkan@8.size	Body length 50 to 55 mm, hind wing 31 to 33 mm
 mzkan@8.food	Likes ridgelines and places near mountaintops
-mzkan@8.body	Its body has yellow and black stripes much like the Oniyanma family's, but what sets it apart is its long hind legs with spines like needles. It is born in the lower reaches of big rivers and in puddles on riverbeds, but right after it emerges it leaves the water's edge and lives on mountain ridges and near summits. In autumn it comes back down to the lowlands to lay its eggs, and ends its life.
+mzkan@8.body	Its body has yellow and black stripes much like the Oniyanma family's, but it stands out for its long hind legs with needle-like spines. It is born in places such as the lower reaches of big rivers and riverbed puddles, but leaves the water's edge right after it emerges, to live on mountain ridges and near summits. In autumn it returns to the lowlands to lay its eggs, and ends its life.
 
-# --- Kite page 0: Square Kite, shokyu. The body explains the fuller name, nakabari kakudako,
-# so it is translated there as a name, Center Bow Square Kite (the sheet has no hyphen for
-# middle bowed).
+# --- Kite page 0: Square Kite. Levels across the book: shokyu Beginner, chukyu Intermediate, jokyu Advanced, tatsujin Expert, and the portrait kite's "?-kyu" Level ?. The body explains the fuller name, naka-bari kaku-dako (the second crosspiece bowed tight, "stretched in the middle"), so it is translated there as a name, Center-bow Square Kite; the dialogue (E0710.16) says only Square Kite.
 tzkan@0.name	Square Kite
 tzkan@0.level	Beginner
-tzkan@0.body	The second crosspiece from the top is given an especially strong bow, so it is called the Center Bow Square Kite. It is a kite that rises easily in a light wind. When it climbs unsteadily, put paper tails on its left and right corners.
+tzkan@0.body	The second crosspiece from the top is given an especially strong bow, so it is called the Center-bow Square Kite. It is a kite that rises easily in a light wind. When it climbs unsteadily, put paper tails on its left and right corners.
 
-# --- Kite page 1: Nina Kite, chukyu. The page does not say what nina means; it says only
-# that the kite is a small children's kite from the island of Iki.
+# --- Kite page 1: Nina Kite. The page does not say what nina means; it says only that the kite is a small children's kite from the island of Iki, off Nagasaki.
 tzkan@1.name	Nina Kite
 tzkan@1.level	Intermediate
 tzkan@1.body	A small kite for children, made on the island of Iki. Its spars are very thin, so fly it when the wind is light. Once it is up, its long red and white striped tails streaming in the wind stand out clearly, and it is beautiful.
 
-# --- Kite page 2: Cicada Kite, chukyu.
+# --- Kite page 2: Cicada Kite.
 tzkan@2.name	Cicada Kite
 tzkan@2.level	Intermediate
 tzkan@2.body	It is made with fairly thick spars, so fly it on a windy day. Give it a slightly stronger bow to make it three-dimensional. Flown in summer, it looks like a real cicada flying through the sky. Use a thin cord 2 to 3 m long for its tail.
 
-# --- Kite page 3: Bird Kite, jokyu. Rittai dako, a kite with depth rather than a flat one,
-# is put as built in three dimensions here and on pages 4 and 5.
+# --- Kite page 3: Bird Kite. Rittai dako, a kite with depth rather than a flat one, is put as built in three dimensions here and on pages 4 and 5.
 tzkan@3.name	Bird Kite
 tzkan@3.level	Advanced
 tzkan@3.body	A kite built in three dimensions, in the shape of a bird with big wings. Its colorful orange body stands out against the blue sky, and it rises gracefully, as if swimming through the wide sky.
 
-# --- Kite page 4: glossary 4d's Carp-streamer Kite, less the hyphen; jokyu.
-tzkan@4.name	Carp Streamer Kite
+# --- Kite page 4: glossary 4d's Carp-streamer Kite. Koinobori are the carp streamers flown for Boys' Day.
+tzkan@4.name	Carp-streamer Kite
 tzkan@4.level	Advanced
 tzkan@4.body	A kite built in three dimensions, in the shape of a carp streamer swimming cheerfully across the sky. Its frame is made from thin square sticks. It is bigger and heavier than other kites, so it takes a lot of strength to get it up, but after that it flies steadily.
 
@@ -124,14 +110,12 @@ tzkan@5.name	Airplane Kite
 tzkan@5.level	Expert
 tzkan@5.body	A small, very steady kite built in three dimensions. Take care not to let it hit the ground hard when it lands. If you pull in the line well, you can bring it back to your hand while it is still flying.
 
-# --- Kite page 6: Kite Train, tatsujin. The page calls the whole train one kite (tako de), so
-# the body is singular; the counts are of its kites (mai).
+# --- Kite page 6: Kite Train. The page calls the whole train one kite (tako de), so the body is singular; the counts are of its kites (mai).
 tzkan@6.name	Kite Train
 tzkan@6.level	Expert
 tzkan@6.body	A kite made from light, colorful plastic bags. It goes from about 5 kites up to long ones of about 100, and it can stand anything from a light wind to a fairly strong one. Take care not to let the line break or let it get away.
 
-# --- Kite page 7: Portrait Kite. The bracket is a question mark plus kyu, grade: the grade
-# is a mystery, as the kite is Boku's own face.
+# --- Kite page 7: Portrait Kite. The bracket is a question mark plus kyu, grade: the grade is a mystery, as the kite is Boku's own face. "A certain someone" (dareka-san) is the page's coy way of pointing at him.
 tzkan@7.name	Portrait Kite
 tzkan@7.level	Level ?
 tzkan@7.body	A kite the exact size and likeness of a certain someone. There are no spars below the knees, so when it flies it looks as if it is walking across the sky. Try floating your double up into the sky for a walk through the air.

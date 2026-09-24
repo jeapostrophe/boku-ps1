@@ -203,7 +203,8 @@ documents the five words): the desk with the diary open, the cursor on its good-
 button. Level A's arena base is `0x801179F4` (`research/loading-and-memory.md`)."""
 DIARY_PAGE_ID = 0x8004612C
 """`g_diary_today`: the page tonight opens (`research/text-outside-events.md`)."""
-DIARY_PAGE = "072"
+DIARY_PAGES = ("072", "064")
+"""A generic page, and the page whose entry is longest (it fills all five lines)."""
 DIARY_PRESSES = [(7020, "CIRCLE"), (7320, "CIRCLE")]
 """Good night -> "write the diary and sleep?" -> yes: tonight's page opens."""
 DIARY_SHOT = 7590
@@ -215,8 +216,9 @@ changed texel is required within this much luminance; a texel of the wrong kind 
 paper is, or paper where ink is) is ~200 off."""
 
 
+@pytest.mark.parametrize("page", DIARY_PAGES)
 def test_a_diary_page_on_beetle_is_the_english_entry(
-    beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
+    page, beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
 ):  # fmt: skip
     from boku import diary
     from boku.tim import luminance
@@ -228,7 +230,7 @@ def test_a_diary_page_on_beetle_is_the_english_entry(
         "--core", core, "--system", system, "--work", str(work),
         "--frames", str(DIARY_SHOT), "--shot", f"{DIARY_SHOT}:diary",
         "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
-        "--poke", f"7000:{DIARY_PAGE_ID:#x}={int(DIARY_PAGE):02x}",
+        "--poke", f"7000:{DIARY_PAGE_ID:#x}={int(page):02x}",
     ]  # fmt: skip
     for poke in DIARY_MODE:
         args += ["--poke", poke]
@@ -237,7 +239,7 @@ def test_a_diary_page_on_beetle_is_the_english_entry(
     subprocess.run(args, check=True, capture_output=True, timeout=600)
     shot = read_png((work / "diary.png").read_bytes())
 
-    stock = diary.diary_pages(texture_inventory)[DIARY_PAGE]
+    stock = diary.diary_pages(texture_inventory)[page]
     after = parse_exact(texture_patched, stock.occurrences[0].file_offset)
     before, now, palette = stock.tim.indices(), after.indices(), after.palette_rgba(0)
     ox, oy = DIARY_ON_SCREEN

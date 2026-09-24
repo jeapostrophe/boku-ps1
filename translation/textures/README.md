@@ -35,7 +35,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 | [buttons.txt](buttons.txt) | the stone "Back" buttons, the speech-balloon buttons and the attendance card's labels (`btn@<member>.<key>`) | PLAN `GFX-07` |
 | [records.txt](records.txt) | labels beside numbers the game draws: the fishing record, the bug-trading notebook's card (`rec@<member>.<key>`) | PLAN `GFX-07` |
 | [books.txt](books.txt) | the insect book and the kite book, one row per field of a page (`mzkan@<n>.<field>`, `tzkan@<n>.<field>`) | PLAN `GFX-06` |
-| [diary.txt](diary.txt) | the picture diary, one entry per page id (`nikki@NIKKI_nnn`); three so far | PLAN `GFX-04`, `TRN-04` |
+| [diary.txt](diary.txt) | the picture diary, one entry per page id (`nikki@NIKKI_nnn`), every page but the dummy `NIKKI_000` | PLAN `GFX-04`, `TRN-04` |
 
 To change a string, edit it here and run `./make.sh textures check` (add `--out
 work/textures-en` to look at the result), then `./make.sh build-days`; the build prints which

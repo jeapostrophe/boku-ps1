@@ -258,6 +258,17 @@ def diary_entries():
     return {k: e for k, e in tt.read_entries().items() if k.startswith("nikki@")}
 
 
+def test_every_diary_page_but_the_dummy_has_an_entry(inv):
+    """The pages are read off the import, so a page the file forgets is named here rather
+    than left in Japanese in the game (PLAN TRN-04)."""
+    from boku import diary
+
+    pages = {f"nikki@NIKKI_{n}" for n in diary.diary_pages(inv)} - {
+        f"nikki@NIKKI_{diary.DUMMY_PAGE}"
+    }
+    assert sorted(pages - set(diary_entries())) == []
+
+
 @pytest.mark.parametrize("key", sorted(diary_entries()))
 def test_each_diary_page_carries_its_entry_and_no_japanese(inv, patched, key):
     """Every line the entry wraps to (in the page's width, the game's glyphs) is found once
