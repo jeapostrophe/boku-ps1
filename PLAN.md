@@ -695,15 +695,14 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       Jay, 2026-09-22: the narrator says what it is); the result badges
       (`MITIM`), the bug-swap notebook cover, the brush-lettered plaque. Harmed: the player
       who examines the thing and reads nothing.
-- [ ] **[GFX-09]** **The beach notice — reworded** (Jay, 2026-09-24: the sign is too small
-      for "...orbidden" to really be off-screen): repaint it with wording that fits the visible
-      part, as the mock-up in `work/review/decisions.html` shows. Harmed: the player at the
-      beach. Earlier: DONE 2026-09-23: seen on Beetle, the board is frontal
-      wood, not angled, so it is painted, not captioned — in both map variants (`M_C15000`,
-      which day 1 loads, and `M_C15100`; the census had missed the first). `beach_notice` in
-      `boku/texture_text.py` paints `translation/textures/signs.txt` onto both at 2×, cut by
-      the screen edge as the Japanese is; texture edits inside a map the translation rebuilds
-      are carried into the rebuild (`reinsert.plan(carry=…)`). Proven by
+- [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
+      the board is frontal wood, painted not captioned, in both map variants (`M_C15000`, which
+      day 1 loads, and `M_C15100`). `beach_notice` in `boku/texture_text.py` paints
+      `translation/textures/signs.txt` — "High tide / No swimming", worded to fit the part of the
+      board on screen (Jay, 2026-09-24) — shifting a line left to end on the last visible column
+      and refusing one that still does not fit; texture edits inside a map the translation
+      rebuilds are carried into the rebuild (`reinsert.plan(carry=…)`). Proven by
+      `tests/test_real_texture_text.py` and on Beetle by
       `tests/test_real_texture_text_beetle.py`; `research/texture-recipes.md` § `M_C15`. (The
       30 images that stay Japanese by the charter need no row —
       `research/textures-plan.md` lists them.)
