@@ -161,12 +161,27 @@ def test_one_movies_cue_is_never_drawn_over_another():
     assert mine == mb.render(one([mb.Cue(1, 99, ("a",))]), 50)
 
 
-def test_two_lines_take_the_two_line_rows_and_are_centred_separately():
-    block = mb.encode_block({NAME: [mb.Cue(1, 2, ("a", "ab"))]}, FONT)
+@pytest.mark.parametrize("position", sorted(mb.POSITIONS))
+def test_two_lines_take_their_positions_rows_and_are_centred_separately(position):
+    line_y = mb.POSITIONS[position]
+    block = mb.encode_block({NAME: [mb.Cue(1, 2, ("a", "ab"), line_y)]}, FONT)
     _, _, lines, _ = struct.unpack_from("<HHHH", block, HEADER + ROW)
-    assert struct.unpack_from("<HH", block, lines) == ((320 - 5) // 2, mb.LINE_Y[0])
+    assert struct.unpack_from("<HH", block, lines) == ((320 - 5) // 2, line_y[0])
     second = lines + 4 + 2
-    assert struct.unpack_from("<HH", block, second) == ((320 - 9) // 2, mb.LINE_Y[1])
+    assert struct.unpack_from("<HH", block, second) == ((320 - 9) // 2, line_y[1])
+
+
+def test_the_top_rows_mirror_the_bottom_margin():
+    # A glyph inked over its whole cell draws every row a line can: its outline is the
+    # cell's first and last mask rows. The top position's first drawn row must sit as far
+    # from row 0 as the bottom position's last does from the frame's last row.
+    full = {"#": G(tuple([(1 << mb.CELL) - 1] * mb.CELL), 12)}
+
+    def drawn(position):
+        cue = mb.Cue(1, 2, ("#", "#"), mb.POSITIONS[position])
+        return {y for _, y in mb.render(mb.select(mb.encode_block({NAME: [cue]}, full), NAME), 1)}
+
+    assert min(drawn("top")) == (mb.FRAME_HEIGHT - 1) - max(drawn("bottom"))
 
 
 def headers(block: bytes) -> list[int]:

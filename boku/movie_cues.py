@@ -16,14 +16,19 @@ from pathlib import Path
 
 from boku import REPO_ROOT
 from boku.layout import BoxSpec, Encoder, measure, unencodable, wrap
-from boku.movie_block import LINE_WIDTH, LINE_Y, Cue
+from boku.movie_block import LINE_WIDTH, POSITIONS, Cue
 from boku.movies import MOVIES_TSV
 
 CUE_FILE = REPO_ROOT / "translation" / "movies.txt"
 LINE_BREAK = "|"
 FIELDS = 4
-MOVIE_BAND = BoxSpec(width=LINE_WIDTH, lines=len(LINE_Y), name="the movie band")
-"""What one cue can hold: `boku.movie_block`'s line width and line count."""
+"""A row's fields; a fifth, the position, is optional (`POSITIONS`, default `DEFAULT_POSITION`)."""
+DEFAULT_POSITION = "bottom"
+MOVIE_BAND = BoxSpec(
+    width=LINE_WIDTH, lines=min(map(len, POSITIONS.values())), name="the movie band"
+)
+"""What one cue can hold wherever it sits: `boku.movie_block`'s line width, and the fewest
+lines any position has."""
 
 
 @dataclass(frozen=True)
@@ -34,6 +39,8 @@ class CueRow:
     text: str
     line: int
     """The row's line number in its file, for a finding to point at."""
+    position: str = DEFAULT_POSITION
+    """Where the cue sits: a key of `boku.movie_block.POSITIONS`."""
 
     @property
     def key(self) -> str:
@@ -59,18 +66,29 @@ def parse(text: str) -> tuple[list[CueRow], list[Problem]]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         fields = line.split("\t")
-        if len(fields) != FIELDS:
+        if len(fields) not in (FIELDS, FIELDS + 1):
             problems.append(
                 Problem(
                     number,
                     "-",
                     "cue-malformed",
                     f"{len(fields)} tab-separated fields; a row is "
-                    f"`movie <TAB> first frame <TAB> last frame <TAB> English`",
+                    f"`movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> position]`",
                 )
             )
             continue
-        movie, start, end, english = (field.strip() for field in fields)
+        movie, start, end, english, *rest = (field.strip() for field in fields)
+        position = rest[0] if rest and rest[0] else DEFAULT_POSITION
+        if position not in POSITIONS:
+            problems.append(
+                Problem(
+                    number,
+                    movie,
+                    "cue-malformed",
+                    f"position {position!r} is not one of {', '.join(sorted(POSITIONS))}",
+                )
+            )
+            continue
         try:
             first, last = int(start), int(end)
         except ValueError:
@@ -78,7 +96,7 @@ def parse(text: str) -> tuple[list[CueRow], list[Problem]]:
                 Problem(number, movie, "cue-malformed", f"frames {start!r}, {end!r} are not whole")
             )
             continue
-        rows.append(CueRow(movie, first, last, english, number))
+        rows.append(CueRow(movie, first, last, english, number, position))
     return rows, problems
 
 
@@ -169,7 +187,8 @@ def cues_by_movie(rows: Iterable[CueRow], encoder: Encoder) -> dict[str, list[Cu
     """The rows as `boku.movie_block.Cue`s, grouped by movie file in frame order."""
     out: dict[str, list[Cue]] = {}
     for row in sorted(rows, key=lambda row: (row.movie, row.start)):
-        out.setdefault(row.movie, []).append(Cue(row.start, row.end, cue_lines(row.text, encoder)))
+        cue = Cue(row.start, row.end, cue_lines(row.text, encoder), POSITIONS[row.position])
+        out.setdefault(row.movie, []).append(cue)
     return out
 
 

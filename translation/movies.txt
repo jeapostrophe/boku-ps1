@@ -1,4 +1,4 @@
-# The movies' subtitles: movie <TAB> first frame <TAB> last frame <TAB> English.
+# The movies' subtitles: movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> position].
 # The format and its rules: translation/README.md § "movies.txt". Licence: CC BY-SA 4.0.
 #
 # PLAN FMV-02. Timed against the reviewed transcripts under work/voice/reviewed/ (research/voice-only.md
@@ -56,26 +56,27 @@ M260	235	285	just like the lonely howl | of that Japanese wolf...
 #   toboe, which the ASR misheard. "That Japanese wolf" is the one of Saori's camera (bible § 3).
 M260	294	347	It was a very, very sad dream.
 
-# SONG — pending Jay's ruling on sing-along subtitles
+# SONG — subtitled (Jay, 2026-09-23)
 #   The theme song, sung in M27 (from 202 s) and M28 (from 69 s, under the credits). Translated,
-#   unrhymed (style guide § 10); remove the "# " to enable a row.
+#   unrhymed (style guide § 10). Staff credits cross the picture while it plays: each row
+#   takes the position its credits leave clearer (research/movies.md § 11).
 #   The verse end is heard "tsumete" (packed in) in M27 and "subete" (all in) in M28; each
 #   transcript marks its own reading "?". Whether the recordings differ needs an ear.
-# M27	3034	3258	All the flowers that bloom across | this wide meadow,
-# M27	3259	3393	I will give to you, every single one,
-# M27	3394	3570	made into a bouquet with a red ribbon.
-# M27	3604	3708	All the stars that bloom across | this wide night sky,
+M27	3034	3258	All the flowers that bloom across | this wide meadow,
+M27	3259	3393	I will give to you, every single one,
+M27	3394	3570	made into a bouquet with a red ribbon.	top
+M27	3604	3708	All the stars that bloom across | this wide night sky,	top
 #   The transcript's reading ("yozora ippai ni saku hoshi") is corrected from M28's verse; the
 #   ASR heard nonsense here.
-# M27	3717	3783	every single one,
-# M27	3799	4030	I will give to you, | packed in glass that shines like a rainbow.
-# M28	1044	1158	The flowers, too, that bloom across | this wide meadow,
-# M28	1159	1284	I will give to you, every single one,
-# M28	1285	1445	made into a bouquet with a red ribbon.
-# M28	1525	1629	The stars, too, that bloom across | this wide night sky,
-# M28	1630	1752	I will give to you, every single one,
-# M28	1753	1925	all in glass that shines like a rainbow.
-# M28	2080	2388	Everything in this whole wide world,
-# M28	2389	2513	I will give to you, every single one,
-# M28	2514	2680	so write me a letter.
-# M28	2703	2800	Write me a letter.
+M27	3717	3783	every single one,
+M27	3799	4030	I will give to you, | packed in glass that shines like a rainbow.
+M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	top
+M28	1159	1284	I will give to you, every single one,	top
+M28	1285	1445	made into a bouquet with a red ribbon.
+M28	1525	1629	The stars, too, that bloom across | this wide night sky,	top
+M28	1630	1752	I will give to you, every single one,	top
+M28	1753	1925	all in glass that shines like a rainbow.
+M28	2080	2388	Everything in this whole wide world,
+M28	2389	2513	I will give to you, every single one,	top
+M28	2514	2680	so write me a letter.	top
+M28	2703	2800	Write me a letter.	top

@@ -237,7 +237,7 @@ def page(results, rows_by_movie, segments, lengths, out: Path) -> Path:
             notes = by_key.get(cue.key, [])
             parts.append(
                 f"<div class=cue><b>{cue.start}-{cue.end}</b> ({frames / FPS:.1f} s, "
-                f"{rate:.1f} cps) {html.escape(cue.text)}"
+                f"{rate:.1f} cps, {cue.position}) {html.escape(cue.text)}"
                 + "".join(f"<div class=bad>{html.escape(n)}</div>" for n in notes)
                 + "<br>"
             )

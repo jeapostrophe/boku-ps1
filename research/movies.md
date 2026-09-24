@@ -518,9 +518,8 @@ first cue, 117 on the last — with none wrong. Differences from the opening:
   901 matched, all of them right). The block is not re-read there: no movie runs.
 * **Unskippable** (skip mask 0, § 2.1) — nothing in the hook depends on it.
 * **The credits.** From about STR frame 1085 to the end the picture is Japanese credits
-  scrolling up over black, with photographs, and they cross the subtitle rows (200–226): a
-  cue after frame ~1085 is drawn over them. The one `M28` cue in `translation/movies.txt`
-  (961–1043) ends before them, over the sky.
+  scrolling up over black, with photographs: a cue after frame ~1085 is drawn over them
+  (§ 11). The narration's one `M28` cue (961–1043) ends before them, over the sky.
 
 **The Redux boot flake.** The two misses of § 8 reproduce under load: the game mode trace
 (`movie-sub.lua` prints every change) shows the title (`g_mode` 2) at vsync 2088 on a quiet
@@ -572,9 +571,30 @@ subtitle may be shorter than the line it translates (README: "nothing is cut to 
 translation's and Jay's call, not this tool's.
 
 **The song under the credits.** The transcript marks ten `M28` segments as the sung theme,
-frames 1044-2787. The credits scroll through the subtitle rows from about frame 1085 (§ 9),
-so if the song is subtitled, every one of them but the first's opening 40 frames is drawn
-over the credits: 1044-1159 (from 1085), 1159-1285, 1285-1435, 1525-1630, 1630-1753,
-1753-1915, 2080-2389, 2389-2514, 2514-2668, 2703-2787. A cue position per row (the top of
-the frame) is what would keep them apart.
+frames 1044-2787, and six in `M27`, 3034-4020; § 11 is how they are subtitled.
 
+## 11. The theme song, and where a cue sits (`FMV-02`, 2026-09-23)
+
+Jay ruled the song subtitled. Its sixteen rows are in `translation/movies.txt`, and
+`movie-timing` times them against the transcripts' `song` segments as it times narration
+(`boku.movie_timing.SUBTITLED_KINDS`); all sixteen pass.
+
+**The position field.** A cue row may end in `top`, which puts its lines on the same two rows
+mirrored to the top of the frame (`boku.movie_block.POSITIONS`). The block already carried a y per line, so nothing in `asm/movie.asm` changed:
+the blit draws where the line says. The Redux gate's `M60` fixture cue sits at the top and
+is matched pixel for pixel (`tests/test_real_movie_subtitle.py`).
+
+**Where the credits are, measured.** In `M27` the staff credits are captions placed in a
+corner of each shot, so a row can take the band its shot leaves clear: chosen by eye on each
+cue's first, middle and last frame, four bottom and two top (3394, 3604). In `M28` the
+credits scroll up over black the whole height of the frame — a right-aligned column of
+names ending near x 176 and a photograph at about x 180-306 — so **no position keeps them
+apart**. Counting pixels brighter than 40 in the two bands every third frame of each song
+cue (`work/movies/M28.avi`): only the first cue's top band is clear (0 against a mean of 242
+at the bottom); for the others the less-crossed band still holds 240-640 bright pixels on
+average, in most frames. Each row takes that band (seven top, three bottom). In the
+review's middle shots of nine of the ten (`work/movie-review/M28/`), four show English
+crossing Japanese names.
+
+What would keep them apart is a dark panel behind the song cues, hiding the credits in
+those rows while a line is up — a product choice for Jay, not built.

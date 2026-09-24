@@ -6,7 +6,7 @@ import pytest
 
 from boku import movie_cues as mc
 from boku.layout import CellMapEncoder
-from boku.movie_block import LINE_WIDTH, Cue
+from boku.movie_block import LINE_WIDTH, POSITIONS, Cue
 
 ADVANCE = 6
 """Every character of `FONT` steps 6 px, so a width is `6 * len(text)`; `LINE_WIDTH` (318)
@@ -33,11 +33,23 @@ def checks(found: list[mc.Problem]) -> list[str]:
     return [problem.check for problem in found]
 
 
-def test_a_row_is_four_tab_separated_fields_and_notes_are_skipped():
+def test_a_row_is_four_or_five_tab_separated_fields_and_notes_are_skipped():
     text = "# the opening\n\nM27\t120\t300\tfar away\nM27\t1\t2\n  # indented note\nM60\tx\t3\ta\n"
     found, problems = mc.parse(text)
     assert found == [mc.CueRow("M27", 120, 300, "far away", 3)]
     assert [(p.line, p.check) for p in problems] == [(4, "cue-malformed"), (6, "cue-malformed")]
+
+
+def test_a_fifth_field_places_the_cue_and_anything_but_a_position_is_malformed():
+    text = "M28\t1\t2\ta\ttop\nM28\t3\t4\tb\tbottom\nM28\t5\t6\tc\tmiddle\nM28\t7\t8\td\t\n"
+    found, problems = mc.parse(text)
+    assert found == [
+        mc.CueRow("M28", 1, 2, "a", 1, "top"),
+        mc.CueRow("M28", 3, 4, "b", 2),
+        mc.CueRow("M28", 7, 8, "d", 4),  # an empty position field is the default
+    ]
+    assert [(p.line, p.check) for p in problems] == [(3, "cue-malformed")]
+    assert "top" in problems[0].message and "bottom" in problems[0].message
 
 
 def test_a_files_length_is_the_last_frame_any_id_playing_it_shows():
@@ -120,6 +132,11 @@ def test_the_build_gets_each_movies_cues_in_frame_order_as_laid_out():
         "M27": [Cue(5, 6, ("a", "c"))],
         "M60": [Cue(1, 2, ("a",)), Cue(20, 30, ("b",))],
     }
+
+
+def test_a_top_cue_is_laid_out_on_the_top_rows():
+    (cue,) = mc.cues_by_movie([mc.CueRow("M28", 1, 2, "a | b", 1, "top")], FONT)["M28"]
+    assert cue == Cue(1, 2, ("a", "b"), POSITIONS["top"])
 
 
 def test_the_committed_cue_file_parses_and_holds_to_the_movie_list():

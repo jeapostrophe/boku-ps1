@@ -132,3 +132,17 @@ def test_a_chain_whose_onset_window_is_taken_by_the_cue_before_keeps_its_start()
     segments = [mt.Segment(100, 180), mt.Segment(170, 250)]
     cues = [cue(100, 180, 10, 1), cue(190, 250, 10, 2)]
     assert mt.retime(cues, segments, 400)[1].start == 190
+
+
+def test_sung_lines_are_timed_like_narration_and_music_is_not(tmp_path):
+    """The theme song is subtitled (FMV-02), so its segments bind cues as narration does."""
+    path = tmp_path / "M28.ja.tsv"
+    path.write_text(
+        "start_s\tend_s\tstart_frame\tend_frame\tkind\tconf\tja\tnote\n"
+        "0\t1\t1\t961\tmusic\tok\t\t\n"
+        "1\t2\t961\t1044\tnarration\tok\t\t\n"
+        "2\t3\t1044\t1159\tsong\tok\t\t\n"
+        "3\t4\t1159\t1200\tvoice\tok\t\t\n",
+        encoding="utf-8",
+    )
+    assert mt.read_segments(path) == [mt.Segment(961, 1044), mt.Segment(1044, 1159)]

@@ -115,6 +115,14 @@ LINE_Y = (200, 200 + MASK)
 """The two lines' cell tops, a whole mask apart so no outline overlaps the line above.
 Ink to row 225, outline to 226 -- inside DuckStation's ~232 visible rows
 (`research/vwf-prototype.md` § Round 2) and clear of the 240-row frame."""
+_BOTTOM_MARGIN = FRAME_HEIGHT - (LINE_Y[-1] - 1 + MASK)
+"""Rows below the bottom position's last drawn row (its outline)."""
+LINE_Y_TOP = (_BOTTOM_MARGIN + 1, _BOTTOM_MARGIN + 1 + MASK)
+"""The two rows mirrored to the top of the frame: the first drawn row (a cell's row 0 is at
+line y - 1) is as far from row 0 as the bottom position's last is from row 239."""
+POSITIONS = {"bottom": LINE_Y, "top": LINE_Y_TOP}
+"""Where a cue may sit (`translation/README.md` § movies.txt): the name the cue file uses ->
+the cell tops of its lines."""
 
 
 class GlyphLike(Protocol):
@@ -131,7 +139,8 @@ class Cue:
     start: int
     end: int
     lines: tuple[str, ...]
-    """Each line is centred on the screen at `LINE_Y[i]`."""
+    line_y: tuple[int, ...] = LINE_Y
+    """Each line is centred on the screen with its cell top at `line_y[i]` (`POSITIONS`)."""
 
 
 @dataclass(frozen=True)
@@ -214,10 +223,10 @@ def encode_block(
     for cue in cues:
         if not 0 <= cue.start <= cue.end <= 0xFFFF:
             raise BlockError(f"cue frames {cue.start}..{cue.end} are not 0 <= start <= end < 65536")
-        if len(cue.lines) > len(LINE_Y):
-            raise BlockError(f"a cue holds at most {len(LINE_Y)} lines; {cue.lines!r} has more")
+        if len(cue.lines) > len(cue.line_y):
+            raise BlockError(f"a cue holds at most {len(cue.line_y)} lines; {cue.lines!r} has more")
         blob = bytearray()
-        for text, y in zip(cue.lines, LINE_Y, strict=False):
+        for text, y in zip(cue.lines, cue.line_y, strict=False):
             missing = unencodable_by(index.__contains__, text)
             if missing:
                 raise BlockError(f"the font has no glyph for {''.join(missing)!r}")

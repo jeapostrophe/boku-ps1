@@ -130,7 +130,7 @@ decided from context and says so in `notes`.
   then the theme song from 202 s; `M28` is music, one narrated sentence at 64–69.5 s, then the
   theme song and the credits; `M60`, `M120`, `M260` are one to three narrated sentences each
   (`M120`'s sentence runs on past the movie's end). The songs are transcribed and marked
-  `song`; whether they are subtitled is a translation call.
+  `song`; they are subtitled (Jay, 2026-09-23; research/movies.md § 11).
 * **The well narration Jay heard** is not voice-only: it is `E2405.0`, a voiced message with
   text, played the second time the shortcut's well (`E08`) is examined
   ([sumo.md](sumo.md) § The well on the shortcut). `E8062` is the other well, `B06`.

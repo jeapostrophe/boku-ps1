@@ -1,13 +1,14 @@
-"""The movie cues against the narration they subtitle: timing rules, and a retimer (`FMV-03`).
+"""The movie cues against the speech and song they subtitle: timing rules, a retimer (`FMV-03`).
 
 `translation/movies.txt` (`boku.movie_cues`) says what each cue reads and over which frames;
 the voice lane's reviewed transcripts (`work/voice/reviewed/<movie>.ja.tsv`, never tracked:
-Japanese) say when each narration segment is spoken, in the same 1-based STR frames. This
-module holds the rules a cue's timing must pass against them and `retime`, which moves cue
-boundaries -- never text -- to pass them where it can. Only the columns `start_frame`,
-`end_frame` and `kind` of a transcript are read; its Japanese never leaves `work/`.
+Japanese) say when each spoken segment -- narration, or the sung theme -- is heard, in the
+same 1-based STR frames. This module holds the rules a cue's timing must pass against them
+and `retime`, which moves cue boundaries -- never text -- to pass them where it can. Only the
+columns `start_frame`, `end_frame` and `kind` of a transcript are read; its Japanese never
+leaves `work/`.
 
-A cue belongs to the narration segment it overlaps most. One segment may carry several cues
+A cue belongs to the spoken segment it overlaps most. One segment may carry several cues
 (one sentence, two English cues); then the rules on onset and end bind its first and last
 cue, and `retime` may move the boundaries between its cues by up to `REACH` frames.
 """
@@ -44,6 +45,10 @@ EDGE = 2
 its cues: the edges sit on the speech, the splits only on the text."""
 
 
+SUBTITLED_KINDS = frozenset({"narration", "song"})
+"""The transcript `kind`s a cue subtitles: the song is sung and subtitled too (FMV-02)."""
+
+
 @dataclass(frozen=True)
 class Segment:
     start: int
@@ -51,13 +56,13 @@ class Segment:
 
 
 def read_segments(path: Path) -> list[Segment]:
-    """The narration segments of a reviewed transcript, in order."""
+    """The subtitled segments of a reviewed transcript (`SUBTITLED_KINDS`), in order."""
     with Path(path).open(encoding="utf-8") as handle:
         rows = csv.DictReader(handle, delimiter="\t")
         return [
             Segment(int(row["start_frame"]), int(row["end_frame"]))
             for row in rows
-            if row["kind"] == "narration"
+            if row["kind"] in SUBTITLED_KINDS
         ]
 
 
@@ -87,7 +92,7 @@ def assign(cues: Sequence[CueRow], segments: Sequence[Segment]) -> list[int | No
 def problems(
     cues: Sequence[CueRow], segments: Sequence[Segment], length: int | None = None
 ) -> list[Problem]:
-    """Every timing rule each cue of one movie breaks; and narration no cue covers."""
+    """Every timing rule each cue of one movie breaks; and spoken segments no cue covers."""
     cues = sorted(cues, key=lambda cue: cue.start)
     owner = assign(cues, segments)
     found: list[Problem] = []
@@ -106,7 +111,7 @@ def problems(
             say(cue, "cue-fast", f"{float(cps):.1f} characters a second; at most {MAX_CPS}")
         seg_index = owner[n]
         if seg_index is None:
-            say(cue, "cue-unspoken", "overlaps no narration segment")
+            say(cue, "cue-unspoken", "overlaps no spoken segment")
             continue
         seg = segments[seg_index]
         mine = [m for m, index in enumerate(owner) if index == seg_index]
@@ -123,7 +128,7 @@ def problems(
     for n, seg in enumerate(segments):
         if n not in covered and (length is None or seg.start <= length):
             found.append(
-                Problem(0, f"@{seg.start}", "speech-uncued", f"narration {seg.start}-{seg.end}")
+                Problem(0, f"@{seg.start}", "speech-uncued", f"spoken {seg.start}-{seg.end}")
             )
     return found
 

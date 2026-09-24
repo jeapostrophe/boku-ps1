@@ -53,7 +53,7 @@ from boku.movie_block import (
     select,
     slice_columns,
 )
-from boku.movie_cues import read_movie_lengths
+from boku.movie_cues import parse, read_movie_lengths
 
 WORK = REPO_ROOT / "work" / "fmv04"
 PREBUILT = os.environ.get("BOKU_MOVIE_BUILD")
@@ -74,10 +74,12 @@ EXE = REPO_ROOT / "disc" / "files" / "SCPS_100.88"
 FIXTURE_CUES = (
     "# FIXTURE: tests/test_real_movie_subtitle.py's placeholder cues. Not a translation.\n"
     "M27\t120\t300\tFIXTURE: the opening, M27 frames 120-300 | keyed to M27 and nothing else\n"
-    "M60\t120\t300\tFIXTURE: the fireworks, M60 frames 120-300\n"
+    "M60\t120\t300\tFIXTURE: the fireworks, M60 frames 120-300\ttop\n"
 )
 """Two movies' cues over the same frames: the one frame index inside both is where a
-loader that ignored the movie would draw the wrong one, and every pixel of it is checked."""
+loader that ignored the movie would draw the wrong one, and every pixel of it is checked.
+`M60`'s sits at the top (FMV-02's position field), so the blit is held to a line's y too."""
+AT_TOP = {row.movie: row.position == "top" for row in parse(FIXTURE_CUES)[0]}
 
 BYTES_PER_PIXEL = 3
 """The slice buffers are 24-bit: the movie's display mode, and what the blit writes."""
@@ -362,6 +364,9 @@ def test_inside_its_cue_the_frame_is_the_stock_decode_plus_exactly_its_own_text(
         f"{sorted(set(frame.sub_frame))}); the cue is not where the test thinks"
     )
     assert WHITE in pixels.values() and DARK in pixels.values()
+    assert all((y < FRAME_HEIGHT // 2) == AT_TOP[movie] for _, y in pixels), (
+        f"{movie}'s fixture cue is not in the half of the frame its position names"
+    )
     expected = painted(stock[movie][INSIDE].rows, pixels)
     assert expected != stock[movie][INSIDE].rows, "painting the prediction changed nothing"
     wrong = differences(expected, frame.rows)
