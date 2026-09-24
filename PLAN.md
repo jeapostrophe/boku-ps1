@@ -327,14 +327,20 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       tested in `tests/test_real_date_labels.py`); surfaces 9 and 11 proven on Beetle, label 5 by
       forcing, 25 and 26 unreachable; the stack under a real save 0xFB0 (= the 4,016 budget),
       under a bout 0x2E8, under fishing none (scratchpad) — `research/vwf-prototype.md` § "The map work area".
-- [ ] **[TXT-12]** **The exchange notebook's size badge** (x 140–168) under long beetle
-      names. RULED (Jay, 2026-09-24, `work/review/decisions.html` §14): not (c) — "it looks bad
-      to have multiple fonts in one place"; shorter names in the normal font instead —
-      "Red-legged Stag", "Miyama Stag", "Rhinoceros", "Giant Stag", "Little Stag" — if they
-      clear the badge. Harmed: the player, who reads a name with a badge drawn over it.
-- [ ] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), to apply:
-      §8b the card message reworded "The MEMORY CARD has no free blocks." (one line); §9
-      "Specimens+Cage" only if it fits in the same font as its neighbours, else "Specimens";
+- [ ] **[TXT-12]** **The exchange notebook's names under the size badge.** RULED (Jay,
+      2026-09-24, `work/review/decisions.html` §14): no second face ("it looks bad to have
+      multiple fonts in one place"); shorter names in the normal font. Four built (`ff0ac03`):
+      "Miyama Stag", "Giant Stag", "Little Stag", "Rhinoceros", as notebook-only `@exchange`
+      rows, seen on Beetle for every fighter and badge. Measured: the pink badge covers x
+      140–171 with its shadow, so a name has 98 px from x 173. Left **[MINE: product]**:
+      "Red-legged Stag" (102 px) does not clear — §14.1 a "Red-leg Stag", b "Redleg Stag",
+      c "Red-legged", d end unmarked bugs' names at their number (+12 px; recommended); and
+      "Saw Stag Beetle" (101, touches the badge) → "Saw Stag"? Harmed: the player, who reads
+      a name with a badge drawn over it.
+- [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
+      §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
+      free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
+      own font (103 px of 109);
       §10, §15, §17 DONE (`431e70d`, Beetle): records 10.1a, 10.2a, 10.3b
       ("Caught 8/16"), 10.4a, 10.5b ("Worth as many as"); the attendance footer "Have a healthy
       summer!" (Sprout — the game font is 142 px for 104); balloons "Stuff", "Make" ("Make It"
@@ -363,7 +369,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `research/data/text-boxes.tsv`, measured on Beetle or read off the code, and enforced by
       the build and `boku lint` — the dialogue band (c2 advance, three lines under Jay's band;
       `research/vwf-prototype.md`); select rows; controls help (three bottom rows); memory-card
-      messages (`.3` on two rows); config and summer-memories labels; item names and their
+      messages (`.3` reworded to one row, Jay 2026-09-24); config and summer-memories labels; item names and their
       one-line versions (Jay, 2026-09-24); descriptions, captions and fishing messages (option
       c, Jay, 2026-09-24); kite names; the tackle screen; the cage HUD (date a row down); the
       fish-catch title (centred, `asm/hud_resident.asm`); the insect box (grid and notebook);
@@ -378,7 +384,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [x] **[TXT-11]** **Japanese left on the title and save flow.** DONE 2026-09-23:
       `exe@8003D5F0.5` reworded to fit its 265-px box ("There is no file that has finished
       this game."), English on Beetle; the title, load and new-game screens swept on Beetle —
-      no text-side Japanese is left (extras `exe@8003DA00.1` is now "Specimens", `TXT-07`); the rest is textures (`GFX-07`). DuckStation's window title comes from its
+      no text-side Japanese is left (extras `exe@8003DA00.1` is now "Specimens+Cage", `TRN-11`); the rest is textures (`GFX-07`). DuckStation's window title comes from its
       own database by serial (the localized name, on by default); the per-user overrides are in
       `research/tooling-setup.md`.
 
@@ -562,9 +568,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [x] **[PIPE-07]** **Array English on screen.** DONE 2026-09-24: every code-file array's English
       is on screen. Arrays that outgrow their bytes move whole (`boku.array_relocate`), into
       resident room or into the one overlay that reads them (`overlay_tail`); regions in
-      `research/text-renderer.md` § 6. Items the box gives more rows are split into items of
-      their own (`boku.row_split`): the card message `.3` via `g_mc_msg` records, and the help
-      screen's bottom sentence on three rows (`boku.help_screen`, `asm/help_resident.asm`).
+      `research/text-renderer.md` § 6. An item the box gives more rows is split into items of
+      its own (`boku.row_split`): the help screen's bottom sentence on three rows (`boku.help_screen`, `asm/help_resident.asm`).
       The insect box is written twice into `HHON.OVL` (`boku.insect_box`). Dialogue may draw
       the sheet's symbol cells (`boku.layout.WithSheetSymbols`). Bug sumo's move names and the
       specimen label are left retail, never drawn (`boku.arrays.UNREACHABLE`; reopen if a retail
