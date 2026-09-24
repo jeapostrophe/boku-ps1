@@ -11,6 +11,12 @@ leaves `work/`.
 A cue belongs to the spoken segment it overlaps most. One segment may carry several cues
 (one sentence, two English cues); then the rules on onset and end bind its first and last
 cue, and `retime` may move the boundaries between its cues by up to `REACH` frames.
+
+Reading beats sync (Jay, 2026-09-24, on `M27@1221`: "out of sync with the audio is fine"): a
+cue's start or end may leave its speech by up to `DRIFT` frames past the onset and end rules
+when a cue needs those frames to be read -- `problems` accepts such a boundary only if putting
+it back in sync would leave a cue over `MAX_CPS` or under `MIN_FRAMES`, and `retime` drifts as
+few frames as reading needs.
 """
 
 from __future__ import annotations
@@ -38,6 +44,9 @@ END_SLACK = 1
 boundary frame, and the hook already changes a cue up to a frame early (research/movies.md § 7)."""
 LINGER = 30
 """Frames a segment's last cue may stay after its speech: 2 s."""
+DRIFT = 30
+"""Frames past the onset and end rules (and past `LINGER`) a boundary may leave its speech when
+a cue needs them to be read: 2 s."""
 REACH = 60
 """How far `retime` looks either side of a boundary between two cues of one segment."""
 EDGE = 2
@@ -74,6 +83,11 @@ def characters(text: str) -> int:
 def rate(text: str, start: int, end: int) -> Fraction:
     """Characters a second for `text` shown from frame `start` to `end`, both shown."""
     return Fraction(characters(text) * FPS, end - start + 1)
+
+
+def strained(text: str, start: int, end: int) -> bool:
+    """Whether `text` over frames `start`-`end` is too short on screen or too fast to read."""
+    return end - start + 1 < MIN_FRAMES or rate(text, start, end) > MAX_CPS
 
 
 def assign(cues: Sequence[CueRow], segments: Sequence[Segment]) -> list[int | None]:
@@ -115,14 +129,29 @@ def problems(
             continue
         seg = segments[seg_index]
         mine = [m for m, index in enumerate(owner) if index == seg_index]
-        if n == mine[0] and abs(cue.start - seg.start) > ONSET:
+        before = cues[n - 1] if n and cues[n - 1].end + 1 == cue.start else None
+        after = cues[n + 1] if n + 1 < len(cues) and cues[n + 1].start == cue.end + 1 else None
+        lead = cue.start - seg.start
+        # Off its speech is allowed if back in the window it would strain a cue: this one if it
+        # starts early, the one before if it starts late.
+        held = abs(lead) <= ONSET + DRIFT and (
+            strained(cue.text, seg.start - ONSET, cue.end)
+            if lead < 0
+            else before is not None and strained(before.text, before.start, seg.start + ONSET - 1)
+        )
+        if n == mine[0] and abs(lead) > ONSET and not held:
             say(
                 cue,
                 "cue-onset",
-                f"starts {cue.start - seg.start:+d} frames from the speech at {seg.start}; "
-                f"within {ONSET} (0.5 s)",
+                f"starts {lead:+d} frames from the speech at {seg.start}; within {ONSET} (0.5 s)",
             )
-        if n == mine[-1] and cue.end < seg.end - END_SLACK:
+        limit = seg.end - END_SLACK
+        held = (
+            cue.end >= limit - DRIFT
+            and after is not None
+            and strained(after.text, limit + 1, after.end)
+        )
+        if n == mine[-1] and cue.end < limit and not held:
             say(cue, "cue-early-end", f"ends at {cue.end}, before the speech ends at {seg.end}")
     covered = set(owner)
     for n, seg in enumerate(segments):
@@ -138,13 +167,14 @@ def retime(cues: Sequence[CueRow], segments: Sequence[Segment], length: int) -> 
 
     Cues that abut stay abutting (one boundary moves for both); the others move alone. Each
     boundary may take any frame its rules allow -- a segment's first cue within `ONSET` of the
-    speech, its last cue from `END_SLACK` before the speech's end to `LINGER` after it and never
-    into the next cue, a boundary inside one segment within `REACH` -- and the choice minimises,
-    in order, the worst reading rate over `MAX_CPS`, the summed excess over it (so a chain whose
-    worst cue cannot be fixed still fixes the others), the number of cues under `MIN_FRAMES`,
-    then the frames moved (`EDGE` times over at a chain's outer edges). A chain its rules
-    leave no room to fix is returned as that minimum placed it, and `problems` still names
-    what is left.
+    speech, its last cue from `END_SLACK` before the speech's end to `LINGER` after it, either
+    of those up to `DRIFT` further, never into the next cue, a boundary inside one segment
+    within `REACH` -- and the choice minimises, in order, the worst reading rate over
+    `MAX_CPS`, the summed excess over it (so a chain whose worst cue cannot be fixed still
+    fixes the others), the number of cues under `MIN_FRAMES`, the frames drifted past the
+    onset and end rules, then the frames moved (`EDGE` times over at a chain's outer edges).
+    A chain its rules leave no room to fix is returned as that minimum placed it, and
+    `problems` still names what is left.
     """
     cues = sorted(cues, key=lambda cue: cue.start)
     owner = assign(cues, segments)
@@ -166,7 +196,7 @@ def _window(low: int, high: int) -> range:
 
 
 def _retime_chain(cues, owner, segments, chain, length, before) -> list[CueRow]:
-    first, last = cues[chain[0]], cues[chain[-1]]
+    last = cues[chain[-1]]
     after = min((c.start for c in cues if c.start > last.end), default=length + 1)
 
     def first_of(n: int) -> bool:
@@ -176,37 +206,38 @@ def _retime_chain(cues, owner, segments, chain, length, before) -> list[CueRow]:
         return owner[n] is not None and all(owner[m] != owner[n] for m in range(n + 1, len(cues)))
 
     # Boundary k is the first frame of chain cue k; boundary len(chain) is one past the last.
+    # Where it ends a segment's last cue or starts a segment's first, it may leave the rule
+    # `problems` checks there (early end, onset) by up to DRIFT, each frame counted in `drift`.
     options: list[range] = []
+    rules: list[list[tuple[int, int]]] = []
     for k in range(len(chain) + 1):
-        if k == 0:
-            n, cue = chain[0], first
-            window = _window(cue.start, cue.start)
-            if first_of(n):
-                seg = segments[owner[n]]
-                onset = _window(max(before + 1, seg.start - ONSET), seg.start + ONSET)
-                window = onset or window
-            options.append(window)
-            continue
-        prev = chain[k - 1]
-        low, high = cues[prev].start + 1, (after if k == len(chain) else cues[chain[k]].end)
-        if last_of(prev):
+        prev = chain[k - 1] if k else None
+        nxt = chain[k] if k < len(chain) else None
+        original = cues[nxt].start if nxt is not None else last.end + 1
+        low = before + 1 if prev is None else cues[prev].start + 1
+        high = after if nxt is None else cues[nxt].end
+        mine: list[tuple[int, int]] = []
+        if nxt is not None and first_of(nxt):
+            seg = segments[owner[nxt]]
+            mine.append((seg.start - ONSET, seg.start + ONSET))
+        if prev is not None and last_of(prev):
             seg = segments[owner[prev]]
-            low = max(low, seg.end - END_SLACK + 1)
-            high = min(high, seg.end + LINGER + 1)
-        if k < len(chain) and first_of(chain[k]):
-            seg = segments[owner[chain[k]]]
-            low, high = max(low, seg.start - ONSET), min(high, seg.start + ONSET)
-        if k == len(chain) and not last_of(prev):
-            original = cues[prev].end + 1
-            low, high = max(low, original), min(high, original)
-        if not (last_of(prev) or (k < len(chain) and first_of(chain[k]))) and k < len(chain):
-            original = cues[chain[k]].start
+            mine.append((seg.end - END_SLACK + 1, high))
+            if nxt is None or not first_of(nxt):
+                # LINGER caps a hold only where no next cue's onset decides the boundary.
+                high = min(high, seg.end + LINGER + 1 + DRIFT)
+        if mine:
+            low = max(low, *(rule_low - DRIFT for rule_low, _ in mine))
+            high = min(high, *(rule_high + DRIFT for _, rule_high in mine))
+        elif prev is None or nxt is None:
+            low = high = original
+        else:
             low, high = max(low, original - REACH), min(high, original + REACH)
-        window = _window(low, high)
-        if not window:
-            original = cues[prev].end + 1
-            window = _window(original, original)
-        options.append(window)
+        options.append(_window(low, high) or _window(original, original))
+        rules.append(mine)
+
+    def drift(k: int, b: int) -> int:
+        return sum(max(0, rule_low - b, b - rule_high) for rule_low, rule_high in rules[k])
 
     def cost_of(k: int, start: int, stop: int) -> tuple[Fraction, int]:
         cue = cues[chain[k]]
@@ -217,27 +248,32 @@ def _retime_chain(cues, owner, segments, chain, length, before) -> list[CueRow]:
         )
 
     originals = [cues[n].start for n in chain] + [last.end + 1]
-    # best[b] for boundary k: (worst excess, summed excess, short cues, frames moved, path)
-    best = {b: (Fraction(0), Fraction(0), 0, EDGE * abs(b - originals[0]), [b]) for b in options[0]}
+    # best[b] for boundary k: (worst excess, summed excess, short cues, frames drifted,
+    # frames moved, path)
+    best = {
+        b: (Fraction(0), Fraction(0), 0, drift(0, b), EDGE * abs(b - originals[0]), [b])
+        for b in options[0]
+    }
     for k in range(1, len(chain) + 1):
         nxt = {}
         for b in options[k]:
             candidates = []
-            for a, (worst, total, short, moved, path) in best.items():
+            for a, (worst, total, short, drifted, moved, path) in best.items():
                 excess, is_short = cost_of(k - 1, a, b)
                 candidates.append(
                     (
                         max(worst, excess),
                         total + excess,
                         short + is_short,
+                        drifted + drift(k, b),
                         moved + (EDGE if k == len(chain) else 1) * abs(b - originals[k]),
                         [*path, b],
                     )
                 )
             if candidates:
-                nxt[b] = min(candidates, key=lambda c: c[:4])
+                nxt[b] = min(candidates, key=lambda c: c[:5])
         best = nxt
-    path = min(best.values(), key=lambda c: c[:4])[4]
+    path = min(best.values(), key=lambda c: c[:5])[5]
     return [replace(cues[n], start=path[k], end=path[k + 1] - 1) for k, n in enumerate(chain)]
 
 
@@ -309,6 +345,7 @@ if __name__ == "__main__":
 
 
 __all__ = [
+    "DRIFT",
     "END_SLACK",
     "LINGER",
     "MAX_CPS",
@@ -323,4 +360,5 @@ __all__ = [
     "read_segments",
     "retime",
     "retimed_file",
+    "strained",
 ]

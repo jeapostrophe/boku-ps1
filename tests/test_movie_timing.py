@@ -86,17 +86,73 @@ def test_retime_moves_the_shared_boundary_to_fix_a_fast_cue_and_keeps_the_text()
     assert moved[0].end + 1 == moved[1].start, "abutting cues stay abutting"
 
 
-def test_retime_never_breaks_a_rule_to_help_the_rate():
-    """A cue too fast even at the latest end its segment allows keeps its onset and does not
-    run past `LINGER` or into the next cue; `problems` still names the rate."""
+def test_retime_holds_a_fast_cue_past_its_speech_into_the_silence_after():
+    """Jay, 2026-09-24: a cue may stay on screen longer than its speech to be read. A cue whose
+    speech is 100-130 needs 75 frames for its text, 7 more than the onset window and `LINGER`
+    give: it holds past `LINGER` without leaving its onset window, and `problems` accepts it."""
     seg = mt.Segment(100, 130)
+    fast = cue(100, 130, at_rate(75, mt.MAX_CPS), 1)
+    in_sync = seg.end + mt.LINGER - (seg.start - mt.ONSET) + 1
+    assert in_sync == 75 - 7, "the fixture needs 7 frames more than sync gives"
+    moved = mt.retime([fast], [seg], 400)
+    start, end = moved[0].start, moved[0].end
+    assert end - start + 1 == 75
+    assert start >= seg.start - mt.ONSET and end > seg.end + mt.LINGER
+    assert mt.problems(moved, [seg]) == []
+
+
+def test_retime_never_holds_a_cue_into_the_next_one_or_past_its_drift():
+    """Held as long as the gap allows, never into the next cue; with no next cue, never past
+    `LINGER` + `DRIFT` after its speech. `problems` still names the rate."""
+    seg, later = mt.Segment(100, 130), mt.Segment(170, 200)
     hopeless = cue(100, 130, 200, 1)
     following = cue(170, 200, 5, 2)
-    moved = mt.retime([hopeless, following], [seg, mt.Segment(170, 200)], 400)
-    assert moved[0].start >= 100 - mt.ONSET
-    assert moved[0].end <= min(130 + mt.LINGER, 169)
-    assert moved[1] == following
-    assert checks(mt.problems(moved, [seg, mt.Segment(170, 200)])) == ["cue-fast"]
+    moved = mt.retime([hopeless, following], [seg, later], 400)
+    assert moved[0].end == 169 and moved[1] == following
+    assert checks(mt.problems(moved, [seg, later])) == ["cue-fast"]
+    alone = mt.retime([hopeless], [seg], 400)[0]
+    assert alone.end == 130 + mt.LINGER + mt.DRIFT
+    assert alone.start >= 100 - mt.ONSET - mt.DRIFT
+
+
+def test_in_continuous_speech_a_fast_cue_borrows_frames_across_a_segment_boundary():
+    """The M27 shape: speech with no pause, one cue per segment, the middle one too fast for
+    its segment. Its boundaries leave the speech -- the cue before ends early, the one after
+    starts late -- by no more than reading needs, and `problems` accepts both."""
+    segments = [mt.Segment(100, 160), mt.Segment(160, 220), mt.Segment(220, 280)]
+    cues = [cue(100, 159, 20, 1), cue(160, 219, at_rate(90, mt.MAX_CPS), 2), cue(220, 280, 20, 3)]
+    assert checks(mt.problems(cues, segments)) == ["cue-fast"]
+    moved = mt.retime(cues, segments, 400)
+    assert mt.problems(moved, segments) == [], [(c.start, c.end) for c in moved]
+    assert moved[1].end - moved[1].start + 1 == 90, "exactly the frames its text needs"
+    assert moved[0].start == 100 and moved[2].end == 280, "the outer edges had no reason to move"
+
+
+def test_a_start_off_its_speech_passes_only_when_the_cue_before_needs_the_frames():
+    """The checker's side of the hold: a late start is accepted when moving it back into the
+    onset window would leave the abutting cue before it too fast -- and not otherwise."""
+    segments = [mt.Segment(100, 160), mt.Segment(160, 220)]
+    late = 160 + mt.ONSET + 10
+    needy = [cue(100, late - 1, at_rate(75, mt.MAX_CPS), 1), cue(late, 220, 10, 2)]
+    assert mt.problems(needy, segments) == []
+    idle = [cue(100, late - 1, 10, 1), cue(late, 220, 10, 2)]
+    assert checks(mt.problems(idle, segments)) == ["cue-onset"]
+    latest = 160 + mt.ONSET + mt.DRIFT
+    edge = [cue(100, latest - 1, 200, 1), cue(latest, 240, 10, 2)]
+    assert "cue-onset" not in checks(mt.problems(edge, segments))
+    far = [cue(100, latest, 200, 1), cue(latest + 1, 240, 10, 2)]
+    assert "cue-onset" in checks(mt.problems(far, segments))
+
+
+def test_an_early_end_passes_only_when_the_cue_after_needs_the_frames():
+    """The same for a segment's last cue ending before its speech does: accepted when ending
+    on time would leave the abutting cue after it too fast, flagged when it would not."""
+    segments = [mt.Segment(100, 160), mt.Segment(160, 220)]
+    early = 160 - mt.END_SLACK - 10
+    needy = [cue(100, early, 20, 1), cue(early + 1, 220, at_rate(75, mt.MAX_CPS), 2)]
+    assert "cue-early-end" not in checks(mt.problems(needy, segments))
+    idle = [cue(100, early, 20, 1), cue(early + 1, 220, 10, 2)]
+    assert "cue-early-end" in checks(mt.problems(idle, segments))
 
 
 def test_retime_leaves_cues_that_pass_where_they_are():
@@ -126,12 +182,12 @@ def test_overlapping_cues_are_a_problem():
     assert "cue-overlap" in checks(found)
 
 
-def test_a_chain_whose_onset_window_is_taken_by_the_cue_before_keeps_its_start():
-    """The previous cue already runs past this speech's onset window: no start is legal, and
-    the chain keeps the one it had instead of raising."""
+def test_a_chain_whose_onset_window_is_taken_by_the_cue_before_starts_as_near_as_it_can():
+    """The previous cue already runs past this speech's onset window: no start is in sync, and
+    the chain starts right after that cue, the nearest frame to its speech, instead of raising."""
     segments = [mt.Segment(100, 180), mt.Segment(170, 250)]
     cues = [cue(100, 180, 10, 1), cue(190, 250, 10, 2)]
-    assert mt.retime(cues, segments, 400)[1].start == 190
+    assert mt.retime(cues, segments, 400)[1].start == 181
 
 
 def test_sung_lines_are_timed_like_narration_and_music_is_not(tmp_path):
@@ -146,3 +202,19 @@ def test_sung_lines_are_timed_like_narration_and_music_is_not(tmp_path):
         encoding="utf-8",
     )
     assert mt.read_segments(path) == [mt.Segment(961, 1044), mt.Segment(1044, 1159)]
+
+
+def test_a_cue_starting_before_its_onset_window_is_pulled_back_into_it():
+    """Nothing needs the early frames, so `retime` must not keep any of them."""
+    seg = mt.Segment(100, 160)
+    moved = mt.retime([cue(80, 160, 10)], [seg], 400)
+    assert mt.problems(moved, [seg]) == [], [(c.start, c.end) for c in moved]
+
+
+def test_abutting_cues_across_a_long_silence_keep_the_next_cue_on_its_onset():
+    """The first cue holds through the silence to the next cue, which starts on its speech:
+    both pass, and the end-of-speech `LINGER` cap must not drag the second one off it."""
+    segments = [mt.Segment(100, 130), mt.Segment(200, 230)]
+    cues = [cue(100, 199, 10, 1), cue(200, 230, 10, 2)]
+    assert mt.problems(cues, segments) == []
+    assert mt.problems(mt.retime(cues, segments, 400), segments) == []

@@ -546,9 +546,13 @@ reviewable; both write only under `work/`:
   <movie>.ja.tsv`, their frame columns only): a segment's first cue starts within 7 frames
   (0.5 s) of the speech, its last cue does not end more than a frame before the speech does
   (abutting segments share that frame), no cue is on screen under 23 frames (1.5 s), and none
-  asks more than 17 characters a second (the translator's `|` counts as one space). `--write`
-  moves boundaries -- never text -- to pass where the rules leave room (`retime`, whose
-  docstring states the order it minimises in), and writes only the frame columns back.
+  asks more than 17 characters a second (the translator's `|` counts as one space). Reading
+  beats sync: a start may leave the onset rule, and an end the end rule, by up to 30 more
+  frames (2 s, `DRIFT`) when putting it back would leave a cue too fast or too short; a late
+  end is not checked, and `retime` holds a cue at most `DRIFT` past its 2 s linger, never over
+  the next cue. `--write` moves boundaries -- never text -- to pass where the rules leave room
+  (`retime`, whose docstring states the order it minimises in; it drifts as few frames as
+  reading needs), and writes only the frame columns back.
 * `./make.sh movie-review` (`tools/libretro/movie_review.py`) plays each movie on Beetle
   from the days build (a non-opening movie by the table-entry poke of § 8), shoots every cue
   one frame inside its first frame, at its middle and one frame inside its last, labels each
@@ -562,13 +566,15 @@ reviewable; both write only under `work/`:
 On 2026-09-23 `--write` retimed 14 of the 25 cues (the commit lists them), and every one of
 the review's 75 shots shows its cue's text, labelled inside the cue.
 
-**Left: four M27 cues read faster than 17 a second with every boundary as far as the rules
-allow** -- 1221 ("and somewhere in this world a god at his wits' end, unable to manage them
-any longer," 18.8), 1332 (the dreams line, 21.3), 1629 ("and from that day until the end of
-summer vacation," 17.8) and 1672 (the mother's burden line, 21.1). The narration there is
-continuous, so no timing gives them more frames; what would is fewer words, and whether a
-subtitle may be shorter than the line it translates (README: "nothing is cut to fit") is the
-translation's and Jay's call, not this tool's.
+**The four fast M27 cues.** With sync binding, four cues read faster than 17 a second in
+continuous narration: 1221 (18.8), 1332 (21.3), 1629 (17.8), 1672 (21.1). Jay watched them
+(2026-09-24): 1221 was too fast to read, the other three were fine; keep the wording, and let
+a cue be out of sync with the audio. No reading-rate rule separates those four as he did --
+1332 carries more characters (88 against 85) in fewer frames (62 against 68), and 1221 is not
+the first cue after a silence (the narration runs unbroken from frame 1050) -- so the
+ceiling stays at 17, which flags all four, and `DRIFT` gives each the frames it needs from
+its neighbours: `--write` moved nine M27 cues (1105-1816), every start now within 20 frames
+(1.3 s) of its speech; 1221 is 1214-1288 (17.0 a second). No other movie moved.
 
 **The song under the credits.** The transcript marks ten `M28` segments as the sung theme,
 frames 1044-2787, and six in `M27`, 3034-4020; § 11 is how they are subtitled.

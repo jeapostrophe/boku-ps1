@@ -13,16 +13,16 @@
 #   it is audible.
 M27	1050	1104	It was a very, very hot summer day.
 #   Start estimated from the line's length (the transcript's note).
-M27	1105	1220	The heat of that day was as if all the workings | of life on earth had become tangled and snarled,
-M27	1221	1288	and somewhere in this world a god at his wits' end, | unable to manage them any longer,
-M27	1289	1331	were melting everything down in the heat
-M27	1332	1393	and, with a child's innocence, sketching his dreams | of the world that would come next...
-M27	1394	1460	...it was that kind of strange, dizzying heat.
+M27	1105	1213	The heat of that day was as if all the workings | of life on earth had become tangled and snarled,
+M27	1214	1288	and somewhere in this world a god at his wits' end, | unable to manage them any longer,
+M27	1289	1324	were melting everything down in the heat
+M27	1325	1402	and, with a child's innocence, sketching his dreams | of the world that would come next...
+M27	1403	1460	...it was that kind of strange, dizzying heat.
 M27	1461	1592	That day was the first of August | in the year my little brother was born,
-M27	1593	1628	and I, who had then just turned nine,
-M27	1629	1671	and from that day until the end of summer vacation,
-M27	1672	1725	to ease the burden on my mother, | who was in the last month of her pregnancy,
-M27	1726	1803	I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.
+M27	1593	1625	and I, who had then just turned nine,
+M27	1626	1670	and from that day until the end of summer vacation,
+M27	1671	1738	to ease the burden on my mother, | who was in the last month of her pregnancy,
+M27	1739	1816	I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.
 M27	2080	2151	At that moment, the thunderheads | were billowing up in the strong August sun,
 #   The transcript's reading of this segment was corrected by hand (the ASR heard nonsense for
 #   nyudogumo, hachigatsu and wakitachi); the corrected reading is what is translated.
