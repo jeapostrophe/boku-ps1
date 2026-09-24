@@ -277,7 +277,7 @@ size of the sprite, each checked against its measured bytes first. A sprite may 
 |---|---|---|
 | diary desk (`NIKKI_W`) | おやすみ *Good // night* | widened 4 (atlas entry 6, 12 bytes in front of the TIM); the idle hint, drawn at (40, 16) while `0x80047E50` is set, after 61 frames with no input |
 | desk (`SUB`, CLUT 1 slices 2–3; table 0xB4 in front of the texture) | the tackle, cage, glove and net band (page 14, rows 211–250) repacked: tackle +12, glove +4, the others moved right; *Stuff* (Belongings), kite and back fit as they are | `SUB.BIN` is loaded once at boot (resident), so a state saved on another image shows the old desk |
-| the bag (`PK_WAL`) | *Belongings* +28 and the two page balloons +4, all moved into the empty rows 154–239 of page 14 | the page balloons are drawn only by an idle hint nothing calls (recon); built so no Japanese is left if it is |
+| the bag (`PK_WAL`) | *Stuff* (Belongings) fits as it is; the two page balloons +4, moved into the empty rows 154–239 of page 14 | the page balloons are drawn only by an idle hint nothing calls (recon); built so no Japanese is left if it is |
 | kite record (`TK_WAL`) | *Fly a // Kite* | fits |
 | fishing record (`FS_WAL`, 4bpp, CLUT 0) | *Fishing // Tackle* in Bean | no free texels measured |
 | kite book (`TZICON`, a true 4bpp TIM 12 VRAM words wide) | *Make*, fits as it is | no free texels |

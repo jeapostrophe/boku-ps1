@@ -251,7 +251,7 @@ SCREENS = {
     ),
     "bag": (
         [*BOOT, "--press", f"{FREE + 30}:TRIANGLE", "--press", f"{FREE + 330}:CIRCLE"], False,
-        {FREE + 790: [("PK_WAL.belongings", (-248, -140), None),
+        {FREE + 790: [("PK_WAL.belongings", (16, -180), None),
                       ("PK_WAL.back", (176, 110), None),
                       ("PK_ITM.title", (176, 26), "drawn"), ("PK_ITM.footer", (176, 26), "drawn")]},
     ),

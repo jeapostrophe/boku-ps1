@@ -22,7 +22,7 @@ exe@80029B20.8	(unlabelled)	: Show the sub-screen
 exe@80029B20.9	(unlabelled)	↓
 exe@80029B20.10	(unlabelled)	{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}{G:1481}
 exe@80029B20.11	(unlabelled)	On the sub-screen, choose: hold the net / bug cage /
-exe@80029B20.12	(unlabelled)	belongings / fishing tackle / kite.
+exe@80029B20.12	(unlabelled)	stuff / fishing tackle / kite.
 exe@80029B20.13	(unlabelled)	○
 exe@80029B20.14	(unlabelled)	×
 exe@80029B20.15	(unlabelled)	{G:1482}{G:1483}{G:1484}
@@ -164,7 +164,7 @@ exe@8003DA00.1	(unlabelled)	Specimens+Cage
 #   the same font as the other labels, which it does (103 of the frame's 109 px); "Specimens + Bug
 #   Cage" is 139. The row opens the specimens and the cage.
 exe@8003DA00.2	(unlabelled)	Kites
-exe@8003DA00.3	(unlabelled)	Belongings
+exe@8003DA00.3	(unlabelled)	Stuff
 exe@8003DA00.4	(unlabelled)	Ending
 exe@8003DA00.5	(unlabelled)	Dinner Quiz Accuracy
 

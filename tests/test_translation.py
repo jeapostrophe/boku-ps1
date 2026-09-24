@@ -99,3 +99,20 @@ def test_pre_encoded_words_are_a_source_like_any_other():
     assert [e.line_id for e in entries] == ["E0001.0", "E0002.0"]
     assert entries[0].words == (1, 2, 0x8000)
     assert entries[0].pages == ()
+
+
+def test_no_menu_calls_boku_s_things_belongings():
+    """PLAN TRN-12: every menu place says "Stuff". The scan is every row that is not an event
+    line -- every code array and every texture string, which is stricter than the menus alone;
+    dialogue (event lines) keeps its own wording."""
+    from boku.texture_text import read_entries
+
+    menus = [
+        (e.line_id, " ".join((*e.pages, *e.options, *e.prompts)))
+        for e in SampleScenes.from_directory(SAMPLES)
+        if not re.fullmatch(r"E\d{4}\.\d+", e.line_id)
+    ]
+    menus += [(e.id, e.text) for e in read_entries().values()]
+    said = [(i, t) for i, t in menus if "belonging" in t.lower()]
+    assert said == [], f"menus still saying it: {said}"
+    assert any(i == "exe@8003DA00.3" for i, _ in menus), "the Summer Memories row was not read"

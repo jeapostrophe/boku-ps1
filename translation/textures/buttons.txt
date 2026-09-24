@@ -35,7 +35,7 @@ btn@SUB.net	Bug // Net
 btn@SUB.back	Back
 
 # --- the bag (PK_WAL) and the kite record (TK_WAL)
-btn@PK_WAL.belongings	Belongings
+btn@PK_WAL.belongings	Stuff
 btn@PK_WAL.prev_page	Page // Back
 btn@PK_WAL.next_page	Page // Next
 btn@TK_WAL.kite	Fly a // Kite

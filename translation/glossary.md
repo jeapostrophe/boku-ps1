@@ -269,7 +269,7 @@ the pond. Iwana and yamame are what English-speaking tenkara anglers call them.
 Radio-Calisthenics Card · Souvenir Rice Crackers · Axe · Bundle of Firecrackers · Sugar Water ·
 Mystery Object (later known as 鯨の耳骨 Whale's Ear Bone) · Ana-ana-bobon · Shirabe's Ribbon ·
 Sunflower Bouquet · Ken-bo's Fur · Shed Snakeskin · Yellow Flower (キンバイソウ globeflower) ·
-Corn · Photo. Status screen: 捕虫網 net · 虫かご bug cage · 持ち物 belongings · 釣り道具 fishing
+Corn · Photo. Status screen: 捕虫網 net · 虫かご bug cage · 持ち物 / 持ちもの Stuff (menus; PLAN TRN-12) · 釣り道具 fishing
 tackle · 昆虫標本 specimens · 逃がしますか？ Let it go? · 飼う / やめる Keep / Never mind ·
 この虫をあきらめる / とりあえずポケットに Give this one up / Pocket it for now · 登録しますか？
 Register it? · 絵日記を書いて寝ますか？ Write in your diary and go to sleep? · fortune results

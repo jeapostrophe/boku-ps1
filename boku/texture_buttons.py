@@ -234,14 +234,14 @@ BUTTONS: dict[str, Button] = {
             "SUB.belongings": (-180, (178, 194, 12, 40, 0, 0x42), 0, None, "game"),
         },
     ),
-    # The bag (`PK_WAL`): its Belongings moves into the empty rows 154-239 of page 14, where
-    # it has room for the game's glyphs, and so do the two page balloons (drawn only by an
+    # The bag (`PK_WAL`): its Stuff fits as it is; the two page balloons move into the empty
+    # rows 154-239 of page 14, where they have room for the game's glyphs (drawn only by an
     # idle hint no code calls -- built so no Japanese is left if one does).
     **atlas_balloons(
         "_DATA_PK_WAL.BIN__0000e4",
         1,
         {
-            "PK_WAL.belongings": (-180, (0, 200, 12, 40, 0, 0x40), 28, (264, 160), "game"),
+            "PK_WAL.belongings": (-180, (0, 200, 12, 40, 0, 0x40), 0, None, "game"),
             "PK_WAL.prev_page": (-156, (36, 40, 11, 40, 0, 0x42), 4, (344, 160), "game"),
             "PK_WAL.next_page": (-144, (12, 192, 11, 40, 0, 0x42), 4, (396, 160), "game"),
         },
