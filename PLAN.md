@@ -362,9 +362,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Widened and proven on Beetle
       (2026-09-23): help .0/.1/.3/.5/.8, config .4, the quiz-rate popup. RULED
       (Jay, 2026-09-24): descriptions/captions/fishing messages take option c (retail pen,
-      12 px pitch, five lines from y 118) — BUILT 2026-09-24 (`276c41d`), seen on Beetle; the panel-bound lines get shorter one-line versions of the
-      translation (extras .1 e.g. "Specimens" / "Bug-Collecting Kit"; item names e.g.
-      "Calisthenics Card"), and the memory-card message goes to two lines. To build.
+      12 px pitch, five lines from y 118) — BUILT 2026-09-24 (`276c41d`), seen on Beetle; the panel-bound lines get shorter one-line versions — BUILT 2026-09-24 (`00a85d2`): extras .1
+      "Specimens", items .0/.1/.3; the refused card message was .3, now two rows
+      (`boku.card_messages`); seen on Beetle.
       Bug sumo's boxes measured (hint, rank board, notebook names).
       Still to measure: kite names and the cage HUD, fishing. Original row — for every box geometry the game uses:
       lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
@@ -385,8 +385,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [x] **[TXT-11]** **Japanese left on the title and save flow.** DONE 2026-09-23:
       `exe@8003D5F0.5` reworded to fit its 265-px box ("There is no file that has finished
       this game."), English on Beetle; the title, load and new-game screens swept on Beetle —
-      the only text-side Japanese left is extras `exe@8003DA00.1` (`TXT-07`'s panel-bound
-      question); the rest is textures (`GFX-07`). DuckStation's window title comes from its
+      no text-side Japanese is left (extras `exe@8003DA00.1` is now "Specimens", `TXT-07`); the rest is textures (`GFX-07`). DuckStation's window title comes from its
       own database by serial (the localized name, on by default); the per-user overrides are in
       `research/tooling-setup.md`.
 
@@ -586,8 +585,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
       uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
-      screen — a new array item. build-days: 2,904 lines laid out,
-      68 refused (2026-09-24). Done when the lint shows none of these errors and the build refuses no array line.
+      screen — a new array item. build-days: 2,909 lines laid out,
+      63 refused (2026-09-24). Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
       (the whole bible, glossary, style guide and checklist, ~29k tokens, then 599 parts in play
