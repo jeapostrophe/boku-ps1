@@ -786,9 +786,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `FMV-04`'s hook, checked in the game — Jay's finalized state. Review tooling DONE
       2026-09-23: `./make.sh movie-timing` / `movie-review`, 14 cues retimed, the review page
       is `work/movie-review/index.html` (`research/movies.md` § 10); the four fast `M27` cues:
-      Jay (2026-09-24) could read 1332, 1629 and 1672 but not 1221 — keep the wording
-      ("authentic") and hold such a cue on screen longer than its speech, out of sync with the
-      audio; to build (a minimum display time the timing tool allows past the speech). Harmed: the player.
+      Jay (2026-09-24) could read 1332, 1629 and 1672 but not 1221 — keep the wording, out of
+      sync is fine. DONE 2026-09-24: `movie-timing` lets a cue drift up to `DRIFT` (2 s) off its
+      speech when reading needs it (`research/movies.md` § 10); `--write` moved nine M27 cues,
+      1221 → frames 1214–1288 at 17.0 cps (5.0 s, was 4.5 s); review regenerated. Harmed: the player.
 - [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
       2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
       but that review reached the movie through a poked movie table. Reproduce the real
