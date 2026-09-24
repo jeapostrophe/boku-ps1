@@ -635,16 +635,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the book is 9 pages, not 18. `research/textures-plan.md` § "The 26 encyclopedia
       spreads", `research/text-outside-events.md` § "The insect and kite books". Original
       row: one breakpoint at `hhon_entry_draw` with the book open; decides `GFX-06`'s size.
-- [ ] **[GFX-06]** **The encyclopedia spreads** — 9 insect pages (`MZKAN0/1`: the same 9 in
-      two lightings, one layout, type on flat white beside the photo; each English page
-      written to both packs) and 8 kite (`TZKAN`, flat cream): programmatic; blank the page
-      area, keep the photo/kite panel, re-rule under the header, reflow the vertical body to
-      horizontal (the diary's answer applies). Every field is pixels (`GFX-05`). Text:
-      species name (glossary § 4a), family, size, food, body; kite name, difficulty, how to
-      build. **The small type is RULED (Bean, `GFX-07`, 2026-09-23)** —
-      measured 2026-09-23: a faithful insect description needs ~20 lines at 12 px and a spread
-      holds 12 (kite pages: ~130 characters of room for 190–265); nothing is shortened. An
-      English draft of all 17 pages is in `work/gfx06/`, ready once the type is ruled. Harmed: the player who opens the book.
+- [x] **[GFX-06]** **The encyclopedia spreads.** DONE 2026-09-23: all 17 spreads (the insect
+      book's 9 in both lightings, the kite book's 8) in English from the reviewed draft,
+      `translation/textures/books.txt`; names in the game's glyphs (Bean where the band is too
+      narrow), header, level and body in Bean (`boku/texture_books.py`,
+      `research/texture-recipes.md` § "The books"); a page that does not fit is refused, never
+      cut. Proven on Beetle: both books at page 0. Bean's pitch equals its cell height, so
+      descenders touch the next line's capitals; the three longest bodies fill the spread.
 - [ ] **[GFX-07]** **UI plates and the title menu** — 17 programmatic images: `T_TITLE` **first**
       (four menu lines on transparent, outlined with a drop shadow — Jay, 2026-09-20: "needs
       to be translated early"), `T_CONFIG` value plates, the oval action buttons across seven
