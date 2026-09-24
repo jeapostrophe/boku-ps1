@@ -37,16 +37,17 @@ from boku.archive import (
     Member,
 )
 from boku.arrays import (
+    HELP_TEXT,
+    ROW_SPLIT,
     SAVE_TITLE_LINE_ID,
     SAVE_TITLE_PARTS_ADDR,
     ArrayWalk,
     SelectTables,
     read_save_title,
     relocatable,
-    splits_into_rows,
     walk_all,
 )
-from boku.card_messages import CardSplitRefused, Split, record_edits, splits
+from boku.card_messages import record_edits
 from boku.code_text import (
     BANNERS,
     DATE_LABELS,
@@ -59,9 +60,11 @@ from boku.code_text import (
 )
 from boku.events import Block, pack_block
 from boku.glyphs import words_to_bytes
+from boku.help_screen import help_edits
 from boku.insect_box import NOTEBOOK, NOTEBOOK_PAIR
 from boku.pointers import LuiPair, PointerError, repoint, scan
 from boku.reinsert import ByteEdit, Tail
+from boku.row_split import RowSplitRefused, Split, splits
 from boku.sites import RESIDENT_BLOCK_ADDRS, resident_block_at, resident_line_id, walk_block
 
 
@@ -98,6 +101,9 @@ stock executable the PC-host branches can run before `sys_init` and write its `$
 variables here. So only an edit set offers it (`boku.build.EditSet.array_regions`)."""
 
 ALIGN = 4
+
+ROW_DRAWERS = {ROW_SPLIT: record_edits, HELP_TEXT: help_edits}
+"""The edits that draw each `boku.arrays.ROW_SPLITS` array's added rows, by array."""
 
 HEAP_POINTER = 0x80068AF0
 """The heap's bump pointer; the executable's initial word is the retail heap's first byte
@@ -281,16 +287,16 @@ class _Unit:
 
 
 def _array_units(
-    archive: Archive, words: Mapping[str, Sequence[int]], card: Sequence[Split]
+    archive: Archive, words: Mapping[str, Sequence[int]], rows: Mapping[str, Sequence[Split]]
 ) -> Iterator[_Unit]:
-    """The grown arrays; `card` is the card messages split into rows (`boku.card_messages`),
-    whose further rows are items appended after the array's last, so it grows whatever
-    the item's own size."""
+    """The grown arrays; `rows` holds, by array, the items split into rows
+    (`boku.row_split`), whose further rows are items appended after the array's last,
+    so the array grows whatever the item's own size."""
     for walked in walk_all(archive):
         if not relocatable(walked.array):
             continue
         prefix = walked.array.line_id_prefix
-        split = card if splits_into_rows(prefix) else ()
+        split = rows.get(prefix, ())
         laid = {**words, **{s.line_id: s.head for s in split}} if split else words
         extra = b"".join(words_to_bytes(item) for s in split for item in s.rest)
         grown = list(dict.fromkeys([*_grown_items(walked, laid), *(s.line_id for s in split)]))
@@ -440,14 +446,14 @@ def plan_arrays(
     `scanned` supplies `scans(archive)`, called only once something grows; a caller that
     plans more than once memoises it."""
     try:
-        card = splits(words)
-        card_records = record_edits(archive, card)
-    except CardSplitRefused as error:
+        rows = {prefix: splits(words, prefix) for prefix in ROW_DRAWERS}
+        row_edits = [e for p, draw in ROW_DRAWERS.items() for e in draw(archive, rows[p])]
+    except RowSplitRefused as error:
         raise ArrayRoomRefused(str(error), error.lines) from error
     units = {
         u.prefix: u
         for u in (
-            *_array_units(archive, words, card),
+            *_array_units(archive, words, rows),
             *_block_units(archive, words),
             *_title_units(archive, words),
             *_date_units(archive, words, routines or {}),
@@ -596,6 +602,6 @@ def plan_arrays(
                         reason=f"{image} 0x{ram:08X}: pointer to a moved array (PLAN PIPE-07)",
                     )
                 )
-    edits += card_records
+    edits += row_edits
     lines = frozenset(line for u in units.values() for line in u.lines)
     return ArrayPlan(tuple(edits), moved, lines, free_left, tails)

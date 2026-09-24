@@ -609,8 +609,9 @@ def _paginate(
 def holds(box: BoxSpec | None, words: Sequence[int], line_id: str) -> int:
     """Lines an item may take in `box`: the box's own count for an item ending in `0x8000`
     -- an **E** item, which `text_nth` finds by that word, so a `0x8001` inside it moves
-    nothing and `text_draw_h` starts a line there -- and for a card message, whose rows
-    the build splits (`boku.card_messages`). 1 for any other."""
+    nothing and `text_draw_h` starts a line there -- and for an item of an **L** array
+    whose rows the build splits into items (`boku.arrays.ROW_SPLITS`, `boku.row_split`).
+    1 for any other."""
     rows = bool(words) and (words[-1] == END_WORD or splits_into_rows(line_id))
     return box.lines if box is not None and rows else 1
 

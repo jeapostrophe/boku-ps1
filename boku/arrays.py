@@ -295,12 +295,16 @@ def unreachable(line_id: str) -> str | None:
 
 
 ROW_SPLIT = "exe@8003D5F0"
-"""The array whose items may take several rows, which `boku.card_messages` splits."""
+"""The card messages, whose items may take several rows (`boku.card_messages`)."""
+HELP_TEXT = "exe@80029B20"
+"""The controls-help lines, whose line 11 may take two (`boku.help_screen`)."""
+ROW_SPLITS = frozenset({ROW_SPLIT, HELP_TEXT})
+"""The **L** arrays an item of which the build may split into rows, each an item."""
 
 
 def splits_into_rows(line_id: str) -> bool:
-    """Is `line_id` an item of `ROW_SPLIT`?"""
-    return line_id.split(".", 1)[0] == ROW_SPLIT
+    """Is `line_id` an item of one of `ROW_SPLITS`?"""
+    return line_id.split(".", 1)[0] in ROW_SPLITS
 
 
 COUNTED_CELLS: dict[str, range] = {"exe@80029AFC.0": range(1, 4)}

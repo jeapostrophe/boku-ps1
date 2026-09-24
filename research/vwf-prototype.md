@@ -705,8 +705,10 @@ What an item of a menu array may hold is one row per line id (or `<array>.*`) in
 each line may advance `right − x` px, and a line's own row wins over its array's. `pitch`
 is what the stock sheet — a font with no widths of its own — is measured at there (12; 10
 on `help_line_draw`; 16 on the lines the stock walker letter-spaces). `lines` is more than 1
-only for an **E** item (`boku.layout.holds`): `text_draw_h` breaks at `0x8001`, so the build
-wraps the English to the box by pixels; every other walker draws one line. `boku.boxes` reads it; `boku lint` (`array-width`, `array-lines`), `boku build` and this
+for an **E** item (`boku.layout.holds`), where `text_draw_h` breaks at `0x8001`, so the build
+wraps the English to the box by pixels; and for the card messages' `.3` and the help screen's
+line 11, **L** items whose rows the build splits into items of their own
+(`boku.row_split`). Every other walker draws one line. `boku.boxes` reads it; `boku lint` (`array-width`, `array-lines`), `boku build` and this
 prototype's fixtures all refuse an item past it. Measured 2026-09-22 on Beetle screenshots of
 the stock disc (frame edges) and read off the code (pens — `tests/test_real_boxes.py`
 re-derives every pen from the game's bytes):
@@ -717,7 +719,12 @@ re-derives every pen from the game's bytes):
   (the help box `g_select_rect[6]` = 32…288, less the 20-px margin the retail lines keep)
   where the row is its own. `asm/walkers.asm` moves five pens and two labels so the English
   fits (each row's reason is its `basis`); `tests/test_real_boxes.py` checks the rows
-  against the built game.
+  against the built game. The bottom sentence (lines 11-12, y 170 and 184, 14 px apart) needs
+  three rows in English: the build splits line 11 in two (`boku.help_screen`, as a card
+  message is split), its second row an item after the array's last, and moves line 12 to
+  y 198; `asm/help_resident.asm`, called after `help_screen_draw`'s loop, draws that item
+  at line 11's x where line 12 was, only when line 12 has moved. The help box runs to y 220.
+  Seen on Beetle 2026-09-24.
 * **Memory-card messages** (surface 17): pen 34, or 74 for the two lines layouts 5–6 draw
   (`g_mc_msg`); the panel's inner edge is 299. A record `{rows, layout, item[3]}` draws an
   item per row, 16 px apart, and the array is **L** (each item ends `0x8001`), so an item is

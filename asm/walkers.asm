@@ -90,6 +90,19 @@ help_pen 8, 172, 132
 .endif
 .endarea
 
+; help_screen_draw's loop has drawn lines 0-12; the jal draws the bottom sentence's extra row
+; (asm/help_resident.asm) and does the two instructions it takes the place of.
+.org 0x800356D0
+.area 2*4
+.if ORIGINAL
+    lui     v0, 0x8002              ; stock: the pad type's page,
+    lbu     s1, 0x5917(v0)          ; read after the loop
+.else
+    jal     vwf_help_extra_row
+    nop
+.endif
+.endarea
+
 ; ---- surfaces 12-14: item names and descriptions, kite names, fishing ---------------------
 ; text_draw_line_h 0x800437F4 and text_draw_h 0x80043864. The x step sits in the loop
 ; branch's delay slot, so the jal takes the pointer step's place and the body steps the

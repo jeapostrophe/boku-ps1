@@ -68,6 +68,7 @@ from boku.boxes import box_for  # noqa: E402
 from boku.build import verify_sectors  # noqa: E402
 from boku.disc import DiscError, DiscImage, DiscWriter, SectorWrite, form1_sectors  # noqa: E402
 from boku.glyphs import END_WORD, NEWLINE_WORD, PAGE_WORD, words_of  # noqa: E402
+from boku.help_screen import help_equates  # noqa: E402
 from boku.importer import IMAGE_SHA1, sha1_of  # noqa: E402
 from boku.layout import (  # noqa: E402
     CellMapEncoder,
@@ -1490,7 +1491,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
         Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
-    extra = movie_equates(block) | ROUTINES_EQUATES
+    extra = movie_equates(block) | ROUTINES_EQUATES | help_equates(archive)
     extra["CD_DIR_SIZE"] = dir_arrays(stock_exe).size + EXE_LOAD_BIAS
     patched, symbols = assemble(
         Path(args.armips), Path(args.asm), images, bytes(table), layout, work, extra

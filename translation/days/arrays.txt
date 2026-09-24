@@ -32,7 +32,8 @@ exe@80029B20.18	(unlabelled)	{G:1485}{G:1486}{G:1487}
 exe@80029B20.19	(unlabelled)	L2
 exe@80029B20.20	(unlabelled)	L1
 exe@80029B20.21	(unlabelled)	{G:1474}{G:1475}
-# NOTE exe@80029B20.11-.12: one sentence over two drawn lines, split where the Japanese splits it.
+# NOTE exe@80029B20.11-.12: one sentence, split where the Japanese splits it; .11 takes two rows
+#   on screen and .12 the row under them (boku.help_screen).
 #   "Cancel voice" (.6) cuts a voiced line short.
 
 # --- exe@80036750: fortune result, drawn vertically

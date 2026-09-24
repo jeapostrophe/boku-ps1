@@ -10,7 +10,7 @@ exe@80029B20.7	172	268	12	1	5 controls help (START)	help box 32..288 (g_select_r
 exe@80029B20.8	132	268	12	1	5 controls help (START)	asm/walkers.asm's pen, right of its row's button label (y 128); the help box less the stock 20-px margin
 exe@80029B20.9	202	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
 exe@80029B20.10	52	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
-exe@80029B20.11	52	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
+exe@80029B20.11	52	268	12	2	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin; two rows, the second drawn where line 12 was and line 12 a row lower (boku.help_screen)
 exe@80029B20.12	52	268	12	1	5 controls help (START)	help box 32..288 (g_select_rect[6]) less the stock 20-px margin
 exe@80029B20.13	160	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)
 exe@80029B20.14	160	172	12	1	5 controls help (START)	button label: ends where the right column starts (x 172)

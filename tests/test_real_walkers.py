@@ -25,6 +25,8 @@ import struct
 import pytest
 
 from boku.archive import EXE_NAME, OVERLAY_LOAD_ADDRESS
+from boku.arrays import HELP_TEXT as HELP_ARRAY
+from boku.arrays import walk_all
 from boku.asm_source import asm_equate
 from boku.boxes import box_for
 from boku.glyphs import END_WORD as END
@@ -467,3 +469,38 @@ def test_a_sheet_cell_stays_in_an_english_entry_s_row(built, walker, pitch):
     (x0, y0), (x1, y1), (x2, y2), (x3, y3) = draws
     assert (x1 - x0, x2 - x1, x3) == (cells["a"][1], 12, x0)
     assert (y1, y2, y3 - y0) == (y0, y0, pitch)
+
+
+# --- the help screen's bottom sentence on three rows (boku.help_screen) --------------------------
+
+HELP_EXTRA_ROW_SITE = 0x800356D0
+HELP_LINE = asm_equate("HELP_LINE", "help_resident.asm")
+
+
+@pytest.mark.parametrize("split", [False, True])
+def test_the_help_screen_draws_line_11_s_second_row_only_when_the_build_split_it(
+    built, archive, split
+):
+    """The patched pair after help_screen_draw's loop: with line 12 moved a row down (the
+    build's edit, `boku.help_screen.help_edits`), the appended item is drawn at line 11's x
+    where line 12 was; with line 12 at its retail row, nothing is drawn. Either way the pad
+    type is read into s1 as retail reads it."""
+    from boku.help_screen import NEXT_LINE, SPLIT_LINE, y_at
+
+    images, _, symbols, _, _ = built
+    body = symbols["vwf_help_extra_row"]
+    site = HELP_EXTRA_ROW_SITE - vwf_prototype().EXE_LOAD_BIAS
+    assert struct.unpack_from("<I", images[EXE_NAME], site)[0] == 0x0C000000 | (body >> 2) & (
+        0x3FFFFFF
+    ), "the site does not call the body"
+    m = machine(images)
+    m.stubs[HELP_LINE] = []
+    if split:  # the build's move: line 12 from its retail y 184 to 198
+        m.load(y_at(NEXT_LINE), bytes([198]))
+    m.load(0x80025917, b"\x02")
+    m.call(body)
+    x11 = archive.exe_bytes(y_at(SPLIT_LINE) - 1, 1)[0]
+    items = len(next(w for w in walk_all(archive) if w.array.line_id_prefix == HELP_ARRAY).line_ids)
+    calls = [call[:3] for call in m.stubs[HELP_LINE]]
+    assert calls == ([(items, x11, 184)] if split else [])
+    assert m.regs[17] == 2, "s1: the pad type, as the instructions the jal replaced read it"

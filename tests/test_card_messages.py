@@ -10,14 +10,9 @@ from boku import REPO_ROOT
 from boku.archive import OVERLAY_LOAD_ADDRESS
 from boku.array_relocate import ArrayRoomRefused, plan_arrays
 from boku.arrays import ROW_SPLIT, walk_all
-from boku.card_messages import (
-    RECORD_BYTES,
-    RECORDS,
-    TITLE,
-    _records,
-    splits,
-)
+from boku.card_messages import RECORD_BYTES, RECORDS, TITLE, _records
 from boku.glyphs import NEWLINE_WORD, words_of
+from boku.row_split import splits
 
 A, B = 0x100, 0x101
 TWO_ROWS = (A, NEWLINE_WORD, B, NEWLINE_WORD)
@@ -40,7 +35,7 @@ def _rewritten(archive, plan) -> dict[int, bytes]:
 
 
 def test_a_two_row_item_keeps_its_first_row_and_its_second_follows_the_last_item(archive):
-    (split,) = splits({f"{ROW_SPLIT}.3": TWO_ROWS})
+    (split,) = splits({f"{ROW_SPLIT}.3": TWO_ROWS}, ROW_SPLIT)
     assert split.head == (A, NEWLINE_WORD)
     assert split.rest == ((B, NEWLINE_WORD),)
     assert split.added == (_items(archive),)
