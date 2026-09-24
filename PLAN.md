@@ -669,7 +669,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       bug-record card `rec@M_S01100.*` (all three copies), and the `T_MEMORY` heading proven on
       Beetle with a finished-game card — `tests/test_real_texture_records.py`. (`M_S02000`'s stone
       is never loaded — `research/texture-recipes.md`.)
-- [ ] **[GFX-08]** **The redraws** — 28 images an artist or an image model repaints, quantised back
+- [ ] **[GFX-08]** **The redraws** — 26 images to decide (2026-09-24: of the 28, the model kit stays Japanese and the insect book's stone is an ordinary Back button, built; per-image options in `work/review/decisions.html` §21) — an artist or an image model repaints, quantised back
       to the original CLUT and committed as new pixels: three book covers consistently across
       their 21 animation frames; four close-up screens — **Saori's farewell note on the log**
       (`M_I14000`, the one plot-bearing string with no line id; subtitle is the fallback), the
