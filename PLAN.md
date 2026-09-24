@@ -327,19 +327,23 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       tested in `tests/test_real_date_labels.py`); surfaces 9 and 11 proven on Beetle, label 5 by
       forcing, 25 and 26 unreachable; the stack under a real save 0xFB0 (= the 4,016 budget),
       under a bout 0x2E8, under fishing none (scratchpad) — `research/vwf-prototype.md` § "The map work area".
-- [ ] **[TXT-12]** **The exchange notebook's names under the size badge.** RULED (Jay,
-      2026-09-24, `work/review/decisions.html` §14): no second face ("it looks bad to have
-      multiple fonts in one place"); shorter names in the normal font. Four built (`ff0ac03`):
-      "Miyama Stag", "Giant Stag", "Little Stag", "Rhinoceros", as notebook-only `@exchange`
-      rows, seen on Beetle for every fighter and badge. Measured: the pink badge covers x
-      140–171 with its shadow, so a name has 98 px from x 173. Jay, 2026-09-24 (§14.1): "Red-leg Stag" (14.1a) and "Saw Stag" — to build.
-      Harmed: the player, who reads
-      a name with a badge drawn over it.
+- [x] **[TXT-12]** **The exchange notebook's names under the size badge.** DONE 2026-09-24
+      (`5e9a924`, `48e573c`; RULED by Jay, §14 and §14.1 — no second face): the notebook draws its
+      own shorter names in the normal font — "Miyama Stag", "Giant Stag", "Little Stag", "Saw
+      Stag", "Red-leg Stag", "Rhinoceros" — as `arrays.txt` rows `exe@8003D2E0.<n>@exchange`
+      (`boku.exchange_notebook`); every other screen keeps the full names. A resident list (an
+      index by fighter type, then one name per line) read by `vwf_exchange_entry`. Measured on
+      Beetle: the pink badge covers x 140–171 with its shadow, leaving 98 px from x 173; every
+      fighter with the pink badge seen clear; Flat (98) and Oni (94) keep their full names.
+      Harmed (was): the player.
 - [x] **[TRN-12]** **"Stuff" for "Belongings" in every menu.** Jay, 2026-09-24 (§17.9): "a more
       'childish' word". DONE (`cc6adb4`, `431e70d`): the Summer Memories menu, the controls help
       line and the bag's and desk's balloons; Saori's "a lady's belongings" (`E1960.3`) is
       dialogue and keeps it; `test_no_menu_calls_boku_s_things_belongings` holds it; seen on
       Beetle. Harmed (was): the player.
+- [ ] **[TRN-13]** **The insect box's page pencils: "Prev" / "Next".** Jay, 2026-09-24 (§17.8e,
+      from the mock-ups): the pair matches, both in the game font — replacing "Page // Back" /
+      "Page // Next" in Bean, the last exception to the one-font rule. Harmed: the player.
 - [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
       §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
       free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
@@ -841,13 +845,15 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       *togi*, ガラスに詰めて *tsumete* in `M27` and `M28`) — `FMV-09`'s lane; and `XCH.16`'s second
       word (Jay hears "kōchō gōjō"; 好調 is "going well", the second is 強情 or 上々 — the English
       flags it). Harmed: the player (a wrong or missing subtitle).
-- [ ] **[VO-08]** **How map interactions play voice.** Jay, 2026-09-24: the unreferenced
-      `BOKU_XA.XAM` runs "really occur in the game" — Uncle's and everyone's "Gochisosama
-      deshita", the aunt talking, Boku asking about something (runs 3387, 10721, 10813, 28925,
-      29041, 61999, 76910) — "I think that all of these things are used in some sort of map
-      interaction and we haven't decoded how they get referenced", and the well's narration the
-      same way. Decode the reference, then subtitle the worded runs where they play. Harmed:
-      the player, who hears lines with no subtitle.
+- [x] **[VO-08]** **How map interactions play voice.** Closed NO, 2026-09-24 (`3d69689`): nothing
+      plays the unreferenced `BOKU_XA.XAM` runs. `xa_play` holds the only Setfilter and reads keys
+      only from the running event's block or `g_xa_clips`; no key or record on the disc names a
+      run; on Beetle, day 3's breakfast plays `E0007`'s shared "gochisosama" and `E0302.6`'s
+      jingle, and the orphan takes share no sector with them — takes recorded for their scenes
+      and not used. What Jay heard in play is those shared clips, `M27` and `E0814.0` ("sorosoro
+      jumyō ka na"), the car `E0504.0`, the laughter `E2204.11`; the well's narration is `E2405.0`,
+      a voiced message with text, already in English (`research/voice-only.md` § Nothing plays
+      them). Reopen if a run is ever caught in `xa_play`'s key pointer `0x800357AC` in play.
 - [x] **[VO-02]** **Subtitles for a voice-only clip in an event.** DONE 2026-09-22
       (`asm/voice.asm`, `research/event-scripts.md` § Voice-only entries): the `XA` handler's
       `talk_set` call becomes `voice_sub_open`, which opens the entry's text (no stock entry
