@@ -275,10 +275,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the array/overlay half of `TRN-04` (308 lines on six surfaces, `boku coverage` lists
       them as `not-event`), not a renderer miss. **Done 2026-09-22:** the controls-help screen (START) and
       the item-name walkers proportional, proven on both emulators; descriptions, captions,
-      kite and fishing covered through the same walkers in tests, not yet on screen;
+      captions and fishing messages seen on Beetle 2026-09-24, kite names in tests only;
       untranslated text on every hooked menu keeps its original 12/10-px spacing (the
       card-check screen had been drawn at 14); step code in the `dbg_font_init` space, shared
-      with the movie loader (`asm/walkers.asm`; `tests/mips.py` runs the game's walkers on the
+      with the movie loader (`asm/walkers.asm`; the renderer's routines live in the dead 8×8 font, `asm/vwf.asm`; `tests/mips.py` runs the game's walkers on the
       patched EXE). **Done 2026-09-23:** summer-memories labels 0–4 and item descriptions (wrapped
       to their box by the build) proven on both emulators, reached with generated cards /
       pokes; the card screens' two answers (surface 18): the row is written `Yes | No` and the
@@ -357,12 +357,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `--advance-model c1`.** **Measured 2026-09-22**
       (`research/data/text-boxes.tsv`, enforced by build and lint): controls help,
       memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
-      code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, three
+      code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, five
       lines, wrapped by the build), summer-memories labels 0–5. Widest English per surface (2026-09-23):
       insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Widened and proven on Beetle
       (2026-09-23): help .0/.1/.3/.5/.8, config .4, the quiz-rate popup. RULED
-      (Jay, 2026-09-24): descriptions/captions take option c (retail pen, 12 px pitch — 4–5
-      lines in the white); the panel-bound lines get shorter one-line versions of the
+      (Jay, 2026-09-24): descriptions/captions/fishing messages take option c (retail pen,
+      12 px pitch, five lines from y 118) — BUILT 2026-09-24 (`276c41d`), seen on Beetle; the panel-bound lines get shorter one-line versions of the
       translation (extras .1 e.g. "Specimens" / "Bug-Collecting Kit"; item names e.g.
       "Calisthenics Card"), and the memory-card message goes to two lines. To build.
       Bug sumo's boxes measured (hint, rank board, notebook names).
@@ -572,8 +572,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `boku.pointers`; regions in `research/text-renderer.md` § 6) — 23 arrays moved, seen in
       English on Beetle (card check, extras, START help, item names and description).
       `boku lint --encoder cellmap` over `arrays.txt` (2026-09-23): 0 `array-bytes`; left —
-      1 `array-room`, the insect book `hhon@5328` (5,454 bytes, too big for resident RAM:
-      a `HHON.OVL` extension, ~60 KB of room, once `TXT-05`'s insect-box layout is chosen);
+      1 `array-room`, the insect book `hhon@5328` (5,454 bytes, too big for resident RAM): a
+      `HHON.OVL` tail now exists (`boku.array_relocate.overlay_tail`, 2026-09-24) — arrays read
+      by only one overlay are appended to it (TITLE, TAKO, ZUKAN, HHON);
       12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
       surfaces); 69 `array-group` warnings (the fishing messages and the ant count are laid out, 2026-09-23;
       the fortune and kite-crash banners draw one centred English line in a 120 × 36 panel,
@@ -585,8 +586,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
       uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
-      screen — a new array item. build-days: 971 lines laid out,
-      108 refused. Done when the lint shows none of these errors and the build refuses no array line.
+      screen — a new array item. build-days: 2,904 lines laid out,
+      68 refused (2026-09-24). Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
       (the whole bible, glossary, style guide and checklist, ~29k tokens, then 599 parts in play
