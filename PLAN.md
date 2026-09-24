@@ -293,13 +293,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       proof of surfaces 9 and 11, and the bout's names right-aligned in their 96-px field
       (`0x8007D89C`, `0x8007D940`) on screen; **[MINE: product]** the notebook's size badge
       (x 140–168) under long beetle names — (a) overlap as now, (b) move the badge left of the
-      name, (c) long names in Bean (recommended); the insect box (the two `HHON.OVL` walkers): measured and reached on
-      both emulators; the row walkers are designed and parked (`research/vwf-prototype.md` §
-      "The HHON walkers") until the entries can grow (`PIPE-07`); layout RULED (Jay,
-      2026-09-24, from `work/review/decisions.html`): the grid view takes option A (11 px
-      rows from y 16, holding the whole entry) and the notebook shows as much as its 8 rows
-      hold, ending in "..." when the entry goes over — the full text is on the grid, so no
-      extra page; untranslated entries keep their columns; the remaining fixed-pitch
+      name, (c) long names in Bean (recommended); the insect box DONE 2026-09-24 (`96f45b0`; layout RULED by Jay 2026-09-24): English in
+      rows, Japanese in its columns; the grid shows the whole entry (11 px rows from y 16), the
+      notebook 8 rows ending in "..."; seen on Beetle with its delete prompt
+      (`asm/hhon_resident.asm`, `boku/insect_box.py`); the remaining fixed-pitch
       surfaces 9 (with its return-value change), 11, 25, 26, and summer-memories label 5;
       the stack under a real save, a sumo bout and fishing (measured 2026-09-23 on Beetle:
       free roam 0x228, item menu 0x3DC8 (one 0x3CA8-byte frame in mode 4 / TAKO, never
@@ -571,22 +568,24 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `boku.pointers`; regions in `research/text-renderer.md` § 6) — 23 arrays moved, seen in
       English on Beetle (card check, extras, START help, item names and description).
       `boku lint --encoder cellmap` over `arrays.txt` (2026-09-23): 0 `array-bytes`; left —
-      1 `array-room`, the insect book `hhon@5328` (5,454 bytes, too big for resident RAM): a
-      `HHON.OVL` tail now exists (`boku.array_relocate.overlay_tail`, 2026-09-24) — arrays read
+      the insect book `hhon@5328`'s two copies (grid whole, notebook cut) sit in `HHON.OVL`'s
+      tail (2026-09-24; the diary and delete prompts seen on Beetle) — that tail (`boku.array_relocate.overlay_tail`, 2026-09-24) — arrays read
       by only one overlay are appended to it (TITLE, TAKO, ZUKAN, HHON);
       12 `array-width` and 24 `array-lines` (help, item and caption boxes — `TXT-05`'s
       surfaces); 69 `array-group` warnings (the fishing messages and the ant count are laid out, 2026-09-23;
       the fortune and kite-crash banners draw one centred English line in a 120 × 36 panel,
       proven on Beetle (`asm/banners.asm`, 2026-09-23); the sumo hint and strength rows are drawn
-      by banner routines, proven on Beetle (2026-09-24); the insect box waits on its layout) and 1 `not-placeable` (the
+      by banner routines, proven on Beetle (2026-09-24); the insect box is laid out) and 1 `not-placeable` (the
       specimen label, dead code); the bug-sumo move names (`musi@2C`) are drawn by no retail
       path and stay in the original bytes (`boku.arrays.UNREACHABLE`; reopen if a retail path
       shows them), freeing 690 bytes: code labels are placed by rewriting their immediates, the
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
       uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
-      screen — a new array item. build-days: 2,909 lines laid out,
-      63 refused (2026-09-24). Done when the lint shows none of these errors and the build refuses no array line.
+      screen — a new array item. build-days: 2,969 lines laid out,
+      3 refused (2026-09-24): help .11 above, and two regressions of the `TRN-10` run being fixed —
+      `E1754.5` (the cell map draws no `○`) and `exe@code:80037698` ("Date mounted", 11 glyphs
+      where the code draws 6; the review restored a wording that had been cut to fit). Done when the lint shows none of these errors and the build refuses no array line.
       Harmed: the player, who sees Japanese menus around English dialogue.
 - [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
       (the whole bible, glossary, style guide and checklist, ~29k tokens, then 599 parts in play
