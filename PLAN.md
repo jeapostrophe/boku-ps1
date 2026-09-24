@@ -335,10 +335,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       140–171 with its shadow, so a name has 98 px from x 173. Jay, 2026-09-24 (§14.1): "Red-leg Stag" (14.1a) and "Saw Stag" — to build.
       Harmed: the player, who reads
       a name with a badge drawn over it.
-- [ ] **[TRN-12]** **"Stuff" for "Belongings" in every menu.** Jay, 2026-09-24 (§17.9): "a more
-      'childish' word" — the bag's balloon, the sub-screen menu and every other menu place that
-      says "Belongings" (dialogue keeps its own wording). Harmed: the player, reading a voice
-      that isn't Boku's.
+- [x] **[TRN-12]** **"Stuff" for "Belongings" in every menu.** Jay, 2026-09-24 (§17.9): "a more
+      'childish' word". DONE (`cc6adb4`, `431e70d`): the Summer Memories menu, the controls help
+      line and the bag's and desk's balloons; Saori's "a lady's belongings" (`E1960.3`) is
+      dialogue and keeps it; `test_no_menu_calls_boku_s_things_belongings` holds it; seen on
+      Beetle. Harmed (was): the player.
 - [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
       §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
       free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
@@ -832,18 +833,14 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (whisper.cpp large-v3, a machine tool) read against context: 16 event rows and 46 `XCH`
       rows have words. 446 null entries = stored copies of the 115; 108 = the rows with no
       character speaking. Japanese transcripts under `work/voice/` only.
-- [ ] **[VO-05]** **Listen to what ASR could not settle.** Jay listened, 2026-09-24 — to apply:
-      `E2330.11` is page turns, no voice; `M27` 41 s — "sorosoro jumyō ka na" is said; `M27`
-      175.4 s — 光の *togi*; the theme's ガラスに詰めて (*tsumete*) in both `M27` and `M28`;
-      `XCH.45` — 月夜野 (Tsukiyono) の谷; `XCH.16` sounds like "kōchō gōjō" (not one sound twice);
-      `XCH.17` is a sound of anxiety; `E0305` — Asosan, Chigi, Otafuku, Ryūhyō, "Nagoya Daimyō
-      Kōgyō", "Okinawa Kaisen", pitcher Gushiken correct, the results match. `XCH.42` (the
-      potter): Jay asks what "with 30 ahead of me" and "set foot on the same path as my uncle"
-      render — the ending is Boku becoming his uncle's apprentice in pottery; check against the
-      Japanese and answer him. The 12 unreferenced `BOKU_XA.XAM` runs are identified (Uncle's and
-      everyone's "Gochisosama deshita", the aunt, Boku asking something, the role-assignment
-      jingle, a car, a clock) — how they are played is `VO-08`. Harmed: the player (a wrong or
-      missing subtitle); the translator, working from a guessed word.
+- [ ] **[VO-05]** **Listen to what ASR could not settle.** Jay listened, 2026-09-24. Applied
+      (`23b8392`): `E2330.11` is page turns; `XCH.45` Tsukiyono; `XCH.17` a sound of anxiety; the
+      `E0305` names; `XCH.42` reworded "just short of 30" (30を前にして is his age); the 12
+      unreferenced runs identified (`research/voice-only.md` § Unreferenced runs; how they play is
+      `VO-08`). Left: the movie answers (`M27` 41 s "sorosoro jumyō ka na", `M27` 175.4 s 光の
+      *togi*, ガラスに詰めて *tsumete* in `M27` and `M28`) — `FMV-09`'s lane; and `XCH.16`'s second
+      word (Jay hears "kōchō gōjō"; 好調 is "going well", the second is 強情 or 上々 — the English
+      flags it). Harmed: the player (a wrong or missing subtitle).
 - [ ] **[VO-08]** **How map interactions play voice.** Jay, 2026-09-24: the unreferenced
       `BOKU_XA.XAM` runs "really occur in the game" — Uncle's and everyone's "Gochisosama
       deshita", the aunt talking, Boku asking about something (runs 3387, 10721, 10813, 28925,
