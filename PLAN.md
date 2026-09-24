@@ -534,7 +534,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       their branches, edge conditions, hand-overs, the dinner-quiz tables, a day calendar and
       per-character pages — plus `--check` (unknown ids, ids translated twice, SELECT shape,
       voiced page counts). Read-only over the translation files; reviewed and the findings
-      applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`).
+      applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`). Superseded by `TRN-14`; `tools/reader/` removed 2026-09-24.
 - [ ] **[TRN-04]** **The full translation run** — a status table, not a churning row (Jay,
       2026-09-21: Fable translation is expensive; he spawns "do the next N days" himself when
       the engineering is ready; this row only records where each unit stands). The whole game
@@ -545,22 +545,20 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the page mock-ups say it would display — `TRN-08`) **→ finalized** (Jay has seen it in the
       game, formatted and displayed correctly). Workflow per unit: `boku packet` (`TRN-08`) →
       translator → reviewer → applier → `boku lint` → Jay.
-- [ ] **[TRN-14]** **One reader for the whole translation.** Jay, 2026-09-24, for `TRN-04`'s
-      "checked" state: replace `work/reader/` and `work/reader-review/` with a single linear
-      walkthrough of every translated thing — every day's events, every array, every voice-over
-      and movie subtitle, every image — clicked through in order, each item's id easy to copy
-      with his comment. Built by a `make.sh` verb (the generator committed, the pages under
-      `work/`). Harmed: the translation's reviewer, who cannot read it end to end today.
 
-      | unit | state | note |
-      |---|---|---|
-      | `day01.txt`–`day31.txt`, `shared.txt` | reviewed | the `TRN-10` whole-game session, nine independent reviews against the Japanese (160 findings, all applied; days 1–7 and shared take the earlier reviewed line where it was better); Jay's comments kept; Jay read days 1–2 in play on the earlier build |
-      | arrays / menus / overlays (308 lines) | reviewed | the same session and review; on screen as `PIPE-07` places them |
-      | voice-only clips, movie narration | reviewed | `translation/clips.txt`, `translation/movies.txt` (`VO-04`, `FMV-02`) — not part of the session |
-      | diary entries (93 + the dummy `NIKKI_000`), encyclopedia spreads (17) | reviewed | the maximal session 2026-09-24: whole-game packet, then each page with the scene that proposes it (`PROG 20` = `diary_propose`); an independent review against the page images (13 diary corrections; books judged per field against `GFX-06`'s text); every entry fits, none cut; `NIKKI_072`, `NIKKI_064` and both books seen on Beetle; `translation/textures/diary.txt`, `books.txt` |
+      Each unit's state is `translation/status.tsv` (format: `translation/README.md` §
+      status.tsv); `./make.sh reader` shows it on every section. All units are "reviewed" as of
+      2026-09-24; days 1–2 were read by Jay in play on an earlier build.
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
       committed scene by scene. Harmed: the player.
+- [x] **[TRN-14]** **One reader for the whole translation.** DONE 2026-09-24 (`trn14-reader`):
+      `./make.sh reader` writes `work/reader/index.html` from `boku/reader.py` — one linear
+      walkthrough of days 1–31 in play order, shared, arrays, clips, movie cues, every typeset
+      texture group (original beside English), the diary and the books: 3,337 items; each id one
+      click or `c` to copy, lint findings and translators' notes on their items, each unit's
+      `TRN-04` state from `translation/status.tsv`. No comment box (Jay). `tools/reader/`,
+      `work/reader/` and `work/reader-review/` removed. Harmed (was): the translation's reviewer.
 - [x] **[TRN-08]** **The packet, redone to Jay's spec, and the comparison.** DONE 2026-09-22
       (`~/.claude/session-notes/boku-ps1/2026-09-22-trn08-comparison.md`): `boku packet`
       writes `system.md` once — the day-file format, the whole style guide, the whole
