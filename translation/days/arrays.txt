@@ -147,7 +147,9 @@ exe@8003D9BC.4	(unlabelled)	(Rumble)
 
 # --- exe@8003DA00: extras menu labels
 exe@8003DA00.0	(unlabelled)	Picture Diary
-exe@8003DA00.1	(unlabelled)	Specimens + Bug Cage
+exe@8003DA00.1	(unlabelled)	Specimens
+# NOTE exe@8003DA00.1: the one-line version is Jay's ruling (2026-09-24) for a panel-bound box: the
+#   menu's frame holds 109 px and "Specimens + Bug Cage" is 139. The row opens the specimens and the cage.
 exe@8003DA00.2	(unlabelled)	Kites
 exe@8003DA00.3	(unlabelled)	Belongings
 exe@8003DA00.4	(unlabelled)	Ending
@@ -178,10 +180,10 @@ exe@800461CC.6	(unlabelled)	Kite Train
 exe@800461CC.7	(unlabelled)	Portrait Kite
 
 # --- exe@80046214: item names
-exe@80046214.0	(unlabelled)	Radio-Calisthenics Card
-exe@80046214.1	(unlabelled)	Souvenir Rice Crackers
+exe@80046214.0	(unlabelled)	Calisthenics Card
+exe@80046214.1	(unlabelled)	Souvenir Crackers
 exe@80046214.2	(unlabelled)	Axe
-exe@80046214.3	(unlabelled)	Bundle of Firecrackers
+exe@80046214.3	(unlabelled)	Firecracker Bundle
 exe@80046214.4	(unlabelled)	Sugar Water
 exe@80046214.5	(unlabelled)	Mystery Object
 exe@80046214.6	(unlabelled)	Ana-ana-bobon
@@ -193,6 +195,10 @@ exe@80046214.11	(unlabelled)	Yellow Flower
 exe@80046214.12	(unlabelled)	Corn
 exe@80046214.13	(unlabelled)	Photo
 exe@80046214.14	(unlabelled)	Whale's Ear Bone
+# NOTE exe@80046214.0, .1, .3: the one-line versions are Jay's ruling (2026-09-24) for a panel-bound
+#   box: the list's frame holds 115 px ("Radio-Calisthenics Card" 144, "Souvenir Rice Crackers" 142,
+#   "Bundle of Firecrackers" 136). The card is the radio-calisthenics attendance card; the crackers
+#   are rice crackers (senbei).
 
 # --- exe@800462C8: fishing message 0
 exe@800462C8.0	(unlabelled)	Fishing morning or evening: use bait.

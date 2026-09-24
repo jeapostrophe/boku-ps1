@@ -288,6 +288,15 @@ def unreachable(line_id: str) -> str | None:
     return UNREACHABLE.get(line_id.split(".", 1)[0])
 
 
+ROW_SPLIT = "exe@8003D5F0"
+"""The array whose items may take several rows, which `boku.card_messages` splits."""
+
+
+def splits_into_rows(line_id: str) -> bool:
+    """Is `line_id` an item of `ROW_SPLIT`?"""
+    return line_id.split(".", 1)[0] == ROW_SPLIT
+
+
 COUNTED_CELLS: dict[str, range] = {"exe@80029AFC.0": range(1, 4)}
 """Items whose cells the program overwrites before drawing: `ant_msg_open` (0x80032030)
 stores three random digits (`0x34 + d`) into words 1-3 of the ant message, so the English

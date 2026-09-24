@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from boku.arrays import ARRAYS
+from boku.arrays import ARRAYS, splits_into_rows
 from boku.boxes import COLUMNS, BoxError, box_for, load_boxes
 
 
@@ -48,13 +48,15 @@ def test_a_line_listed_twice_stops_the_read(tmp_path):
 def test_a_box_of_several_lines_is_an_e_array_s():
     """Only an **E** array finds its items by `0x8000`, so only there may the build put a
     `0x8001` inside an item (`boku.layout.holds`); in an **L** array every bit-15 word ends
-    an item and an inserted break would shift every later one."""
+    an item and an inserted break would shift every later one -- unless the build splits
+    the rows into items of their own, which it does for the card messages alone
+    (`boku.arrays.splits_into_rows`, `boku.card_messages`)."""
     shapes = {array.line_id_prefix: array.shape for array in ARRAYS}
     load_boxes.cache_clear()
     several = [line_id for line_id, box in load_boxes().items() if box.lines > 1]
     assert several, "no box holds several lines; this checks nothing"
     for line_id in several:
-        assert shapes[line_id.rpartition(".")[0]] == "E", line_id
+        assert shapes[line_id.rpartition(".")[0]] == "E" or splits_into_rows(line_id), line_id
 
 
 def test_the_tracked_table_reads():

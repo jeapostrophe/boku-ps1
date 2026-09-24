@@ -278,6 +278,10 @@ Register it? · 絵日記を書いて寝ますか？ Write in your diary and go 
 `exe@8003D9BC`, `exe@80029B20`) follow Sony's standard English wording of the period
 ("Checking MEMORY CARD...", "Do not remove the MEMORY CARD").
 
+The bag's list is one line in a 115-px frame, so there three names take a shorter form (Jay,
+2026-09-24): Calisthenics Card, Souvenir Crackers, Firecracker Bundle; dialogue keeps the full
+names. Summer Memories' 昆虫標本＋虫かご row is "Specimens" for the same reason.
+
 ## 5. Food
 
 Rule (style guide § 15): a dish keeps its Japanese name when English-language Japanese cooking

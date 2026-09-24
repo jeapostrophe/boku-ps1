@@ -719,7 +719,13 @@ re-derives every pen from the game's bytes):
   fits (each row's reason is its `basis`); `tests/test_real_boxes.py` checks the rows
   against the built game.
 * **Memory-card messages** (surface 17): pen 34, or 74 for the two lines layouts 5–6 draw
-  (`g_mc_msg`); the panel's inner edge is 299.
+  (`g_mc_msg`); the panel's inner edge is 299. A record `{rows, layout, item[3]}` draws an
+  item per row, 16 px apart, and the array is **L** (each item ends `0x8001`), so an item is
+  one row. A message the box gives two rows (`.3`, Jay 2026-09-24) is split by the build
+  (`boku.card_messages`): the second row becomes a new item after the last, inserted after
+  the first in every record that shows it, and the record's layout moves to the one 8 px
+  higher (record 3: layout 3 → 4, three rows; record 6: 0 → 1). Seen on Beetle with a card
+  whose 15 blocks are full, new game: record 3 on three rows.
 * **Config labels** (surface 19): pen 40 (line 4 at 84, moved from 88 by `asm/title.asm` so
   "(Vibration)" ends inside the frame); the left panel's frame at 149.
 * **Item names** (surface 12, the bag): pen 40; the list panel's frame at 155.

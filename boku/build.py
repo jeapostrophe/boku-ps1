@@ -1104,7 +1104,8 @@ def _place_and_plan(
     """Move the grown arrays, then plan the reinsertion carrying every patch it may absorb:
     `(arrays, plan, carry, refused)`. `words` loses every refused line.
 
-    The overlay words the answer pair and the code labels rewrite may be in a member the
+    The overlay words the answer pair, the code labels and the moved arrays (the
+    card-message records among them, `boku.card_messages`) rewrite may be in a member the
     plan grows (an overlay's tail), so they are carried into it; a line the plan then
     refuses is taken out and the round runs again, so no patch outlives its line. A refusal
     of an overlay's growth names the items in its tail: the arrays are placed again with

@@ -46,7 +46,7 @@ from pathlib import Path
 from typing import NamedTuple, Protocol
 from unicodedata import category
 
-from boku.arrays import COUNTED_CELLS
+from boku.arrays import COUNTED_CELLS, splits_into_rows
 from boku.glyphs import (
     END_WORD,
     NEWLINE_WORD,
@@ -562,11 +562,13 @@ def _paginate(
     )
 
 
-def holds(box: BoxSpec | None, words: Sequence[int]) -> int:
+def holds(box: BoxSpec | None, words: Sequence[int], line_id: str) -> int:
     """Lines an item may take in `box`: the box's own count for an item ending in `0x8000`
     -- an **E** item, which `text_nth` finds by that word, so a `0x8001` inside it moves
-    nothing and `text_draw_h` starts a line there -- and 1 for any other."""
-    return box.lines if box is not None and words and words[-1] == END_WORD else 1
+    nothing and `text_draw_h` starts a line there -- and for a card message, whose rows
+    the build splits (`boku.card_messages`). 1 for any other."""
+    rows = bool(words) and (words[-1] == END_WORD or splits_into_rows(line_id))
+    return box.lines if box is not None and rows else 1
 
 
 def lay_out_array(
@@ -600,7 +602,7 @@ def lay_out_array(
     problems: list[str] = []
     if box is not None and box.pitch and isinstance(encoder, StockEncoder):
         encoder = replace(encoder, fixed_advance=box.pitch)
-    wraps = holds(box, words) > 1
+    wraps = holds(box, words, line_id) > 1
     if controls != [len(words) - 1] and not wraps:
         return LaidOut(
             line_id=line_id,

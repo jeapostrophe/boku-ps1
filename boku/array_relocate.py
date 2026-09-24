@@ -43,8 +43,10 @@ from boku.arrays import (
     SelectTables,
     read_save_title,
     relocatable,
+    splits_into_rows,
     walk_all,
 )
+from boku.card_messages import CardSplitRefused, Split, record_edits, splits
 from boku.code_text import (
     BANNERS,
     DATE_LABELS,
@@ -274,18 +276,27 @@ class _Unit:
     """For a unit its reader is pointed at by a patch: the edits, given where it landed."""
 
 
-def _array_units(archive: Archive, words: Mapping[str, Sequence[int]]) -> Iterator[_Unit]:
+def _array_units(
+    archive: Archive, words: Mapping[str, Sequence[int]], card: Sequence[Split]
+) -> Iterator[_Unit]:
+    """The grown arrays; `card` is the card messages split into rows (`boku.card_messages`),
+    whose further rows are items appended after the array's last, so it grows whatever
+    the item's own size."""
     for walked in walk_all(archive):
         if not relocatable(walked.array):
             continue
-        grown = _grown_items(walked, words)
+        prefix = walked.array.line_id_prefix
+        split = card if splits_into_rows(prefix) else ()
+        laid = {**words, **{s.line_id: s.head for s in split}} if split else words
+        extra = b"".join(words_to_bytes(item) for s in split for item in s.rest)
+        grown = list(dict.fromkeys([*_grown_items(walked, laid), *(s.line_id for s in split)]))
         if grown:
             yield _Unit(
-                walked.array.line_id_prefix,
+                prefix,
                 walked.image,
                 walked.start,
                 walked.end,
-                _array_bytes(archive, walked, words),
+                _array_bytes(archive, walked, laid) + extra,
                 tuple(grown),
                 walked.line_ids,
             )
@@ -408,10 +419,15 @@ def plan_arrays(
 
     `scanned` supplies `scans(archive)`, called only once something grows; a caller that
     plans more than once memoises it."""
+    try:
+        card = splits(words)
+        card_records = record_edits(archive, card)
+    except CardSplitRefused as error:
+        raise ArrayRoomRefused(str(error), error.lines) from error
     units = {
         u.prefix: u
         for u in (
-            *_array_units(archive, words),
+            *_array_units(archive, words, card),
             *_block_units(archive, words),
             *_title_units(archive, words),
             *_date_units(archive, words, routines or {}),
@@ -554,5 +570,6 @@ def plan_arrays(
                         reason=f"{image} 0x{ram:08X}: pointer to a moved array (PLAN PIPE-07)",
                     )
                 )
+    edits += card_records
     lines = frozenset(line for u in units.values() for line in u.lines)
     return ArrayPlan(tuple(edits), moved, lines, free_left, tails)

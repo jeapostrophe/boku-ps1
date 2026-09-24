@@ -715,7 +715,7 @@ def encode_array_item(
     box = box_for(spec.site_id)
     lines = spec.text.split("\n")
     stock = words_of(raw)
-    most = holds(box.spec if box else None, stock)
+    most = holds(box.spec if box else None, stock, spec.site_id)
     if PAGE_BREAK in spec.text:
         raise BuildRefused(f"{spec.site_id}: an array item has no pages")
     if len(lines) > most:
