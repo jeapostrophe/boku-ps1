@@ -33,7 +33,7 @@ E0650.12	E0650.12@210		BOKU+GUTS+FAT+MEGANE	16	2	9	24249	24681	28	3.0	1	-	wordle
 E0807.4	E0807.4@28E		VOICE	255	2	15	88671	89375	45	4.8	4	-	wordless	sound effect as Boku heaves himself up
 E0835.0	E0835.0@58		VOICE	255	2	0	88752	88880	9	1.0	5	-	wordless	a door that will not open (the next line says it is locked)
 E0905.0	E0905.0@14	9	VOICE	255	3	5	31861	33141	81	8.6	3	-	wordless	bells on the television (the Nagasaki ceremony, day 9)
-E0905.1	E0905.1@2C	9	VOICE	255	3	3	31939	33235	82	8.7	3	-	TV news: the church bells ring sadly, as if to enfold the people gathered from around the world	a news announcer (day 9, Nagasaki)
+E0905.1	E0905.1@2C	9	VOICE	255	3	3	31939	33235	82	8.7	3	-	TV news: the monastery bells ring sadly, as if to enfold the people gathered from around the world	a news announcer (day 9, Nagasaki)
 E0923.8	E0923.8@140		VOICE	255	2	5	87637	87685	4	0.4	2	E0445.7,E1606.2	wordless	camera shutter (after 'Cheese!')
 E1006.1	E1006.1@92		VOICE	255	3	0	33008	33088	6	0.6	6	E0471.1,E0471.5,E4041.0,E4042.1,E4058.1,E4059.1,E4060.1	wordless	Ken-bo the dog barks
 E1006.3	E1006.3@CA		VOICE	255	3	14	34222	34350	9	1.0	6	-	wordless	sound effect after Boku's 'Ei!'
@@ -69,7 +69,7 @@ E2061.0	E2061.0@18	20	VOICE	255	3	13	88925	89213	19	2.0	1	E0020.1,E2104.7	wordle
 E2104.7	E2104.7@224	21	VOICE	255	3	13	88925	89213	19	2.0	1	E0020.1,E2061.0	wordless	bath sounds (the bath is offered, E0020.0)
 E2202.7	E2202.7@1C0	22	ALL	11	3	4	60404	60852	29	3.1	1	E2204.11,E3174.3,E3175.0	wordless	everyone laughs
 E2204.11	E2204.11@1CE	22	ALL	11	3	4	60404	60852	29	3.1	2	E2202.7,E3174.3,E3175.0	wordless	everyone laughs
-E2305.0	E2305.0@5E		VOICE	255	3	1	64449	65985	97	10.3	4	-	'Come to think of it, that overzealous vice-principal at our school apparently hid some treasure of his on this back hill during the war.'	a remembered voice; the next line (narration) has Boku take the book home -- speaker not identified by ear
+E2305.0	E2305.0@5E		VOICE	255	3	1	64449	65985	97	10.3	4	-	'Come to think of it, that overzealous vice-principal at our school apparently hid some treasure of his on this back hill during the war.'	Moe's E2204.6, remembered (the same words); the next line (narration) has Boku take the book home
 E2330.11	E2330.11@13E	23	VOICE	255	2	8	65480	65912	28	3.0	2	E2430.13,E2530.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
 E2430.13	E2430.13@168	24	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2530.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
 E2432.10	E2432.10@19E	24	VOICE	255	3	0	67792	68288	32	3.4	1	-	wordless	sound effect (loud, no speech found)

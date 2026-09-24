@@ -1,6 +1,6 @@
 # day15 (translation/days/README.md)
 # --- E1505: G06 -- TV room (August 15, the broadcast)
-E1505.0	(voice only)
+E1505.0	(voice only)	Now, 30 years on from that day, // perhaps the time has come to think about the true meaning of the peace we enjoy.
 
 # --- E1501: G02 -- breakfast
 E1501.0	Aunt	Boku-kun, today everyone at Auntie's house // is going to visit the grave of the Onii-chan of this house, // so could you look after the house by yourself?

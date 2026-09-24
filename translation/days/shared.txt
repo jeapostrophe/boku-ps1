@@ -835,13 +835,15 @@ E1861.26	Woman	I'm Saori. I'm a student at a university in Sendai. My major is n
 E1861.27	Boku	I'm Boku! I'm a grade-schooler at a school in the city, and my teacher is Nakajima-sensei!
 E1861.28	Saori	What's that supposed to be?
 E1861.29	Saori	And there's a mic here, and when it picks up a sound, it starts recording.
-E1861.30	(voice only)
-E1861.31	(voice only)
-E1861.32	(voice only)
+E1861.30	(voice only)	Hey. Good work.
+E1861.31	(voice only)	Who are you?
+E1861.32	(voice only)	Give your own name first, Boy Number One.
 E1861.33	Saori	Like that.
 E1861.34	Saori	Come to my tent tomorrow. // I've got loads of interesting books.
 # NOTE E1861.3-.5: "Boku wa Boku" is both "I'm Boku" and "I'm me"; she takes the second, and he
 #   insists he meant the first (style guide § 1). The same construction returns at .27.
+# NOTE E1861.30-.32: the recorder plays back the first exchange (.0-.2) in new takes of the
+#   same words, so the English repeats it word for word.
 
 # --- E1850: A18 -- the secret base
 E1850.0	Specs	Hey, they say the yo-yo champion has come as far as the next town!
@@ -1102,7 +1104,8 @@ E2303.11	Aunt	This person... I hope they're still alive.
 #   itself, no gloss (style guide §§ 10, 11). The spaces before the date keep the Japanese's gap.
 
 # --- E2305: D06 -- the air-raid shelter (the book)
-E2305.0	(voice only)
+E2305.0	(voice only)	That reminds me. At our school, that vice-principal who tries too hard... // they say that during the war, he hid some precious treasure of his own in the hills behind here.
+# NOTE E2305.0: Moe's E2204.6, remembered in a new take of the same words; same English.
 E2305.1	Narrator	This might be something that mattered to someone... // Thinking so, I decided to take the book home with me.
 
 # --- E2304: G02 -- after dinner (the photo)

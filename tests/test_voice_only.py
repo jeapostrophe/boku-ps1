@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import pytest
 
+from boku import REPO_ROOT, clip_subs
 from boku.archive import Archive, parse_pack
 from boku.build import lay_out
 from boku.events import OP_XA, OP_XAMSG, Block, parse_block_table
@@ -19,7 +20,7 @@ from boku.glyphs import END_WORD, PAGE_WORD, words_to_bytes
 from boku.layout import DIALOGUE_BAND, StockEncoder, lay_out_subtitle
 from boku.reinsert import ReinsertRefused, plan
 from boku.translation import VOICE_ONLY, SampleScenes, TranslationEntry
-from boku.voice import SEEK_TICKS, clip_ticks, subtitle_waits
+from boku.voice import SEEK_TICKS, VOICE_TSV, clip_ticks, read_hand_columns, subtitle_waits
 from tests import synth_archive as synth
 from tests.test_reinsert import map_pack, synthetic_disc, text_bytes, walk
 
@@ -209,3 +210,23 @@ def test_empty_words_are_refused_by_name_not_by_a_formatting_crash():
     archive = two_maps()
     with pytest.raises(ReinsertRefused, match="end with nothing"):
         plan(archive, walk(archive), {"E0171.1": ()})
+
+
+# --- the committed translation against the inventory -------------------------------------------
+
+
+def test_every_clip_the_inventory_hears_words_in_has_english_and_no_wordless_one_does():
+    """`PLAN VO-04`: `research/data/voice-only.tsv`'s `said` column is the listening pass's
+    verdict on every clip; a worded one left without English plays with nothing on screen."""
+    said = {
+        line_id: hand["said"]
+        for line_id, hand in read_hand_columns(VOICE_TSV.read_text(encoding="utf-8")).items()
+    }
+    worded = {line_id for line_id, words in said.items() if words != "wordless"}
+    days = SampleScenes.from_paths(sorted((REPO_ROOT / "translation" / "days").glob("*.txt")))
+    clips, problems = clip_subs.read()
+    assert days.problems == () and problems == []
+    english = {e.line_id for e in days if e.voice_only and e.pages}
+    english |= {e.line_id for e in clips if e.pages}  # a clip row carries its speaker
+    assert sorted(worded - english) == [], "worded clips with no English"
+    assert sorted((english & said.keys()) - worded) == [], "English on a wordless clip"
