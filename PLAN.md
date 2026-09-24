@@ -235,7 +235,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       indent, the next-page arrow sits inside the band, and the arrival sequence autoplays to
       the same end as the stock disc. No integrity check fired (`REC-07` held). On Beetle PSX (Mode One's core, retail BIOS, `tools/libretro/`) the same
       image shows the same frame: English, horizontal, in the band.
-- [ ] **[TXT-05]** **The renderer patch.** The DIALOGUE surface is prototyped and runs on both
+- [x] **[TXT-05]** **The renderer patch.** The DIALOGUE surface is prototyped and runs on both
       emulators (2026-09-20, `asm/dialogue.asm`, `tools/vwf/build_prototype.py`,
       `research/vwf-prototype.md`): 21 EXE words — direction, pen, the band, line pitch, the
       nine-slot table-lookup advance (no trampoline), the width table and select hooks in
@@ -291,9 +291,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       (`vwf_name_before_sym`), proven on Beetle; surfaces 25/26 and the debug screen's names are
       unreachable in retail (`research/sumo.md` § The desk's text). **Left to do:** screen
       proof of surfaces 9 and 11, and the bout's names right-aligned in their 96-px field
-      (`0x8007D89C`, `0x8007D940`) on screen; **[MINE: product]** the notebook's size badge
-      (x 140–168) under long beetle names — (a) overlap as now, (b) move the badge left of the
-      name, (c) long names in Bean (recommended); the insect box DONE 2026-09-24 (`96f45b0`; layout RULED by Jay 2026-09-24): English in
+      (`0x8007D89C`, `0x8007D940`) on screen; the notebook's size badge → `TXT-12`; the insect box DONE 2026-09-24 (`96f45b0`; layout RULED by Jay 2026-09-24): English in
       rows, Japanese in its columns; the grid shows the whole entry (11 px rows from y 16), the
       notebook 8 rows ending in "..."; seen on Beetle with its delete prompt
       (`asm/hhon_resident.asm`, `boku/insect_box.py`); the remaining fixed-pitch
@@ -323,6 +321,16 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       712-byte `dbg_font_init`); probably the ~2 KB in-house debug printer. Not available:
       PsyQ `Fnt*` (not linked), the PS-X header (never reaches RAM), zero runs (live BSS). Every injection inside an armips `.area`
       so overflow fails the build. Consider writing the new routine in C (`.importobj`). Harmed: the player.
+      **Done 2026-09-24 (`9236d0a`):** the bout's names — the opponent's right-aligned name fits
+      at every width; on Boku's row the date reads "Caught 8/9", drawn 8 px further right, and an
+      unmarked catch number sits 3 px off the name (worst case seen on Beetle, every fighter
+      tested in `tests/test_real_date_labels.py`); surfaces 9 and 11 proven on Beetle, label 5 by
+      forcing, 25 and 26 unreachable; the stack under a real save 0xFB0 (= the 4,016 budget),
+      under a bout 0x2E8, under fishing none (scratchpad) — `research/vwf-prototype.md` § "The map work area".
+- [ ] **[TXT-12]** **The exchange notebook's size badge** **[MINE: product]** (x 140–168) under
+      long beetle names: (a) overlap as now, (b) move the badge left of the name, (c) long names
+      in Bean (recommended) — `work/review/decisions.html` §14. Harmed: the player, who reads a
+      name with a badge drawn over it.
 - [x] **[TXT-06]** **The font.** RULED 2026-09-20 (Jay): "The game sheet is good enough and I
       like using the original if possible." No replacement typeface; the ~12 missing
       punctuation cells are placeholder art today — `TXT-08`. No new dependency.
