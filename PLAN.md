@@ -335,10 +335,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [ ] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), to apply:
       §8b the card message reworded "The MEMORY CARD has no free blocks." (one line); §9
       "Specimens+Cage" only if it fits in the same font as its neighbours, else "Specimens";
-      §10 records 10.1a, 10.2a, 10.3b ("Caught 8/9"), 10.4a, 10.5b; §15 the attendance footer
-      "Have a healthy summer!"; §17 balloons — "Stuff" in the normal font for Belongings, "Make
-      It" (or "Make") in the normal font for Make This Kite, "Take // Out" (17.6) and the other
-      defaults kept; §19b and §20b DONE (`0017485`): the diary's first page "staying at Uncle's
+      §10, §15, §17 DONE (`431e70d`, Beetle): records 10.1a, 10.2a, 10.3b
+      ("Caught 8/16"), 10.4a, 10.5b ("Worth as many as"); the attendance footer "Have a healthy
+      summer!" (Sprout — the game font is 142 px for 104); balloons "Stuff", "Make" ("Make It"
+      does not fit) and "Take // Out" in the game font; §19b and §20b DONE (`0017485`): the diary's first page "staying at Uncle's
       house" (glossary 居候 split: "staying at" for Boku, "freeloader" kept in Moe's tease
       `E0832.2`), "Uncle's Pond" for Ojioji Pond. Kept as built: §12a the tanka slashes, §16a
       "Production and Copyright", §11 the beach sign (painted in the game's own glyphs, doubled).
@@ -660,9 +660,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the `btn@` family (`boku/texture_buttons.py`, `translation/textures/buttons.txt`); bold
       "Back" on all ten stones; the diary's "Good // night" balloon widened 4 texels; proven on
       Beetle on settings, load and diary (`tests/test_real_texture_buttons.py`). **Balloons DONE
-      2026-09-23:** desk `SUB` (repacked), bag `PK_WAL`, kite record `TK_WAL`, kite book
-      `TZICON` (Bean), bug sumo `M_S01100` (balloons, swap plate, Close board), insect box
-      `MZ02`/`SAMP` (Bean; one in Sprout), proven on Beetle. **Attendance card DONE 2026-09-23:** `PK_ITM 0x6c`
+      2026-09-23:** desk `SUB`, bag `PK_WAL`, kite record `TK_WAL`, kite book
+      `TZICON`, bug sumo `M_S01100` (balloons, swap plate, Close board), insect box
+      `MZ02`/`SAMP`, proven on Beetle — all in the game font except the insect box's page-pencil
+      pair in Bean (2026-09-24, Jay's one-font rule, `tests/test_real_texture_buttons.py`). **Attendance card DONE 2026-09-23:** `PK_ITM 0x6c`
       title and footer in Sprout, proven on Beetle in the bag; the insect book's stone Back
       (`MZKAN.BIN` `0x48`) with the other stones. **Records DONE 2026-09-24** (`cc3a016`):
       `FS_WAL` labels and tackle lists (`rec@FS_WAL.*`) with its stone and balloon, the
