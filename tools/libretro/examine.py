@@ -10,6 +10,9 @@ while a clip plays -- each ○ past the end of a scene examines again, so one ru
 and the second look. Printed: map changes, queued next events, and each clip `xa_play` starts
 with the message whose disc key it is. Shots every `--every` frames go to WORK. Exit 0; 11 if
 the map or the zone never came.
+
+EVENT 0 examines nothing: Boku stays where the morning starts and ○ goes on being pressed, so
+the scenes that run by themselves there (breakfast, and what follows it in `G02`) are logged.
 """
 
 from __future__ import annotations
@@ -75,7 +78,7 @@ def main(argv: list[str]) -> int:
     )
     p.add_argument("card", type=Path)
     p.add_argument("map", help="the map base to wake in, e.g. E08")
-    p.add_argument("event", type=int, help="the examine event, e.g. 2405")
+    p.add_argument("event", type=int, help="the examine event, e.g. 2405; 0 for none")
     p.add_argument("--after", type=int, default=1500)
     p.add_argument("--every", type=int, default=60)
     p.add_argument("--at", help="X,Z to stand at instead of the zone's centre")
@@ -83,6 +86,8 @@ def main(argv: list[str]) -> int:
     p.add_argument("--disc", type=Path, default=DEFAULT_DISC_DIR)
     p.add_argument("--work", type=Path, help="default work/examine/<map>-<event>")
     args = p.parse_args(argv)
+    if args.at and not args.event:
+        p.error("--at places Boku facing an examine point; EVENT 0 has none")
     work = args.work or REPO / "work" / "examine" / f"{args.map}-{args.event}"
     game = Game(args.image, args.card.read_bytes(), work)
     seen: dict[str, object] = {}
@@ -110,15 +115,16 @@ def main(argv: list[str]) -> int:
 
     try:
         land_in(game, args.map)
-        zones = examine_zones(game, args.event)
-        if not zones:
-            raise StepError(f"no examine zone for E{args.event:04d} in {args.map}")
-        x, z, angle = zones[-1]
-        if args.at:
-            ax, az = map(int, args.at.split(","))
-            (px, pz), _ = examine_placements(game, args.event)[-1]
-            x, z, angle = ax << 4, az << 4, facing(ax, az, px, pz)
-        stand(game, x, z, angle)
+        if args.event:
+            zones = examine_zones(game, args.event)
+            if not zones:
+                raise StepError(f"no examine zone for E{args.event:04d} in {args.map}")
+            x, z, angle = zones[-1]
+            if args.at:
+                ax, az = map(int, args.at.split(","))
+                (px, pz), _ = examine_placements(game, args.event)[-1]
+                x, z, angle = ax << 4, az << 4, facing(ax, az, px, pz)
+            stand(game, x, z, angle)
         game.press("CIRCLE", 0)
         for i in range(args.after):
             if i % 40 == 39 and not seen.get("playing"):

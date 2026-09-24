@@ -56,10 +56,8 @@ exactly 100 sectors on all 14 channels that have a tail. Whisper over the tail t
 
 ## Unreferenced runs
 
-File-2/3 audio no key names (sector ranges of `BOKU_XA.XAM`, channel = `start % 16`). Whether
-native code plays any of them by a computed key is not known; nothing on the disc holds
-their keys (a scan of the executable and every `BOKU.BIN` member for key-shaped records
-found only `g_xa_clips`).
+File-2/3 audio no key names (sector ranges of `BOKU_XA.XAM`, channel = `start % 16`). None of
+them is played (§ Nothing plays them, below).
 
 | sectors | file | heard (plain pass; none of these was decoded gated) | Jay, by ear (2026-09-24) |
 |---|---:|---|---|
@@ -76,9 +74,53 @@ found only `g_xa_clips`).
 | 88787–90131 | 2 | nothing (stock line) | a car driving |
 | 89437–89533 | 3 | nothing (stock line) | wordless, not identified |
 
-Jay takes the seven with a voice (3387, 10721, 10813, 28925, 29041, 61999, 76910) for lines
-he has heard in play, from map interactions played by a reference not yet decoded; PLAN
-`VO-08` tests that.
+### Nothing plays them (PLAN `VO-08`, 2026-09-24)
+
+Jay took the seven with a voice for lines heard in play, from map interactions played by a
+reference not yet decoded, and the well's narration for the same. Measured, there is no such
+reference:
+
+* **Every key the XA code reads comes from a block or `g_xa_clips`.** `xa_play`
+  (`0x8002B3E4`) holds the only `CdControl(CdlSetfilter)` (`0x8002B458`), so it alone picks
+  the channel a clip plays on; it records the key in the current-key pointer `0x800357AC`.
+  Two pre-seek routines write that pointer too, setting no filter: `0x8002B150`
+  (`g_xa_clips + 12·n`, from overlays) and `0x8002B200` (the next message's key, reached from
+  the `XSEEK` handler through `0x8002CF5C`); and the XA tick's disk-error retry
+  (`0x8002B778`) re-reads whatever key the pointer names. `xa_play` has exactly two callers:
+  `xa_play_indexed` (`0x8002B4E4`, `g_xa_clips + 12·n`) and the event voice routine
+  `0x8002CF14`, which hands it `block + entry[m].offset`, message *m*'s key in the running
+  event's block. `0x8002CF14`'s three callers take *m* from an instruction's operand byte
+  (`0x8002F4C8`, `0x8002F5AC`) or from `PROG 16`'s dinner line (`0x8003191C`,
+  `g_dinner_menu[day − 1] + 7`). No overlay calls `xa_play`, and nothing holds the address
+  of `xa_play`, `xa_play_indexed` or `0x8002CF14` as data or builds it with `lui`/`addiu`
+  (the executable and all of `BOKU.BIN`, which is stored uncompressed). The CD driver's
+  own command table (`0x80068B00`, the index `0x80049D88` takes) holds no Setfilter and no
+  ReadS, and the movie player streams only the `M*.IKI` files its table names.
+* **No key names them.** The runs are, by construction, the sectors no event key and no
+  `g_xa_clips` record covers; and no `{u32 start, u32 end}` pair of any run — file-relative
+  or offset by the XAM's LBA — occurs anywhere in the executable or `BOKU.BIN`
+  (`BOKU_XA.XCH` is 580 bytes: its count and 48 keys, nothing after them).
+* **What Jay heard is another clip.** On Beetle, day 3 after breakfast
+  (`./make.sh examine work/saves/corpus/day03.mcd G02 0`, stock disc): `E0302.0`/`.1`'s
+  *gochisōsama deshita* play the shared keys of `E0007.0`/`.1` (sectors 14–238, 15–335),
+  used by every such breakfast; the role jingle is `E0302.6`'s key 88726–89190 (3.2 s). The
+  orphans are other recordings: none of the audio sectors of 10652, 10721 or 10813 matches
+  a sector of `E0007.0`/`.1`, `E0010.0`/`.1` or `E0302.6` byte for byte.
+  Run 3387's words are the opening movie's at 41 s (`M27`, its own audio), and the uncle
+  says them again of the axe (`E0814.0`). A car in play is `E0504.0`/`E1502.7`'s clip
+  (89160–90584, the father's car); everyone laughing is `E2204.11`'s (60404–60852). The
+  well's narration is `E2405.0`, a voiced message with text (sumo.md § The well on the
+  shortcut).
+* **Where they sit says what they are.** The XAM's clips run roughly in event order, and each
+  run lies among the keys of one scene: 10652–10957 among `E0302`/`E0303` (day 3's breakfast
+  and dinner), 28925 and 29041 among `E0740`/`E0741`/`E0807`, 61999 among `E2203`–`E2206`,
+  76910 among `E2720`/`E2732`, 3387 among `E0104`/`E0171`. They are takes recorded for those
+  scenes and never used (an inference from where they sit): the game plays a shared take
+  instead (the breakfast lines), or the line was cut.
+
+So there is nothing to subtitle here: every clip the game plays from the XAM is a message's
+key or an `XCH` record. The no-text ones are the rows of this file, and each worded one has
+English (`VO-04`); the rest are lines with text, which the script translation covers.
 
 ## The movies' audio and the frame a cue keys to
 
