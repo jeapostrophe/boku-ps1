@@ -191,6 +191,7 @@ vwf_select_box:
 
 .include "hhon_resident.asm"        ; the dead font's block is full
 .include "help_resident.asm"
+.include "hud_resident.asm"
 
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build

@@ -1491,7 +1491,9 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     images = [Image(EXE_NAME, stock_exe, EXE_LOAD_BIAS)] + [
         Image(name, stock_overlays[name], OVERLAY_BASE) for name in DRAWING_OVERLAYS
     ]
+    fish = box_for("exe@8003DA4C.0")  # the catch title's box (asm/hud_resident.asm)
     extra = movie_equates(block) | ROUTINES_EQUATES | help_equates(archive)
+    extra["FISH_TITLE_MIDDLE"] = (fish.x + fish.right) // 2
     extra["CD_DIR_SIZE"] = dir_arrays(stock_exe).size + EXE_LOAD_BIAS
     patched, symbols = assemble(
         Path(args.armips), Path(args.asm), images, bytes(table), layout, work, extra

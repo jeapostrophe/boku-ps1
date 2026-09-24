@@ -56,3 +56,11 @@ exe@8003D2E0.29	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2
 exe@8003D2E0.30	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
 exe@8003D2E0.56	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
 hhon@5328.*	218	310	12	14	26 insect box entries (HHON)	the grid's cream panel less its frame, 14 rows at 11 px (Jay, 2026-09-24, option A); the notebook takes the first 8 rows (research/vwf-prototype.md § "The `HHON` walkers")
+exe@800461CC.*	40	155	12	1	13 kite names (desk)	the list panel's frame at 155, as the item names'; kite_list_draw's pen moved from 48 to the item list's 40 (asm/walkers.asm) so the widest name, 115 px, ends inside it (Beetle, 2026-09-24)
+exe@80046364.0	40	155	12	1	14 fishing menu words (tackle)	fish_menu_draw's pen (40, 82), in the tackle screen's list panel, frame at 155 (Beetle, 2026-09-24)
+exe@8004636C.0	40	155	12	1	14 fishing menu words (tackle)	fish_menu_draw's pen (40, 170), the same list panel
+exe@8004637C.0	178	301	12	1	14 fishing words (tackle)	fish_word_draw's pen (178, 126) in the picture panel, inner edge at 301 as the descriptions'
+exe@80046384.0	178	301	12	1	14 fishing words (tackle)	fish_word_draw's pen (178, 126) in the picture panel, inner edge at 301 as the descriptions'
+exe@80046390.0	178	301	12	1	14 fishing words (tackle)	fish_word_draw's pen (178, 126) in the picture panel, inner edge at 301 as the descriptions'
+exe@8003D2E0.*	61	274	12	1	9 insect names (cage HUD)	cage_hud_draw's widest pen, after the BIG! badge (x 24 bare, 49 crown); the gender icon, a gap and a two-digit catch number follow the name and must end before the screen's edge at 310, with the date moved a row down (asm/walkers.asm CAGE_DATE_Y), seen clear there on Beetle 2026-09-24. Sumo's narrower fields have rows of their own
+exe@8003DA4C.*	114	205	12	1	11 fish names (catch title)	the catch title's panel, x 112..207 on Beetle, less 2 px a side; the name is centred on it by its width (asm/hud_resident.asm)

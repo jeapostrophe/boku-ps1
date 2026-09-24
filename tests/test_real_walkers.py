@@ -504,3 +504,26 @@ def test_the_help_screen_draws_line_11_s_second_row_only_when_the_build_split_it
     calls = [call[:3] for call in m.stubs[HELP_LINE]]
     assert calls == ([(items, x11, 184)] if split else [])
     assert m.regs[17] == 2, "s1: the pad type, as the instructions the jal replaced read it"
+
+
+def _fish_title_draws(images, ids):
+    m = machine(images)
+    m.halfwords(FISH_NAMES, [*ids, NEWLINE])
+    m.write(FISH_INDEX, 1, 0)
+    m.call(FISH_NAME_DRAW)
+    return m.draws
+
+
+@pytest.mark.parametrize("text", ["Iwana", "Rainbow Trout", "Yamamee"])
+def test_the_fish_title_draws_its_first_glyph_at_the_centred_pen(built, text):
+    """The whole drawer, the hook's site included: a name of any width -- odd, even, the box's
+    widest -- starts where it is centred in its box and ends inside it."""
+    images, _, _, cells, _ = built
+    box = box_for("exe@8003DA4C.0")
+    ids = [cells[c][0] for c in text]
+    width = sum(cells[c][1] for c in text)
+    draws = _fish_title_draws(images, ids)
+    x = draws[0][1]
+    assert box.x <= x and x + width <= box.right, "outside its box"
+    assert abs((x + width / 2) - (box.x + box.right) / 2) <= 1, "not centred"
+    assert draws[0][2] == 0x48, "the y the drawer set"

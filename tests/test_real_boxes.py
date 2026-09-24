@@ -193,6 +193,49 @@ def test_the_bag_and_extras_pens_are_their_drawers_literals(archive):
     assert label5 >> 16 == 0x2411 and box_for("exe@8003DA00.5").x == label5 & 0xFFFF
 
 
+PANEL_PENS = {
+    # array: its drawer's `addiu a1,zero,x` (the pen) -- in the days build, for a pen the
+    # renderer moves
+    "exe@800461CC": 0x8004207C,  # kite_list_draw, every name
+    "exe@80046364": 0x80043F68,  # fish_menu_draw: "Tackle"
+    "exe@8004636C": 0x80043F90,  # fish_menu_draw: the record's heading
+    "exe@8004637C": 0x80043FEC,  # fish_word_draw: one pen for the three fish words
+    "exe@80046384": 0x80043FEC,
+    "exe@80046390": 0x80043FEC,
+}
+FISH_WORDS = tuple(prefix for prefix in PANEL_PENS if prefix != "exe@800461CC")
+
+
+def test_the_kite_and_fishing_pens_are_where_the_built_game_draws_them(days_built):
+    """The kite list and the tackle screen's words: each row's x is its drawer's literal,
+    as the days build holds it (the kite pen is moved by `asm/walkers.asm`)."""
+    for prefix, site in PANEL_PENS.items():
+        pen = word(days_built, site)
+        assert pen >> 16 == 0x2405, f"0x{site:08X} is not addiu a1,zero,x"
+        assert box_for(f"{prefix}.0").x == pen & 0xFFFF, prefix
+
+
+@pytest.mark.parametrize(
+    ("image", "name_x", "name_y", "date_y"),
+    [
+        (None, 0x8003FF78, 0x8003FF84, 0x8003FFF8),  # cage_hud_draw
+        ("HHON.OVL", 0x8007C450, 0x8007C458, 0x8007C4CC),  # the insect box's copy
+    ],
+)
+def test_the_cage_hud_date_is_a_row_below_the_size_off_the_name_s_row(
+    archive, days_built, image, name_x, name_y, date_y
+):
+    """cage_hud_draw puts the name at y 26 and the size at y 45; the English date goes the
+    same 19 px below the size, so the name's row keeps only the name, its icon and its
+    number, from the widest pen -- `exe@8003D2E0.*`'s box."""
+    name = word(archive, name_y, image) & 0xFFFF
+    size = word(archive, 0x80040058) & 0xFFFF  # the size's y, shared by both copies
+    assert box_for("exe@8003D2E0.0").x == word(archive, name_x, image) & 0xFFFF
+    moved = word(days_built, date_y, image)
+    assert moved >> 16 == 0x2405, "not addiu a1,zero,y"
+    assert moved & 0xFFFF == size + (size - name)
+
+
 def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
     """`pitch` is what the stock sheet is measured at on that surface, so it is the literal
     the walker steps by -- read from the `addiu reg,reg,step` each walker holds."""
@@ -207,6 +250,9 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         CARD: step(0x8007CDD8, "TITLE.OVL"),  # mc_msg_draw
         "exe@8003D9BC": step(0x8007FBC4, "TITLE.OVL"),  # config_draw
         "exe@80046214": step(0x80043848),  # text_draw_line_h
+        "exe@800461CC": step(0x80043848),  # kite_list_draw -> text_draw_line_h
+        "exe@8003DA4C": step(0x8003C6A0),  # sys_title_draw: the fish names
+        **dict.fromkeys(FISH_WORDS, step(0x80043848)),  # fish_menu/word_draw -> the same
         "exe@80046398": step(0x800438B8),  # text_draw_h
         "exe@80046614": step(0x800438B8),
         **dict.fromkeys(FISH, step(0x800438B8)),  # fish_msg_draw -> text_draw_h

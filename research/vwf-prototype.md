@@ -752,8 +752,36 @@ re-derives every pen from the game's bytes):
   (walker 20a's `addiu s1,zero,0x72`) in its popup, a tile at TITLE `0x80081AC4` that
   `asm/title.asm` widens to x 112…248.
 
-Not measured, so held to their bytes alone: kite names, fishing, the fish names, insect
-names and the `HHON`/`MUSI` surfaces.
+Measured 2026-09-24 on Beetle (every row's `basis` says how):
+
+* **Kite names** (surface 13, `kite_list_draw`): the list panel is the item list's (frame at
+  155), but the names started at x 48, and "Carp-streamer Kite" (115 px) ran into the frame;
+  `asm/walkers.asm` starts them at the item list's 40. Reached with `0x80047EC0` = 1 (the
+  desk's kite gate), the kite count `0x80047EB0` and ids `0x80047EA8`, then △, UP, ○.
+* **The tackle screen's words** (surface 14): "Tackle" and the record's heading at
+  `fish_menu_draw`'s (40, 82) and (40, 170) in the list panel; the three fish words at
+  `fish_word_draw`'s (178, 126) in the picture panel. The tackle screen opens from the desk
+  (RIGHT from the bag) once `0x80035E52` (the rod) is 1.
+* **The cage HUD** (surface 9, `cage_hud_draw`, the desk's Bug Cage): badge, name, gender
+  icon and catch number on one row at y 26, starting at x 24, 49 (crown) or 61 (BIG!); the
+  size right-aligned at y 45. The date, right-aligned on the name's row, was reached by the
+  longest names' catch number ("Eyebrow Red Dragonfly", crown); `asm/walkers.asm` moves it a
+  row below the size (y 64). Reached by writing an insect record into cage slot 0
+  (`0x80045A10`: type, size, 0, gender, catch, day) and △, RIGHT, RIGHT, UP, ○.
+* **The fish-catch title** (surface 11, `fish_name_draw`): a translucent panel x 112–207,
+  y 56–119, the name on y 73; retail starts it at x 0x88 (0x82 for fish 1), which centres
+  the Japanese on 154, and "Rainbow Trout" ran to 218. `asm/hud_resident.asm` centres any
+  name on the panel's middle by its width. Fishing is `PROG 32` in the field (events
+  `E0004`, `E4019`–`E4021`); reached by landing in A01 with `g_flags[10]` set, examining
+  `E0004`'s spot, and writing the caught state into `0x8003E298` (+0 = 0x40, +9 = the fish,
+  +0x11 = 1).
+
+**The field's stack is the scratchpad.** Field mode's update (`g_modes[5]`, `0x80013770`)
+moves sp to `0x1F8003E4`, the 1 KB scratchpad, and fishing runs there: sp was `0x1F8002C4`
+inside the catch title's hook, and retail `fish_name_draw` reaches `0x1F8002BC` at its
+deepest (Beetle probe, 2026-09-24). What else the field keeps in the scratchpad is not
+mapped, so a hook called from field code takes no stack frame of its own: it keeps ra in a
+register, as the walker bodies do.
 
 ### The banners
 
@@ -821,9 +849,9 @@ specification.
 | 6 | EXE `date_label_draw` `0x80037544` | none: five immediates at `x, x+0xD, x+0x25, x+0x3A/0x41` plus sprite digits | — | **C**; a translation re-points the ids and re-tunes the literals | table |
 | 7 | `date_label_draw_b` | unreferenced | — | **C** | table |
 | 8 | EXE `count_label_draw` `0x800377F8` | none: `0x26A`, `0x4B9` at offsets chosen by digit count | — | **C** | table |
-| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with the contract change, installed** (`asm/walkers.asm`): both passes add the glyph's width to `s2`, so the return value is pixels, and the five consumers take it — the cage HUD and HHON's label (`move v1,v0`), MUSI's stat line, and MUSI's two right-aligned names at `SUMO_FIELD − width` (the `sllv … s5` block: `s5` is 1, set at `0x8007D7C8`, so both were 12 × (8 − n); the count comes from drawing the name off screen at x 0x258 first). The down pass (`a3` ≠ 0) is left stock: no call in any image uses it | tested |
+| 9 | EXE `sysmsg_draw` `0x800379EC` (insect names, system words; wrapper `sysmsg_line_draw` `0x80037BA8`) | `0x80037B20 addiu s3,s3,0xC` (delay slot `lhu a0,0(s0)`); `0x80037B3C addiu s2,s2,1` is the glyph count, **returned in `v0`** | `s3` · `-2(s0)` | **A with the contract change, installed** (`asm/walkers.asm`): both passes add the glyph's width to `s2`, so the return value is pixels, and the five consumers take it — the cage HUD and HHON's label (`move v1,v0`), MUSI's stat line, and MUSI's two right-aligned names at `SUMO_FIELD − width` (the `sllv … s5` block: `s5` is 1, set at `0x8007D7C8`, so both were 12 × (8 − n); the count comes from drawing the name off screen at x 0x258 first). The down pass (`a3` ≠ 0) is left stock: no call in any image uses it. The cage HUD's date moves a row down, off the name's row (EXE `0x8003FFF8`, HHON `0x8007C4CC`) | **proven** on Beetle (the cage HUD and the insect box's copy, 2026-09-24) |
 | 10 | EXE `fortune_draw` `0x8003A7A4` (the fortune result, three glyphs stacked vertically at x `0x9A` in a tall panel) | rows, not a pen | — | **banner**: hooked at its entry to `asm/banners.asm`'s `vwf_fortune_banner`, one centred line in a wide panel (§ "The banners") | **proven** (forced) |
-| 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |
+| 11 | EXE `sys_title_draw` `0x8003C5EC` (fish names `0x8003DA4C`) | `0x8003C6A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`); the pen, `0x8003C68C sll s2,v0,0x10` → `jal vwf_fish_title_x`, which centres the name in the catch panel by its width | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | **proven** on Beetle (2026-09-24, forced catch) |
 | 12a | EXE `text_draw_line_h` `0x800437F4` (item names, kite names, fishing at x `0x28`/`0xB2`) | `0x80043848 addiu s1,s1,0xC` is a branch delay slot; `0x80043834 addiu s0,s0,2` is the hook site, with `lhu v0,0(s0)` in its delay slot loading the *current* id | `s1` · `0(s0)` | **A**: `43834 → jal` {`s1 += w[0(s0)]; s0 += 2; lhu v0,0(s0)`}, `43848 → nop` | **proven** (item names) |
 | 12b | EXE `text_draw_h` `0x80043864` (item descriptions and captions at (0xB8, 0x7E), newline `s2 += 16`; patched to (0xB8, 118) and 12, § "The fixed-pitch boxes") | same shape: `0x800438A4 addiu s0,s0,2` (delay slot `lhu v1,0(s0)`, also the newline operand), `0x800438B8 addiu s1,s1,0xC` in a branch delay slot | `s1` · `0(s0)` | **A**: as 12a with `v1` reloaded; one body, `vwf_step_s1_s0_cur`, serves both | **proven** (descriptions) |
 | 13, 14 | `kite_menu_draw`, the fishing drawers | draw through 12a/12b | | with 12 | tested |

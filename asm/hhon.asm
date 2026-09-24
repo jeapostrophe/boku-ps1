@@ -98,3 +98,14 @@
     nop
 .endif
 .endarea
+
+; The insect box's copy of the cage HUD (asm/walkers.asm, CAGE_DATE_Y): its date goes a row
+; below the size too, off the name's row.
+.org 0x8007C4CC
+.area 4
+.if ORIGINAL
+    addiu   a1, zero, 0x1A          ; stock: y 26, the name's row
+.else
+    addiu   a1, zero, CAGE_DATE_Y
+.endif
+.endarea

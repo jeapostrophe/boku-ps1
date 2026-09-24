@@ -177,6 +177,16 @@ DESC_LINE_STEP  equ 12
 .endif
 .endarea
 
+; kite_list_draw 0x80041FE4: the names start where the item list's do (text-boxes.tsv).
+.org 0x8004207C
+.area 4
+.if ORIGINAL
+    addiu   a1, zero, 0x30          ; stock: x 48
+.else
+    addiu   a1, zero, 40
+.endif
+.endarea
+
 ; ---- surface 9: sysmsg_draw 0x800379EC (insect names; wrapper sysmsg_line_draw 0x80037BA8) ---
 ; The across pass counts glyphs in s2 and returns the count, which five callers turn into
 ; pixels (x 12) to place what follows the name or to right-align it (MUSI measures a name by
@@ -202,6 +212,21 @@ DESC_LINE_STEP  equ 12
 .endif
 .endarea
 
+; cage_hud_draw's date ("Date caught", asm/labels.asm) leaves the name's row for the row below
+; the size, as far below it as the name is above (text-boxes.tsv, exe@8003D2E0); asm/hhon.asm
+; moves HHON.OVL's copy of the HUD the same way.
+CAGE_NAME_Y equ 0x1A                ; retail: the name and the date
+CAGE_SIZE_Y equ 0x2D                ; retail: the size (0x80040058)
+CAGE_DATE_Y equ (CAGE_SIZE_Y + CAGE_SIZE_Y - CAGE_NAME_Y)
+.org 0x8003FFF8
+.area 4
+.if ORIGINAL
+    addiu   a1, zero, 0x1A          ; stock: y 26, the name's row
+.else
+    addiu   a1, zero, CAGE_DATE_Y
+.endif
+.endarea
+
 ; cage_hud_draw: the next item goes 12 x count after the name; now the width itself.
 .org 0x8003FF98
 .area 3*4
@@ -217,6 +242,16 @@ DESC_LINE_STEP  equ 12
 .endarea
 
 ; ---- surface 11: sys_title_draw 0x8003C5EC (fish names) --------------------------------
+; The name is centred in its panel (asm/hud_resident.asm).
+.org 0x8003C68C
+.area 4
+.if ORIGINAL
+    sll     s2, v0, 0x10            ; stock: y << 16; the next word is the loop's first
+.else
+    jal     vwf_fish_title_x
+.endif
+.endarea
+
 .org 0x8003C6A0
 .area 4
 .if ORIGINAL
