@@ -41,7 +41,7 @@ E2330.16	Moe	Huh? What? Whaaat? What do you mean?
 E2330.17	Moe	I'll have that letter translated by dinner.
 E2330.18	Boku	Can you?
 E2330.19	Moe	Oh, be quiet! // When I think someone's secret is packed in here, my heart pounds with excitement... // and somehow my own misery feels lighter.
-# NOTE E2330.11: Moe reading the English letter aloud, voice only (style guide § 16).
+# NOTE E2330.11: the pages of the letter turning, no voice (Jay, by ear).
 
 # --- E2331: G15 -- the sisters' room
 E2331.0	Moe	Come to think of it, that vice-principal's treasure... // what on earth could it really be?

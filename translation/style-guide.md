@@ -346,8 +346,6 @@ A glossary screen or booklet for the player is an idea, not a plan.
   when the gloss is the speaker's own words and the joke is in their saying it, translate it
   as their line rather than deleting it. A player-aid gloss in the text (the `E0650.11` case)
   is not that, and goes.
-* Moe reads the English letter aloud as a **voice-only** clip (`E2330.11`): there is no text to
-  translate, and it is already English.
 
 ## 17. Speech with no text on the disc — SETTLED (Q11, 2026-09-20)
 

@@ -70,13 +70,13 @@ E2104.7	E2104.7@224	21	VOICE	255	3	13	88925	89213	19	2.0	1	E0020.1,E2061.0	wordl
 E2202.7	E2202.7@1C0	22	ALL	11	3	4	60404	60852	29	3.1	1	E2204.11,E3174.3,E3175.0	wordless	everyone laughs
 E2204.11	E2204.11@1CE	22	ALL	11	3	4	60404	60852	29	3.1	2	E2202.7,E3174.3,E3175.0	wordless	everyone laughs
 E2305.0	E2305.0@5E		VOICE	255	3	1	64449	65985	97	10.3	4	-	'Come to think of it, that overzealous vice-principal at our school apparently hid some treasure of his on this back hill during the war.'	Moe's E2204.6, remembered (the same words); the next line (narration) has Boku take the book home
-E2330.11	E2330.11@13E	23	VOICE	255	2	8	65480	65912	28	3.0	2	E2430.13,E2530.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
-E2430.13	E2430.13@168	24	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2530.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2330.11	E2330.11@13E	23	VOICE	255	2	8	65480	65912	28	3.0	2	E2430.13,E2530.13,E2630.15,E2730.11	wordless	page turns, no voice (Jay's ear, VO-05, 2026-09-24)
+E2430.13	E2430.13@168	24	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2530.13,E2630.15,E2730.11	wordless	page turns, no voice (Jay's ear, VO-05, 2026-09-24)
 E2432.10	E2432.10@19E	24	VOICE	255	3	0	67792	68288	32	3.4	1	-	wordless	sound effect (loud, no speech found)
 E2432.14	E2432.14@25C	24	VOICE	255	2	11	68363	68827	30	3.2	1	-	wordless	sound effect (loud, no speech found)
-E2530.13	E2530.13@18E	25	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2630.15,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
-E2630.15	E2630.15@348	26	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2530.13,E2730.11	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
-E2730.11	E2730.11@15C	27	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2530.13,E2630.15	wordless	no speech found in Japanese or English (quiet, 3 s). translation/voice-only.md takes it for Moe reading the English letter aloud -- if so it is already English; needs an ear to confirm
+E2530.13	E2530.13@18E	25	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2630.15,E2730.11	wordless	page turns, no voice (Jay's ear, VO-05, 2026-09-24)
+E2630.15	E2630.15@348	26	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2530.13,E2730.11	wordless	page turns, no voice (Jay's ear, VO-05, 2026-09-24)
+E2730.11	E2730.11@15C	27	VOICE	255	2	8	65480	65912	28	3.0	2	E2330.11,E2430.13,E2530.13,E2630.15	wordless	page turns, no voice (Jay's ear, VO-05, 2026-09-24)
 E2901.7	E2901.7@18C	29	ALL	11	2	5	79749	80053	20	2.1	1	-	wordless	laughter
 E3102.2	E3102.2@C6	31	VOICE	255	3	0	88928	89600	43	4.6	1	-	wordless	sound effect after the meal
 E3174.3	E3174.3@D2		VOICE	255	3	4	60404	60852	29	3.1	1	E2202.7,E2204.11,E3175.0	wordless	everyone laughs
@@ -138,8 +138,8 @@ XCH.12	BOKU_XA.XCH[12]		-	-	3	11	1531	1691	11	1.2	1	-	'Then let's trade for that
 XCH.13	BOKU_XA.XCH[13]		-	-	3	7	1751	2023	18	1.9	1	-	'First you face the great me!'	bug sumo
 XCH.14	BOKU_XA.XCH[14]		-	-	3	8	1784	2040	17	1.8	1	-	'Haven't got one. Switch.'	bug sumo
 XCH.15	BOKU_XA.XCH[15]		-	-	2	3	1699	1859	11	1.2	1	-	'Go all out!'	bug sumo
-XCH.16	BOKU_XA.XCH[16]		-	-	3	6	1878	2166	19	2.0	1	-	uncertain: a gloat	bug sumo; the two passes heard different words -- needs an ear
-XCH.17	BOKU_XA.XCH[17]		-	-	3	14	1934	2222	19	2.0	1	-	uncertain: a cry of alarm ('ayayaya...')	bug sumo
+XCH.16	BOKU_XA.XCH[16]		-	-	3	6	1878	2166	19	2.0	1	-	'Hehe, going well, going great!' (second word uncertain)	bug sumo; Jay hears two different words, 'kocho gojo'; read as kocho jojo (going well, first-rate), a guess; gojo (stubborn) is what the ears heard
+XCH.17	BOKU_XA.XCH[17]		-	-	3	14	1934	2222	19	2.0	1	-	a sound of anxiety ('ayayaya...')	bug sumo; Jay's ear
 XCH.18	BOKU_XA.XCH[18]		-	-	3	3	1907	2355	29	3.1	1	-	laughter, then 'Did it!'	bug sumo
 XCH.19	BOKU_XA.XCH[19]		-	-	3	9	1945	2281	22	2.3	1	-	'Easy as pie.'	bug sumo
 XCH.20	BOKU_XA.XCH[20]		-	-	2	12	1916	2236	21	2.2	1	-	'Huh? Oh, great...'	bug sumo

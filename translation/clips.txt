@@ -12,14 +12,17 @@ XCH.34	Narrator	And so the first day of that summer vacation came to an end.
 XCH.41	Narrator	In the end, both sisters later moved to the city, // made picture-perfect marriages and built happy homes. // Now Moe's eldest daughter is in her third year of middle school... // yes, she is already the same age her mother was back then.
 # NOTE XCH.41: 'kanojo' (her) 'at that time' is Moe, who was in her third year of middle school
 #   that summer; rendered 'her mother' so the English 'she' is not read as the daughter.
-XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, with 30 ahead of me, // I had set foot on the same path as my uncle: pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.
-# UNSURE XCH.42: the ASR heard 'tōge' (mountain pass) and 'hotte ita' / 'notte ita'; read as
-#   'tōgei' (pottery) and 'fumiirete ita' (had set foot on), the readings the ending is about.
+XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, just short of 30, // I had set foot on the same path as my uncle, the path of pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.
+# NOTE XCH.42: '30 o mae ni shite' is his age, nearing thirty (university, then seven years at
+#   the publisher). '... no michi e ashi o fumiirete ita' is the idiom for taking up a craft;
+#   it says the same path as his uncle, not whose apprentice he is ('makasete moraeru', trusted
+#   with, puts him under someone). ASR heard 'tōge' and 'hotte' / 'notte' / 'futte ita'; read as 'tōgei' and
+#   'fumiirete ita', the potter ending.
 XCH.43	Narrator	A full twenty-five years have already slipped away since that summer. // Today I work at a certain major electronics manufacturer, // mostly writing control programs for communications equipment and drawing up designs. // White partitions and gray carpet; // the cold glow of fluorescent lights that never sleep, 24 hours a day. // In a dull, dry office, under a tight schedule, // I sometimes picture them: // how, bathed in strong sunlight, feeling the sweat run down my neck, // I ran all over the hills and fields... // those days of that summer.
 XCH.44	Narrator	That was everything I remembered of that summer. // Afterwards I became a successful novelist, // and now I live in a hotel in New York with a view of the Brooklyn Bridge, // searching for the words of the epilogue that will adorn the end of this story of my childhood. // Come to think of it, for the countdown to 2001, // it seems Shirabe and Moe will be coming over from Japan too, for the first time in a long while. // Goodbye, 20th century.
 XCH.45	Narrator	Within some 15 years of that summer vacation, // a huge multipurpose dam was completed in the Tsukiyono valley. // Around where my uncle's house once stood, // the water is 200 meters deep in the rainy season. // Nothing is left anymore to remember those days by.
-# UNSURE XCH.45: the valley's name was misheard ('tsukiyo no tani', 'kiiro no tani'); read as
-#   Tsukiyono (glossary § 2). 'Multipurpose dam' is 'tamokuteki damu', which the ASR garbled.
+# NOTE XCH.45: the valley is Tsukiyono (glossary § 2; Jay's ear, VO-05). 'Multipurpose dam' is
+#   'tamokuteki damu'.
 
 # --- XCH.00-XCH.33, XCH.35-XCH.40: the bug-sumo voices (MUSI) and one cheer, drawn in the
 #     band while bug sumo plays them (PLAN VO-06). Speakers, as labelled (not drawn): each boy
@@ -44,12 +47,13 @@ XCH.12	Guts	Then let's trade for that.
 XCH.13	Fat	First, yours truly takes you on!
 XCH.14	Fat	Haven't got one. Switch.
 XCH.15	Fat	Go all out!
-XCH.16	Fat	Hehe, going great, going great!
-# UNSURE XCH.16: the two passes heard 'gōjō gōjō' and 'gochō gochō'; read as 'kōchō
-#   kōchō' (going well), a mid-bout gloat like XCH.05's. Needs an ear.
+XCH.16	Fat	Hehe, going well, going great!
+# UNSURE XCH.16: Jay hears two different words, "kōchō gōjō", meaning unknown; the ASR passes
+#   heard 'gōjō gōjō', 'gojō gojō' and 'gochō gochō'. 'kōchō' (going well) is the mid-bout
+#   gloat of XCH.05 and XCH.26; the second word is read as 'jōjō' (first-rate), a guess from
+#   that context. 'gōjō' (stubborn: the other bug holding on) is what the ears heard.
 XCH.17	Fat	Uh-oh-oh-oh!
-# UNSURE XCH.17: a cry of alarm, 'ayayaya...' as heard: the partner of XCH.16, the bout going badly,
-#   so an English noise of alarm.
+# NOTE XCH.17: a sound of anxiety (Jay's ear), the partner of XCH.16 with the bout going badly.
 XCH.18	Fat	Hahaha... I did it!
 XCH.19	Fat	Easy as pie.
 XCH.20	Fat	Huh? How did that happen?

@@ -33,7 +33,6 @@ from bible § 8 item 10:
 | The August 15 broadcast (the end-of-war anniversary) | `E1505` |
 | The monk's sutra | `E1203` (4 clips, slot 255) |
 | The whale dream (day 15) and the sunflower dream (day 29) | around `E1506` and `E2907`; the dream clips' own ids are not pinned |
-| Moe reading the English letter aloud | `E2330.11` — already English; nothing to translate (style guide § 16) |
 
 The listening pass was made 2026-09-22 (ASR, read against the scenes):
 [research/data/voice-only.tsv](../research/data/voice-only.tsv) marks every clip `wordless` or
@@ -41,8 +40,8 @@ gives its gist in English, and [research/voice-only.md](../research/voice-only.m
 found summarises it. Corrections to the table above: the radio calisthenics movies (`M21`,
 `M22`) have no voice (Jay's watch, `movies.tsv`); the monk's sutra (`E1203`) was not
 transcribable and is marked a style call; the sunflower dream is the movie `M260`, and no
-`XA` or `g_xa_clips` clip is the whale dream; `E2330.11`
-had no speech the ASR could find. New with words: the evening news items and the August 6 /
+`XA` or `g_xa_clips` clip is the whale dream; `E2330.11` is page turns, not Moe reading the
+letter (Jay, by ear, 2026-09-24). New with words: the evening news items and the August 6 /
 9 / 15 broadcasts, three voices on Saori's recorder (`E1861.30`–`.32`), `E2305.0`, the
 bug-sumo voices and the first night's narration (`XCH.00`–`.40`, `XCH.34` — clips native code
 plays, not event lines).

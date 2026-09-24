@@ -61,19 +61,24 @@ native code plays any of them by a computed key is not known; nothing on the dis
 their keys (a scan of the executable and every `BOKU.BIN` member for key-shaped records
 found only `g_xa_clips`).
 
-| sectors | file | heard (plain pass; none of these was decoded gated) |
-|---|---:|---|
-| 3387–3643 | 2 | words: "maybe it's reaching the end of its life" — the same words the plain pass hears over the opening movie's music at 41 s |
-| 10652–10748 | 2 | nothing (stock line) |
-| 10721–10945, 10813–10957 | 3, 2 | words: "thank you for the meal" (two takes) |
-| 28925–29005 | 3 | words: "huh?" |
-| 29041–29361 | 3 | words: "what's this?" |
-| 61999–62463 | 2 | laughter |
-| 76910–77134 | 3 | a word, uncertain ("welt") |
-| 88162–88738, 88276–88324, 88787–90131, 89437–89533 | 3, 3, 2, 3 | nothing (stock lines) |
+| sectors | file | heard (plain pass; none of these was decoded gated) | Jay, by ear (2026-09-24) |
+|---|---:|---|---|
+| 3387–3643 | 2 | words: "maybe it's reaching the end of its life" — the same words the plain pass hears over the opening movie's music at 41 s | the ASR is right; where it plays not known |
+| 10652–10748 | 2 | nothing (stock line) | the jingle when Boku is given a new role |
+| 10721–10945 | 3 | words: "thank you for the meal" | everyone's *gochisōsama deshita*, voices overlapping |
+| 10813–10957 | 2 | words: "thank you for the meal" | Uncle's *gochisōsama deshita*, alone |
+| 28925–29005 | 3 | words: "huh?" | *are?* or *ore*; where it plays not known |
+| 29041–29361 | 3 | words: "what's this?" | the ASR is right: Boku asking about something; where not known |
+| 61999–62463 | 2 | laughter | laughter; where not known |
+| 76910–77134 | 3 | a word, uncertain ("welt") | the aunt talking; the ASR is right |
+| 88162–88738 | 3 | nothing (stock line) | a car starting |
+| 88276–88324 | 3 | nothing (stock line) | a clock or a light switching on |
+| 88787–90131 | 2 | nothing (stock line) | a car driving |
+| 89437–89533 | 3 | nothing (stock line) | wordless, not identified |
 
-`XCH.00`–`XCH.40` (the bug-sumo voices) sit in the same region as the first three, so these
-may be spare takes the game never names.
+Jay takes the seven with a voice (3387, 10721, 10813, 28925, 29041, 61999, 76910) for lines
+he has heard in play, from map interactions played by a reference not yet decoded; PLAN
+`VO-08` tests that.
 
 ## The movies' audio and the frame a cue keys to
 
@@ -116,8 +121,8 @@ decided from context and says so in `notes`.
   recorder (`E1861.30`–`.32`), and one remembered line about the vice-principal's buried
   treasure (`E2305.0`). The other 99 are wordless: laughter, the howl, Ken-bō, Nora, the
   camera, doors, jingles, bath and drink sounds, the monk's sutra (not transcribed; liturgy).
-  One row needs an ear: `E2330.11` and the four rows sharing its clip, which translation/voice-only.md takes
-  for Moe reading the English letter aloud — no speech was found in Japanese or English.
+  `E2330.11` and the four rows sharing its clip are page turns, no voice (Jay, by ear,
+  2026-09-24) — not Moe reading the English letter aloud.
 * **`g_xa_clips`: 46 of 48 have words.** `XCH.00`–`.32` and `.35`–`.40` are the bug-sumo
   lines (challenge, trade, cheer, win, lose, in the boys' voices; 39 clips), `XCH.33` a cheer; `XCH.34` is the
   adult narrator's "and so the first day of that summer vacation came to an end" — the
