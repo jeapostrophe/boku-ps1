@@ -1,13 +1,16 @@
 """The close-up screens with writing drawn into their art (PLAN `GFX-08`;
-`research/texture-recipes.md` § "Close-ups", which has the method and the measurements).
+`research/texture-recipes.md` § `M_I14000` and § `M_I23000` have the method and the
+measurements).
 
-A close-up is a whole 320x240 screen the player opens by examining something. Its writing is
-part of a painting -- a note lying at an angle on a log -- so the recipe works in the plane of
-the thing written on: `Plane` maps an upright rectangle onto the four corners the object
-has in the picture, the Japanese is refilled along the object's own rules, and the English is
-set upright in the game's glyphs and carried into the picture through the same map, each
-covered pixel mixed from the ink and the paper under it and matched back to an entry the
-object already uses. Only the Japanese, the pixel round it, and the English change.
+A close-up is a whole 320x240 screen the player opens by examining something, and its writing
+is part of a painting. Saori's note lies at an angle on a log, so its recipe works in the plane
+of the page: `Plane` maps an upright rectangle onto the four corners the page has in the
+picture, the Japanese is refilled along the page's own rules, and the English is set upright
+in the game's glyphs and carried into the picture through the same map, each covered pixel
+mixed from the ink and the paper under it and matched back to an entry the page already uses.
+The hunters' board is frontal: its writing is refilled from the board round it, keeping the
+drawing it crosses, and the English stamped in the Japanese's own paint. Only the Japanese,
+the pixel round it, and the English change.
 
 The English is `tex@<member>.<key>` in `translation/textures/signs.txt`.
 """
@@ -26,7 +29,7 @@ from boku.tim import luminance
 from boku.typeset import Face
 
 from boku.texture_text import (  # isort: skip
-    Entry, TextureTextError, found, ink_of, keyed, lines_of,
+    LINE_BREAK, Entry, TextureTextError, found, ink_of, keyed, lines_of, stacked,
 )  # fmt: skip
 
 Point = tuple[float, float]
@@ -290,10 +293,229 @@ def note(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry])
     return canvas.patches()
 
 
+# --- M_I23000: the hunting association's warning board --------------------------------------
+
+
+BOARD_TEXTURE = "_DATA_M_FILES.BIN_M_I23000.BIN__000354"
+"""320x240 8bpp, one CLUT: the close-up of the warning board on map A14 (scene `E4045`). A
+frontal, weathered white board: a red warning word on a yellow starburst, two lines of black
+painted type, a small association name in the corner, and a cartoon of a hunter shooting a
+man, whose gun and bullet trail cross between the two lines."""
+
+
+@dataclass(frozen=True)
+class Sign:
+    """One piece of the board's writing: where its Japanese is, what it is drawn in, and how
+    its English sits where the Japanese was."""
+
+    key: str
+    box: paint.Box
+    """The rectangle the Japanese is found in."""
+    room: paint.Box
+    """The rectangle the English may go in."""
+    colour: str
+    """"black" (painted type) or "red" (the warning word on the starburst)."""
+    align: str = "centre"
+    """The English on the Japanese's extent: "centre", "left" or "right"."""
+    big: bool = True
+    """Set in the board's large style (`BOARD_TALL`); the small print is the game's glyphs."""
+    lines: int = 1
+    """How many lines, split at ` // `, the English may be."""
+
+
+BOARD_SIGNS = (
+    Sign("danger", (62, 64, 70, 40), (62, 64, 70, 54), "red"),
+    Sign("houses", (78, 98, 99, 29), (78, 98, 99, 29), "black", align="left"),
+    Sign("shoot", (158, 121, 95, 29), (158, 121, 97, 35), "black"),
+    Sign(
+        "association",
+        (178, 150, 68, 25),
+        (158, 147, 88, 34),
+        "black",
+        align="right",
+        big=False,
+        lines=2,
+    ),
+)
+"""The rooms reach past the Japanese: the starburst's lower spike (the black type is painted
+over its edge, as the Japanese is), and room under the shooting line, which the trail pushes
+down, for the association's two lines."""
+BOARD_TRAIL = (0.605, 224.4, 229.4, 150)
+"""The bullet's trail, two thin black lines from the gun to the man that pass between the
+houses line and the shooting line: every pixel with `y + 0.605 x` in 224.4-229.4 and x from
+150, fitted to its dark pixels. It is never taken for type and never a donor."""
+BOARD_BLACK = 120
+"""Painted type: a near-neutral pixel darker than this (the board is ~200-250)."""
+BOARD_GREY = 205
+"""The type's antialiasing: a near-neutral pixel within two of it darker than this."""
+BOARD_NEUTRAL = 50
+"""Near-neutral: channels no further apart than this (the starbursts, the cap and the grass
+are not)."""
+BOARD_GROUND = 140
+"""Board: paler than this. Only board is a donor for the refill -- never a dirt speck, the gun,
+the man's outline or the trail; the drawing is darker (`BOARD_MARK`)."""
+BOARD_SPECK = 5
+"""A group of fewer dark pixels than this is weathering, not type (the comma after the houses
+line is cut by its box into a group of 7)."""
+BOARD_MARK = 12
+"""The smallest group of dark pixels that is the drawing, not a speck of weathering."""
+BOARD_TALL = True
+"""The large writing is the game's glyphs twice as tall and emboldened (the Japanese is ~20 px
+painted strokes, and twice the glyphs' width does not fit the board); False sets them
+emboldened at their own size, the alternative shown to Jay (`research/texture-recipes.md`
+§ `M_I23000`)."""
+BOARD_REACH = 12
+"""How far the refill looks for a pixel of board, and so how far past the boxes it reads."""
+
+
+def _trail(p: tuple[int, int]) -> bool:
+    slope, low, high, x0 = BOARD_TRAIL
+    return p[0] >= x0 and low <= p[1] + slope * p[0] <= high
+
+
+def _neutral(c) -> bool:
+    return max(c[:3]) - min(c[:3]) < BOARD_NEUTRAL
+
+
+def _yellow(c) -> bool:
+    """The starburst's yellows, down to the olive of its shaded edge (115, 90, 57)."""
+    return c[0] > 100 and c[1] > 80 and c[0] >= c[1] - 10 and c[2] < c[1] - 20
+
+
+def _red(c) -> bool:
+    return c[0] > 120 and c[0] - c[1] > 50 and c[0] - c[2] > 30
+
+
+def board_japanese(canvas: paint.Canvas) -> dict[str, tuple[paint.Ink, paint.Ink]]:
+    """Each sign's Japanese strokes, and those with their antialiasing: the red strokes in
+    the starburst; the black groups (not specks) in each other box, off the trail, with the
+    grey within two of them."""
+    out = {}
+    for sign in BOARD_SIGNS:
+        colours = {p: canvas.colour(0, p, stock=True) for p in paint.points(sign.box)}
+        if sign.colour == "red":
+            red = {p for p, c in colours.items() if _red(c)}
+            out[sign.key] = red, red
+            continue
+        dark = {p for p, c in colours.items()
+                if paint.dark(c, darkest=BOARD_BLACK, spread=BOARD_NEUTRAL)
+                and not _trail(p)}  # fmt: skip
+        strokes = set().union(*(g for g in paint.groups(dark) if len(g) >= BOARD_SPECK))
+        near = paint.grown(strokes, 2, 2, 2, 2)
+        out[sign.key] = strokes, strokes | {
+            p for p, c in colours.items()
+            if p in near and luminance(c) < BOARD_GREY and _neutral(c) and not _trail(p)
+        }  # fmt: skip
+    return out
+
+
+def emboldened(face: Face, entry: Entry, line: str, tall: bool) -> paint.Ink:
+    """`line` in the game's glyphs, each emboldened (and, `tall`, twice as tall), set one after
+    another with a column of air wherever two would touch side by side -- `paint.bold` of a
+    whole line closes the one-column gaps between letters ("m" runs into its neighbours). Two
+    letters may still meet at a corner ("r" and "e"): air there too widens every line and
+    leaves the association's two lines no room under the shooting line (measured)."""
+    out: paint.Ink = set()
+    x = 0
+    for ch in line:
+        if ch == " ":
+            x += face.space
+            continue
+        glyph = ink_of(face, entry, ch)
+        glyph = paint.bold(paint.scaled(glyph, 1, 2) if tall else glyph)
+        while any((gx + x - 1, gy) in out for gx, gy in glyph):
+            x += 1
+        out |= {(gx + x, gy) for gx, gy in glyph}
+        x += paint.extent(glyph)[2]
+    return out
+
+
+def board_ink(face: Face, entry: Entry, sign: Sign) -> paint.Ink:
+    """The English of one sign, its lines split at ` // ` and stacked, in the sign's style."""
+    lines = lines_of(entry)
+    if len(lines) > sign.lines:
+        raise TextureTextError(
+            f"{entry.where}: the board's {sign.key} line is {sign.lines} line(s) and "
+            f"{entry.id} is {len(lines)}; `{LINE_BREAK.strip()}` would not fit"
+        )
+    if not all(line.strip() for line in lines):
+        raise TextureTextError(f"{entry.where}: {entry.id} has an empty line")
+    if sign.big:
+        inks = [emboldened(face, entry, line, BOARD_TALL) for line in lines]
+    else:
+        inks = [ink_of(face, entry, line) for line in lines]
+    return stacked(inks, 2 if sign.big else 1)
+
+
+def board(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]) -> list[ByteEdit]:
+    """A clean plate of the board -- its writing refilled from the board round it, the
+    starburst's yellow and the trail kept -- then the English in the game's glyphs, in the
+    Japanese's own black and red."""
+    text = keyed("tex@M_I23000", entries, [sign.key for sign in BOARD_SIGNS])
+    canvas = paint.Canvas(inv.get(BOARD_TEXTURE))
+    japanese = board_japanese(canvas)
+    strokes = {s.key: found(japanese[s.key][0], f"the board's {s.key} line") for s in BOARD_SIGNS}
+    pens = {colour: pen(canvas, set().union(*(strokes[s.key] for s in BOARD_SIGNS
+                                             if s.colour == colour)))
+            for colour in {s.colour for s in BOARD_SIGNS}}  # fmt: skip
+    everything = set().union(*(both for _, both in japanese.values()))
+    erase = {p for p in paint.grown(everything, 1, 1, 1, 1) if not _trail(p)}
+    x0 = min(s.box[0] for s in BOARD_SIGNS) - BOARD_REACH
+    y0 = min(s.box[1] for s in BOARD_SIGNS) - BOARD_REACH
+    x1 = max(s.box[0] + s.box[2] for s in BOARD_SIGNS) + BOARD_REACH
+    y1 = max(s.box[1] + s.box[3] for s in BOARD_SIGNS) + BOARD_REACH
+    colours = {p: canvas.colour(0, p, stock=True) for p in paint.points((x0, y0, x1 - x0, y1 - y0))}
+    ground = {p for p, c in colours.items() if luminance(c) > BOARD_GROUND and not _trail(p)}
+    left = canvas.fill_from_nearest(erase, ground - erase, reach=BOARD_REACH)
+    if left:
+        raise TextureTextError(f"the board: {len(left)} pixel(s) had no donor, first {left[:3]}")
+
+    # Not board: what the English may not be written over -- the drawing's dark lines (the
+    # gun, the man, the trail, the grass), a group of BOARD_MARK or more dark pixels that is
+    # not the Japanese, but not a speck of dirt; and anything saturated (the hunter, the red
+    # burst) but the yellow starburst, whose edge the black Japanese is painted over too.
+    dark = {p for p, c in colours.items() if luminance(c) < BOARD_GROUND} - everything
+    marks = set().union(*(g for g in paint.groups(dark) if len(g) >= BOARD_MARK))
+    blocked = marks | {
+        p for p, c in colours.items()
+        if _trail(p) or (p not in everything and not _neutral(c) and not _yellow(c))
+    }  # fmt: skip
+
+    for sign in BOARD_SIGNS:
+        entry = text[sign.key]
+        ink = board_ink(face, entry, sign)
+        jx, jy, jw, jh = paint.extent(strokes[sign.key])
+        _, _, w, h = paint.extent(ink)
+        want = ({"left": jx, "right": jx + jw - w, "centre": jx + (jw - w) // 2}[sign.align],
+                jy + (jh - h) // 2)  # fmt: skip
+        bx, by, bw, bh = sign.room
+        ring = paint.grown(ink, 1, 1, 1, 1)
+        # Where the Japanese was, or the nearest place in its room clear of the drawing and
+        # a pixel clear of the English already set.
+        spots = sorted(
+            ((x, y) for y in range(by, by + bh - h + 1) for x in range(bx, bx + bw - w + 1)),
+            key=lambda at: (abs(at[0] - want[0]) + abs(at[1] - want[1]), at),
+        )
+        clear = (a for a in spots if blocked.isdisjoint({(x + a[0], y + a[1]) for x, y in ring}))
+        at = next(clear, None)
+        if at is None:
+            raise TextureTextError(
+                f"{entry.where}: {entry.text!r} is {w}x{h} px and the board's {sign.key} "
+                f"space ({bw}x{bh} px) has no place for it clear of the drawing; nothing is "
+                f"cut to fit (README)"
+            )
+        canvas.stamp(at, ink, pens[sign.colour])
+        blocked |= {(x + at[0], y + at[1]) for x, y in ink}
+    return canvas.patches()
+
+
 __all__ = [
+    "BOARD_SIGNS",
+    "BOARD_TEXTURE",
     "NOTE",
     "NOTE_TEXTURE",
     "Plane",
+    "board",
     "coverage",
     "note",
     "note_japanese",

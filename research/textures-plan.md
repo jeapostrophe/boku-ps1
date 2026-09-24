@@ -5,8 +5,9 @@
 = 197**. (Ruling 2026-09-22, Jay: the model-kit box `M_I19000` stays Japanese — the narrator
 says what it is — and 2026-09-23, `GFX-09`: the beach notice is frontal, not at an angle, and is
 in both variants of its map, so it is **P** twice; and `GFX-10`: the epilogue's closing card is translated, **P**;
-and 2026-09-24, `GFX-08`: Saori's farewell note is built programmatically, **P** — the
-counts below are now **142 P, 26 R, 0 S, 30 N** of 198; the tables keep the audit's original
+and 2026-09-24, `GFX-08`: Saori's farewell note, the hunting-association board, the keep-out
+sign and the bug-trading notebook's cover are built programmatically, **P** — the counts below
+are now **146 P, 22 R, 0 S, 30 N** of 198; the tables keep the audit's original
 split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
@@ -175,7 +176,7 @@ Jay's recollection is right, and it is the only such texture on the disc.
   English is **new text** — the note and its signature, `tex@M_I14000.note` / `.signature` —
   and was checked against the Japanese for Saori's voice.
 
-### The three other close-ups — the hunting board **R**, the keep-out sign **P**, the model-kit box **N**
+### The three other close-ups — the hunting board **P**, the keep-out sign **P**, the model-kit box **N**
 
 These are `M_I*` **close-up screens**: the player entered them by choosing to examine the thing,
 which is the case for translating them; the model-kit box stays Japanese by Jay's ruling
@@ -183,6 +184,8 @@ which is the case for translating them; the model-kit box stays Japanese by Jay'
 
 * `M_I23000` — the hunting-association warning board: an alarm word in a starburst, two large
   hand-painted lines, and the association's name in the corner, over a weathered frontal board.
+  **P** since 2026-09-24 (Jay: a clean plate, keeping the explosion's colours, then our
+  glyphs): [texture-recipes.md](texture-recipes.md) § `M_I23000`.
 * `M_I18000` (2 members, 1 image) — the hand-lettered "keep out!" sign hung on a door: flat
   white panel, frontal, marker lettering. *Now **P*** (Jay, 2026-09-24, GFX-08 G8-I18 b): the
   marker painted out and "Don't come in!" set in the game's glyphs
@@ -396,7 +399,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 4 | `tex@DOPA1`, `tex@MOPA1`, `tex@TOPA1` | 3 book cover titles + the insect book's author-and-photographer credit | 4 strings |
 | 5 | `btn@PK_ITM.title`, `btn@PK_ITM.footer` | radio-exercise attendance card: title + footer line | 2 strings |
 | 6 | `tex@M_I14000.note`, `.signature` | **Saori's farewell note** — the highest-value string here | ~25 chars, 4 columns |
-| 7 | `tex@M_I23000.*` | hunting-association warning board | 4 short strings |
+| 7 | `tex@M_I23000.danger`, `.houses`, `.shoot`, `.association` | hunting-association warning board | 4 short strings |
 | 8 | `tex@M_I18.0` | the keep-out sign, "Don't // come in!" | 2 lines |
 | 9 | `tex@M_I19000.0` | model-kit product name — left Japanese (**N**, Jay, 2026-09-22) | none |
 | 10 | `tex@M_C15.0`, `.1` | beach notice board, painted onto the board in both map variants | 2 lines |

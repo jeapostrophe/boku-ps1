@@ -31,3 +31,19 @@ tex@M_I18.0	Don't // come in!
 # glyphs as its 虫 is large, the other two at their own size. 虫交換 is "bug trading"
 # (glossary § 4b; Guts: "everybody ... trades them").
 tex@M_S01000.0	Bug // Trading // Notebook
+
+# --- M_I23000: the hunting association's warning board (PLAN GFX-08), the close-up of the
+# board on map A14 (scene E4045). A clean plate is made of the board -- the writing refilled
+# from the board round it, the starbursts' colours and the bullet trail kept -- and the English
+# set in the game's glyphs, in the Japanese's own red and black: the three large lines twice as
+# tall and emboldened, the corner as the glyphs are. One line each (the houses line sits
+# between the starburst and the trail, research/texture-recipes.md § M_I23000); `association`
+# is two lines split at ` // `.
+# The build puts each where its Japanese was, or the nearest place clear of the drawing, and
+# refuses one with no such place. The Japanese: danger! / private houses near, / caution:
+# firing! / prefectural hunting association. "Fire", not "Shoot" (reviewed 2026-09-24: "Shoot
+# with care!" reads better but does not fit); "Prefectural" whole, "Assn." abbreviated.
+tex@M_I23000.danger	DANGER!
+tex@M_I23000.houses	Homes nearby,
+tex@M_I23000.shoot	Fire with care!
+tex@M_I23000.association	Prefectural // Hunting Assn.

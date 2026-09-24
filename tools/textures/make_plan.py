@@ -113,10 +113,13 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_M_FILES\.BIN_M_I23000\.BIN__",
         1,
-        "R",
+        "P",
         "hunting-association warning board: alarm word, 2 painted lines, association name",
         "new (4 short strings)",
-        "close-up screen; board is frontal and near-flat but hand-painted and weathered",
+        "close-up screen; frontal weathered board: a clean plate refilled from the board "
+        "round the writing (the starbursts and the bullet trail kept), the English in the "
+        "game's glyphs in the Japanese's red and black (Jay, 2026-09-24; "
+        "research/texture-recipes.md M_I23000)",
     ),
     (
         r"^_DATA_M_FILES\.BIN_M_I18000\.BIN__",

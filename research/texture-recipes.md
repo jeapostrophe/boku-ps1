@@ -290,6 +290,60 @@ exactly the English, once; near where the Japanese was nothing is still red and 
 is left; and no colour of a picture line is refilled into the ground. On Beetle, the two tests
 named above show every changed texel exact (the stock image fails).
 
+## `M_I23000` — the hunting association's warning board (PLAN `GFX-08`)
+
+`_DATA_M_FILES.BIN_M_I23000.BIN__000354`, 320×240 8bpp, one CLUT: the whole close-up screen of
+the board on map `A14` (scene `E4045`). A frontal, weathered white board: キケン! in red on a
+yellow starburst, 民家近し、 and 発砲注意! in ~20 px black painted strokes, 県狩猟組合 small in
+the corner, and a cartoon of a hunter whose shot hits a man, its gun and two-line bullet trail
+running between the two black lines. Jay (2026-09-24): a clean plate with the writing
+removed, keeping the explosion's colours (an image model had changed them), then our text in
+the game's glyphs.
+
+**The clean plate.** `boku/texture_closeups.py` `board`, one `BOARD_SIGNS` row per piece of
+writing: the box its Japanese is found in and the room its English may use (the thresholds
+and the trail's fit are the `BOARD_*` constants, each with its measurement). The Japanese is
+the red in the starburst's box, and in the other boxes the dark near-neutral groups that are
+not specks of weathering, with the grey round them. The bullet trail (`BOARD_TRAIL`, a band
+fitted to its two lines) is never taken for type. The writing, grown a pixel, is refilled from
+the nearest pale board pixel (a row away counting as two columns, `Canvas.fill_from_nearest`),
+so a stroke across the yellow burst is refilled with the burst's own yellows and one on the
+board with the board's whites and weathering; the trail, the gun, the man and the dirt are
+never donors, and never change.
+
+**The English**, in the Japanese's own black and red (`pen`: the entry the darkest tenth of its
+strokes use): the three large lines are the game's glyphs twice as tall and emboldened, each
+letter set on its own so a column of air stays wherever two would touch side by side
+(`emboldened`; `paint.bold` of a whole line runs "m" into its neighbours). Twice the glyphs'
+size does not fit: "Homes nearby," would be 178 px where the board has ~90 between the burst
+and the trail. At their own size, emboldened, they read but are half the Japanese's height
+(`BOARD_TALL = False`, the alternative shown to Jay). The corner is the glyphs as they are,
+two lines. Each line goes where its Japanese was — the houses line from its left edge, the
+association from its right, the others centred — or the nearest place in its room clear of
+the drawing: no pixel of the English, or the pixel round it, on the trail, on a group of dark
+pixels big enough to be drawing and not the Japanese, or on anything saturated but the burst's
+yellows (the black type is painted over the burst's lower spike, as 民 is), and a pixel clear
+of the English already set. The trail pushes the shooting line ~9 rows below its Japanese,
+and the corner's two lines go under it. A line with no such place is refused, and so is a
+line break where a sign has one line.
+
+**Reaching it.** As for `I14`: `g_movie_return_map` poked to `I23` during the opening movie
+(`--poke 5300:0x80036588=49323300`) lands day 1 on the board, drawn exactly at the screen's
+top-left; Boku is not seen on it.
+
+**Proof.** `tests/test_real_texture_closeups.py`: each line's English, as the build sets it
+from the tracked string and the disc's glyphs, is painted whole, once, in its room and paint,
+and no group of ten or more pixels of that paint is left in any box but the English and the
+trail — the trail fitted by the test itself where it crosses open board, not taken from the
+recipe; the stock board fails. Only the boxes and rooms changed; the trail's lines are the
+original's; the starburst's refill is only entries the burst had, none red, and nine in ten of
+the red Japanese's pixels are yellow again (the rest, the top of its "!", ran onto the board).
+Too wide a line, a line break where a sign has one line, an empty line, and a room the trail
+crosses (and that the same line takes once the trail is moved away) are refused.
+`tests/test_texture_closeups.py` checks `emboldened`. On Beetle
+(`test_a_closeup_on_beetle_is_the_written_english`) every texel the build changed shows its
+colour exactly; the stock image fails.
+
 ## Buttons — stone "Back" plaques and speech balloons
 
 `boku/texture_buttons.py`; one row of `BUTTONS` per button, its English `btn@<member>.<key>` in

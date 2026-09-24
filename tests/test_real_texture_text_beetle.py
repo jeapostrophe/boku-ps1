@@ -194,33 +194,38 @@ def assert_on_screen(shot, inv, blob, texture_id: str, clut: int, box, at) -> No
     assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"
 
 
-NOTE_WARP = "5300:0x80036588=49313400"
-"""`g_movie_return_map` poked to `I14` during the opening movie, as `BEACH_WARP` does for `C15`:
-day 1 lands on Saori's note, the close-up drawn whole at the screen's top-left, with Boku
-standing on it (the real route, examining her camp from day 28, is `E2860`)."""
-NOTE_SHOT = 6390
-NOTE_BOKU = (144, 55, 31, 66)
-"""Where Boku stands after the warp: x 146-172, y 57-118 on the stock image, and two pixels
-round it."""
+CLOSEUP_SHOT = 6390
+CLOSEUPS = {
+    "note": ("49313400", tc.NOTE_TEXTURE, [(144, 55, 31, 66)]),
+    "board": ("49323300", tc.BOARD_TEXTURE, []),
+}
+"""Close-up map, texture, and where Boku stands on it. `g_movie_return_map` poked to the
+close-up's map (`I14`, `I23`) during the opening movie, as `BEACH_WARP` does for `C15`: day 1
+lands on the close-up, drawn whole at the screen's top-left. On Saori's note Boku stands at x
+146-172, y 57-118 (skipped with two pixels round him); on the board he is not seen. The real
+routes are examining her camp from day 28 (`E2860`) and the board on `A14` (`E4045`)."""
 
 
-def test_saoris_note_on_beetle_is_the_written_english(
-    beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
+@pytest.mark.parametrize("closeup", sorted(CLOSEUPS))
+def test_a_closeup_on_beetle_is_the_written_english(
+    closeup, beetle, texture_image, texture_inventory, texture_patched, disc_dir,
+    tmp_path_factory,
 ):  # fmt: skip
+    warp, texture, boku = CLOSEUPS[closeup]
     core, system = beetle
-    work = tmp_path_factory.mktemp("note-beetle")
+    work = tmp_path_factory.mktemp(f"{closeup}-beetle")
     args = [
         sys.executable, str(RUNNER), str(texture_image),
         "--core", core, "--system", system, "--work", str(work),
-        "--frames", str(NOTE_SHOT), "--shot", f"{NOTE_SHOT}:note",
+        "--frames", str(CLOSEUP_SHOT), "--shot", f"{CLOSEUP_SHOT}:{closeup}",
         "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
-        "--poke", NOTE_WARP,
+        "--poke", f"5300:0x80036588={warp}",
     ]  # fmt: skip
     subprocess.run(args, check=True, capture_output=True, timeout=600)
-    shot = read_png((work / "note.png").read_bytes())
+    shot = read_png((work / f"{closeup}.png").read_bytes())
     n, wrong = compare(
-        shot, texture_inventory, texture_patched, tc.NOTE_TEXTURE, 0, (0, 0, 320, 240), (0, 0),
-        skip=[NOTE_BOKU],
+        shot, texture_inventory, texture_patched, texture, 0, (0, 0, 320, 240), (0, 0),
+        skip=boku,
     )  # fmt: skip
     assert n > 1000, "the build changed too few texels where the check looked"
     assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"

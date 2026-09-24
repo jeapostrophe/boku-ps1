@@ -10,7 +10,8 @@ import pytest
 
 from boku import texture_closeups as tc
 from boku import texture_paint as paint
-from boku.texture_text import TextureTextError
+from boku.texture_text import Entry, TextureTextError
+from boku.typeset import Glyph, PixelFace
 
 TURNED = tc.Plane(
     size=(60, 40),
@@ -115,3 +116,17 @@ def test_coverage_reaches_ink_that_does_not_start_at_the_origin():
     flat = tc.Plane(size=(20, 20), corners=((0, 0), (20, 0), (20, 20), (0, 20)))
     ink = {(3, 3), (3, 11)}
     assert tc.coverage(flat, ink, (0.0, 0.0)) == {(3, 3): 1.0, (3, 11): 1.0}
+
+
+def test_emboldened_letters_keep_a_column_of_air_between_them():
+    """Two one-column letters a column apart: `paint.bold` of the line joins them into one
+    block; `emboldened` sets each bold letter and moves the next on until a column of air is
+    between them -- and, tall, doubles every row."""
+    bar = Glyph(1, tuple((0,) for _ in range(4)))
+    face = PixelFace("t", 4, 5, 2, {"l": bar})
+    entry = Entry("tex@T.x", "ll", "t:1")
+    assert {x for x, _ in paint.bold(face.ink("ll"))} == {0, 1, 2, 3}
+    for tall, rows in ((False, 4), (True, 8)):
+        ink = tc.emboldened(face, entry, "ll", tall)
+        assert {x for x, _ in ink} == {0, 1, 3, 4}
+        assert {y for _, y in ink} == set(range(rows))

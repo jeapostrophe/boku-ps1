@@ -155,8 +155,10 @@ def stamp(pixels: bytearray, width: int, at: tuple[int, int], ink: Ink, index: i
         pixels[(ay + y) * width + ax + x] = index
 
 
-def scaled(ink: Ink, n: int) -> Ink:
-    return {(x * n + i, y * n + j) for x, y in ink for i in range(n) for j in range(n)}
+def scaled(ink: Ink, n: int, ny: int | None = None) -> Ink:
+    """`ink` n times as wide and `ny` (default n) times as tall, every pixel a block."""
+    ny = n if ny is None else ny
+    return {(x * n + i, y * ny + j) for x, y in ink for i in range(n) for j in range(ny)}
 
 
 def bold(ink: Ink) -> Ink:

@@ -817,6 +817,13 @@ def closeup_note(archive: Archive, inv: Inventory, face: Face, entries: Sequence
     return texture_closeups.note(archive, inv, face, entries)
 
 
+def closeup_board(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """The hunting association's warning board (`boku.texture_closeups`)."""
+    from boku import texture_closeups
+
+    return texture_closeups.board(archive, inv, face, entries)
+
+
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
@@ -824,6 +831,7 @@ FAMILIES: Mapping[str, Family] = {
     "tex@M_C15": beach_notice,
     "tex@M_I14000": closeup_note,
     **{f"tex@{name}": marker_sign(name, sign) for name, sign in MARKER_SIGNS.items()},
+    "tex@M_I23000": closeup_board,
     "nikki@": diary,
     "tex@OTI": credits_strip,
     "btn@": buttons,
