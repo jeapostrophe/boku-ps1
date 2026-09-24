@@ -518,7 +518,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       | `day01.txt`–`day31.txt`, `shared.txt` | reviewed | the `TRN-10` whole-game session, nine independent reviews against the Japanese (160 findings, all applied; days 1–7 and shared take the earlier reviewed line where it was better); Jay's comments kept; Jay read days 1–2 in play on the earlier build |
       | arrays / menus / overlays (308 lines) | reviewed | the same session and review; on screen as `PIPE-07` places them |
       | voice-only clips, movie narration | reviewed | `translation/clips.txt`, `translation/movies.txt` (`VO-04`, `FMV-02`) — not part of the session |
-      | diary entries (94), encyclopedia spreads | undrafted / drafted | `GFX-04` (3 sample entries), `GFX-06` (a draft in `work/gfx06/`) |
+      | diary entries (93 + the dummy `NIKKI_000`), encyclopedia spreads (17) | reviewed | the maximal session 2026-09-24: whole-game packet, then each page with the scene that proposes it (`PROG 20` = `diary_propose`); an independent review against the page images (13 diary corrections; books judged per field against `GFX-06`'s text); every entry fits, none cut; `NIKKI_072`, `NIKKI_064` and both books seen on Beetle; `translation/textures/diary.txt`, `books.txt` |
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
       committed scene by scene. Harmed: the player.
@@ -594,7 +594,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       wider than a line, an undrawable character); the date strip stays (Jay, 2026-09-21);
       `./make.sh textures check` is the per-page lint. Proven on Beetle by
       `tests/test_real_texture_text_beetle.py`; how to reach the diary is in
-      `research/diary-redraw.md`. Three sample entries; the other 91 are `TRN-04`'s table row.
+      `research/diary-redraw.md`. All 93 entries since 2026-09-24 (`TRN-04`); the game face draws its own hyphen (`GameFace.HYPHEN_WIDTH`).
 - [x] **[GFX-05]** **Is the insect book's body text already a line?** MEASURED 2026-09-21
       (`tools/redux/book-pokes.lua`, `work/gfx05/`): **no — (a)**. The `MZKAN` spreads are
       `ZUKAN.OVL` mode 13 and draw no glyph; `hhon@5328` is drawn only in `HHON.OVL` mode
