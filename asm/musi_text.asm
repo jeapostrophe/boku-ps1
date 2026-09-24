@@ -170,6 +170,7 @@ FIGHTERS_A     equ 23               ; the sumo types: 23..30, the eight beetles 
 FIGHTERS_A_N   equ 8
 FIGHTERS_B     equ 56               ; ... then 56..60, the females and the mantis
 FIGHTERS_B_N   equ 5
+EXCHANGE_INDEX equ 16               ; the list: an item number per type, then the items
 
 vwf_exchange_entry:                 ; t0 = the list; then the three instructions the hook took
     lui     at, hi(vwf_exchange_names)
@@ -195,7 +196,7 @@ vwf_name_before_sym:                ; (type, -, y)
     lw      s2, lo(vwf_exchange_names)(at)
     sw      zero, 16(sp)            ; down = 0
     beqz    s2, @@full
-    addiu   s3, s0, -FIGHTERS_A     ; s3 = the type's item in the list
+    addiu   s3, s0, -FIGHTERS_A     ; s3 = the type's slot in the list's index
     sltiu   at, s3, FIGHTERS_A_N
     bnez    at, @@listed
     nop
@@ -204,6 +205,9 @@ vwf_name_before_sym:                ; (type, -, y)
     beqz    at, @@full
     addiu   s3, s3, FIGHTERS_A_N    ; unused on the way to @@full
 @@listed:
+    addu    t0, s2, s3
+    lbu     s3, 0(t0)               ; the type's item, from the list's index
+    addiu   s2, s2, EXCHANGE_INDEX  ; the items
     move    a0, s2
     move    a1, s3
     addiu   a2, zero, OFFSCREEN_X

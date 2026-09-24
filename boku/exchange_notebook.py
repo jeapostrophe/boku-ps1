@@ -6,9 +6,10 @@ it (`vwf_name_before_sym`, `asm/musi_text.asm`), with the size badge on its left
 notebook alone (Jay, 2026-09-24: "Miyama Stag", not "Miyama Stag Beetle"), a row
 `exe@8003D2E0.<n>@exchange` in `arrays.txt`; every other screen keeps the full name.
 
-The build writes the versions as one list with an item per sumo fighter type (`FIGHTERS`),
-each ended by `0x8000` and empty for a type with no version, anywhere resident; and hooks the
-notebook's entry (`drawer_hook`) to `vwf_exchange_entry` with `t0` at the list.
+The build writes the versions as one list anywhere resident -- `INDEX` bytes, the item each
+sumo fighter type (`FIGHTERS`) draws, then an item per line those types draw, each ended by
+`0x8000` and empty for a line with no version -- and hooks the notebook's entry
+(`drawer_hook`) to `vwf_exchange_entry` with `t0` at it.
 """
 
 from __future__ import annotations
@@ -33,8 +34,10 @@ NOTEBOOK = ("musi", 0x8007E670)
 """The notebook's page, whose entry the build hooks."""
 ROUTINE = "vwf_exchange_entry"
 FIGHTERS = tuple(sorted(TYPES.values()))
-"""The list's items, in order: the sumo fighter types (`FIGHTERS_A`, `FIGHTERS_B` in
+"""The list's index, in order: the sumo fighter types (`FIGHTERS_A`, `FIGHTERS_B` in
 `asm/musi_text.asm`)."""
+INDEX = 16
+"""The index's bytes, padded so the items start on a halfword (`EXCHANGE_INDEX`)."""
 REMAP_TYPES, REMAP_LINES, REMAP_COUNT = 0x80036708, 0x80036710, 4
 """`g_insect_name_remap`: four halfword types (the females, 56-59) and the four lines
 `sysmsg_line_draw` (`0x80037BA8`) draws for them."""
@@ -81,5 +84,8 @@ def undrawn(archive: Archive, line_ids: Iterable[str]) -> tuple[str, ...]:
 def names_blob(archive: Archive, versions: Mapping[str, Sequence[int]]) -> bytes:
     """The list the notebook draws from, given every version's words by id (none `undrawn`)."""
     by_line = {int(base_of(line).rpartition(".")[2]): cells for line, cells in versions.items()}
-    items = [by_line.get(line, (END_WORD,)) for line in line_of_type(archive).values()]
-    return b"".join(words_to_bytes(item) for item in items)
+    assert len(FIGHTERS) <= INDEX, "the index would run into the items"
+    drawn = line_of_type(archive)
+    lines = list(dict.fromkeys(drawn.values()))  # the females share their males' items
+    index = bytes(lines.index(drawn[kind]) for kind in FIGHTERS).ljust(INDEX, b"\0")
+    return index + b"".join(words_to_bytes(by_line.get(line, (END_WORD,))) for line in lines)
