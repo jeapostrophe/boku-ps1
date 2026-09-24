@@ -955,6 +955,9 @@ class BuildResult:
     box: BoxSpec
     translation: str
     binary_patches: tuple[ByteEdit, ...]
+    encoder_file: str | None = None
+    """The file the measuring font was read from (a cell map or an edit set), absolute;
+    `None` for the stock cells."""
     sector_patches: tuple[SectorEdit, ...] = ()
     arrays: ArrayPlan | None = None
     """The code-file arrays this build moved whole (`boku.array_relocate`)."""
@@ -993,6 +996,7 @@ def build(
     select_row: BoxSpec = SELECT_ROW,
     array_regions: Sequence[Region] = DEAD_REGIONS,
     label_routines: Mapping[str, int] | None = None,
+    encoder_file: Path | None = None,
 ) -> BuildResult:
     """Read an import and a translation, and write a patched image (`PIPE-04`).
 
@@ -1080,6 +1084,7 @@ def build(
         binary_patches=tuple(binary_patches),
         sector_patches=tuple(sector_patches),
         arrays=moved,
+        encoder_file=str(encoder_file) if encoder_file is not None else None,
     )
     if dry_run:
         check_before_writing(source, out_dir, edits, what=name, sectors=sectors)
@@ -1307,6 +1312,7 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
         "translation": result.translation,
         "translation_problems": list(result.source_problems),
         "encoder": result.encoder,
+        "encoder_file": result.encoder_file,
         "box": {"name": result.box.name, "width": result.box.width, "lines": result.box.lines},
         "lines_written": sorted(line.line_id for line in result.written_lines),
         "lines_refused": {
@@ -1485,8 +1491,10 @@ def main_build(
                     f"pen. Drop --cells to measure in the font being installed."
                 )
             encoder: Encoder = chosen
+            encoder_file = Path(cell_map).resolve()
         else:
             encoder = installed or StockEncoder.load()
+            encoder_file = Path(vwf).resolve() if installed is not None else None
         result = build(
             source=Path(source) if source else DEFAULT_IMAGE,
             out_dir=out_dir,
@@ -1504,6 +1512,7 @@ def main_build(
             select_row=(edit_set.select_row if edit_set is not None else SELECT_ROW),
             array_regions=(edit_set.array_regions if edit_set is not None else DEAD_REGIONS),
             label_routines=(edit_set.label_routines if edit_set is not None else None),
+            encoder_file=encoder_file,
         )
     except (
         ArchiveError,

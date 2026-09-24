@@ -168,7 +168,7 @@ def test_the_lint_measures_selects_in_the_row_its_cell_map_s_build_drew(tmp_path
         encoding="utf-8",
     )
     assert renderer_for("cellmap", edits)[1].width == 200
-    assert renderer_for("stock", edits)[1] == SELECT_ROW, "the stock renderer is the default"
+    assert renderer_for("stock", edits)[1] == SELECT_ROW, "the stock renderer's row is retail's"
 
 
 def test_a_select_s_question_is_not_counted_as_an_option(tmp_path):

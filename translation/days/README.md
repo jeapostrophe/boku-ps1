@@ -63,8 +63,8 @@ are `./make.sh mockup`'s.
 ## The files
 
 There is no Japanese in these files, notes included (`boku save-event` refuses an answer
-that holds any). A page that does not fit the band is not the translator's to flag: `boku lint
---encoder cellmap` measures every page and `./make.sh mockup` draws it, so the reader's *over*
+that holds any). A page that does not fit the band is not the translator's to flag: `./make.sh
+lint-translation` measures every page and `./make.sh mockup` draws it, so the reader's *over*
 column, which counts `# OVERFLOW` notes, counts only notes someone added by hand. With an
 imported disc,
 `python3 work/rec05/scenes.py --dump 171 184` prints the source beside them.
@@ -72,7 +72,7 @@ imported disc,
 A unit's state is one of **undrafted → drafted → reviewed → checked → rendered → finalized**:
 drafted by a translator; reviewed by an independent agent against the Japanese; checked once Jay
 has read it and his comments are applied; rendered once our own layout says every page would
-display (`boku lint --encoder cellmap`'s pixel fit, and the page mock-ups `./make.sh mockup` draws);
+display (`./make.sh lint-translation`'s pixel fit, and the page mock-ups `./make.sh mockup` draws);
 finalized once he has seen it in the game, formatted and displayed correctly. `PLAN.md` `TRN-04` holds the table.
 
 | file | events | status |

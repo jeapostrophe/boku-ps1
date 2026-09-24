@@ -6,7 +6,7 @@ or a wider box, never a shorter translation (README § "Who this is for"), so a 
 reports what is over and by how much and stops there; nothing here rewrites English.
 
     ./make.sh lint-translation                  # translation/days + translation/samples
-    ./make.sh lint-translation --encoder cellmap    # in the VWF prototype's own pixels
+    ./make.sh lint-translation --encoder stock  # in the retail 14-px full-width cells
 
 What it checks, and where each rule comes from
 ----------------------------------------------
@@ -908,8 +908,9 @@ def renderer_for(kind: str, cells: Path | None) -> tuple[Encoder, BoxSpec]:
     path = Path(cells) if cells is not None else DEFAULT_CELLS
     if not path.is_file():
         raise LayoutError(
-            f"--encoder cellmap needs a character -> cell map and {path} is not there; "
-            f"run `./make.sh build-days`, or give --cells FILE to measure another font"
+            f"the lint measures in the font the build installs, {path}, which is not "
+            f"there; run `./make.sh build-days`, give --cells FILE to measure another font, "
+            f"or --encoder stock for the retail cells"
         )
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
@@ -1126,11 +1127,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument(
         "--encoder",
         choices=("stock", "cellmap"),
-        default="stock",
+        default="cellmap",
         help=(
-            "which font's widths to measure in: the game's own full-width Latin cells at a "
-            "fixed 14 px, or the variable-width cell map TXT-05's font build emits "
-            "(default: stock)"
+            "which font's widths to measure in: the variable-width cell map the build "
+            "installs (--cells), or the game's own full-width Latin cells at a fixed 14 px, "
+            "which the VWF build no longer draws (default: cellmap)"
         ),
     )
     parser.add_argument(

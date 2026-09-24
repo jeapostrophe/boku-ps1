@@ -23,6 +23,7 @@ Everything skips cleanly without `disc/` or without `build/days/`; the repo ship
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -51,6 +52,8 @@ from boku.disc import DiscImage
 from boku.glyphs import words_of
 from boku.importer import IMAGE_SIZE
 from boku.insect_box import is_copy
+from boku.layout import CellMapEncoder
+from boku.lint import add_arguments, renderer_for
 from boku.reinsert import check_disjoint
 from boku.relocate import MOVIE_BLOCK_RESERVE
 from boku.sites import RESIDENT_BLOCK_ADDRS, Walk, resident_block_at
@@ -234,6 +237,19 @@ def test_the_days_build_applied_the_renderer_patch_and_a_translation(days_manife
     assert days_manifest["binary_patches"], "no renderer patch went into this image"
     assert days_manifest["lines_written"], "no line went into this image"
     assert days_manifest["members_rebuilt"], "nothing grew; --skip-unfitted dropped everything"
+
+
+def test_the_lint_measures_by_default_in_the_font_the_days_build_measured_in(days_manifest):
+    """`./make.sh lint-translation` with no switches must charge a line what the build
+    charges it: the lint's default encoder has the cells of the file the days build read its
+    font from (the manifest's `encoder_file`), not the retail 14-px cells."""
+    args = add_arguments(argparse.ArgumentParser()).parse_args([])
+    linted = renderer_for(args.encoder, args.cells)[0]
+    built = days_manifest.get("encoder_file")
+    assert built, f"no cell map in the manifest ({days_manifest['encoder']!r}): rerun build-days"
+    assert Path(built).is_absolute(), f"{built} depends on where the reader runs"
+    assert isinstance(linted, CellMapEncoder), f"the lint's default is the {linted.name}"
+    assert linted.cells == CellMapEncoder.from_json(Path(built)).cells
 
 
 def test_the_built_image_is_the_same_length_and_the_same_filesystem(days_image: Path):

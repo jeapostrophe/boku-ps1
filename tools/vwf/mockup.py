@@ -14,7 +14,7 @@ insert:
 * **the lines** are `boku.build.lay_out`'s -- the same wrap, the same label and marks, the
   same encoder -- over the same walk, so a break drawn here is the break the image gets;
 * **the widths and cells** are the edit set's character map (`build/vwf/edits.json`, the
-  file `boku lint --encoder cellmap` and `boku build --vwf` read);
+  file `boku lint` and `boku build --vwf` read);
 * **the pixels** are the stock font sheet from your import with the edit set's font-sheet
   edits applied -- the sheet the image is given -- read through the font build's own
   `Sheet`;
