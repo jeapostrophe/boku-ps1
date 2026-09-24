@@ -55,13 +55,14 @@ EDGE = 2
 its cues: the edges sit on the speech, the splits only on the text."""
 
 
-SUBTITLED_KINDS = frozenset({"narration", "song"})
-"""The transcript `kind`s a cue subtitles: the song is sung and subtitled too (FMV-02)."""
+SUBTITLED_KINDS = frozenset({"narration", "song", "voice"})
+"""The transcript `kind`s a cue subtitles: the song is sung and subtitled too (FMV-02), and a
+character's `voice` (the father in M27, VO-05)."""
 NARRATION = "narration"
 """The `kind` of the adult Boku's narration, whose cues take `NARRATION_MARKS` (FMV-07)."""
 NARRATION_MARKS = ("『", SPEECH_MARKS["『"])
-"""What the dialogue draws around narration (`boku.layout.SPEECH_MARKS`); each narrated cue
-opens and closes with them, which no one reads, so `characters` does not count them."""
+"""What the dialogue draws around narration (`boku.layout.SPEECH_MARKS`), one pair per
+narrated sentence (`_marks`); no one reads them, so `characters` does not count them."""
 
 
 @dataclass(frozen=True)
@@ -123,10 +124,12 @@ def problems(
     cues = sorted(cues, key=lambda cue: cue.start)
     owner = assign(cues, segments)
     found: list[Problem] = []
-    opening, closing = NARRATION_MARKS
 
     def say(cue: CueRow, check: str, message: str) -> None:
         found.append(Problem(cue.line, cue.key, check, message))
+
+    for n, message in sorted(_marks(cues, owner, segments).items()):
+        say(cues[n], "cue-marks", message)
 
     for n, cue in enumerate(cues):
         if n and cue.start <= cues[n - 1].end:
@@ -143,15 +146,6 @@ def problems(
                 say(cue, "cue-unspoken", "overlaps no spoken segment")
             continue
         seg = segments[seg_index]
-        marks = sum(cue.text.count(mark) for mark in NARRATION_MARKS)
-        wrapped = marks == 2 and cue.text.startswith(opening) and cue.text.endswith(closing)
-        if not (wrapped if seg.kind == NARRATION else marks == 0):
-            say(
-                cue,
-                "cue-marks",
-                f"{seg.kind} at {seg.start}: "
-                + ("wrap it in 『 』" if seg.kind == NARRATION else "no 『 』"),
-            )
         mine = [m for m, index in enumerate(owner) if index == seg_index]
         # A caption's frames are the picture's: no neighbour's drift is excused by them.
         before = cues[n - 1] if n else None
@@ -189,6 +183,41 @@ def problems(
                 Problem(0, f"@{seg.start}", "speech-uncued", f"spoken {seg.start}-{seg.end}")
             )
     return found
+
+
+def _marks(
+    cues: Sequence[CueRow], owner: Sequence[int | None], segments: Sequence[Segment]
+) -> dict[int, str]:
+    """Cue index -> what is wrong with its narration marks. A narrated sentence opens 『 at
+    the start of its first cue and closes 』 at the end of its last (FMV-09); no other cue
+    carries a mark or falls inside an open sentence. A sentence's fault is named once: on
+    the first cue it wrongly covers, else at the movie's end."""
+    opening, closing = NARRATION_MARKS
+    wrong: dict[int, str] = {}
+    sentence = named = False  # a sentence is open; its fault is already named
+    last = None
+    for n, cue in enumerate(cues):
+        if owner[n] is None and not cue.caption:
+            continue  # `cue-unspoken` already names it; whose words it holds is unknown
+        last = n
+        opens, closes = cue.text.startswith(opening), cue.text.endswith(closing)
+        if cue.text.count(opening) > opens or cue.text.count(closing) > closes:
+            wrong[n] = "a mark inside the text: 『 only opens a cue, 』 only ends one"
+        if owner[n] is None or segments[owner[n]].kind != NARRATION:
+            if opens or closes:
+                wrong[n] = "not narration: no 『 』"
+            elif sentence and not named:
+                wrong[n] = "not narration, inside a narrated sentence: close it before this cue"
+                named = True
+            continue
+        if sentence and opens:
+            wrong[n] = "opens 『 inside a sentence already open"
+        elif not sentence and not opens:
+            wrong[n] = "narration outside a sentence: open it with 『"
+        sentence, named = not closes, False
+    if sentence and not named and last is not None:
+        wrong.setdefault(last, "the movie ends inside a narrated sentence: close it with 』")
+    return wrong
 
 
 def retime(cues: Sequence[CueRow], segments: Sequence[Segment], length: int) -> list[CueRow]:

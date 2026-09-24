@@ -333,7 +333,8 @@ is milestone 1 as measured, with § 8's changes named where they apply.
 
 **Where the code is.** The island `0x80012E04…0x80013070` (`text-renderer.md` § 6 candidate
 2) held all three routines in milestone 1 — 620 of 620 bytes. Since § 8 it holds
-`movie_sub_frame_no`, `movie_sub_frame` and `movie_sub_blit` (484 bytes; the addresses are the
+`movie_sub_frame_no`, `movie_sub_frame` and `movie_sub_blit` (556 bytes since `FMV-09`'s
+solid path; the addresses are the
 build's, in `edits.json` → `movie_subtitles.islands`), and the loader is in the second
 island. The island is not assembled under `ORIGINAL` (dead retail code has no stock
 claim to check, and restating it would put 620 bytes of the executable in the repo). Its
@@ -547,8 +548,8 @@ reviewable; both write only under `work/`:
   (0.5 s) of the speech, its last cue does not end more than a frame before the speech does
   (abutting segments share that frame), no cue is on screen under 23 frames (1.5 s), none
   asks more than 17 characters a second (the translator's `|` counts as one space, the
-  narration marks as nothing), and a cue is wrapped in `『 』` exactly when its segment is
-  narration (`FMV-07`). Reading
+  narration marks as nothing), and each narrated sentence carries one pair of `『 』`
+  across its cues and no other cue carries one (`FMV-07`, `FMV-09`). Reading
   beats sync: a start may leave the onset rule, and an end the end rule, by up to 30 more
   frames (2 s, `DRIFT`) when putting it back would leave a cue too fast or too short; a late
   end is not checked, and `retime` holds a cue at most `DRIFT` past its 2 s linger, never over
@@ -594,8 +595,8 @@ the blit draws where the line says. The Redux gate's `M60` fixture cue sits at t
 is matched pixel for pixel (`tests/test_real_movie_subtitle.py`).
 
 **Where the credits are, measured.** In `M27` the staff credits are captions placed in a
-corner of each shot, so a row can take the band its shot leaves clear: chosen by eye on each
-cue's first, middle and last frame, four bottom and two top (3394, 3604). In `M28` the
+corner of each shot, so a row could take the band its shot leaves clear (four bottom and two
+top, chosen by eye, until `FMV-09` below). In `M28` the
 credits scroll up over black the whole height of the frame — a right-aligned column of
 names ending near x 176 and a photograph at about x 180-306 — so **no position keeps them
 apart**. Counting pixels brighter than 40 in the two bands every third frame of each song
@@ -604,17 +605,31 @@ at the bottom); for the others the less-crossed band still holds 240-640 bright 
 average, in most frames. Placed in the less-crossed band (seven top, three bottom), four
 of the review's nine middle shots still showed English crossing Japanese names.
 
-**The panel (`FMV-06`, Jay, 2026-09-24).** Jay ruled a dark panel behind `M28`'s song cues
-and one position for all of them ("I don't understand why the subtitles move from the
-bottom to the top and back during the credits"): every `M28` row sits at the bottom, and
-each song row carries the `panel` option. The block draws it with no change to
-`asm/movie.asm`: one extra glyph record that paints a solid `DARK` cell
-(`boku.movie_block.PANEL_MASKS`), a line of those tiles behind each text line, as wide as the
-widest line plus `PANEL_PAD_X` each side in whole tiles. Beetle (`work/movie-review/M28/`):
-the credits under a line are hidden while it is up, and the player keeps its pace — 5.008
-STR frames per 20 vsyncs in the panel cues' windows against 5.016 outside them, sampled every
-20 vsyncs through `M28`. The Redux gate's `M60` fixture cue carries a panel and is matched
-pixel for pixel (`tests/test_real_movie_subtitle.py`).
+**The panel (`FMV-06`, `FMV-09`, Jay, 2026-09-24).** Jay ruled a dark panel behind `M28`'s
+song cues and one position for all of them ("I don't understand why the subtitles move from
+the bottom to the top and back during the credits"), then the same for `M27`'s song, and the
+panel two lines tall on every song cue: every song row in both movies sits at the bottom
+with the `panel` option. The block carries one extra glyph record that paints a solid `DARK`
+cell (`boku.movie_block.PANEL_MASKS`), and a line of those tiles at each of the position's
+two rows whether or not text fills it, as wide as the widest line plus `PANEL_PAD_X` each
+side in whole tiles.
+
+**What the panel costs the blit, measured.** Drawn as a glyph, a tile is the blit's worst
+case: every one of its 14 × 14 pixels takes the mask walk (13 instructions a `DARK` pixel,
+and no empty row to skip). With the one-row panels of `FMV-06` the Redux gate passed; with
+two rows (`FMV-09`) its `M60` fixture — one 250-px line, 38 tiles — made the decode fall
+behind: the player skipped frames, reaching the stop frame after 273 decoded frames and
+never showing frame 199 (`work/fmv04/patched-M60/redux.log`, "EXIT 3 dumps still due").
+So the record's byte 1 is now a `solid` flag, set only on the panel tile, and
+`movie_sub_blit` fills a solid record's columns with `DARK` without the mask test (`@@solid`,
+6 instructions a pixel) — the same pixels, which `render` still predicts from the masks.
+With it the gate passes again (10 of 10; frames 59, 199 and 330 decoded in place, 331 of 332
+frames), and on Beetle, sampling the hook's frame number every vsync through all of `M27`
+and `M28` from the days build, **no header number is skipped** (1-4239, 1-4194). A
+per-vsync count of STR frames cannot see a skip — the player keeps time with the audio —
+so the gate and the skip count are the measures to use. Beetle (`work/movie-review/`): the
+credits under a panel are hidden while a line is up. The Redux gate's `M60` fixture cue
+carries a two-row panel and is matched pixel for pixel (`tests/test_real_movie_subtitle.py`).
 
 **When "Everything in this whole wide world," is sung.** The transcript's segment began at
 138.6 s (frame 2080), where the ASR started it, but the line is sung from 153.2 s: Whisper on

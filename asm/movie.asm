@@ -178,7 +178,9 @@ movie_sub_blit:
     sll     v1, at, 1
     addu    at, at, v1              ; * 3 bytes
     addu    s2, s2, at
-    addu    s2, s2, t3
+    lbu     at, 1(t9)               ; the record's solid flag: the panel tile
+    addu    s2, s2, t3              ; (the load's delay slot)
+    bnez    at, @@solid
     addiu   s3, t9, 4               ; glyph rows; the outline rows follow them
     addiu   s4, zero, MOVIE_SUB_MASK_ROWS
     addiu   s0, s0, 16              ; the shift that puts column c0 in the sign bit
@@ -220,6 +222,25 @@ movie_sub_blit:
     lbu     at, 0(t9)               ; the pen advance (the VWF table's width)
     b       @@glyph
     addu    t7, t7, at              ; two instructions after the load
+@@solid:                            ; every column drawn, every row: DARK, no mask walk
+    addiu   s4, zero, MOVIE_SUB_MASK_ROWS
+    addiu   v0, zero, 0x18
+    addiu   v1, zero, 0x14
+@@solid_row:
+    move    a2, s2
+    move    a3, s1
+@@solid_column:
+    sb      v0, 0(a2)
+    sb      v0, 1(a2)
+    sb      v1, 2(a2)
+    addiu   a3, a3, -1
+    bnez    a3, @@solid_column
+    addiu   a2, a2, 3
+    addiu   s4, s4, -1
+    bnez    s4, @@solid_row
+    addiu   s2, s2, 48
+    b       @@advance
+    nop
 @@next_cue:
     addiu   t5, t5, -1
     bnez    t5, @@cue

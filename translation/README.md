@@ -61,7 +61,7 @@ cue per row, tab-separated:
 ```
 movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> options]
 M27	120	300	Far away, I could see the village | of Sagi-no-sato at the foot of the mountain...
-M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	top
+M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	panel
 ```
 
 * **movie** is the file the movie plays — the `file` column of
@@ -81,16 +81,16 @@ M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	top
 * **options** are optional, space-separated. `caption` marks a cue that translates writing
   in the picture rather than speech (`M27`'s written thought, FMV-08): `movie-timing` holds
   it to the reading rate, the shortest time and overlap but to no speech, and `--write`
-  never moves its frames; it takes no narration marks. `panel` draws a dark panel behind
-  the cue's lines, for text over busy writing such as `M28`'s scrolling credits (FMV-06).
-  A position is `bottom` (the default, what an empty field means) or `top`, the
-  same two rows mirrored to the top of the picture. Use `top` where the picture puts
-  something under the bottom rows, such as `M27`'s staff credits during the theme song
-  (`research/movies.md` § 11).
-* The adult Boku's narration — every cue over a transcript segment of kind `narration` —
-  is wrapped in `『` … `』`, each cue on its own, as the dialogue marks narration (style guide
-  § 9); the song's cues carry no marks. `movie-timing` checks both ways (`cue-marks`), and
-  the marks are not counted toward a cue's reading rate.
+  never moves its frames; it takes no narration marks. `panel` draws a dark panel two
+  lines tall behind the cue, for text over busy writing such as the theme song's staff
+  credits (FMV-06, FMV-09). A position is `bottom` (the default, what an empty field means)
+  or `top`, the same two rows mirrored to the top of the picture, for a picture with
+  something under the bottom rows (no cue uses it now; `research/movies.md` § 11).
+* The adult Boku's narration — the cues over transcript segments of kind `narration` — is
+  marked as the dialogue marks narration (style guide § 9): one pair per sentence, `『` at
+  the start of its first cue and `』` at the end of its last, none on the cues between.
+  Other cues (the song, the father's line, captions) carry none. `movie-timing` checks it
+  (`cue-marks`), and the marks are not counted toward a cue's reading rate.
 * `#` lines and blank lines are notes. There is no Japanese in this file, as in the day
   files: the transcripts of the narration stay under `work/`.
 

@@ -31,7 +31,10 @@ Block layout (little-endian, RAM address `BLOCK_RAM`, read by `movie_sub_load` f
                            drawn by the dialogue renderer (`asm/voice.asm`), not by the masks
     glyphs_offset - 4       {u16 clips_offset, u16 0}: where `clip_sub_play` finds the clips
     glyphs_offset: record[] `RECORD_SIZE` bytes each, index = the u8 in a line:
-                           {u8 advance, u8[3] 0, u16 glyph[MASK], u16 outline[MASK], u8[4] 0}
+                           {u8 advance, u8 solid, u8[2] 0, u16 glyph[MASK], u16 outline[MASK],
+                           u8[4] 0}; `solid` is 1 only for the panel tile, which the routine
+                           fills with `DARK` over its columns without walking the masks --
+                           the same pixels, at about half the cost a pixel
 
 A mask row's bit `15 - c` is column `c` of a `MASK` x `MASK` cell whose column 1, row 1 is
 the 12 x 12 glyph's origin, so the 1-px outline has room on every side; the cell's column
@@ -40,9 +43,11 @@ the 12 x 12 glyph's origin, so the 1-px outline has room on every side; the cell
 mask is set, else `DARK` where the outline is; a later glyph or line overwrites an earlier
 one, which is also the order the routine draws in.
 
-A cue with a panel (FMV-06) is the same lines, each preceded by a line of `PANEL_MASKS`
-tiles at its own y: one more record after the font's, drawn as a glyph is, so the routine
-needs no change.
+A cue with a panel (FMV-06) is the same lines preceded by a line of `PANEL_MASKS` tiles at
+each of its position's rows, whether or not text fills them (FMV-09: the panel keeps one
+height): one more record after the font's, flagged `solid` so the routine fills its columns
+without walking the masks (research/movies.md § 11); `render` draws it from the masks,
+which `PANEL_MASKS` makes the same pixels.
 """
 
 from __future__ import annotations
@@ -150,7 +155,7 @@ class Cue:
     line_y: tuple[int, ...] = LINE_Y
     """Each line is centred on the screen with its cell top at `line_y[i]` (`POSITIONS`)."""
     panel: bool = False
-    """Whether a dark panel is drawn behind the lines (FMV-06)."""
+    """Whether a dark panel fills the position's rows behind the lines (FMV-06, FMV-09)."""
 
 
 @dataclass(frozen=True)
@@ -244,6 +249,9 @@ def encode_block(
             raise BlockError(f"cue frames {cue.start}..{cue.end} are not 0 <= start <= end < 65536")
         if len(cue.lines) > len(cue.line_y):
             raise BlockError(f"a cue holds at most {len(cue.line_y)} lines; {cue.lines!r} has more")
+        for y in cue.line_y if cue.panel else cue.line_y[: len(cue.lines)]:
+            if y < 1 or y + MASK - 1 > FRAME_HEIGHT:
+                raise BlockError(f"line y {y} puts rows outside the {FRAME_HEIGHT}-row frame")
         text_lines = []
         widest = 0
         for text, y in zip(cue.lines, cue.line_y, strict=False):
@@ -253,14 +261,12 @@ def encode_block(
             width = text_width(text, font)
             if width > LINE_WIDTH:
                 raise BlockError(f"{text!r} is {width} px wide; a movie line holds {LINE_WIDTH}")
-            if y < 1 or y + MASK - 1 > FRAME_HEIGHT:
-                raise BlockError(f"line y {y} puts rows outside the {FRAME_HEIGHT}-row frame")
             widest = max(widest, width)
             text_lines.append(_line((SCREEN_WIDTH - width) // 2, y, [index[c] for c in text]))
         panel_lines = []
         if cue.panel:  # drawn first, so the text lands on it
             x, tiles = _panel_span(widest)
-            panel_lines = [_line(x, y, [panel] * tiles) for y in cue.line_y[: len(text_lines)]]
+            panel_lines = [_line(x, y, [panel] * tiles) for y in cue.line_y]
         blob = b"".join(panel_lines + text_lines) + struct.pack("<HH", END_OF_LINES, 0)
         if cursor > U16_MAX:
             raise BlockError(
@@ -298,11 +304,11 @@ def encode_block(
     for c in characters:
         if not 0 <= font[c].advance <= 0xFF:
             raise BlockError(f"{c!r} advances {font[c].advance} px; a record holds it in a u8")
-    records = [(font[c].advance, masks_of(font[c].rows)) for c in characters]
+    records = [(font[c].advance, 0, masks_of(font[c].rows)) for c in characters]
     if panel is not None:
-        records.append((MASK, PANEL_MASKS))
-    for advance, masks in records:
-        record = struct.pack("<B3x", advance)
+        records.append((MASK, 1, PANEL_MASKS))
+    for advance, solid, masks in records:
+        record = struct.pack("<BB2x", advance, solid)
         record += struct.pack(f"<{MASK}H", *masks.glyph) + struct.pack(f"<{MASK}H", *masks.outline)
         out += record.ljust(RECORD_SIZE, b"\0")
     if form1_sectors(len(out)) > BLOCK_MAX_SECTORS:

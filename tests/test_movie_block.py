@@ -468,11 +468,12 @@ def dark_box(pixels) -> tuple[range, range]:
 
 def test_a_panel_is_a_dark_rectangle_behind_the_lines_with_the_text_on_top():
     """ "ab" is 9 px wide at x 155 (see the layout test), its cells rows 199-212. With
-    `PANEL_PAD_X` 4 the panel wants 17 px, two 14-px tiles: 28 columns centred, 146-173,
-    over the line's own rows 199-212."""
+    `PANEL_PAD_X` 4 the panel wants 17 px, two 14-px tiles: 28 columns centred, 146-173.
+    It is as tall as the position's two lines, rows 199-226, though the cue has one (Jay,
+    FMV-09: the panel does not change height from cue to cue)."""
     assert mb.PANEL_PAD_X == 4, "the numbers below are worked for it"
     pixels = mb.render(one([mb.Cue(10, 20, ("ab",), panel=True)]), 15)
-    assert dark_box(pixels) == (range(146, 174), range(199, 213))
+    assert dark_box(pixels) == (range(146, 174), range(199, 227))
     plain = mb.render(one([mb.Cue(10, 20, ("ab",))]), 15)
     white = {p for p, c in pixels.items() if c == mb.WHITE}
     assert white == {p for p, c in plain.items() if c == mb.WHITE}, "the text is on top"
@@ -507,3 +508,32 @@ def test_the_panel_tile_takes_an_index_only_when_a_cue_asks_for_one():
     mb.encode_block({NAME: [mb.Cue(1, 2, (characters[0],))]}, font)
     with pytest.raises(mb.BlockError, match="panel"):
         mb.encode_block({NAME: [mb.Cue(1, 2, (characters[0],), panel=True)]}, font)
+
+
+def test_the_panel_tile_record_is_flagged_solid_and_no_glyph_is():
+    """Byte 1 of a record tells `movie_sub_blit` to fill the tile's columns with `DARK`
+    without walking its masks (the fast path that keeps a two-row panel inside the frame's
+    time); every glyph record keeps it 0. Sorted font `[' ', 'a', 'b']`, then the tile."""
+    block = mb.encode_block({NAME: [mb.Cue(1, 2, ("ab",), panel=True)]}, FONT)
+    (glyphs,) = struct.unpack_from("<H", block, 6)
+    flags = [block[glyphs + mb.RECORD_SIZE * n + 1] for n in range(4)]
+    assert flags == [0, 0, 0, 1]
+    assert len(block) == glyphs + 4 * mb.RECORD_SIZE
+
+
+def test_the_panel_masks_are_what_the_solid_path_paints():
+    """`@@solid` paints DARK on every column and row without reading the masks, and `render`
+    (the gate's prediction) reads them: they agree only while the tile is glyph-free and
+    outlined on all 14 columns of all 14 rows."""
+    assert mb.PANEL_MASKS.glyph == (0,) * mb.MASK
+    assert mb.PANEL_MASKS.outline == (bits(*range(mb.MASK)),) * mb.MASK
+
+
+def test_a_panel_row_with_no_text_is_still_held_to_the_frame():
+    """The panel fills every row of the position, so an empty row outside the frame is the
+    same refusal as a line there; without a panel that row draws nothing and is not checked."""
+    last = mb.FRAME_HEIGHT - mb.MASK + 1  # the lowest y whose 14 rows stay in the frame
+    mb.encode_block({NAME: [mb.Cue(1, 2, ("a",), (200, last), panel=True)]}, FONT)
+    mb.encode_block({NAME: [mb.Cue(1, 2, ("a",), (200, last + 1))]}, FONT)
+    with pytest.raises(mb.BlockError, match="outside"):
+        mb.encode_block({NAME: [mb.Cue(1, 2, ("a",), (200, last + 1), panel=True)]}, FONT)

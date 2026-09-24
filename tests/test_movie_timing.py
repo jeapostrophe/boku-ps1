@@ -192,8 +192,9 @@ def test_a_chain_whose_onset_window_is_taken_by_the_cue_before_starts_as_near_as
     assert mt.retime(cues, segments, 400)[1].start == 181
 
 
-def test_sung_lines_are_timed_like_narration_and_music_is_not(tmp_path):
-    """The theme song is subtitled (FMV-02), so its segments bind cues as narration does."""
+def test_sung_and_spoken_lines_are_timed_like_narration_and_music_is_not(tmp_path):
+    """The theme song is subtitled (FMV-02), and so is a character's voice in a movie (the
+    father in M27, VO-05), so their segments bind cues as narration does."""
     path = tmp_path / "M28.ja.tsv"
     path.write_text(
         "start_s\tend_s\tstart_frame\tend_frame\tkind\tconf\tja\tnote\n"
@@ -206,6 +207,7 @@ def test_sung_lines_are_timed_like_narration_and_music_is_not(tmp_path):
     assert mt.read_segments(path) == [
         mt.Segment(961, 1044, "narration"),
         mt.Segment(1044, 1159, "song"),
+        mt.Segment(1159, 1200, "voice"),
     ]
 
 
@@ -240,9 +242,45 @@ def test_a_narrated_cue_takes_the_narration_marks_and_a_sung_one_does_not():
     assert checks(mt.problems([bare], [spoken])) == ["cue-marks"]
     assert mt.problems([bare], [sung]) == []
     assert checks(mt.problems([marked], [sung])) == ["cue-marks"]
-    for wrong in ("『aaaa | aaaa", "『aaaa』 | aaaa"):
+    for wrong in ("『aaaa | aaaa", "『aaaa』 | aaaa", "『aa『aa』"):
         stray = CueRow("M60", 100, 190, wrong, 1)
         assert checks(mt.problems([stray], [spoken])) == ["cue-marks"], wrong
+
+
+def marked_run(*texts: str, kind: str = "narration") -> tuple[list[CueRow], list[mt.Segment]]:
+    """Abutting 40-frame cues reading `texts`, each over its own segment of `kind`."""
+    cues = [CueRow("M60", 100 + 40 * n, 139 + 40 * n, t, n + 1) for n, t in enumerate(texts)]
+    return cues, [mt.Segment(c.start, c.end, kind) for c in cues]
+
+
+def marks_found(cues, segments) -> list[tuple[str, str]]:
+    return [(p.key, p.check) for p in mt.problems(cues, segments) if p.check == "cue-marks"]
+
+
+def test_one_pair_of_marks_spans_a_sentence_across_its_cues():
+    """FMV-09 (Jay, 22.3): a narrated sentence split over several cues opens 『 on its first
+    and closes 』 on its last; the cues between carry none."""
+    assert marks_found(*marked_run("『aaa", "aaa", "aaa』")) == []
+    assert marks_found(*marked_run("『aaa』", "『aaa", "aaa』")) == []
+
+
+def test_a_sentence_left_open_or_never_opened_is_named():
+    assert marks_found(*marked_run("『aaa", "aaa")) == [("M60@140", "cue-marks")]
+    assert marks_found(*marked_run("aaa", "aaa』")) == [("M60@100", "cue-marks")]
+    assert marks_found(*marked_run("『aaa", "『aaa』")) == [("M60@140", "cue-marks")]
+
+
+def test_a_sentence_left_open_into_the_song_is_named_once():
+    """One missing 』 before three song cues is one finding, on the first cue past it."""
+    cues, segments = marked_run("『aaa", "bbb", "bbb", "bbb")
+    segments[1:] = [mt.Segment(g.start, g.end, "song") for g in segments[1:]]
+    assert marks_found(cues, segments) == [("M60@140", "cue-marks")]
+
+
+def test_a_sung_cue_inside_an_open_narration_sentence_is_named():
+    cues, segments = marked_run("『aaa", "bbb", "aaa』")
+    segments[1] = mt.Segment(segments[1].start, segments[1].end, "song")
+    assert marks_found(cues, segments) == [("M60@140", "cue-marks")]
 
 
 def test_a_caption_of_writing_on_screen_is_held_to_no_speech():

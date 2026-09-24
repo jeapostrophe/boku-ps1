@@ -3,85 +3,82 @@
 #
 # PLAN FMV-02. Timed against the reviewed transcripts under work/voice/reviewed/ (research/voice-only.md
 # § The listening pass). The narrator is the adult Boku (style guide § 6): no contractions,
-# the simile kept whole across its cues, and each of his cues wrapped in 『 』 as the dialogue's
-# narration is (FMV-07); the song's cues are not.
+# the simile kept whole across its cues, and one pair of 『 』 per sentence across its cues, as
+# the dialogue marks narration (FMV-07, FMV-09); no other cue carries them.
 
 # --- M27, the opening. 0-60 s music; the father at the car radio; the monologue from 70 s.
-# M27	619	660	Guess it's about had it.
-#   Commented out until someone listens on Beetle: a voice over the music as the father reaches
-#   for the car radio (frame 616). One plain ASR pass and several cuts hear the same words, the
-#   gated pass nothing; they are also an unreferenced XAM clip, so it may be bleed. Enable it if
-#   it is audible.
+M27	619	660	Guess it's about had it.
+#   The father, over the music, as he reaches for the car radio (frame 616): "sorosoro jumyou
+#   ka na", heard by Jay (VO-05, 2026-09-24). Not the narrator, so no marks.
 M27	1050	1104	『It was a very, very hot summer day.』
 #   Start estimated from the line's length (the transcript's note).
-M27	1105	1213	『The heat of that day was as if all the workings | of life on earth had become tangled and snarled,』
-M27	1214	1288	『and somewhere in this world a god at his wits' end, | unable to manage them any longer,』
-M27	1289	1324	『were melting everything down in the heat』
-M27	1325	1402	『and, with a child's innocence, sketching his dreams | of the world that would come next...』
-M27	1403	1460	『...it was that kind of strange, dizzying heat.』
-M27	1461	1592	『That day was the first of August | in the year my little brother was born,』
-M27	1593	1625	『and I, who had then just turned nine,』
-M27	1626	1670	『and from that day until | the end of summer vacation,』
-M27	1671	1738	『to ease the burden on my mother, | who was in the last month of her pregnancy,』
-M27	1739	1816	『I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.』
-M27	2080	2151	『At that moment, the thunderheads | were billowing up in the strong August sun,』
+M27	1105	1213	『The heat of that day was as if all the workings | of life on earth had become tangled and snarled,
+M27	1214	1288	and somewhere in this world a god at his wits' end, | unable to manage them any longer,
+M27	1289	1324	were melting everything down in the heat
+M27	1325	1402	and, with a child's innocence, sketching his dreams | of the world that would come next...
+M27	1403	1460	...it was that kind of strange, dizzying heat.』
+M27	1461	1592	『That day was the first of August | in the year my little brother was born,
+M27	1593	1625	and I, who had then just turned nine,
+M27	1626	1670	and from that day until | the end of summer vacation,
+M27	1671	1738	to ease the burden on my mother, | who was in the last month of her pregnancy,
+M27	1739	1816	I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.』
+M27	2080	2151	『At that moment, the thunderheads | were billowing up in the strong August sun,
 #   The transcript's reading of this segment was corrected by hand (the ASR heard nonsense for
 #   nyudogumo, hachigatsu and wakitachi); the corrected reading is what is translated.
-M27	2152	2217	『glittering white, and somehow the sight made me glad,』
-M27	2218	2292	『and I leaned just a little out of the car window, | not so far as to startle my father.』
+M27	2152	2217	glittering white, and somehow the sight made me glad,
+M27	2218	2292	and I leaned just a little out of the car window, | not so far as to startle my father.』
 M27	2436	2510	Just what kind of memories | will this summer leave me with, I wonder...	caption
 #   FMV-08: not spoken -- three lines of vertical white writing on black (Boku's thought, built
 #   up one line at a time from frames 2436, 2451 and 2466, gone at 2511), at x 111-207 and rows
 #   35-197, so the bottom rows are clear. Shown whole from the first line.
-M27	2545	2631	『When I sank back into the car seat | and took a deep breath, just a small one,』
-M27	2632	2735	『I had a strange feeling, as if specks of light | were flickering on and off in the middle of my head.』
-#   DOUBT: the noun after "hikari no" is heard as togi / tougi / toki / tori by every ASR pass
-#   (re-run 2026-09-22 on four cuts: togi, tougi, tomoshibi-kanji, toki). The transcript guesses
-#   tsubu (grains); toge (thorns) is as close to the sound. "Specks of light" is meant to hold
-#   for any of them; needs an ear.
+M27	2545	2631	『When I sank back into the car seat | and took a deep breath, just a small one,
+M27	2632	2735	I had a strange feeling, as if specks of light | were flickering on and off in the middle of my head.』
+#   The noun after "hikari no" is "togi" (Jay's ear, VO-05, 2026-09-24; every ASR pass heard
+#   togi / tougi / toki). Which word "togi" is here is not settled; "specks of light" was chosen
+#   to hold for any small flickering thing and stands until it is.
 
 # --- M28, the ending: music to 64 s, one sentence, then the song and the credits.
 M28	961	1043	『I shall never, ever forget | the things that happened that summer.』
 
 # --- M60, the fireworks from Boku's window (E0805, day 8).
-M60	133	218	『At that moment, I was thinking that perhaps I had | seen this same sight from this window before...』
-M60	219	300	『...which was, somehow, a rather strange thing to think.』
+M60	133	218	『At that moment, I was thinking that perhaps I had | seen this same sight from this window before...
+M60	219	300	...which was, somehow, a rather strange thing to think.』
 
 # --- M120, the satellite (E1008, day 10). The sentence runs on past the movie's end: E1008.0
 #   finishes it ("...a satellite, flying quietly on, as if gliding"), so the last cue ends on
 #   "it was..." and E1008.0's English must pick the sentence up as "...a satellite".
-M120	21	90	『Crossing a sky so blue and clear | that I felt somehow dizzy gazing into it,』
-M120	91	152	『wrapped in a single-minded sense of mission | and in solitude, it was...』
+M120	21	90	『Crossing a sky so blue and clear | that I felt somehow dizzy gazing into it,
+M120	91	152	wrapped in a single-minded sense of mission | and in solitude, it was...』
 
 # --- M260, the sunflower dream (day 29).
 M260	79	150	『It was, somehow, a very, very sad dream.』
-M260	166	234	『The sound of the cold winter wind in that dream | seemed to me, for some reason,』
-M260	235	285	『just like the lonely howl | of that Japanese wolf...』
+M260	166	234	『The sound of the cold winter wind in that dream | seemed to me, for some reason,
+M260	235	285	just like the lonely howl | of that Japanese wolf...』
 #   "Cold winter wind" is kogarashi (the ASR's kanji for it was wrong, the reading right); "howl" is
 #   toboe, which the ASR misheard. "That Japanese wolf" is the one of Saori's camera (bible § 3).
 M260	294	347	『It was a very, very sad dream.』
 
 # SONG — subtitled (Jay, 2026-09-23)
 #   The theme song, sung in M27 (from 202 s) and M28 (from 69 s, under the credits). Translated,
-#   unrhymed (style guide § 10). Staff credits cross the picture while it plays: in M27 a row
-#   takes the band its shot's credits leave clear; in M28, where they scroll through the whole
-#   frame, every row sits at the bottom on a dark panel (Jay, 2026-09-24; research/movies.md § 11).
-#   The verse end is heard "tsumete" (packed in) in M27 and "subete" (all in) in M28; each
-#   transcript marks its own reading "?". Whether the recordings differ needs an ear.
-M27	3034	3258	All the flowers that bloom across | this wide meadow,
-M27	3259	3393	I will give to you, every single one,
-M27	3394	3570	made into a bouquet with a red ribbon.	top
-M27	3604	3708	All the stars that bloom across | this wide night sky,	top
+#   unrhymed (style guide § 10). Staff credits cross the picture while it plays -- scrolling
+#   through the whole frame in M28, set in corners in M27 -- so in both movies every row sits
+#   at the bottom on a dark panel two lines tall (Jay, 2026-09-24, FMV-06 / FMV-09;
+#   research/movies.md § 11). The verse end is "tsumete" (packed in) in both recordings
+#   (Jay's ear, VO-05).
+M27	3034	3258	All the flowers that bloom across | this wide meadow,	panel
+M27	3259	3393	I will give to you, every single one,	panel
+M27	3394	3570	made into a bouquet with a red ribbon.	panel
+M27	3604	3708	All the stars that bloom across | this wide night sky,	panel
 #   The transcript's reading ("yozora ippai ni saku hoshi") is corrected from M28's verse; the
 #   ASR heard nonsense here.
-M27	3717	3783	every single one,
-M27	3799	4030	I will give to you, | packed in glass that shines like a rainbow.
+M27	3717	3783	every single one,	panel
+M27	3799	4030	I will give to you, | packed in glass that shines like a rainbow.	panel
 M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	panel
 M28	1159	1284	I will give to you, every single one,	panel
 M28	1285	1445	made into a bouquet with a red ribbon.	panel
 M28	1525	1629	The stars, too, that bloom across | this wide night sky,	panel
 M28	1630	1752	I will give to you, every single one,	panel
-M28	1753	1925	all in glass that shines like a rainbow.	panel
+M28	1753	1925	packed in glass that shines like a rainbow.	panel
 M28	2299	2388	Everything in this whole wide world,	panel
 M28	2389	2513	I will give to you, every single one,	panel
 M28	2514	2680	so write me a letter.	panel

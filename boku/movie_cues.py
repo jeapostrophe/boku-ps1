@@ -28,8 +28,8 @@ CAPTION = "caption"
 PANEL = "panel"
 FLAGS = frozenset({CAPTION, PANEL})
 """`caption`: the cue translates writing in the picture, not speech (FMV-08), so
-`boku.movie_timing` holds it to no transcript segment. `panel`: a dark panel is drawn behind
-the cue's lines (FMV-06, `boku.movie_block.PANEL_MASKS`)."""
+`boku.movie_timing` holds it to no transcript segment. `panel`: a dark panel fills the
+position's two rows behind the cue (FMV-06, `boku.movie_block.PANEL_MASKS`)."""
 DEFAULT_POSITION = "bottom"
 MOVIE_BAND = BoxSpec(
     width=LINE_WIDTH, lines=min(map(len, POSITIONS.values())), name="the movie band"
