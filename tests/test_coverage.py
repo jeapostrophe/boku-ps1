@@ -538,3 +538,16 @@ def test_make_sh_has_a_coverage_verb():
     script = (REPO_ROOT / "make.sh").read_text(encoding="utf-8")
     assert re.search(r"^\s*coverage\)", script, re.M), "make.sh has no coverage verb"
     assert "boku coverage" in script
+
+
+def test_a_line_no_retail_path_draws_is_not_one_the_player_can_meet(tmp_path):
+    """`boku.arrays.UNREACHABLE` (bug sumo's move names): the build leaves them retail and
+    lists them apart, so the report must not call them refused for want of a listing."""
+    synth = SynthStore.new(tmp_path)
+    synth.array_item("musi@2C.0", cells=4)
+    store = load_store(synth.write())
+    rows = read_rows(
+        write_translation(tmp_path / "arrays.txt", [("musi@2C.0", "(unlabelled)", "Retreat")])
+    )
+    report = by_id(coverage(store, rows, 1, write_manifest(tmp_path / "m.json", [])))
+    assert "musi@2C.0" not in report

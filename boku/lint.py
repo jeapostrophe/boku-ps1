@@ -39,6 +39,8 @@ What it checks, and where each rule comes from
 * **`array-room`** -- a grown array moves whole (`boku.array_relocate`), so what limits it
   is the free space: the build's own allocation, over this import and the edit set's
   regions, and a refusal names the array's laid-out lines.
+* **`unreachable`** -- *a warning*: a row of an array no retail path draws
+  (`boku.arrays.UNREACHABLE`); its English is kept and the build leaves the retail bytes.
 * **`not-placeable`** -- *a warning*: a label assembled from instruction immediates whose
   English needs more glyphs than the function draws (`boku.code_text`): one character per
   drawn glyph is placed by rewriting the immediates, more is a change to its layout.
@@ -102,7 +104,7 @@ from pathlib import Path
 
 from boku import REPO_ROOT, clip_subs, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
-from boku.arrays import byte_limit
+from boku.arrays import byte_limit, unreachable
 from boku.boxes import TextBox, box_for, box_spec_for
 from boku.code_text import (
     DATE_LABELS,
@@ -568,6 +570,9 @@ def _check_row(context: _Context, row: Row, record: dict) -> None:
             ERROR,
             f"{row.line_id} is written as a SELECT but the store has it as a message",
         )
+        return
+    if (why := unreachable(row.line_id)) is not None:
+        context.say(row, "unreachable", WARNING, why)
         return
     if row.line_id in DATE_LABELS:
         laid = lay_out_date_label(row.line_id, " ".join(row.entry.pages), context.options.encoder)

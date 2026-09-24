@@ -1,8 +1,8 @@
 ; MUSI.OVL, bug sumo (PLAN TXT-05). Included by vwf.asm inside `.open MUSI_PATH, 0x80079A08`.
 ; The move-name walkers step through the width table, and the three places that turned
 ; sysmsg_draw's glyph count into pixels take its width instead (asm/walkers.asm, surface 9).
-; The move names themselves (musi@2C) are the arrays lane's to relocate; nothing here
-; names them.
+; The move names themselves (musi@2C) are never drawn in retail, so the build leaves their
+; bytes (boku.arrays.UNREACHABLE); the walkers stay hooked for the day a path is found.
 
 SUMO_FIELD equ 8 * 12               ; the right-aligned names' field: eight 12-px cells
 

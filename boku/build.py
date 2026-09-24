@@ -67,6 +67,7 @@ from boku.arrays import (
     SelectTables,
     byte_limit,
     read_code_labels,
+    unreachable,
 )
 from boku.boxes import box_for, box_spec_for
 from boku.code_text import (
@@ -688,6 +689,8 @@ class LineResult:
     line_id: str
     laid_out: LaidOut | None
     problems: tuple[str, ...]
+    unreachable: str | None = None
+    """Why nothing is written for it: no retail path draws it (`boku.arrays.UNREACHABLE`)."""
 
     @property
     def written(self) -> bool:
@@ -719,6 +722,9 @@ def lay_out(
     table = GlyphTable.load() if label else None
     out: list[LineResult] = []
     for entry in translation:
+        if (why := unreachable(entry.line_id)) is not None:
+            out.append(LineResult(entry.line_id, None, (), unreachable=why))
+            continue
         if entry.voice_only:
             out.append(_lay_out_voice_only(archive, walk, entry, encoder, box, voice_subtitles))
             continue
@@ -931,7 +937,11 @@ class BuildResult:
 
     @property
     def refused_lines(self) -> list[LineResult]:
-        return [line for line in self.lines if not line.written]
+        return [line for line in self.lines if not line.written and not line.unreachable]
+
+    @property
+    def unreachable_lines(self) -> list[LineResult]:
+        return [line for line in self.lines if line.unreachable]
 
     @property
     def written_lines(self) -> list[LineResult]:
@@ -1025,8 +1035,7 @@ def build(
         binary_patches = [p for p in binary_patches if p not in carried]
         edits = list(binary_patches)
         lines = [
-            LineResult(line.line_id, line.laid_out, line.problems + refused.get(line.line_id, ()))
-            for line in lines
+            replace(line, problems=line.problems + refused.get(line.line_id, ())) for line in lines
         ]
         answers = answer_pair_patches(archive, lines)
         labelled = code_label_patches(archive, lines)
@@ -1203,6 +1212,7 @@ def manifest_json(written: WrittenImage, result: BuildResult, name: str) -> str:
             line.line_id: list(line.problems)
             for line in sorted(result.refused_lines, key=lambda line: line.line_id)
         },
+        "lines_unreachable": sorted(line.line_id for line in result.unreachable_lines),
         "members_rebuilt": sorted(result.plan.members_rebuilt) if result.plan else [],
         "member_growth": dict(sorted(result.plan.growth.items())) if result.plan else {},
         "relocations": [
@@ -1266,6 +1276,11 @@ def format_summary(result: BuildResult) -> str:
         out.append(f"    ! {problem}")
     out.append(
         f"  {len(result.written_lines)} line(s) laid out, {len(result.refused_lines)} refused"
+        + (
+            f", {len(result.unreachable_lines)} left retail (drawn by no retail path)"
+            if result.unreachable_lines
+            else ""
+        )
     )
     # One refusal can name a whole scene -- a member out of sector slack drops every line
     # in it at once -- so the report counts distinct problems rather than printing the

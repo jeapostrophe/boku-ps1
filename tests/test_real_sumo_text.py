@@ -29,7 +29,7 @@ from tests import test_real_banners
 from tests.mips import Machine
 from tests.test_pointers import jal
 from tests.test_real_boxes import word
-from tests.test_real_date_labels import EDITS, GLYPH_FLUSH
+from tests.test_real_date_labels import DAYS, EDITS, GLYPH_FLUSH
 
 rows, encoder = test_real_banners.rows, test_real_banners.encoder
 """The arrays' English and the days build's cell map: the banners' fixtures, shared."""
@@ -171,3 +171,16 @@ def test_the_widest_fighter_s_name_ends_where_the_item_after_it_begins(
     end = shown[-1][1] + advance.get(shown[-1][0], LABEL_PITCH)
     assert end == item_x, f"the name ends at x {end}, not at the item's x {item_x}"
     assert len(machine.stubs[GLYPH_FLUSH]) == 1, "the measuring pass flushed as well"
+
+
+def test_the_days_build_leaves_the_move_names_retail_and_does_not_call_them_refused(rows):
+    """`boku.arrays.UNREACHABLE`: every `musi@2C` row of arrays.txt is listed as
+    unreachable in the days build's manifest, none as refused or written."""
+    manifest_path = DAYS / "manifest.json"
+    if not manifest_path.is_file():
+        pytest.skip("no build/days: run `./make.sh build-days` first")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    moves = sorted(line for line in rows if line.startswith("musi@2C."))
+    assert moves, "arrays.txt carries the move names"
+    assert sorted(manifest["lines_unreachable"]) == moves
+    assert not set(moves) & (set(manifest["lines_refused"]) | set(manifest["lines_written"]))

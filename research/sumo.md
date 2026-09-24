@@ -206,5 +206,10 @@ writing a boy's offered bug to `0x8003DE18`, a cage-format record, before ○ on
   (vwf-prototype.md § "The quiz rate"), and `0x80085240`, the other, has no `jal`, `j`,
   data word or `lui` pair in `MUSI` or the executable. The same holds for the debug
   screen's names at `0x8008E8AC` and `0x8008EC7C` (state 9, `0x8008E3E4`, entered on
-  START under that word). Their walkers stay installed and tested (`tests/test_real_walkers.py`).
+  START under that word). Their walkers stay installed and tested (`tests/test_real_walkers.py`),
+  but the build writes nothing for the array: its English stays in `arrays.txt`, the retail
+  bytes stay, the lint reports each row as `unreachable` and coverage leaves them out
+  (`boku.arrays.UNREACHABLE`, 2026-09-24; 690 bytes of relocation room freed). **Reopen**
+  when a retail path is found that shows them: then drop the entry and the array moves and
+  draws as before.
 

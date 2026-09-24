@@ -271,6 +271,23 @@ import each resolves to the catalogue's own address, and every reference
 `boku.pointers.scan` finds is checked against the list on the real disc
 (`tests/test_real_pointers.py`)."""
 
+UNREACHABLE: dict[str, str] = {
+    "musi@2C": (
+        "bug sumo's move names are never drawn in retail (research/sumo.md § The desk's "
+        "text); the build leaves the retail bytes. Reopen when a retail path is found that "
+        "shows them"
+    ),
+}
+"""Arrays no retail path draws. Their English stays in `translation/days/arrays.txt`, the
+build writes nothing for them (so they take no relocation room), and the lint reports each
+row once as `unreachable`. Each reason names what would reopen it."""
+
+
+def unreachable(line_id: str) -> str | None:
+    """Why `line_id`'s array is never drawn, or `None` for one that is."""
+    return UNREACHABLE.get(line_id.split(".", 1)[0])
+
+
 COUNTED_CELLS: dict[str, range] = {"exe@80029AFC.0": range(1, 4)}
 """Items whose cells the program overwrites before drawing: `ant_msg_open` (0x80032030)
 stores three random digits (`0x34 + d`) into words 1-3 of the ant message, so the English

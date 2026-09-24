@@ -27,6 +27,7 @@ from boku.arrays import SELECT_LINES_ADDR
 from boku.boxes import box_for
 from boku.build import (
     BuildRefused,
+    BuildResult,
     EditSet,
     LineResult,
     answer_pair_patches,
@@ -674,3 +675,17 @@ def test_an_edit_set_offers_its_island_s_tail_and_the_pc_host_data_to_moved_arra
     older = load_edit_set(write_edit_set(tmp_path / "o.json", EXE_EDIT))
     assert older.array_regions == DEAD_REGIONS
     assert PC_HOST_DATA not in DEAD_REGIONS
+
+
+def test_an_unreachable_array_item_is_left_retail_and_not_counted_refused():
+    """`boku.arrays.UNREACHABLE` (bug sumo's move names): the English stays in the file,
+    the build writes nothing for it, and it is neither a problem nor a refusal."""
+    table = GlyphTable.load()
+    cell = table.from_character["「"]
+    walk = OneArraySite(words_to_bytes([cell, cell, 0x8000]), kind="ARR-L", line_id="musi@2C.3")
+    entry = TranslationEntry(line_id="musi@2C.3", speaker="(unlabelled)", pages=("Retreat",))
+    (result,) = lay_out(NoArchive(), walk, [entry], StockEncoder.load(), BoxSpec(999, 1))
+    assert result.laid_out is None and result.problems == ()
+    assert result.unreachable and not result.written
+    built = BuildResult(None, None, [result], (), "stock", BoxSpec(999, 1), "t", ())
+    assert built.refused_lines == [] and built.unreachable_lines == [result]

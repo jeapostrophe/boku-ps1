@@ -72,7 +72,8 @@ arrays — 10 strings — were found.)
   6.1 → 3, `exe@800461BC` 5.1 → 2, `hhon@6874` 3.3 → 3, `zukan@32E8` 4.4 → 3, `tako@4` 2.1 → 2,
   `musi@4` 4.3 → 3. Types 5 and 6 occur nowhere in event data.
 * **`ZUKAN` / `TAKO` / `MUSI` readers**: the three selects as above; `musi@2C` (32 move names)
-  by `musi_move_draw` `0x80084F64` and `0x800850D8`, both inline line walkers.
+  by `musi_move_draw` `0x80084F64` and `0x800850D8`, both inline line walkers, neither reached
+  in retail ([sumo.md](sumo.md) § The desk's text).
 * **Five arrays the scans could not see**, because they hold no control word at all — the
   code knows their shape:
 

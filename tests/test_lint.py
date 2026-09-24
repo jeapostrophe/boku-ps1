@@ -63,6 +63,7 @@ UNVOICED = "E9001.1"
 CHOICE = "E9001.2"
 VOICE_ONLY = "E9001.3"
 ARRAY = "exe@80000000.0"
+MOVES = "musi@2C.0"
 
 
 @pytest.fixture
@@ -800,3 +801,17 @@ def test_a_date_label_must_mark_where_its_numbers_go(tmp_path):
     bad = run(store, tmp_path, [(label, "(unlabelled)", "Date caught")], label=False)
     assert checks(bad) == ["date-label"]
     assert bad[0].severity == ERROR
+
+
+def test_an_unreachable_surface_is_reported_not_held_to_its_bytes(tmp_path):
+    """`boku.arrays.UNREACHABLE`: bug sumo's move names are drawn only on a debug path, so
+    their English is kept but never written, and the lint says so once, as a warning --
+    not an `array-bytes` error for English that no player can see overflow."""
+    synth = SynthStore.new(tmp_path)
+    synth.array_item(MOVES, cells=4)
+    moves = load_store(synth.write())
+    findings = run(moves, tmp_path, [(MOVES, "(unlabelled)", "M" * 40)], label=False)
+    finding = only(findings, "unreachable")
+    assert checks(findings) == ["unreachable"]
+    assert finding.severity == WARNING
+    assert "Reopen when" in finding.message

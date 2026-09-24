@@ -25,6 +25,9 @@ Japanese -- why?* Every line in a day's reach gets one of four states:
   line -- and most are refused until the menu and overlay surfaces are built
   (`PLAN TXT-05`), since an array item has no bytes to grow into.
 
+Lines no retail path draws (`boku.arrays.UNREACHABLE`) are not lines the player can meet,
+so the report leaves them out; the build's manifest lists them under `lines_unreachable`.
+
 Which days reach which events is `boku.script_store.scene_plays_on`'s answer, the same one
 `scenes_of_day` gives `boku.packets`, so a day's coverage and a day's translator packets
 cover the same scenes by construction; `scene_scope` turns it into the report's sentence.
@@ -46,6 +49,7 @@ from pathlib import Path
 
 from boku import REPO_ROOT
 from boku.archive import DEFAULT_DISC_DIR
+from boku.arrays import unreachable
 from boku.extract import SCRIPT_DIR_NAME
 from boku.lint import Row, load_rows, translation_paths
 from boku.script_store import (
@@ -327,8 +331,8 @@ def coverage(store: Store, rows: Sequence[Row], day: int, manifest: Manifest) ->
     # event lists is exactly the line a report must not lose, whatever its id looks like.
     # `Store.event_of_line`'s keys are the ids `_lines_of` yields over every scene.
     for line_id, record in store.lines.items():
-        if line_id in store.event_of_line:
-            continue
+        if line_id in store.event_of_line or unreachable(line_id) is not None:
+            continue  # an event's line, or one no retail path draws (boku.arrays.UNREACHABLE)
         surface = surface_of(line_id)
         row = by_id.get(line_id)
         english = f" (English at {_origin(row)})" if row and row.has_english else ""
