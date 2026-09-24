@@ -148,10 +148,33 @@ class GameFace(Face):
         span = tuple(range(self.HYPHEN_WIDTH))
         return Glyph(self.HYPHEN_WIDTH, tuple(span if r == crossbar else () for r in range(CELL)))
 
+    LOWERED = ".,:;"
+    """Marks the sheet draws a row high (it was drawn for vertical writing), so that in a
+    line they float: the face moves each down until the period stands on the baseline of `n`.
+    `!` and `?` already stand on it and are left as drawn."""
+
+    def _lowered(self, ch: str) -> Glyph | None:
+        g, n, period = self._from_sheet(ch), self._from_sheet("n"), self._from_sheet(".")
+        if g is None or n is None or period is None:
+            return g
+
+        def bottom(glyph: Glyph) -> int:
+            return max(r for r, xs in enumerate(glyph.rows) if xs)
+
+        drop = bottom(n) - bottom(period)
+        rows = ((),) * drop + g.rows[: CELL - drop]
+        if sum(map(len, rows)) != sum(map(len, g.rows)):
+            raise TypesetError(f"lowering {ch!r} by {drop} rows would push it out of its cell")
+        return Glyph(g.width, rows)
+
     def glyph(self, ch: str) -> Glyph | None:
         if ch not in self._cache:
-            drawn = ch == "-" and ch not in self.cells
-            self._cache[ch] = self._hyphen() if drawn else self._from_sheet(ch)
+            if ch == "-" and ch not in self.cells:
+                self._cache[ch] = self._hyphen()
+            elif ch in self.LOWERED:
+                self._cache[ch] = self._lowered(ch)
+            else:
+                self._cache[ch] = self._from_sheet(ch)
         return self._cache[ch]
 
     def _from_sheet(self, ch: str) -> Glyph | None:

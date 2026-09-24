@@ -350,6 +350,26 @@ def test_the_hyphen_is_drawn_as_the_crossbar_of_the_sheets_e(archive, inv, tmp_p
     diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\tMoe-neechan read a well-known book.\n")
 
 
+def test_the_period_comma_colon_and_semicolon_sit_on_the_baseline(inv):
+    """The sheet draws them a row high (for vertical writing), so in a line they float. The
+    baseline is found here as the bottom row most letters without a descender share, not as
+    the face finds it; each mark's lowest dot ends on it, and the comma's tail hangs below."""
+    face = GameFace.from_sheet(inv.get(FONT_SHEET_ID).tim)
+
+    def rows(ch):
+        return [r for r, xs in enumerate(face.glyph(ch).rows) if xs]
+
+    bottoms = Counter(rows(ch)[-1] for ch in "abcdehiklmnorstuvwxzABCDEFHIKLMNOPRSTUVWXZ")
+    baseline, votes = bottoms.most_common(1)[0]
+    assert votes > 30, bottoms
+    assert rows(".")[-1] == rows(":")[-1] == baseline
+    period_top = rows(".")[0]
+    assert rows(",")[0] == period_top, "the comma's dot is the period's"
+    assert rows(",")[-1] == rows(";")[-1] == baseline + 1, "the tails hang one row below"
+    # ! and ? already stand on the baseline on the sheet; they are not moved.
+    assert rows("!")[-1] == rows("?")[-1] == baseline
+
+
 def test_a_word_wider_than_a_line_is_refused_not_clipped(archive, inv, tmp_path):
     with pytest.raises(tt.TextureTextError, match="wider than a line of the page"):
         diary_check(archive, inv, tmp_path, "nikki@NIKKI_001\t" + "WOW" * 20 + "!\n")

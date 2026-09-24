@@ -220,7 +220,13 @@ the fallback if an entry will not fit in five lines of 32. The diary is the one 
 matching the page matters more than density, and the density difference (162 against 194
 characters) is not the difference between fitting and not for a child's four-sentence entry.
 The punctuation gap is the cost, and it is a *drawing* job of a dozen cells rather than a
-reason to change face. This is a different recommendation from `TXT-06`'s for *dialogue*, and
+reason to change face. Done for the marks that mattered (`TRN-04`, 2026-09-24): `GameFace`
+draws its own hyphen (above) and lowers `.` `,` `:` `;` one row, so the period stands on the
+baseline of `n` and the comma's tail hangs below it (`GameFace.LOWERED`); `!` and `?` already
+stood on it (measured: the sheet's period ends a row above `n`). The full-width gap after a
+comma or period is the glyph's own advance and stays.
+
+This is a different recommendation from `TXT-06`'s for *dialogue*, and
 for a different reason: dialogue is rendered by the engine over arbitrary backgrounds at a
 fixed band width, where Galmuri9's evenness wins.
 
