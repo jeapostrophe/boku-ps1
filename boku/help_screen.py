@@ -3,12 +3,12 @@
 `help_screen_draw` (`0x80035674`) draws help lines 0-12 at `g_help_pos` (`0x80029904`, an
 (x, y) byte pair each), one row per item of `exe@80029B20` (an **L** array: each item ends
 with `0x8001`). The bottom sentence is lines 11 and 12, at y 170 and 184 in the Japanese; the
-English of line 11 needs two rows. The build splits it the way it splits a card message
-(`boku.row_split`): line 11 keeps its first row, and the second becomes an item after the
-array's last, which `asm/help_resident.asm` (`vwf_help_extra_row`, called from
-`help_screen_draw`) draws at line 12's place while line 12 moves one row down. That move is
-the build's own edit and is what tells the routine to draw: only at exactly one row below its
-retail y, which a line 11 left in Japanese never gets.
+English of line 11 needs two rows. The build splits it (`boku.row_split`): line 11 keeps its
+first row, and the second becomes an item after the array's last, which
+`asm/help_resident.asm` (`vwf_help_extra_row`, called from `help_screen_draw`) draws at line
+12's place while line 12 moves one row down. That move is the build's own edit and is what
+tells the routine to draw: only at exactly one row below its retail y, which a line 11 left in
+Japanese never gets.
 """
 
 from __future__ import annotations

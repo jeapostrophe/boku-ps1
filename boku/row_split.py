@@ -5,8 +5,7 @@ them, so an item is one row. When a box gives an item more rows
 (`research/data/text-boxes.tsv`), the build lays it out as rows back to back, each ended by
 `0x8001`, and splits it here: the item keeps its first row, and each further row becomes a
 new item appended after the array's last. What draws the new items is each array's own:
-the card messages' records (`boku.card_messages`), the help screen's extra row
-(`boku.help_screen`).
+the help screen's extra row (`boku.help_screen`).
 """
 
 from __future__ import annotations

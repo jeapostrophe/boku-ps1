@@ -280,7 +280,7 @@ Register it? · 絵日記を書いて寝ますか？ Write in your diary and go 
 
 The bag's list is one line in a 115-px frame, so there three names take a shorter form (Jay,
 2026-09-24): Calisthenics Card, Souvenir Crackers, Firecracker Bundle; dialogue keeps the full
-names. Summer Memories' 昆虫標本＋虫かご row is "Specimens" for the same reason.
+names. Summer Memories' 昆虫標本＋虫かご row is "Specimens+Cage", which fits its frame in the same font (Jay, 2026-09-24).
 
 ## 5. Food
 

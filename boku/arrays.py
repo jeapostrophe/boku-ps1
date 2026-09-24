@@ -294,11 +294,9 @@ def unreachable(line_id: str) -> str | None:
     return UNREACHABLE.get(line_id.split(".", 1)[0])
 
 
-ROW_SPLIT = "exe@8003D5F0"
-"""The card messages, whose items may take several rows (`boku.card_messages`)."""
 HELP_TEXT = "exe@80029B20"
 """The controls-help lines, whose line 11 may take two (`boku.help_screen`)."""
-ROW_SPLITS = frozenset({ROW_SPLIT, HELP_TEXT})
+ROW_SPLITS = frozenset({HELP_TEXT})
 """The **L** arrays an item of which the build may split into rows, each an item."""
 
 

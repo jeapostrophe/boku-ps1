@@ -1106,13 +1106,12 @@ def _place_and_plan(
     """Move the grown arrays, then plan the reinsertion carrying every patch it may absorb:
     `(arrays, plan, carry, refused)`. `words` loses every refused line.
 
-    The overlay words the answer pair, the code labels and the moved arrays (the
-    card-message records among them, `boku.card_messages`) rewrite may be in a member the
-    plan grows (an overlay's tail), so they are carried into it; a line the plan then
-    refuses is taken out and the round runs again, so no patch outlives its line. A refusal
-    of an overlay's growth names the items in its tail: the arrays are placed again with
-    that overlay not grown, and only if resident room cannot hold them either do they
-    leave `words`.
+    The overlay words the answer pair, the code labels and the moved arrays rewrite may be
+    in a member the plan grows (an overlay's tail), so they are carried into it; a line the
+    plan then refuses is taken out and the round runs again, so no patch outlives its line.
+    A refusal of an overlay's growth names the items in its tail: the arrays are placed
+    again with that overlay not grown, and only if resident room cannot hold them either do
+    they leave `words`.
     """
     labels = {label.line_id for label in read_code_labels(archive)}  # code_label_patches'
     refused: dict[str, tuple[str, ...]] = {}

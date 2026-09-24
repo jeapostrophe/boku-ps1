@@ -49,8 +49,8 @@ def test_a_box_of_several_lines_is_an_e_array_s():
     """Only an **E** array finds its items by `0x8000`, so only there may the build put a
     `0x8001` inside an item (`boku.layout.holds`); in an **L** array every bit-15 word ends
     an item and an inserted break would shift every later one -- unless the build splits
-    the rows into items of their own, which it does for the card messages alone
-    (`boku.arrays.splits_into_rows`, `boku.card_messages`)."""
+    the rows into items of their own, which it does for the help screen's line 11 alone
+    (`boku.arrays.splits_into_rows`, `boku.help_screen`)."""
     shapes = {array.line_id_prefix: array.shape for array in ARRAYS}
     load_boxes.cache_clear()
     several = [line_id for line_id, box in load_boxes().items() if box.lines > 1]

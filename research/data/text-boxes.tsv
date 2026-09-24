@@ -22,7 +22,6 @@ exe@80029B20.19	150	172	10	1	5 controls help (START)	button label: ends where th
 exe@80029B20.20	150	172	10	1	5 controls help (START)	button label: ends where the right column starts (x 172)
 exe@80029B20.21	108	132	12	1	5 controls help (START)	asm/walkers.asm's pen (y 128): ends where line 8 starts
 exe@8003D5F0.*	34	299	12	1	17 memory-card messages (TITLE)	the panel's inner edge; g_mc_msg's layouts other than 5-6 start at 34
-exe@8003D5F0.3	34	299	12	2	17 memory-card messages (TITLE)	the panel's inner edge; two rows, the second an item of its own in every g_mc_msg record that shows it (boku.card_messages; Jay, 2026-09-24)
 exe@8003D5F0.29	74	299	12	1	17 memory-card messages (TITLE)	g_mc_msg layouts 5-6 start at 74
 exe@8003D5F0.30	74	299	12	1	17 memory-card messages (TITLE)	g_mc_msg layouts 5-6 start at 74
 exe@8003D9BC.*	40	149	12	1	19 config labels (TITLE)	the left panel's frame

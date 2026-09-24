@@ -38,7 +38,6 @@ from boku.archive import (
 )
 from boku.arrays import (
     HELP_TEXT,
-    ROW_SPLIT,
     SAVE_TITLE_LINE_ID,
     SAVE_TITLE_PARTS_ADDR,
     ArrayWalk,
@@ -47,7 +46,6 @@ from boku.arrays import (
     relocatable,
     walk_all,
 )
-from boku.card_messages import record_edits
 from boku.code_text import (
     BANNERS,
     DATE_LABELS,
@@ -102,7 +100,7 @@ variables here. So only an edit set offers it (`boku.build.EditSet.array_regions
 
 ALIGN = 4
 
-ROW_DRAWERS = {ROW_SPLIT: record_edits, HELP_TEXT: help_edits}
+ROW_DRAWERS = {HELP_TEXT: help_edits}
 """The edits that draw each `boku.arrays.ROW_SPLITS` array's added rows, by array."""
 
 HEAP_POINTER = 0x80068AF0

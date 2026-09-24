@@ -106,7 +106,7 @@ exe@8003D2E0.56	(unlabelled)	Mantis
 exe@8003D5F0.0	(unlabelled)	Checking MEMORY CARD...
 exe@8003D5F0.1	(unlabelled)	No MEMORY CARD is inserted.
 exe@8003D5F0.2	(unlabelled)	Could not access the MEMORY CARD.
-exe@8003D5F0.3	(unlabelled)	There are no free blocks on the MEMORY CARD.
+exe@8003D5F0.3	(unlabelled)	The MEMORY CARD has no free blocks.
 exe@8003D5F0.4	(unlabelled)	There is no file for this game.
 exe@8003D5F0.5	(unlabelled)	There is no file that has finished this game.
 exe@8003D5F0.6	(unlabelled)	Which file do you want to load?
@@ -137,7 +137,8 @@ exe@8003D5F0.30	(unlabelled)	This file is corrupted.
 exe@8003D5F0.31	(unlabelled)	This data is out of date.
 # NOTE exe@8003D5F0: Sony's period wording for the card ("MEMORY CARD" in capitals); .21-.22 are
 #   one question drawn over two lines; the lenticular brackets of .13, .23 (and exe@8003D9BC.4)
-#   become parentheses, which the font has.
+#   become parentheses, which the font has. .3 is worded to fit its panel on one line (Jay,
+#   2026-09-24, decisions.html § 8b).
 
 # --- exe@8003D9BC: config screen labels
 exe@8003D9BC.0	(unlabelled)	Message display
@@ -148,9 +149,10 @@ exe@8003D9BC.4	(unlabelled)	(Rumble)
 
 # --- exe@8003DA00: extras menu labels
 exe@8003DA00.0	(unlabelled)	Picture Diary
-exe@8003DA00.1	(unlabelled)	Specimens
-# NOTE exe@8003DA00.1: the one-line version is Jay's ruling (2026-09-24) for a panel-bound box: the
-#   menu's frame holds 109 px and "Specimens + Bug Cage" is 139. The row opens the specimens and the cage.
+exe@8003DA00.1	(unlabelled)	Specimens+Cage
+# NOTE exe@8003DA00.1: Jay's ruling (2026-09-24, decisions.html § 9): "Specimens+Cage" if it fits in
+#   the same font as the other labels, which it does (103 of the frame's 109 px); "Specimens + Bug
+#   Cage" is 139. The row opens the specimens and the cage.
 exe@8003DA00.2	(unlabelled)	Kites
 exe@8003DA00.3	(unlabelled)	Belongings
 exe@8003DA00.4	(unlabelled)	Ending
