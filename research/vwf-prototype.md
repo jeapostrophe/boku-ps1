@@ -816,14 +816,15 @@ specification.
 | 20b | `TITLE 0x80080680` (extras labels 0–4) | `0x80080790 addiu v1,s1,0xC` is followed by a branch; hook at `0x800807B0 addiu s0,s0,2`; lines 0 and 3 letter-spaced by `0x800807A8` | `s1` · `-2(s0)` | **A** | **proven** |
 | 21 | `TITLE 0x80080484` (extras numbers `／ 3 1 ％`) | none | — | **C** | table |
 | 22 | `TAKO 0x8007C684` (crash banner, 4 glyphs stacked vertically) | rows | — | **banner**: `vwf_crash_banner`, as row 10 | **proven** (forced) |
-| 23 | `MUSI 0x8007C604` (button hint, 7 glyphs, bound `slti 7`) | x recomputed from the index: `0x8007C700 sll a1,a1,2` + `addiu a1,a1,0x78` | index | **B**: the glyph count is a code constant; hooking means recomputing x as a prefix sum | table |
-| 24 | `MUSI 0x8007EDB0` (strength labels, 3 rows × 3 cells) | x from the index at 16 px (`0x8007EE1C`) and 12 px (`0x8007EE78`), bounds `slti 2`/`3` | index | **B**: the row stride and bounds fix the cell count, so a translation rewrites the array and the bounds anyway | table |
-| 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested |
-| 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | tested |
+| 23 | `MUSI 0x8007C604` (button hint, 7 glyphs, bound `slti 7`) | x recomputed from the index: `0x8007C700 sll a1,a1,2` + `addiu a1,a1,0x78` | index | **banner**: `vwf_sumo_hint` (asm/musi_text.asm) centres the line and widens the board, hooked at the entry by the build | **proven** (Beetle) |
+| 24 | `MUSI 0x8007EDB0` (strength labels, 3 rows × 3 cells) | x from the index at 16 px (`0x8007EE1C`) and 12 px (`0x8007EE78`), bounds `slti 2`/`3` | index | **banner**: `vwf_sumo_rank` centres each row on x 108, hooked at the entry | **proven** (Beetle) |
+| 25 | `MUSI 0x80084F64` (move names) | `0x800850A0 addiu s1,s1,0xC` (delay slot `lhu a0,0(s0)`) | `s1` · `-2(s0)` | **A**, body `vwf_step_s1_s0` | tested; unreachable in retail (debug overlay only: sumo.md § The desk's text) |
+| 26 | `MUSI 0x800850D8` (move names, second list) | `0x80085208 addiu s1,s1,0xC` (delay slot `lhu a3,0(s0)`) | `s1` · `-2(s0)` | **A**, the same body | tested; unreachable in retail (no caller) |
 
 Counts: **A** 13 surfaces (5a, 5b, 9, 11, 12a, 12b, 17, 18, 19, 20a, 20b, 25, 26; 13 and 14
 ride on 12), of which 8 proven (5a, 12a, 12b, 17, 18, 19, 20a, 20b), 5 tested (5b, 9, 11,
-25, 26); **B** 2 (23, 24); **C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
+25, 26 -- the last two unreachable in retail); **banner** 2 (23, 24, proven on Beetle);
+**C** 8 (6, 7, 8, 10, 15, 16, 21, 22). The "six copies of one walker" are not
 register-identical — pens `s3`, `s5`, `v1`+`s0`, `v1`+`s1`, `s1`, `s1`; id pointers `s0` or
 `s1` — so the bodies are per shape and per stock pitch (`asm/walkers.asm`, the walker island;
 § "The free space").
@@ -942,16 +943,15 @@ not register in mode 10, so the scroll (`0x800805DC` = 200) and the grid are wri
 ## Not done
 
 * **Summer memories' label 5** is proven only by forcing its popup. **`HHON`** is
-  measured and prototyped, not installed (§ "The `HHON` walkers"). **Surfaces 9, 11, 25
-  and 26** are installed and run in `tests/test_real_walkers.py` but not on screen: the cage
-  HUD needs a caught insect, fishing and sumo days of play. Their boxes are not measured,
-  and the English is wider than anything the Japanese drew there — insect names up to 145 px
-  (median 90) against the stock's 96, fish names 90 against 48, sumo moves 96 against 84
-  (`arrays.txt` through the cell map, 2026-09-23). An insect name wider than 96 px starts
-  left of MUSI's right-aligned field, and MUSI also draws names at a fixed x 0xAF with the
-  next item at a fixed 0x10F (`0x8007E6E4`, `E8E0`, `EA48`; 0xD8 at `0x8008E8AC`, `EC7C`),
-  which do not read the width — a name past 96 px runs under that item. What either
-  overlaps on screen is unmeasured. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
+  measured and prototyped, not installed (§ "The `HHON` walkers"). **Surfaces 9 and 11**
+  are installed and run in `tests/test_real_walkers.py` but not on screen: the cage HUD
+  needs a caught insect, fishing days of play. Their boxes are not measured, and the English
+  is wider than anything the Japanese drew there — insect names up to 145 px (median 90)
+  against the stock's 96, fish names 90 against 48 (`arrays.txt` through the cell map,
+  2026-09-23). Surfaces 25 and 26 and the debug screen's names are unreachable in retail, and
+  the exchange notebook's names are measured ([sumo.md](sumo.md) § The desk's text). Not
+  measured: the bout's two names right-aligned in `MUSI`'s 96-px `SUMO_FIELD` (drawn at
+  `0x8007D89C`, `0x8007D940`), where a 145-px name starts 49 px left of the field. (SELECT on Beetle was reached on 2026-09-20 through the day-1 living-room
   route, `work/txt05b/shots/06`.)
 * **Kerning, bearings, glyphs wider than 12**: none; the dialogue's nine slots are full and the
   bodies add only the table byte.

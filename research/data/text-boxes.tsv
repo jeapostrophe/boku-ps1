@@ -43,3 +43,14 @@ title@7A78.0	112	299	12	1	18 the card screens' two answers (TITLE)	the card pane
 exe@8003DA00.5	114	248	12	1	20 summer-memories quiz rate (TITLE)	the quiz-rate popup's tile, x 112..248 (asm/title.asm); the label shares it with the day count and the percentage below
 exe@80036750.*	108	212	12	1	10 fortune banner	the banner panel (boku.code_text BANNERS) less 8 px a side, centred as the line is
 tako@440.*	108	212	12	1	22 kite crash banner (TAKO)	the banner panel (boku.code_text BANNERS) less 8 px a side, centred as the line is
+musi@348.*	55	267	12	1	25b bug-sumo button hint (MUSI)	centred on the board's middle (x 161); asm/musi_text.asm widens the board to the line plus the retail 22-px margins, and 212 px keeps it 256 wide at most, on screen
+musi@358.*	83	133	12	1	25c bug-sumo rank board (MUSI)	the board's paper, x 82..134 on Beetle, each row centred on x 108 as the retail rows are
+exe@8003D2E0.23	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	a sumo fighter's name ends at the item after it (x 271, asm/walkers.asm vwf_name_before_sym); the page's paper starts at x 124, and a name past 135 px runs over the top binder hole
+exe@8003D2E0.24	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.25	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.26	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.27	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.28	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.29	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.30	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)
+exe@8003D2E0.56	126	271	12	1	25d bug-sumo exchange notebook (MUSI)	as exe@8003D2E0.23 (research/sumo.md § The desk's text)

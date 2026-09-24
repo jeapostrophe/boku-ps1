@@ -170,3 +170,41 @@ Beetle, 2026-09-23, with the maxed cage:
   level C's base with the band up, and it must be down when the clip ends (`--leave` then
   leaves bug sumo: loading-and-memory.md § Leaving a mode). `tools/redux/sumo-clip.lua`
   reaches the desk on PCSX-Redux from a cold boot and plays a clip by the same call.
+
+## The desk's text (PLAN `TXT-05`, `PIPE-07`)
+
+What bug sumo draws from its own arrays and the insect names, measured on Beetle on
+2026-09-23 with the days build (shots under `work/surf/`; the exchange notebook reached by
+writing a boy's offered bug to `0x8003DE18`, a cage-format record, before ○ on it).
+
+* **The button hint** (`musi@348`, "△で虫をたたく" when the bug is on the drum):
+  `musi_hint_draw` `0x8007C604` draws 7 cells from x 120 at y 156 over a board of two 64 × 52
+  sprites at x 97 and 161 (`MUSI.OVL`'s 22-byte records `0x8007A4CC`, `0x8007A4E4`, added
+  at `g_ot + 0x2240`). The English is drawn by `asm/musi_text.asm` (`vwf_sumo_hint`),
+  centred on x 161, and the board widened by repeating a slice of the left half's plain
+  frame and paper (u + 24, at most 32 wide at a time) until it holds the line with the
+  retail 22-px margins; "△: tap your bug" (97 px) makes it 142 wide. The widened frame
+  shows no seam on Beetle.
+* **The rank board** (`musi@358`, 弱い / 強い / キング, state 4 — LEFT from the drum):
+  `musi_rank_draw` `0x8007EDB0` draws rows 16 px apart from y 85, each centred on x 108.
+  The paper is x 82..134; "Weak", "Strong", "King" (31, 42, 27 px) are drawn centred there
+  by `vwf_sumo_rank`, the board unchanged.
+* **The exchange notebook** (`0x8007E670`: the offered bug, and the one in hand if any)
+  draws a name at x 175 and the item after it — the sex mark, then the catch number at
+  0x11E — at a fixed x 271: a Japanese name is 8 cells, 96 px, and ends there. Each of its
+  three name calls (`0x8007E6E4`, `E8E0`, `EA48`) now goes to `vwf_name_before_sym`
+  (`asm/walkers.asm`), which measures the name off screen as `MUSI` measures its
+  right-aligned names and ends it at x 271. The page's paper starts at x 124 with binder
+  holes at x 129..134, so a name has 145 px; "Red-legged Stag Beetle" (144) covers the top
+  hole and stays readable. **A size badge** (record byte 3 = 1, the crown at x 0x90; = 2,
+  a pink badge at 0x8C) sits left of the name at x 140..168 and leaves 103 px: every sumo
+  beetle's name but "Oni", "Flat" and "Saw" runs over it then (seen: "Red-legged" over the
+  pink badge).
+* **The move names** (`musi@2C`, surfaces 25 and 26 of text-renderer.md) are never shown
+  in retail: `0x80085580`, the side-by-side pair, is called only from `MUSI`'s update under
+  `0x80025938 == 1`, a word nothing but `sw zero` at `0x80011FF0` stores
+  (vwf-prototype.md § "The quiz rate"), and `0x80085240`, the other, has no `jal`, `j`,
+  data word or `lui` pair in `MUSI` or the executable. The same holds for the debug
+  screen's names at `0x8008E8AC` and `0x8008EC7C` (state 9, `0x8008E3E4`, entered on
+  START under that word). Their walkers stay installed and tested (`tests/test_real_walkers.py`).
+

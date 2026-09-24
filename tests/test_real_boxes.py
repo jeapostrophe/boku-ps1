@@ -189,6 +189,7 @@ def test_every_row_s_pitch_is_its_walker_s_stock_step(archive):
         "exe@80046614": step(0x800438B8),
         **dict.fromkeys(FISH, step(0x800438B8)),  # fish_msg_draw -> text_draw_h
         "exe@8003DA00": step(0x80080790, "TITLE.OVL"),  # extras_draw
+        "exe@8003D2E0": step(0x80037B20),  # sysmsg_draw across: the insect names
         "title@7A78": step(0x8007D050, "TITLE.OVL"),  # the answers' drawer
         **dict.fromkeys(BANNERS, LABEL_PITCH),  # asm/banners.asm steps as the labels do
     }

@@ -86,7 +86,7 @@ def test_div_and_divu_leave_the_quotient_in_lo_and_the_remainder_in_hi(
 
 
 def test_a_stub_returns_what_it_is_given_and_its_calls_are_ordered():
-    """`Machine.returns` and `Machine.order`, which the bug-sumo init test reads."""
+    """`Machine.returns`, `Machine.order` and `Machine.on_stub`, which the bug-sumo tests read."""
     first, second = CODE + 0x100, CODE + 0x200
     m = Machine(stubs={first: [], second: []}, returns={second: 0})
     # addiu sp,-24; sw ra,16(sp); jal second; nop; jal first; nop; lw ra,16(sp); nop; jr ra;
@@ -94,8 +94,11 @@ def test_a_stub_returns_what_it_is_given_and_its_calls_are_ordered():
     jal = lambda target: 0x0C000000 | (target & 0x0FFFFFFF) >> 2  # noqa: E731
     code = [0x27BDFFE8, 0xAFBF0010, jal(second), NOP, jal(first), NOP, 0x8FBF0010, NOP]
     m.load(CODE, struct.pack(f"<{len(code) + 2}I", *code, JR_RA, 0x27BD0018))
+    seen: list[int] = []
+    m.on_stub[first] = lambda machine: seen.append(machine.regs[29])
     assert m.call(CODE) == 0xDEADBEEF, "a stub with no return value leaves garbage in v0"
     assert m.order == [second, first]
+    assert seen == [0x801FFF00 - 24], "on_stub sees the machine as the call reaches the stub"
     m.order.clear()
     code[4:6] = [NOP, NOP]
     m.load(CODE, struct.pack(f"<{len(code) + 2}I", *code, JR_RA, 0x27BD0018))

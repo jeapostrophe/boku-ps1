@@ -22,6 +22,7 @@ documented, so a patch that does it is refused rather than given either answer.
 from __future__ import annotations
 
 import struct
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from boku.arrays import GLYPH_DRAW
@@ -66,6 +67,9 @@ class Machine:
     returns garbage with the rest of `CLOBBERED`."""
     order: list[int] = field(default_factory=list)
     """Every stub call's address, in the order they were made."""
+    on_stub: dict[int, Callable[[Machine], None]] = field(default_factory=dict)
+    """Called with the machine when that stub is reached, before its registers are
+    clobbered: for reading what a pointer argument points at, which the caller may reuse."""
     hi: int = 0
     lo: int = 0
     _written: int | None = None
@@ -126,6 +130,8 @@ class Machine:
                     (*self.regs[4:8], self.read(sp + 16, 4), self.read(sp + 20, 4))
                 )
                 self.order.append(pc)
+                if pc in self.on_stub:
+                    self.on_stub[pc](self)
                 for number in CLOBBERED:
                     self.regs[number] = POISON
                 if pc in self.returns:

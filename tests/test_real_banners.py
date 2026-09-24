@@ -17,6 +17,7 @@ from boku.code_text import (
     BANNER_PANEL_X,
     BANNERS,
     LABEL_PITCH,
+    Banner,
     banner_blob,
     lay_out_banner,
 )
@@ -26,6 +27,9 @@ from tests.mips import Machine
 from tests.test_real_date_labels import ARRAYS, EDITS, GLYPH_FLUSH
 
 FORTUNE, CRASH = "exe@80036750", "tako@440"
+PANELLED = sorted(p for p, banner in BANNERS.items() if banner.retail is not None)
+"""The banners whose panel is data the build widens; bug sumo's size their own
+(tests/test_real_sumo_text.py)."""
 FORTUNE_DRAWS, FORTUNE_LUCK = 0x8003E052, 0x8003DD1D  # asm/banners.asm's equates
 TEXT_NTH = 0x800438F0
 
@@ -97,7 +101,7 @@ def _panel_words(archive: Archive, banner) -> tuple[int, ...]:
     return tuple(w & 0xFFFF for w in struct.unpack("<4I", raw))
 
 
-@pytest.mark.parametrize("prefix", sorted(BANNERS))
+@pytest.mark.parametrize("prefix", PANELLED)
 def test_the_panel_edits_sit_on_the_retail_rect(archive, prefix):
     """What `panel_edits` overwrites is the retail rect the drawer's panel is drawn from."""
     banner = BANNERS[prefix]
@@ -108,7 +112,7 @@ def test_the_panel_edits_sit_on_the_retail_rect(archive, prefix):
             assert int.from_bytes(raw, "little") >> 16 == 0x2402, "addiu v0,zero,n"
 
 
-@pytest.mark.parametrize("prefix", sorted(BANNERS))
+@pytest.mark.parametrize("prefix", PANELLED)
 def test_the_built_panel_is_wide_centred_on_the_retail_one_and_holds_the_line(days_built, prefix):
     banner = BANNERS[prefix]
     x, top, w, h = _panel_words(days_built, banner)
@@ -119,7 +123,7 @@ def test_the_built_panel_is_wide_centred_on_the_retail_one_and_holds_the_line(da
 
 
 def test_each_banner_s_box_is_inside_its_panel_and_centred():
-    for prefix in BANNERS:
+    for prefix in PANELLED:
         box = box_for(f"{prefix}.0")
         assert box.x > BANNER_PANEL_X and box.right < BANNER_PANEL_X + BANNER_PANEL_W
         assert box.x + box.right == 2 * BANNER_CENTRE, "the line is centred, so its room is too"
@@ -144,3 +148,22 @@ def test_an_untranslated_item_is_found_where_text_nth_looks(archive):
             else words_of(archive.exe_bytes(0x80036750 + 2 * cells * n, 2 * cells))
         )
         assert tuple(item[: len(expected)]) == tuple(expected), n
+
+
+def test_a_sumo_banner_s_box_is_centred_where_its_line_is():
+    """Bug sumo's banners size their own board, so the box the lint holds a line to must be
+    centred on the x the routine centres it on."""
+    for prefix, banner in BANNERS.items():
+        if banner.line is None:
+            continue
+        box = box_for(f"{prefix}.0")
+        assert box is not None and box.x + box.right == 2 * banner.centre[0], prefix
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [{}, {"line": (1, 2), "retail": (1, 2, 3, 4)}, {"retail": (1, 2, 3, 4)}],
+)
+def test_a_banner_has_exactly_one_shape(fields):
+    with pytest.raises(ValueError, match="one of rect/literals"):
+        Banner("r", ("exe", 0), **fields)

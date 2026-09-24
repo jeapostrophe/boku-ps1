@@ -100,3 +100,32 @@ SUMO_FIELD equ 8 * 12               ; the right-aligned names' field: eight 12-p
     move    s0, v0
 .endif
 .endarea
+
+; ---- the exchange notebook's names: 0x8007E670 draws each at x 175 and the item after it at
+; a fixed x 271; they end at that item instead (asm/musi_text.asm, vwf_name_before_sym).
+.org 0x8007E6E4
+.area 4
+.if ORIGINAL
+    jal     0x80037BA8              ; stock: sysmsg_line_draw(id, 175, y, 0, 0)
+.else
+    jal     vwf_name_before_sym
+.endif
+.endarea
+
+.org 0x8007E8E0
+.area 4
+.if ORIGINAL
+    jal     0x80037BA8
+.else
+    jal     vwf_name_before_sym
+.endif
+.endarea
+
+.org 0x8007EA48
+.area 4
+.if ORIGINAL
+    jal     0x80037BA8
+.else
+    jal     vwf_name_before_sym
+.endif
+.endarea

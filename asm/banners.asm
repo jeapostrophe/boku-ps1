@@ -10,8 +10,8 @@ TEXT_NTH       equ 0x800438F0       ; text_nth(base, n): the item after n 0x8000
 FORTUNE_DRAWS  equ 0x8003E052       ; three bytes, each 1 or 2; the result counts the 2s
 FORTUNE_LUCK   equ 0x8003DD1D       ; where fortune_draw leaves that count
 
-; Draw the cells at a0 centred on x a2 at y a1, then glyph_flush.
-vwf_banner_line:
+; Draw the cells at a0 centred on x a2 at y a1; v0 = their width, v1 -> the next item.
+vwf_centred_cells:
     addiu   sp, sp, -32
     sw      ra, 24(sp)
     sw      s0, 20(sp)
@@ -24,20 +24,31 @@ vwf_banner_line:
     move    a2, zero
     jal     vwf_label_cells         ; measured only: v0 = the width
     addiu   a3, zero, 1
-    srl     v0, v0, 1
-    subu    a1, s2, v0
+    srl     t0, v0, 1
+    subu    a1, s2, t0
+    move    s2, v0
     move    a0, s0
     move    a2, s1
     jal     vwf_label_cells
     move    a3, zero
-    jal     GLYPH_FLUSH
-    nop
+    move    v0, s2
     lw      ra, 24(sp)
     lw      s0, 20(sp)
     lw      s1, 16(sp)
     lw      s2, 28(sp)
     jr      ra
     addiu   sp, sp, 32
+
+; The same, then glyph_flush.
+vwf_banner_line:
+    addiu   sp, sp, -24
+    sw      ra, 16(sp)
+    jal     vwf_centred_cells
+    nop
+    lw      ra, 16(sp)
+    addiu   sp, sp, 24
+    j       GLYPH_FLUSH
+    nop
 
 ; fortune_draw in English: t0 -> x, y, the four results. The result is how many of the three
 ; draws came up 2, left where the retail drawer leaves it.

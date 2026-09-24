@@ -269,19 +269,37 @@ panel was. The line is centred on `BANNER_CENTRE`, which the text hands `asm/ban
 
 BANNER_CENTRE = BANNER_PANEL_X + BANNER_PANEL_W // 2
 
+SUMO_HINT_CENTRE = 161
+"""The middle of bug sumo's hint board: its two 64-px halves at x 97 and 161 (`MUSI.OVL`'s
+sprite records `0x8007A4CC`, `0x8007A4E4`)."""
+SUMO_RANK_CENTRE = 108
+"""The middle of every rank-board row as the retail drawer lays it out."""
+
 
 @dataclass(frozen=True)
 class Banner:
-    """A raw array its drawer stacks vertically in a tall panel (`asm/banners.asm`). In
-    English its items become cells ended by `0x8000`, drawn by `routine` as one centred line,
-    and the panel is made wide: at `rect`, the retail `(x, y, w, h)` as four halfwords, or
-    at `literals`, as four `addiu v0,zero,n` words."""
+    """A raw array whose cell count is its drawer's loop bound (`asm/banners.asm`,
+    `asm/musi_text.asm`). In English its items become cells ended by `0x8000`, drawn by
+    `routine` centred on a line. A panel the drawer takes from data is made wide: at `rect`,
+    the retail `(x, y, w, h)` as four halfwords, or at `literals`, as four `addiu v0,zero,n`
+    words; a drawer that sizes its own panel (bug sumo's) gives `line` instead, the first
+    line's centre x and y."""
 
     routine: str
     drawer: tuple[str, int]
-    retail: tuple[int, int, int, int]
+    retail: tuple[int, int, int, int] | None = None
     rect: tuple[str, int] | None = None
     literals: tuple[str, tuple[int, int, int, int]] | None = None
+    line: tuple[int, int] | None = None
+
+    def __post_init__(self) -> None:
+        panelled = self.retail is not None and (self.rect is None) != (self.literals is None)
+        own = self.line is not None and (self.retail, self.rect, self.literals) == (None,) * 3
+        if panelled == own:
+            raise ValueError(
+                f"{self.routine}: a banner has a retail panel and one of rect/literals, "
+                f"or a line and neither"
+            )
 
     @property
     def panel(self) -> tuple[int, int, int, int]:
@@ -295,8 +313,15 @@ class Banner:
         _, top, _, h = self.panel
         return top + (h - LABEL_PITCH) // 2
 
+    @property
+    def centre(self) -> tuple[int, int]:
+        """What the text hands the routine: the first line's centre x and its y."""
+        return self.line if self.line is not None else (BANNER_CENTRE, self.y)
+
     def panel_edits(self) -> list[tuple[str, int, bytes]]:
-        """`(image, RAM, new bytes)` over the retail rect."""
+        """`(image, RAM, new bytes)` over the retail rect; none for a drawer's own panel."""
+        if self.retail is None:
+            return []
         if self.rect is not None:
             return [(*self.rect, struct.pack("<4h", *self.panel))]
         image, rams = self.literals
@@ -316,8 +341,15 @@ BANNERS: dict[str, Banner] = {
         (125, 66, 70, 108),
         literals=("tako", (0x8007C610, 0x8007C618, 0x8007C620, 0x8007C628)),
     ),
+    # musi_hint_draw: 7 cells from x 120 at y 156 on a board of two 64-px sprites at x 97 and
+    # 161, which asm/musi_text.asm widens to hold the line.
+    "musi@348": Banner("vwf_sumo_hint", ("musi", 0x8007C604), line=(SUMO_HINT_CENTRE, 0x9C)),
+    # musi_rank_draw: three rows 16 px apart from y 85, each centred on x 108 (rows 0-1 draw
+    # two cells at a 16-px pitch from x 94, row 2 three at 12 from x 90).
+    "musi@358": Banner("vwf_sumo_rank", ("musi", 0x8007EDB0), line=(SUMO_RANK_CENTRE, 0x55)),
 }
-"""The fortune (`fortune_draw`, four results) and the kite crash (`tako_crash_draw`)."""
+"""The fortune (`fortune_draw`, four results), the kite crash (`tako_crash_draw`), and bug
+sumo's button hint and strength labels (research/sumo.md § The desk's text)."""
 
 
 def banner_of(line_id: str) -> Banner | None:
@@ -352,14 +384,17 @@ def banner_blob(archive: Archive, prefix: str, words: Mapping[str, Sequence[int]
     each ended by `0x8000`."""
     array = array_of(prefix)
     rows, cells = array.spec
-    out = struct.pack("<2h", BANNER_CENTRE, BANNERS[prefix].y)
+    out = struct.pack("<2h", *BANNERS[prefix].centre)
     for row in range(rows):
         new = words.get(f"{prefix}.{row}")
         if new is not None and is_laid_out_banner(new):
             out += words_to_bytes(new)
         else:
-            out += archive.image_bytes(array.image, array.ram + 2 * cells * row, 2 * cells)
-            out += words_to_bytes([END_WORD])
+            raw = archive.image_bytes(array.image, array.ram + 2 * cells * row, 2 * cells)
+            retail = list(struct.unpack(f"<{cells}H", raw))
+            while retail and retail[-1] == PAD_WORD:  # a row its drawer draws short
+                retail.pop()
+            out += words_to_bytes([*retail, END_WORD])
     return out
 
 

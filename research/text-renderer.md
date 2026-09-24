@@ -165,8 +165,8 @@ any image. **V** = vertical, **H** = horizontal, adv = glyph advance / line step
 | 22 | `TAKO` `0x8007C684` | 4 ids | one glyph per row, x `0x9A` | — | literals |
 | 23 | `MUSI` `0x8007C604` | ids at `0x80079D50` | H 12 | hard-coded | (0x78, 0x9C) |
 | 24 | `MUSI` `0x8007EDB0` | ids at `0x80079D60` | H 16 / 12 | hard-coded | literals |
-| 25 | `MUSI musi_move_name_draw` `0x80084F64` | `MUSI +0x2C` move names | H 12 | hard-coded | (0x8C, 0xA0/0xB4) |
-| 26 | `MUSI` `0x800850D8` | same array | H 12 | hard-coded | y `0x68` |
+| 25 | `MUSI musi_move_name_draw` `0x80084F64` | `MUSI +0x2C` move names | H 12 | hard-coded | (0x8C, 0xA0/0xB4); debug overlay only, unreachable in retail ([sumo.md](sumo.md) § The desk's text) |
+| 26 | `MUSI` `0x800850D8` | same array | H 12 | hard-coded | y `0x68`; its caller `0x80085240` has none: unreachable |
 
 `BUMPER`, `ENDOTI` and `ZUKAN` draw no glyphs themselves (`ZUKAN` only runs a SELECT). The diary
 (`NIKKI`) has no glyph path at all: its pages are TIMs. Digits next to labels are sprites from
@@ -327,7 +327,7 @@ Candidates, cheapest first:
 2. **Dead code, unreferenced by any `jal`, data word or `lui` pair in any image**
    (`work/txt01/dead.py`): `0x80012E04…0x80013070` — 620 contiguous bytes (`cd_dir_sectors_form2`,
    `0x80012E40`, `0x80012E64`, `cd_dir_search_file`, `cd_dir_find`, `0x80012FF8`);
-   `dbg_font_init` `0x800221CC` — 712 bytes (**now split between the movie loader and the walker bodies** at
+   `dbg_font_init` `0x800221CC` — 712 bytes (**now split between the movie loader and the walker bodies**, `vwf_name_before_sym` among the latter, at
    `DEBUG_FONT_SPLIT`, `asm/vwf.asm`; the 620 bytes at
    `0x80012E04` are the movie hooks', `asm/movie.asm`); `date_label_draw_b` `0x80037698` — 352;
    `0x80037414` — 272; `0x80043928` — 296; `0x8001CA64` 244, `0x8001CDF4` 192, `0x8001CC4C` 168.
@@ -359,8 +359,8 @@ reference scan over the executable and all seven overlays (`jal`/`j`, `lui` pair
 
 | region | bytes | what it was | owner |
 |---|---:|---|---|
-| `0x8005CD44…0x8005DCF8` | 4,020 | the PC-host module (`PCload`/`PCsave`, libsn `PCopen`/`PCread`/…), reached only from `g_pc_host` branches; `asm/vwf.asm` clears `g_pc_host` (`0x80023830`) in the file, so no branch can be taken even before `sys_init`. On the stock image an exec watch (`tools/vwf/island-watch.lua`, `BOKU_ISLAND_RANGE=8005CD44,8005DCF8`, under `drive.lua` with the boot presses to 19,300 frames) saw no hit through boot, the arrival sequence, free roam, START and the item menu; sumo, fishing and a save were not walked | renderer (`asm/vwf.asm`: advance table, select hooks; `asm/labels.asm`: the date labels' routines; `asm/banners.asm`: the banners'; `asm/voice_resident.asm`: the clip subtitles' block read and bug sumo's init), from its start to `vwf_free` |
-| `0x8005D494…0x8005DCF8` today | 2,148 | the island's tail, from `vwf_free` (the edit set's `gap`) to `PC_HOST_ISLAND_END` | relocated text arrays (`PLAN PIPE-07`, `boku.build.EditSet.array_regions`); the renderer has priority and the array allocator refuses with numbers if they collide |
+| `0x8005CD44…0x8005DCF8` | 4,020 | the PC-host module (`PCload`/`PCsave`, libsn `PCopen`/`PCread`/…), reached only from `g_pc_host` branches; `asm/vwf.asm` clears `g_pc_host` (`0x80023830`) in the file, so no branch can be taken even before `sys_init`. On the stock image an exec watch (`tools/vwf/island-watch.lua`, `BOKU_ISLAND_RANGE=8005CD44,8005DCF8`, under `drive.lua` with the boot presses to 19,300 frames) saw no hit through boot, the arrival sequence, free roam, START and the item menu; sumo, fishing and a save were not walked | renderer (`asm/vwf.asm`: advance table, select hooks; `asm/labels.asm`: the date labels' routines; `asm/banners.asm`: the banners'; `asm/voice_resident.asm`: the clip subtitles' block read and bug sumo's init; `asm/musi_text.asm`: bug sumo's hint and rank board), from its start to `vwf_free` |
+| `0x8005D750…0x8005DCF8` today | 1,448 | the island's tail, from `vwf_free` (the edit set's `gap`) to `PC_HOST_ISLAND_END` | relocated text arrays (`PLAN PIPE-07`, `boku.build.EditSet.array_regions`); the renderer has priority and the array allocator refuses with numbers if they collide |
 | `0x80025120…0x80025860` | 1,856 | `dbg_font_init`'s 8×8 font and CLUT (only it refers to them) | relocated text arrays (`boku.array_relocate.DEAD_REGIONS`) |
 | `0x8007224C…0x80072670` | 1,060 | the PC-host module's data: its header string, `$gp` variables `0x8007228C…BC` and the `PCload`/`PCsave` messages; every reference, `$gp` ones included, is from the module | relocated text arrays (`DEAD_REGIONS`) |
 | `0x800101D8…0x800115D8` | 5,120 | `\_DATA` path strings, read by the game only on the PC-host path -- **not usable**: `g_cd_dir_name` points at them and this toolchain reads every member's name from them (`boku.archive.read_exe_dir`), in the built executable too | nobody |

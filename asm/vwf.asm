@@ -191,6 +191,7 @@ vwf_select_box:
 .include "labels.asm"
 .include "banners.asm"
 .include "voice_resident.asm"
+.include "musi_text.asm"
 
     .align  4
 vwf_free:                           ; first unclaimed byte of the island, reported by the build

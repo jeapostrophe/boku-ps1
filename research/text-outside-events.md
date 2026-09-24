@@ -252,7 +252,8 @@ surface's box is known (`research/data/text-boxes.tsv`; `boku.layout.lay_out_arr
   vertical, copied to the stack), the kite crash banner (`tako@440`, 4 cells, vertical),
   the bug-sumo button hint (`musi@348`, 7 cells) and strength labels (`musi@358`, 3 × 2-3
   cells). These are renderer surfaces (`PLAN TXT-05`); the two banners are drawn as one line
-  by `asm/banners.asm` ([vwf-prototype.md](vwf-prototype.md) § "The banners").
+  by `asm/banners.asm` ([vwf-prototype.md](vwf-prototype.md) § "The banners"), the bug-sumo
+  pair by `asm/musi_text.asm` ([sumo.md](sumo.md) § The desk's text).
 * **Waits for a layout ruling.** The insect box's 60 entries (`hhon@5328`), drawn by
   `hhon_entry_draw` vertically; English needs the surface redrawn and the array moved into
   a `HHON.OVL` extension (5,454 bytes, too large for resident space).
