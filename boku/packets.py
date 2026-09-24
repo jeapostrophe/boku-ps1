@@ -171,12 +171,12 @@ def voice_only_gists(path: Path = VOICE_ONLY_TSV) -> dict[str, str]:
 # --- where a packet may be written ------------------------------------------------------------
 
 
-def check_destination(out: Path) -> Path:
+def check_destination(out: Path, what: str = "A packet") -> Path:
     """Refuse a destination inside the repo that is not under `work/`.
 
-    A packet holds the Japanese script. Outside the checkout (a scratch directory, a
-    translator's own machine) is the caller's business; inside it, `work/` is the only
-    place the `.gitignore` keeps out of a commit.
+    A packet, or the reader's page (`what`), holds the Japanese script. Outside the checkout
+    (a scratch directory, a translator's own machine) is the caller's business; inside it,
+    `work/` is the only place the `.gitignore` keeps out of a commit.
     """
     out = Path(out).resolve()
     try:
@@ -185,7 +185,7 @@ def check_destination(out: Path) -> Path:
         return out
     if inside.parts[:1] != ("work",):
         raise PacketRefused(
-            f"{out} is inside the repo and not under work/. A packet is the game's own "
+            f"{out} is inside the repo and not under work/. {what} is the game's own "
             f"text and is never tracked (CLAUDE.md § 'This repo is public')."
         )
     return out
@@ -849,10 +849,7 @@ class PacketBuilder:
         event = scene["event"]
         template = self.template(scene)
         out = [heading or f"# {event} -- event {position} of {total}", ""]
-        out += self._where(scene)
-        out += self._branches(scene)
-        out += self._maps(scene)
-        out += self._quiz(scene, scene_dated_day(scene))
+        out += self.setting(scene)
         out += self._neighbours(scene, unit_events)
         out += [
             "## Your answer",
@@ -866,6 +863,17 @@ class PacketBuilder:
         if self.for_review:
             out += self._current(scene_line_ids(scene))
         return "\n".join(out).rstrip() + "\n"
+
+    def setting(self, scene: dict) -> list[str]:
+        """Where, when and who, the branches, the maps named and the per-day table: what the
+        translator is told about a scene before its lines, as Markdown -- and what the
+        reader (`boku.reader`) shows above them."""
+        return [
+            *self._where(scene),
+            *self._branches(scene),
+            *self._maps(scene),
+            *self._quiz(scene, scene_dated_day(scene)),
+        ]
 
     def _where(self, scene: dict) -> list[str]:
         hour = scene_hour(scene)

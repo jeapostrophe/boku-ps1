@@ -76,8 +76,7 @@ What it checks, and where each rule comes from
   warning, never a pass.
 * **`reader-vs-loader`** -- this module's parse against `boku.translation.SampleScenes`,
   the loader the image build reads English through. Two parsers of one provisional format
-  is a real risk (`tools/reader/build.py` carries a third and checks it the same way), so
-  they are compared rather than trusted.
+  is a real risk, so they are compared rather than trusted.
 
 The label and the marks
 -----------------------
@@ -250,13 +249,6 @@ def read_word_list(path: Path) -> tuple[str, ...]:
 
 ERROR = "ERROR"
 WARNING = "WARNING"
-
-SHARED_WITH_READER = frozenset(
-    {"unknown-id", "translated-twice", "select-options", "select-shape", "page-count"}
-)
-"""The checks `tools/reader/build.py --check` also reports. Two implementations of one
-rule set, over one store and one set of files, must name the same lines -- which is what
-`tests/test_lint.py`'s agreement gate compares. The reader reports; this enforces."""
 
 
 @dataclass(frozen=True, order=True)
@@ -981,6 +973,28 @@ def lint_clip_file(clips: Path | None, options: Options, disc_dir: Path) -> list
     return out
 
 
+def lint_everything(
+    store: Store,
+    rows: Sequence[Row],
+    options: Options,
+    disc_dir: Path,
+    encoder_kind: str,
+    cells: Path | None,
+    movies: Path | None = movie_cues.CUE_FILE,
+    clips: Path | None = clip_subs.CLIP_FILE,
+) -> list[Finding]:
+    """What `boku lint` reports over these rows, the movie cues and the clip subtitles, the
+    array room measured against this import -- `main_lint`'s findings, and the reader's
+    inline marks (`boku.reader`). Raises `OSError`, `LayoutError` or `ArchiveError` when a
+    named file or the import cannot be read."""
+    options = replace(options, array_room=_array_room(Path(disc_dir), encoder_kind, cells, options))
+    return [
+        *lint_rows(store, rows, options),
+        *lint_movie_file(movies, options, cells),
+        *lint_clip_file(clips, options, disc_dir),
+    ]
+
+
 def format_report(findings: Iterable[Finding]) -> list[str]:
     return [finding.format() for finding in findings]
 
@@ -1028,20 +1042,19 @@ def main_lint(
     except (StoreMissing, LayoutError) as error:
         print(f"lint: {error}", file=sys.stderr)
         return 2
-    options = replace(options, array_room=_array_room(Path(disc_dir), encoder_kind, cells, options))
     rows, findings = load_rows(paths)
-    findings = [*findings, *lint_rows(store, rows, options)]
     try:
-        findings += lint_movie_file(movies, options, cells)
-    except (OSError, LayoutError) as error:
-        print(f"lint: {movies}: {error}", file=sys.stderr)
+        findings = sorted(
+            [
+                *findings,
+                *lint_everything(
+                    store, rows, options, disc_dir, encoder_kind, cells, movies, clips
+                ),
+            ]
+        )
+    except (OSError, LayoutError, ArchiveError) as error:
+        print(f"lint: {error}", file=sys.stderr)
         return 2
-    try:
-        findings += lint_clip_file(clips, options, disc_dir)
-    except (OSError, ArchiveError) as error:
-        print(f"lint: {clips}: {error}", file=sys.stderr)
-        return 2
-    findings = sorted(findings)
     print(
         f"read {', '.join(path.name for path in paths)} "
         f"({len(rows)} row(s)) against {store.root} in {options.encoder.name}, "

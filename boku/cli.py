@@ -20,6 +20,7 @@ from boku.packets import add_arguments as add_packet_arguments
 from boku.packets import add_save_arguments as add_save_event_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
+from boku.reader import add_arguments as add_reader_arguments
 from boku.save import add_arguments as add_save_arguments
 from boku.texture_text import TEXTURE_TEXT_DIR
 from boku.texture_text import main_check as main_texture_check
@@ -559,6 +560,17 @@ def build_parser() -> argparse.ArgumentParser:
                 "__STR/BOKU_XA.XAM and every voiced movie's XA audio to WAV under work/voice/, "
                 "and with --transcribe run whisper-cli (Japanese) over them. The audio and the "
                 "transcripts are the game's own content, so they stay under work/."
+            ),
+        )
+    )
+
+    add_reader_arguments(
+        subcommands.add_parser(
+            "reader",
+            help="one page that walks every translated thing in order, for reading it",
+            description=(
+                "PLAN TRN-14: the whole translation as one page under the gitignored work/ "
+                "(boku.reader says what it shows)."
             ),
         )
     )

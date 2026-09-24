@@ -5,7 +5,7 @@ of the game (README principle 2), and a translation is keyed by **line id**, nev
 Japanese (principle 3). This is the step that makes those ids exist.
 
 What comes out, designed for two readers — the agents that translate (`TRN-02`) and the
-scene reader that displays the result (`TRN-06`):
+reader that displays the result (`TRN-14`, `boku.reader`):
 
 * `lines.jsonl` — one record per **logical line**: its id, what kind it is, who says it,
   the decoded Japanese with control words as tokens, the page and column layout, every

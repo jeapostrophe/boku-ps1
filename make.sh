@@ -89,6 +89,8 @@ usage: ./make.sh <verb> [arguments]
                                 the additive-word heuristic; and translation/movies.txt,
                                 the movie subtitles (translation/README.md)
                                 (./make.sh lint-translation --help for the switches)
+  reader [arguments]            the whole translation, in order, as one page to read and
+                                cite ids from -> work/reader/index.html (boku/reader.py)
   coverage [arguments]          per in-game day, every line the player can meet and what
                                 the build did with it -- translated, refused (English
                                 exists, the image did not get it), missing (never given to
@@ -318,6 +320,9 @@ case "$verb" in
         ;;
     lint-translation)
         exec uv run boku lint "$@"
+        ;;
+    reader)
+        exec uv run boku reader "$@"
         ;;
     coverage)
         exec uv run boku coverage "$@"

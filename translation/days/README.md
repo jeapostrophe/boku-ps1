@@ -64,21 +64,18 @@ are `./make.sh mockup`'s.
 
 There is no Japanese in these files, notes included (`boku save-event` refuses an answer
 that holds any). A page that does not fit the band is not the translator's to flag: `./make.sh
-lint-translation` measures every page and `./make.sh mockup` draws it, so the reader's *over*
-column, which counts `# OVERFLOW` notes, counts only notes someone added by hand. With an
+lint-translation` measures every page and `./make.sh mockup` draws it, and `./make.sh reader`
+shows the lint's findings on the lines they are about. With an
 imported disc,
 `python3 work/rec05/scenes.py --dump 171 184` prints the source beside them.
 
-A unit's state is one of **undrafted → drafted → reviewed → checked → rendered → finalized**:
-drafted by a translator; reviewed by an independent agent against the Japanese; checked once Jay
-has read it and his comments are applied; rendered once our own layout says every page would
-display (`./make.sh lint-translation`'s pixel fit, and the page mock-ups `./make.sh mockup` draws);
-finalized once he has seen it in the game, formatted and displayed correctly. `PLAN.md` `TRN-04` holds the table.
+Each unit's state (undrafted to finalized) is [../status.tsv](../status.tsv), defined in
+`translation/README.md` § status.tsv; the table below says only where each file began.
 
-| file | events | status |
+| file | events | began |
 |---|---|---|
 | [day01.txt](day01.txt) | `E0103`–`E0190` (27 events, 85 lines), `E0001` | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20) |
-| `arrays.txt` | the lines outside every event — memory-card and save messages, the title and config screens, the controls help, item, kite, fish and insect names and descriptions, captions, the insect book, bug sumo, the kite and diary menus (308 lines on 42 surfaces: 34 arrays, six labels spelled out in code, the save title and one message the program holds; `research/text-outside-events.md`); keyed by the extract's `<file>@<offset>.<item>` ids | PLAN `TRN-09`: not yet written. `./make.sh packet --arrays` makes its packet; the build places a line only where its English fits the array's own bytes (most will not until the fixed-pitch surfaces are rebuilt, PLAN `TXT-05`), and `boku lint` says which |
+| `arrays.txt` | the lines outside every event — memory-card and save messages, the title and config screens, the controls help, item, kite, fish and insect names and descriptions, captions, the insect book, bug sumo, the kite and diary menus (308 lines on 42 surfaces: 34 arrays, six labels spelled out in code, the save title and one message the program holds; `research/text-outside-events.md`); keyed by the extract's `<file>@<offset>.<item>` ids | PLAN `TRN-09`; `./make.sh packet --arrays` makes its packet, and `boku lint` says which lines the build cannot place |
 | [shared.txt](shared.txt) | 76 day-independent events (158 rows: 89 text, 36 menus, 33 voice-only): every one day 1 can reach, the nearest outdoors, those days 2–7 handed the day files, and the nine `boku coverage` found no day file had asked for (Ken-bo's fur, the sisters' room, the far waters, the beach, Saori's camp) | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20); the extension verified against the scene data and `EVVER.BIN` the same day; the coverage nine translated and reviewed against the Japanese the same day |
 
 ## shared.txt

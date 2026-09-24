@@ -109,7 +109,7 @@ def test_a_clean_file_is_clean(store, tmp_path):
     assert run(store, tmp_path, GOOD, label=False) == []
 
 
-# --- the four the reader also reports ---------------------------------------------------------
+# --- ids and select shape ----------------------------------------------------------------------
 
 
 def test_an_unknown_id_is_an_error(store, tmp_path):
@@ -176,9 +176,8 @@ def test_a_select_s_question_is_not_counted_as_an_option(tmp_path):
 
     That is the committed convention -- style guide § 13, `translation/days/README.md`
     § shared.txt, and the header of `translation/days/shared.txt` itself -- and it is what
-    `boku.layout.lay_out_select` and the reader's `select_fields` both read. Counted as an
-    option instead, every prompt-bearing select in the game is a false error, and the
-    reader and the lint disagree about the one check they are supposed to share.
+    `boku.layout.lay_out_select` and `boku.translation.select_fields` both read. Counted as
+    an option instead, every prompt-bearing select in the game is a false error.
     """
     synth = SynthStore.new(tmp_path)
     synth.select(CHOICE, options=2, prompts=1)

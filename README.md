@@ -43,7 +43,7 @@ playing, so it is the one worth translating.
 3. **Translation is keyed by line id.** Committed translation files hold English plus context
    notes written for this project, keyed by stable ids; the Japanese for an id exists only in
    your local import. Agents translate on those ids directly. For reading it as a script there is a
-   read-only scene reader (PLAN `TRN-06`); there is no editable projection of the script to
+   read-only reader (`./make.sh reader`, PLAN `TRN-14`); there is no editable projection of the script to
    keep in sync, and no `.po`/Weblate layer.
 4. **Quality over throughput.** Reverse engineering and translation run on the strongest
    available model even where that makes the project slower.
@@ -177,12 +177,12 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, build-days, patch, apply-patch, save(s), duckstation-cards, boot-save, sumo-bout, examine, test, emu-test, lint, smoke
+make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, reader, build-days, patch, apply-patch, save(s), duckstation-cards, boot-save, sumo-bout, examine, test, emu-test, lint, smoke
 boku/                the Python package: import, extract, movies, voice-only, trial, build (text,
                      texture recipes, buttons, records, the encyclopedias and the close-ups, code-file arrays
                      moved whole when they grow, labels drawn from code immediates, the memory-card
                      save title), patch,
-                     apply-patch, save, sumo (the bug-sumo cage); boku/faces/ holds the two
+                     apply-patch, save, sumo (the bug-sumo cage), the reader; boku/faces/ holds the two
                      small pixel faces drawn for this project (Bean, Sprout)
 asm/                 armips source for the executable patches
 tests/               pytest; the disc-dependent tests skip when there is no import
@@ -191,8 +191,8 @@ tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners,
 translation/         the English: story bible, style guide, glossary, the translator's checklist,
                      open questions, samples, the day files, movies.txt, the movie subtitles,
                      clips.txt, the subtitles of the clips native code plays
-                     (translation/README.md), and textures/, the strings the build typesets
-                     into textures
+                     (translation/README.md), textures/, the strings the build typesets
+                     into textures, and status.tsv, each unit's TRN-04 state
 research/            what has been learned: formats, prior art, practice. One subject per file
                      (two are raw research-agent reports, framed as such at the top).
 research/data/       the tables a note would otherwise have to list: the script walk, the
@@ -204,7 +204,8 @@ research/data/       the tables a note would otherwise have to list: the script 
 disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
 reference/   (ignored)  third-party material kept locally — see below
 work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects, translator
-                        packets (work/packets/), page mock-ups (work/mockup/); saves/ the
+                        packets (work/packets/), page mock-ups (work/mockup/), the reader
+                        (work/reader/); saves/ the
                         generated memory-card corpus and saves/duckstation/ the same packed
                         to play (research/save-format.md)
 build/       (ignored)  patched files, patched image, the patch

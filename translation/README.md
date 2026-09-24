@@ -7,6 +7,13 @@ register are [style-guide.md](style-guide.md) and [bible.md](bible.md); names ar
 [glossary.md](glossary.md); open questions for Jay are [QUESTIONS.md](QUESTIONS.md); speech
 with no text on the disc is [voice-only.md](voice-only.md).
 
+To read the whole translation in order — every day's events, the day-independent events, the
+menus and screens, the clips, the movie subtitles and every typeset texture beside its original —
+run `./make.sh reader` and open `work/reader/index.html` (never tracked: it is the Japanese and the
+game's pixels). `j`/`k` step through it, `c` copies the current item's id for a comment; the
+lint's findings sit on the items they are about, and each section shows its unit's state from
+[status.tsv](#statustsv).
+
 ## Translating the whole game
 
 Jay, 2026-09-23: one translator session is given everything — the story bible, the style
@@ -128,3 +135,26 @@ XCH.34	Narrator	And so the first day of that summer vacation came to an end.
 
 `./make.sh lint-translation` checks every row — a clip the table has, every page inside the
 band — and `tools/vwf/build_prototype.py` refuses a file it would fail.
+
+## status.tsv
+
+Where each unit of the translation stands — PLAN `TRN-04`'s ladder, and the one home of its
+table. One row per unit the reader walks, tab-separated, after a header row:
+
+```
+unit <TAB> state <TAB> date <TAB> note
+day01	reviewed	2026-09-23	the TRN-10 whole-game session, ...
+```
+
+* **unit** is a day file's name (`day01`–`day31`), `shared`, `arrays`, `clips`, `movies`, or a
+  texture unit: `screens` (`ui.txt`, `signs.txt`, `buttons.txt`, `records.txt`), `diary`,
+  `books` (`boku.reader.TEXTURE_UNITS`; a new texture file is a unit by its own name).
+* **state** is one of `undrafted`, `drafted`, `reviewed` (an independent agent against the
+  Japanese), `checked` (Jay has read it, his comments applied), `rendered` (the lint's pixel
+  fit and the page mock-ups say it would display), `finalized` (Jay has seen it in the game,
+  formatted and displayed correctly).
+* **date** is when the unit reached that state, `YYYY-MM-DD`; **note** says how.
+
+A test holds this file to the units the translation files make, both ways: a new day file or
+texture file fails it until it is given a row, and a row for a unit nothing walks fails it too.
+English and ids only.
