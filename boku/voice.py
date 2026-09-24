@@ -407,11 +407,31 @@ def xa_to_wav(xa: bytes, out_path: Path, scratch: Path) -> None:
         source.unlink(missing_ok=True)
 
 
-def decode_clips(image: DiscImage, nodes: list[VoiceNode], out_dir: Path) -> list[Path]:
-    """One WAV per distinct clip; a clip already decoded is left alone."""
+def xam_entry(image: DiscImage):
     xam = next((e for e in image.walk() if e.path == XAM_PATH), None)
     if xam is None:
         raise VoiceError(f"no {XAM_PATH} on {image.path}: is this the right image?")
+    return xam
+
+
+RELOCATED = 1
+"""A key's `+10` once the game has loaded it: `start` and `end` then carry `BOKU_XA.XAM`'s
+disc address (the event loader and `xa_init` add it; measured on Beetle, research/sumo.md
+§ The well on the shortcut)."""
+
+
+def disc_key(ram_key: bytes, xam_lba: int) -> dict[str, int]:
+    """A key as the game holds it in RAM, taken back to the disc's own (XAM-relative) key."""
+    key = decode_voice_key(ram_key[:VOICE_KEY_SIZE])
+    if struct.unpack_from("<H", ram_key, 10)[0] == RELOCATED:
+        key["start"] -= xam_lba
+        key["end"] -= xam_lba
+    return key
+
+
+def decode_clips(image: DiscImage, nodes: list[VoiceNode], out_dir: Path) -> list[Path]:
+    """One WAV per distinct clip; a clip already decoded is left alone."""
+    xam = xam_entry(image)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: dict[str, Path] = {}
     with tempfile.TemporaryDirectory(prefix=".boku-voice-", dir=out_dir) as scratch:

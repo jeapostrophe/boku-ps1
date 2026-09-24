@@ -18,6 +18,10 @@ RECORD = 12
 EMPTY = 99
 """A record whose type is this is an empty slot (every table of insects uses it)."""
 
+STAGE = 0x8003D27A
+"""Bug sumo's saved story stage (research/sumo.md § The mantis and the shortcut)."""
+STAGE_MANTIS, STAGE_SHORTCUT = 2, 4
+
 SPECIES_STATS = 0x80079E3C
 """`MUSI.OVL`: 8 bytes per species -- u16 HP, u8 STR, DEF0, DEF1, then three bytes copied
 unscaled (the debug screen's SPD and SICL are the first two)."""

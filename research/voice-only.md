@@ -131,8 +131,9 @@ decided from context and says so in `notes`.
   theme song and the credits; `M60`, `M120`, `M260` are one to three narrated sentences each
   (`M120`'s sentence runs on past the movie's end). The songs are transcribed and marked
   `song`; whether they are subtitled is a translation call.
-* **Not found**: the well narration Jay heard (PLAN `VO-01`) is not any `XA` or `g_xa_clips`
-  clip; the well's examine event (`E8062`) is an unvoiced `MSG` with text.
+* **The well narration Jay heard** is not voice-only: it is `E2405.0`, a voiced message with
+  text, played the second time the shortcut's well (`E08`) is examined
+  ([sumo.md](sumo.md) § The well on the shortcut). `E8062` is the other well, `B06`.
 
 Where the Japanese is: `work/voice/voice-only.asr.tsv` (both passes and the neighbouring
 lines, per row), `work/voice/reviewed/` (the corrected transcripts), `work/voice/movies/`

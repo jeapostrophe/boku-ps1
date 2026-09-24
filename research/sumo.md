@@ -91,3 +91,44 @@ cage. In DuckStation: walk to the secret base and examine the table.
   first zone lies within Megane's reach, where ○ talks to him instead.
 * The desk, cage and drum presses then follow; `sumo-bout` checks the fighter against
   `boku.sumo` and saves `bout.state`, ~12,100 frames from power-on.
+
+## The mantis and the shortcut
+
+Guts's "secret weapon" is a mantis, and beating it is what opens the secret shortcut. The
+chain runs on `g_flags` 64, 65, 68, 69, 70 and bug sumo's saved **stage** byte `0x8003D27A`
+(read from `MUSI`'s code; each step marked *measured* was watched on Beetle):
+
+| step | what changes |
+|---|---|
+| Guts's rhinoceros beetle (type 30, 55 mm; `MUSI` `0x8008083C`) beaten at stage 1 | flag 64 = 1, stage 2 (read; what raises 64 to the 2 `E1650` wants is not traced) |
+| `E1650` (A18, flag 64 = 2, 65 = 0) and `E1750` (65 = 2, 68 = 0): the weapon announced, the challenge made | flags 65, 68 (from the scene table's conditions; the setters are not traced) |
+| next visit to the desk at stage 2 with flag 68 = 1 | the opponent is forced to Guts, flag 68 = 2 (measured) |
+| the **rank board** ("虫ランク", left of the drum) set to **キング** (King) against Guts (`0x8008EF86` = 0) at stage 2, flag 68 ≠ 0 (or after August 27 with flag 65 = 2), flag 69 = 0, no King bout yet today (`0x8003DD1B`) and no mantis already out (`0x8003DE14`) | the mantis (type 60, 80 mm; the screen reads 255 wins) replaces Guts's first bug (`MUSI` `0x80081898`; measured), flag 68 = 2 |
+| the bout won (`0x8008EF82` = 3) | flag 69 = 1, stage 3; leaving the desk sets stage 4 and queues `E1754` (`g_ev_next` = 1754; measured) |
+| `E1754`: Guts leads the boys from the base to the tool store (`A07`) and down the shortcut | flag 70 = 1, Boku at its far end, `E02` (measured) |
+
+After that, examining the spot by the tool store (`E4057`, `A07`, flag 70 > 0) takes the
+shortcut to `E02`. A maxed giant stag (female) beat the mantis in about 450 frames of △.
+
+`./make.sh saves` writes `sumo-mantis-ready` (the state before the King bout) and
+`shortcut-open` (as a Beetle run left it after `E1754`) — their flags and stage are
+`boku.save`'s `MANTIS_FLAGS` and `SHORTCUT_FLAGS` — as slots 2 and 3 of `boku-bug-sumo.mcd`. In play with `sumo-mantis-ready`: at the desk take a
+bug out, set the rank board to King, put the bug on the drum, ring the gong (right of the drum),
+tap with △. `./make.sh sumo-bout CARD --mantis` does that on Beetle and follows `E1754` to
+`E02`, ~17,800 frames from power-on.
+
+## The well on the shortcut
+
+The shortcut's well is **`E08`** (the bible's "hole in the cave"; the old well of `B06`,
+`E8062`/`E0809`, is another one). Examining it (`E2405`) the first time shows a close-up of
+the shaft (`I12`) and nothing is said; the second time, the close-up again, then the narrator —
+**`E2405.0`**, a voiced message *with* text ("this hole seems to lead somewhere… so I
+thought"; its key spans 816 sectors of the 16-way interleave, 51 its own, ~5.4 s; the playing
+flag stayed up 383 frames) — and Boku climbs down to `E09`. Measured on Beetle with
+`./make.sh examine CARD E08 2405`, which logs every clip `xa_play` starts and names the message
+whose disc key it is (in RAM a key's `start` carries `BOKU_XA.XAM`'s disc address, 54,417, and
+its `+10` is 1).
+
+`B06`'s well, for the record: with flag 36 = 0 (before the uncle's gossip, `E0705`) `E8062`
+shows its line with no voice; with 36 = 1, `E0809` plays `MOVIE 8` (`M100`, 4.5 s, no speech —
+Whisper hears nothing but the echo) and no clip.

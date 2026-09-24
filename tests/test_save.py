@@ -273,7 +273,8 @@ _SUMO = S.SumoTables(((40, 40, 40, 40),) * 13, (50,) * 13)
 
 def _synthetic_tables() -> S.GameTables:
     regions = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16),
-               S.Region(sumo.CAGE, sumo.RECORD * sumo.CAGE_SLOTS))  # fmt: skip
+               S.Region(sumo.CAGE, sumo.RECORD * sumo.CAGE_SLOTS),
+               S.Region(sumo.STAGE - 2, 5))  # fmt: skip
     return S.GameTables(regions, "P-", b"", ("a", "b", "c"), tuple("0123456789"), _SUMO)
 
 

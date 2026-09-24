@@ -70,7 +70,7 @@ is 0; that last record is not copied. Restoring (`0x8007B8E8`) copies them back.
 | 1100 | `0x8003DB18` | 30 | *unknown* |
 | 1130 | `0x8003E058` | 60 | *unknown*; changes during day 1 |
 | 1190 | `0x8003E094` | 1 | *unknown* |
-| 1191 | `0x8003D278` | 5 | *unknown* |
+| 1191 | `0x8003D278` | 5 | bug sumo: `+0` the rank a boy's bug must reach (`+2` of a roster record), `+1` a count wins add to (*inferred*), `+2` the story **stage** ([sumo.md](sumo.md) § The mantis and the shortcut); the rest *unknown* |
 | 1196 | `0x8003E0B0` | 18 | *unknown* |
 | 1214 | `0x8003DF90` | 180 | overlaps `g_insect_book_state` (`0x8003DF92 + 3·id`, [text-outside-events.md](text-outside-events.md)) — *inferred* to be that table |
 | 1394 | `0x80035E48` | 256 | **`g_flags`** ([event-scripts.md](event-scripts.md) § Flags) — including the ★ bytes 237/238 and the ending's `g_flags[250]` |
@@ -162,7 +162,7 @@ own bytes back for the header, title, icon and body.
 save per card in slot 1: `day02` … `day31` — every morning from August 2 —,
 `ending-oti{4,2,0,1,3}-{00,05,08,11,15}stars`, the morning of August 31 with a star count
 inside each of `ending_pick`'s five bands, `finished-oti…` the same five as finished
-games, and `sumo-maxed-cage` ([sumo.md](sumo.md)). The ending and finished saves' play timers read the star count in hours. Its base
+games, and `sumo-maxed-cage`, `sumo-mantis-ready` and `shortcut-open` ([sumo.md](sumo.md)). The ending and finished saves' play timers read the star count in hours. Its base
 is a **new game's RAM** at the first dialogue (`work/saves/newgame.ram`, dumped once on
 Beetle from your own import by `run_core.py --ram-out`).
 
@@ -192,7 +192,7 @@ naming each card's slots:
 | `boku-mornings-aug17-aug31.mcd` | 1–15: wake on August 17 … 31 |
 | `boku-endings-by-stars.mcd` | 1–5: the morning of August 31 with 0, 5, 8, 11, 15 stars — one per epilogue band; PLAYTIME reads the stars in hours |
 | `boku-finished-game.mcd` | 1–5: the same five as finished games — Summer Memories, and its "ending" replays that band's epilogue |
-| `boku-bug-sumo.mcd` | 1: the morning of August 10 with bug sumo open and ten maxed beetles in the cage — walk to the secret base and examine the table ([sumo.md](sumo.md)) |
+| `boku-bug-sumo.mcd` | the morning of August 10, ten maxed beetles in the cage, PLAYTIME 1–3 h telling the slots apart ([sumo.md](sumo.md)): 1 bug sumo open — walk to the secret base and examine the table; 2 the mantis fight next — at the desk set the rank board to King; 3 the mantis beaten and the shortcut open — examine the spot by the tool store |
 
 The file list shows the day a save was **made**, the evening before the morning it wakes
 on (`8月16日` wakes on August 17), two files at a time; ↓ walks it.
@@ -256,7 +256,8 @@ BOKU_INPUT="2430:START:5;2590:DOWN:5;2660:CIRCLE:5;3050:CIRCLE:5;3150:CIRCLE:5" 
 | summer memories (the title menu's third item) | a finished save (§ A finished game): `boku-finished-game.mcd` or `./make.sh save --finished`. START, DOWN ×2, ○, ○ on the file, ○ on "yes"; the album is up ~1300 frames after the file is chosen | measured on both emulators (`tools/vwf/shoot-menus.sh`), and Beetle 2026-09-23 |
 | the ending | `ending-oti*` (a morning of August 31; ~9,500 frames of ○ to `MOVIE 24`, § The generator and the corpus), or at once from a finished save's Summer Memories → エンディング (DOWN ×4, ○) | measured on Beetle 2026-09-23 |
 | bug sumo | **a bout, Beetle**: `./make.sh sumo-bout CARD` with `sumo-maxed-cage` or any `boku save --bug` card — [sumo.md](sumo.md) § Reaching a bout. **The desk with no card, PCSX-Redux**: `tools/redux/to-sumo.lua` points the intro's return to the field at `E4025` with that event's flags met (its header lists the pokes) and saves the state `sumo-desk` | bout measured on Beetle 2026-09-23; desk on Redux |
-| the well on the shortcut path | the story bible puts "the secret shortcut" on days 17–18 (`E1754`); a `day19`-or-later card, with its flags set by `--flag` from `scenes.tsv` | not reached |
+| the mantis fight | `sumo-mantis-ready`, then King on the rank board; headless `./make.sh sumo-bout CARD --mantis` — [sumo.md](sumo.md) § The mantis and the shortcut | measured on Beetle 2026-09-23, through `E1754` to `E02` |
+| the well on the shortcut path | `E08`; headless `./make.sh examine work/saves/corpus/shortcut-open.mcd E08 2405` wakes there (the dawn movie's return pointed at the map) and examines it — [sumo.md](sumo.md) § The well on the shortcut | measured on Beetle 2026-09-23: the second look plays `E2405.0` |
 | any map, day 1 | during a new game's opening movie, poke a three-character map base into `g_movie_return_map` (`0x80036588`): the movie ends in that map, its variant chosen by the clock as usual. `run_core.py --poke 5300:0x80036588=43313500` with `boot-to-dialogue.press` is `C15`, the path to the beach, by frame ~6000 ([texture-recipes.md](texture-recipes.md) § `M_C15`) | measured for `C15` |
 | the uncle's evening call (`exe@80029920`, system event 8) | any day's card with `./make.sh boot-save CARD`, then `--poke 6100:0x80019E08=08000224`: the chooser `0x80019DEC` gets `addiu v0, zero, 8` instead of `jal 0x8001933C`, so the event fires as soon as the morning's script ends (~frame 7500 on day 5), the kitchen and both pages follow; shots every 40 frames from 7300 | measured on Beetle 2026-09-23 |
 | bedtime, end of day 1 | from the diary on: the diary mode entered after the first dialogue by the five `mode_set` pokes ([diary-redraw.md](diary-redraw.md) § In game), then ○ through good-night and tonight's page — the game's own day-end, the sleep movie and `XCH.34` over black, then the save prompt (frames in `tests/test_real_clip_subtitle_beetle.py`). Walking to the desk at night is not: poking `g_clock.hour` does not skip ahead (set to 20:50 after breakfast on day 3, 50 s later it read 17:00 and the map was still its morning variant — the clock is driven from elsewhere) | diary → save prompt measured on Beetle; the evening before it not reached |

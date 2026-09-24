@@ -108,8 +108,11 @@ usage: ./make.sh <verb> [arguments]
                                 on; shoot it, save a state to resume from, and check the
                                 clock (tools/libretro/boot_save.py --help)
   sumo-bout CARD [arguments]    boot CARD on Beetle and play it into a bug-sumo bout with the
-                                first bug of its cage; check the fighter the game builds
+                                first bug of its cage; check the fighter the game builds;
+                                --mantis fights the mantis and follows E1754 to the shortcut
                                 (tools/libretro/sumo_bout.py --help; research/sumo.md)
+  examine CARD MAP EVENT [..]   wake CARD's save in MAP on Beetle, examine EVENT's spot and
+                                log every voice clip it plays (tools/libretro/examine.py --help)
   movie-timing [--write]        every movie cue's timing against the reviewed transcripts
                                 in work/voice/reviewed (onset, end, 1.5 s, 17 cps); --write
                                 moves the frames of translation/movies.txt to pass where
@@ -333,6 +336,9 @@ case "$verb" in
         ;;
     sumo-bout)
         exec uv run python tools/libretro/sumo_bout.py "$@"
+        ;;
+    examine)
+        exec uv run python tools/libretro/examine.py "$@"
         ;;
     movie-timing)
         exec uv run python -m boku.movie_timing "$@"

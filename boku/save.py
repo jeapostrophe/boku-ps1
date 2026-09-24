@@ -22,7 +22,17 @@ from pathlib import Path
 from boku.archive import DEFAULT_DISC_DIR, OVERLAY_LOAD_ADDRESS, Archive, ArchiveError
 from boku.arrays import SAVE_TITLE_BYTES as TITLE_BYTES
 from boku.arrays import ArrayError, read_save_title
-from boku.sumo import CAGE, TYPES, SumoTables, cage_bytes, maxed, parse_bug
+from boku.sumo import (
+    CAGE,
+    STAGE,
+    STAGE_MANTIS,
+    STAGE_SHORTCUT,
+    TYPES,
+    SumoTables,
+    cage_bytes,
+    maxed,
+    parse_bug,
+)  # fmt: skip
 
 # --- the PS1 memory card (Sony's format; research/save-format.md § "The card") -----------
 
@@ -448,6 +458,10 @@ class CorpusEntry:
     cage: tuple[tuple[int, int | None], ...] = ()
     """Boku's cage from its first slot, as (insect type, size or None for the largest); fully
     trained, caught on the save's day (`boku.sumo.maxed`). The rest of the cage is emptied."""
+    pokes: tuple[tuple[int, bytes], ...] = ()
+    """Other saved RAM to set, by address."""
+    note: str = ""
+    """What the save is for, when its day and stars do not say it (INDEX.tsv)."""
 
     @property
     def finished(self) -> bool:
@@ -455,8 +469,8 @@ class CorpusEntry:
 
     def why(self) -> str:
         wake = f"wakes on the morning of August {self.saved_day + 1}"
-        if self.cage:
-            return f"{wake} with bug sumo open and {len(self.cage)} maxed bugs in the cage"
+        if self.note:
+            return f"{wake}: {self.note}"
         if self.stars is None and not self.finished:
             return wake
         stars = self.stars or 0
@@ -474,6 +488,13 @@ SUMO_DAY = 10
 and not 15."""
 SUMO_FLAGS = ((25, 2), (30, 1))
 """`E4025`'s flags: Guts's pact made, all three boys met."""
+MANTIS_FLAGS = (*SUMO_FLAGS, (64, 2), (65, 2), (68, 1))
+"""Guts's secret-weapon chain up to the fight: his rhinoceros beaten (64), the weapon
+announced (65, which also keeps `E1650` from playing), the challenge made (68 = 1: the next
+visit to the desk is against Guts)."""
+SHORTCUT_FLAGS = (*SUMO_FLAGS, (64, 2), (65, 2), (68, 2), (69, 1), (70, 1))
+"""As a Beetle run left them after the mantis was beaten and `E1754` played: 69 the mantis
+beaten, 70 the shortcut known."""
 SUMO_CAGE = tuple(
     (TYPES[name], None)
     for name in ("giant-f", "rhino", "giant", "rhino-f", "miyama-f", "oni", "red-legged",
@@ -490,12 +511,24 @@ def corpus() -> list[CorpusEntry]:
             mask = star_mask(count)
             name = f"{kind}-oti{epilogue_for(mask)}-{count:02d}stars"
             entries.append(CorpusEntry(name, day, kind, mask, play_hours=count))
-    entries.append(
+    entries += [
         CorpusEntry(
-            "sumo-maxed-cage", SUMO_DAY - 1, "sumo", flags=SUMO_FLAGS,
-            cage=SUMO_CAGE,
-        )
-    )  # fmt: skip
+            "sumo-maxed-cage", SUMO_DAY - 1, "sumo", flags=SUMO_FLAGS, cage=SUMO_CAGE,
+            play_hours=1, note="bug sumo open, ten maxed beetles in the cage",
+        ),
+        CorpusEntry(
+            "sumo-mantis-ready", SUMO_DAY - 1, "sumo", flags=MANTIS_FLAGS, cage=SUMO_CAGE,
+            pokes=((STAGE, bytes([STAGE_MANTIS])),), play_hours=2,
+            note="the mantis fight is next: at the desk take a bug, set the rank board to "
+            "King, put the bug down, ring the gong",
+        ),
+        CorpusEntry(
+            "shortcut-open", SUMO_DAY - 1, "sumo", flags=SHORTCUT_FLAGS, cage=SUMO_CAGE,
+            pokes=((STAGE, bytes([STAGE_SHORTCUT])),), play_hours=3,
+            note="the mantis beaten and the secret shortcut shown: examine the spot by the "
+            "tool store (A07) to take it",
+        ),
+    ]  # fmt: skip
     return entries
 
 
@@ -508,6 +541,8 @@ def edited_body(base: SaveBody, entry: CorpusEntry, sumo: SumoTables | None = No
         finish(body)
     for n, v in entry.flags:
         body.set_flag(n, v)
+    for addr, value in entry.pokes:
+        body.write(addr, value)
     if entry.play_hours is not None:
         body.write(PLAY_TIMER, struct.pack("<I", entry.play_hours * 3600 * TICKS_PER_SECOND))
     if entry.cage:

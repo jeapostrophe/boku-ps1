@@ -7,11 +7,17 @@ the same fighter from a generated cage is `tests/test_real_sumo_bout.py`'s, on B
 from __future__ import annotations
 
 import re
+import struct
 
 import pytest
 
-from boku import REPO_ROOT, sumo
+from boku import REPO_ROOT, sumo, voice
 from boku import save as S
+
+REGIONS = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16),
+           S.Region(sumo.CAGE, sumo.RECORD * sumo.CAGE_SLOTS),
+           S.Region(sumo.STAGE - 2, 5))  # fmt: skip
+"""The saved regions a sumo save touches, as `g_save_regions` has them."""
 
 
 @pytest.fixture(scope="module")
@@ -75,17 +81,16 @@ def _holds(condition: str, day: int, hour: int, flags: dict[int, int]) -> bool:
 def test_the_sumo_save_meets_the_desk_events_condition(tables):
     """E4025 (the secret base's desk, the only way into mode 7) must hold on the morning the
     sumo save wakes on -- its condition read from the tracked scene table."""
-    (entry,) = [e for e in S.corpus() if e.kind == "sumo"]
+    entry = _entry("sumo-maxed-cage")
     morning = 7
     assert _holds(_condition("E4025"), entry.saved_day + 1, morning, dict(entry.flags))
     assert 0 < len(entry.cage) <= sumo.CAGE_SLOTS
 
 
 def test_the_sumo_saves_cage_is_written_where_the_game_reads_it(tables):
-    regions = (S.Region(0x80025908, 20), S.Region(S.G_FLAGS, 256), S.Region(S.G_CLOCK, 16),
-               S.Region(sumo.CAGE, sumo.RECORD * sumo.CAGE_SLOTS))  # fmt: skip
+    regions = REGIONS
     base = S.SaveBody(regions, bytes(sum(r.length for r in regions)))
-    (entry,) = [e for e in S.corpus() if e.kind == "sumo"]
+    entry = _entry("sumo-maxed-cage")
     cage = S.edited_body(base, entry, tables).read(sumo.CAGE, sumo.RECORD * sumo.CAGE_SLOTS)
     records = [cage[sumo.RECORD * i : sumo.RECORD * (i + 1)] for i in range(sumo.CAGE_SLOTS)]
     for (kind, _), record in zip(entry.cage, records, strict=False):
@@ -114,3 +119,45 @@ def test_a_short_cage_marks_every_other_slot_empty():
     cage = sumo.cage_bytes([sumo.Bug(30, 60)])
     assert len(cage) == sumo.RECORD * sumo.CAGE_SLOTS
     assert [cage[sumo.RECORD * i] for i in range(sumo.CAGE_SLOTS)] == [30] + [sumo.EMPTY] * 9
+
+
+def _entry(name: str) -> S.CorpusEntry:
+    (entry,) = [e for e in S.corpus() if e.name == name]
+    return entry
+
+
+def test_the_mantis_save_opens_the_desk_and_no_secret_weapon_scene_preempts_it():
+    """At the secret base the morning it wakes on, `E4025` (the desk) must hold, and neither
+    `E1650` nor `E1750` -- the auto scenes of Guts's secret-weapon chain -- may fire first."""
+    entry = _entry("sumo-mantis-ready")
+    day, flags = entry.saved_day + 1, dict(entry.flags)
+    assert _holds(_condition("E4025"), day, 7, flags)
+    assert not _holds(_condition("E1650"), day, 7, flags)
+    assert not _holds(_condition("E1750"), day, 7, flags)
+
+
+def test_the_shortcut_save_opens_the_shortcut_and_does_not_replay_its_scene():
+    entry = _entry("shortcut-open")
+    day, flags = entry.saved_day + 1, dict(entry.flags)
+    assert _holds(_condition("E4057"), day, 7, flags)  # A07's mouth of the shortcut -> E02
+    assert not _holds(_condition("E1754"), day, 7, flags)
+
+
+@pytest.mark.parametrize(
+    ("name", "stage"),
+    [("sumo-mantis-ready", sumo.STAGE_MANTIS), ("shortcut-open", sumo.STAGE_SHORTCUT)],
+)
+def test_the_story_saves_carry_their_sumo_stage_into_the_body(tables, name, stage):
+    regions = REGIONS
+    base = S.SaveBody(regions, bytes(sum(r.length for r in regions)))
+    assert S.edited_body(base, _entry(name), tables).read(sumo.STAGE)[0] == stage
+
+
+def test_a_loaded_key_is_taken_back_to_the_disc_key():
+    """In RAM `start`/`end` carry the XAM's disc address and `+10` is 1 (measured: `E2405.0`'s
+    disc key 66682..67498 played as 121099..121915 with the XAM at 54417)."""
+    loaded = struct.pack("<IIBBH", 121099, 121915, 10, 2, voice.RELOCATED)
+    want = {"start": 66682, "end": 67498, "channel": 10, "file": 2}
+    assert voice.disc_key(loaded, 54417) == want
+    unloaded = struct.pack("<IIBBH", 66682, 67498, 10, 2, 0)
+    assert voice.disc_key(unloaded, 54417)["start"] == 66682
