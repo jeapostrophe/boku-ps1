@@ -1,0 +1,24 @@
+# Labels printed beside numbers the game draws at run time (PLAN GFX-07). Format:
+# translation/textures/README.md; where each label is and what number it sits against:
+# boku/texture_records.py RECORDS, research/texture-recipes.md § "Records".
+
+# --- FS_WAL: the fishing record. The plate reads "[fish name]  [count] fish / Size  Average
+# [22.5]cm / Largest [30.0]cm"; the list is the tackle (glossary § 4c: エサ bait, ウキ float, 毛バリ
+# fly).
+rec@FS_WAL.fish	fish
+rec@FS_WAL.size	Size
+rec@FS_WAL.average	Average
+rec@FS_WAL.largest	Largest
+rec@FS_WAL.bait	Bait (Worm)
+rec@FS_WAL.bait_float	Bait (Worm) + Float
+rec@FS_WAL.tenkara_small	Tenkara (Small Fly)
+rec@FS_WAL.tenkara_large	Tenkara (Large Fly)
+
+# --- M_S01100: the bug-trading notebook's record card. It reads "[size]mm  Caught Aug. [day] /
+# [wins] W  [losses] L / Worth, counted in / [6.4] Saw Stags" (ノコギリクワガタ換算で ... 匹の価値:
+# its value converted into saw stag beetles; W / L as the glossary's § 4b).
+rec@M_S01100.caught	Caught Aug.
+rec@M_S01100.won	W
+rec@M_S01100.lost	L
+rec@M_S01100.value	Worth, counted in
+rec@M_S01100.value_unit	Saw Stags

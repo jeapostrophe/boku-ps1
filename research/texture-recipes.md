@@ -142,14 +142,14 @@ Memories* is 107 px on one line against 99, so the tracked string breaks it onto
 (`flat_plaque`, the same recipe as the settings heading). The six menu labels under it are
 renderer text (`exe@8003DA00`, `TXT-05`).
 
-**Not seen in the game.** The album is reached from the title menu only with a card holding
-a *finished* game; with anything else the title answers "no file that has finished this game"
-(`exe@8003D5F0.5`, `g_mc_msg` record 8). A generated card is not one, whichever of these it
-carries — measured on Beetle, 2026-09-22: a day-5 morning; the summary's unknown `flag` byte
-(`0x80025914`) at 1 or `0xFF`; `g_clock.day` 32; `flag[250]` 1 and `flag[251]` 12. What
-marks a finished file is not decoded. The proof here is the rebuilt texture
-(`tests/test_real_texture_text.py`: each line found once, in order, and nothing else on the
-plaque).
+**Seen on Beetle** (2026-09-23): the album is reached from the title menu only with a card
+holding a *finished* game (`boku save --finished`, [save-format.md](save-format.md)); Summer
+Memories → the file → "is this file all right?" → yes opens it by ~5900 frames
+(`tests/test_real_texture_text_beetle.py`, `ALBUM_PRESSES`). The heading's box lands at screen
+(36, 24), drawn exactly; every texel the build changed shows its colour, and the stock image
+fails. The album's stone "Back" matches `T_CONFIG`'s and `M_S01001`'s texel for texel, so
+which of the loaded copies it is drawn from is not told apart; `T_MEMORY` child 0's own copy
+is built with the other stones.
 
 ## `M_C15` — the notice board on the path to the beach (PLAN `GFX-09`)
 
@@ -236,6 +236,7 @@ are its row of `BUTTONS`; where it is drawn:
 | specimen grid | `MZ00` `0x350` | (252, 192) |
 | specimen box | `SAMP` `0x14e48` | (240, 201) |
 | insect book | `MZKAN` `0x48` | texture origin (256, 202) |
+| fishing record | `FS_WAL`, 4bpp | texture origin (204, -10) |
 
 The stone is textured, so the recipe changes **only the Japanese's own pixels** (Jay,
 2026-09-23: the mock-up's kite button banded because it repainted more): the ink (darker than
@@ -270,6 +271,7 @@ in transparent columns the art may take.
 | desk (`SUB`, CLUT 1 slices 2–3; table 0xB4 in front of the texture) | the tackle, cage, glove and net band (page 14, rows 211–250) repacked: tackle +12, glove +4, the others moved right; *Belongings* in Bean, +4 (stretch 8) — the page-15 band holds 96 texels for it and the kite, and 72 would be the game's glyphs; kite, back fit | `SUB.BIN` is loaded once at boot (resident), so a state saved on another image shows the old desk |
 | the bag (`PK_WAL`) | *Belongings* +28 and the two page balloons +4, all moved into the empty rows 154–239 of page 14 | the page balloons are drawn only by an idle hint nothing calls (recon); built so no Japanese is left if it is |
 | kite record (`TK_WAL`) | *Fly a // Kite* | fits |
+| fishing record (`FS_WAL`, 4bpp, CLUT 0) | *Fishing // Tackle* in Bean | no free texels measured |
 | kite book (`TZICON`, a true 4bpp TIM 12 VRAM words wide) | *Make // This Kite* in Bean | no free texels |
 | bug sumo (`M_S01100` `0x164b4`, CLUT 2; `MUSI.OVL` 22-byte records from `0x8007A538`, `{u16 semi, s16 x, y, u8 u, v, u16 w, h, u16 tpage x, y, clut x, y, u8 depth, abr}`, one per balloon in each of the two tables) | *Release* +12 and *Bug // Rank* +8 into the free x 484–511; the rest fit; the swap plate (4bpp, slice 3, record `0x8007A7B4`) +8, set by the `plate` recipe (its ground is a checkerboard: refilled from donors an even number of steps away, only its text area, not the arrow); the とじる board (8bpp, CLUT 5, records `0x8007A742`, `0x8007A786`) by the `plank` recipe, its punched-through Japanese transparent | the stone on this screen is drawn through a CLUT not in its TIM |
 | insect box (`MZ02`, CLUT 4, the same texture as `SAMP.BIN`'s copy; `SAMP` `0x14e48`, CLUT 6 slices 0–1) | *Bug // Cage*, *Bug // Box* in the game's glyphs; the rest in Bean; *Remove // Specimen* in Sprout — one pixel short in Bean | no free texels (one 44×40 slot at x 684, y 160, and nothing wider) |
@@ -285,10 +287,6 @@ and on the flat title ground that is the paper itself — and sets the English i
 the type's own blue: *Radio // Calisthenics // Attendance Card* beside the picture (its box
 stops a column short of the picture's frame) and the footer between the reference marks,
 drawn as `*`.
-
-`M_S01100` `0x164b4` also carries the bug-record card (its labels beside numbers drawn at run
-time: the catch date, wins and losses, the value in saw-stag beetles), laid out like `FS_WAL`
-below, not built.
 
 **Proof.** `tests/test_real_texture_buttons.py`: each stone's dark pixels are exactly its
 English bold in the disc's glyphs (only its outline besides), each balloon's type exactly its
@@ -361,11 +359,45 @@ is left across a body's edge; the curl's white and grey stay under the name and 
 Beetle (`./make.sh emu-test`) both books open on page 0 with every texel of the text areas as
 rebuilt, within the dither; the stock image fails both.
 
-## Measured while looking at the rest of `GFX-07`
+## Records — labels beside numbers the game draws (`FS_WAL`, the notebook's card)
 
-What remains of the row is listed in `PLAN.md` `GFX-07`; these are the facts it rests on.
+`boku/texture_records.py`; the English is `rec@<member>.<key>` in
+`translation/textures/records.txt`. A label's Japanese rectangle is cleared (its ink, and the
+shadow and antialias darker than the paper, refilled from the nearest paper) and its English
+set in a measured room against the number the game prints beside it: a label before a
+number ends at its room's right edge, one after a number starts at its room's left edge.
 
-* `FS_WAL`, the fishing record: its labels sit beside numbers the game draws at run time over
-  the texture's own `.` and `cm`, so the English has to be laid out against the screen, not
-  just the atlas. Opening the tackle box from the desk (△, cursor on it, ○) does nothing on a
-  generated day-5 card, which is story-naive (no rod yet).
+**The fishing record** (`_DATA_FS_WAL.BIN__0000d8`, 8bpp, CLUT 2), from the desk's tackle box.
+It opens only once the rod is owned — `g_flags[10]` = 1; a story-naive generated card has it 0,
+which is why the tackle box did nothing — and shows the catch once any fish has been caught:
+the catch record at `0x8003E0B0` is 3 fish × `{u8 picture, u8 count, s16 average mm, s16
+largest mm}` (Iwana, rainbow trout, yamame), saved (body offset 1196). `g_flags[53]` picks the
+four-row tackle list over the three-row one. Route: △ (the desk, cursor on the belongings) →
+RIGHT → ○ (the tackle box) → LEFT (into the list) → DOWN ×4 (the summer's catch).
+
+| sprite | texture | screen | English |
+|---|---|---|---|
+| the field labels' plate | (72, 64) 112×48 | (176, 124) | *[count] fish* (Sprout: 14 px between the count and the plate's edge), *Size*, *Average* and *Largest*, each ending where the number starts |
+| tackle list, 4 rows / 3 rows | (48, 154) / (136, 112), 88 wide | (48, 96) | *Bait (Worm)*, *Bait (Worm) + Float*, *Tenkara (Small Fly)*, *Tenkara (Large Fly)*, Bean |
+
+The numbers are the game's (`FUN_80044008` → `FUN_800402d8`, 7-px digit cells): the count at
+screen x 260, the average and largest whole parts at x 250 with their tenths at 268, after the
+texture's own `.` and before its `cm`, which stay. The tackle words and しかけ / 夏休みの釣果 /
+the fish's name / the tackle's description are drawn text (`TXT-05`'s). The screen's balloon
+つり道具 (4bpp, slice 0 at (0, 200)) and its stone are in § "Buttons".
+
+**The bug-trading notebook's record card** (`_DATA_M_S01100.BIN__0164b4`, 4bpp, CLUT 2), at the
+bug-sumo desk: the offered bug's card alone (the MUSI record `0x8007A758`, texture (512, 0),
+slice 5, at screen (124, 48)) or over the held bug's (`0x8007A79C`, (256, 0), slice 4, at
+(124, 18); the second card 106 rows below the first). The notebook's offer is saved
+(`0x8003DE18`, body offset 740). Each card reads *[size]mm Caught Aug. [day]* / *[wins] W
+[losses] L* / *Worth, counted in* / *[6.4] Saw Stags*: the day's 日 is cleared with nothing in
+its place (an English date needs none), W and L are the glossary's, and ノコギリクワガタ換算で …
+匹の価値 — its value converted into saw stag beetles — is the last two lines. The type has a drop
+shadow, and so does the English. The numbers are the game's (MUSI `FUN_8007e670`,
+`FUN_80080888`).
+
+**Proof.** `tests/test_real_texture_records.py`: every label at every place it is drawn holds
+exactly its English, in its face, once, with nothing of the Japanese; on Beetle the fishing
+record (a card with the rod and three fish), the single card and the pair (a card with an
+offer) show every texel of every label as rebuilt, and the stock image fails.

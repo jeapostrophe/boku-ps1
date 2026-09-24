@@ -19,29 +19,28 @@ import os
 import struct
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 
 from boku import REPO_ROOT
 from boku import texture_buttons as tb
 from boku import texture_paint as paint
-from boku.build import build
 from boku.png import read as read_png
 from boku.texture_text import ink_of, lines_of, read_entries
 from boku.textures import Texture
 from boku.tim import luminance, parse_exact
-from boku.typeset import FONT_SHEET_ID, GameFace
+from boku.typeset import FONT_SHEET_ID, GameFace, face_named
 
 ENTRIES = {e.id.removeprefix(tb.FAMILY): e for e in read_entries().values()
            if e.family == tb.FAMILY}  # fmt: skip
 
 
-def rebuilt(inv, patched: bytes, button: tb.Button) -> paint.Canvas:
-    """The button's texture as the build left it (its `stock` view is the rebuilt pixels)."""
-    stock = inv.get(button.texture)
+def rebuilt(inv, patched: bytes, source) -> paint.Canvas:
+    """The texture of `source` (a button, a record: anything with `.texture` and `.drawn_4bpp`)
+    as the build left it (its `stock` view is the rebuilt pixels)."""
+    stock = inv.get(source.texture)
     tim = parse_exact(patched, stock.occurrences[0].file_offset)
-    return paint.Canvas(Texture(stock.id, "0" * 40, tim, ()), drawn_4bpp=button.drawn_4bpp)
+    return paint.Canvas(Texture(stock.id, "0" * 40, tim, ()), drawn_4bpp=source.drawn_4bpp)
 
 
 def box_of(button: tb.Button) -> paint.Box:
@@ -108,7 +107,7 @@ def test_a_card_label_carries_its_english_and_no_japanese(
         p for p in paint.points(button.box)
         if tb.saturation(palette[canvas.at(p)]) > tb.INK_SATURATION and p not in hole
     }  # fmt: skip
-    block = tb.lines_block(tb._face(button, game), lines_of(ENTRIES[key]), ENTRIES[key])
+    block = tb.lines_block(face_named(button.face, game), lines_of(ENTRIES[key]), ENTRIES[key])
     placed = [
         moved for dx, dy in paint.points(button.box)
         if (moved := {(x + dx, y + dy) for x, y in block}) <= printed
@@ -158,7 +157,7 @@ def test_a_balloon_carries_its_english_lines_and_no_japanese(
         xs = [x for x in range(x0, x0 + w) if canvas.at((x, y)) == paper]
         if xs:
             interior |= {(x, y) for x in range(min(xs), max(xs) + 1)}
-    face = tb._face(button, game)
+    face = face_named(button.face, game)
     expected = tb.lines_block(face, lines_of(ENTRIES[key]), ENTRIES[key])
     ink = {p for p in interior if canvas.at(p) != paper}
     placed = [
@@ -267,27 +266,13 @@ bug-sumo desk's stone, drawn through a CLUT that is not in its TIM."""
 BASE = REPO_ROOT / "work" / "saves" / "newgame.ram"
 
 
-@pytest.fixture(scope="module")
-def image(texture_edits, real_image, disc_dir, tmp_path_factory) -> Path:
-    if os.environ.get("BOKU_EMU_TESTS") != "1":
-        pytest.skip("set BOKU_EMU_TESTS=1: an image build and Beetle boots")
-    for var in ("BOKU_LIBRETRO_CORE", "BOKU_LIBRETRO_SYSTEM"):
-        if not os.environ.get(var):
-            pytest.skip(f"{var} is not set (research/tooling-setup.md)")
-    out = build(
-        source=real_image, out_dir=tmp_path_factory.mktemp("image"), disc_dir=disc_dir,
-        binary_patches=texture_edits.edits, name="buttons",
-    )  # fmt: skip
-    return out.written.image.with_suffix(".cue")
-
-
 @pytest.mark.parametrize("screen", sorted(SCREENS))
 def test_the_buttons_on_beetle_are_the_typeset_english(
-    screen, image, disc_dir, texture_inventory, texture_patched, tmp_path
+    screen, texture_image, disc_dir, texture_inventory, texture_patched, tmp_path
 ):  # fmt: skip
     args, card, shots = SCREENS[screen]
     command = [
-        sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"), str(image),
+        sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"), str(texture_image),
         "--core", os.environ["BOKU_LIBRETRO_CORE"], "--system", os.environ["BOKU_LIBRETRO_SYSTEM"],
         "--work", str(tmp_path), "--frames", str(max(shots) + 10), *args,
     ]  # fmt: skip
@@ -322,37 +307,31 @@ def check_drawn(shot, inv, patched: bytes, key: str, origin) -> None:
     """For an item picture the game draws dithered (the attendance card in the bag): every
     opaque texel of the box is on screen within `DITHER` of its rebuilt colour on each channel;
     and enough of them are ones the build changed."""
-    ox, oy = origin
     button = tb.BUTTONS[key]
-    canvas = rebuilt(inv, patched, button)
-    stock = paint.Canvas(inv.get(button.texture), drawn_4bpp=button.drawn_4bpp)
-    palette = canvas.palette(button.clut, button.chunk)
-    compared, changed, wrong = 0, 0, []
-    for x, y in paint.points(button.placed):
-        colour = palette[canvas.at((x, y))]
-        if not colour[3]:
-            continue
-        at = ((oy + y) * shot.width + ox + x) * 4
-        seen = shot.rgba[at : at + 3]
-        compared += 1
-        changed += canvas.at((x, y)) != stock.at((x, y))
-        want = [c >> 3 << 3 for c in colour[:3]]
-        if not all(0 <= w - s <= DITHER for s, w in zip(seen, want, strict=True)):
-            wrong.append((x, y, tuple(seen)))
-    assert changed > 60, f"{key}: the build changed too few texels where the check looked"
-    assert wrong == [], f"{key}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"
+    check_texels(shot, inv, patched, button, button.clut, button.chunk,
+                 paint.points(button.placed), origin, key, dither=DITHER)  # fmt: skip
 
 
 def check_on_screen(shot, inv, patched: bytes, key: str, origin, skip) -> None:
     """Every opaque texel of the button's box, as rebuilt, is on screen exactly, but those
     under `skip`; and enough of them are ones the build changed."""
-    ox, oy = origin
     button = tb.BUTTONS[key]
-    canvas = rebuilt(inv, patched, button)
-    stock = paint.Canvas(inv.get(button.texture), drawn_4bpp=button.drawn_4bpp)
-    palette = canvas.palette(button.clut, button.chunk)
+    check_texels(shot, inv, patched, button, button.clut, button.chunk,
+                 paint.points(box_of(button)), origin, key, skip=skip)  # fmt: skip
+
+
+def check_texels(shot, inv, patched: bytes, source, clut: int, chunk: int, points, origin,
+                 what: str, *, skip=None, dither: int = 0, at_least: int = 60) -> None:  # fmt: skip
+    """Every opaque texel at `points` of `source`'s texture (anything with `.texture` and
+    `.drawn_4bpp`), as rebuilt, is on screen with `origin` at its (0, 0) -- at the colour Beetle
+    shows it, or up to `dither` darker on each channel -- but those under screen box `skip`;
+    and more than `at_least` of them are ones the build changed."""
+    ox, oy = origin
+    canvas = rebuilt(inv, patched, source)
+    stock = paint.Canvas(inv.get(source.texture), drawn_4bpp=source.drawn_4bpp)
+    palette = canvas.palette(clut, chunk)
     compared, changed, wrong = 0, 0, []
-    for x, y in paint.points(box_of(button)):
+    for x, y in points:
         colour = palette[canvas.at((x, y))]
         sx, sy = ox + x, oy + y
         hidden = skip and skip[0] <= sx < skip[0] + skip[2] and skip[1] <= sy < skip[1] + skip[3]
@@ -362,7 +341,8 @@ def check_on_screen(shot, inv, patched: bytes, key: str, origin, skip) -> None:
         seen = tuple(shot.rgba[at : at + 3])
         compared += 1
         changed += canvas.at((x, y)) != stock.at((x, y))
-        if seen != tuple(c >> 3 << 3 for c in colour[:3]):
+        want = [c >> 3 << 3 for c in colour[:3]]
+        if not all(0 <= w - s <= dither for s, w in zip(seen, want, strict=True)):
             wrong.append((x, y, seen))
-    assert changed > 60, f"{key}: the build changed too few texels where the check looked"
-    assert wrong == [], f"{key}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"
+    assert changed > at_least, f"{what}: the build changed too few texels where the check looked"
+    assert wrong == [], f"{what}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"

@@ -97,6 +97,25 @@ def texture_patched(archive: Archive, texture_edits) -> bytes:
 
 
 @pytest.fixture(scope="session")
+def texture_image(texture_edits, real_image: Path, disc_dir: Path, tmp_path_factory) -> Path:
+    """The `.cue` of an image carrying only the texture edits, built once for every Beetle
+    test of the textures; skips unless `BOKU_EMU_TESTS=1` and the core is set up."""
+    from boku.build import build
+
+    if os.environ.get("BOKU_EMU_TESTS") != "1":
+        pytest.skip("set BOKU_EMU_TESTS=1: an image build and Beetle boots")
+    for var in ("BOKU_LIBRETRO_CORE", "BOKU_LIBRETRO_SYSTEM"):
+        if not os.environ.get(var):
+            pytest.skip(f"{var} is not set (research/tooling-setup.md)")
+    out = build(
+        source=real_image, out_dir=tmp_path_factory.mktemp("texture-image"), disc_dir=disc_dir,
+        binary_patches=texture_edits.edits, name="textures",
+    )  # fmt: skip
+    assert out.written is not None
+    return out.written.image.with_suffix(".cue")
+
+
+@pytest.fixture(scope="session")
 def site_index(disc_dir: Path, archive: Archive) -> SiteIndex:
     """The walk, over the archive that is already open -- not a second copy of it."""
     return SiteIndex.from_disc(disc_dir, archive=archive)

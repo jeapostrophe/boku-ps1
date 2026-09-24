@@ -704,6 +704,13 @@ def kite_book(archive: Archive, inv: Inventory, face: Face, entries: Sequence[En
     return texture_books.kite_book(archive, inv, face, entries)
 
 
+def records(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Labels beside run-time numbers (`boku.texture_records`)."""
+    from boku import texture_records
+
+    return texture_records.records(archive, inv, face, entries)
+
+
 FAMILIES: Mapping[str, Family] = {
     "tex@T_TITLE": title_menu,
     "tex@T_CONFIG": config_screen,
@@ -712,6 +719,7 @@ FAMILIES: Mapping[str, Family] = {
     "nikki@": diary,
     "tex@OTI": credits_strip,
     "btn@": buttons,
+    "rec@": records,
     "mzkan@": insect_book,
     "tzkan@": kite_book,
 }

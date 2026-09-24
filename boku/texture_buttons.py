@@ -27,7 +27,7 @@ from boku.archive import ARCHIVE_NAME, Archive
 from boku.reinsert import ByteEdit
 from boku.textures import Inventory
 from boku.tim import luminance
-from boku.typeset import Face, pixel_face
+from boku.typeset import Face, face_named
 
 from boku.texture_text import (  # isort: skip
     Entry, TextureTextError, centred, fits, found, ink_of, lines_of,
@@ -209,6 +209,7 @@ BUTTONS: dict[str, Button] = {
     "MZ00.back": stone_at("_DATA_MZ00.BIN__000350", 321, 1, 0),  # specimen grid
     "SAMP.back": stone_at("_DATA_SAMP.BIN__014e48", 318, 24, 5),  # specimen box
     "MZKAN.back": stone_at("_DATA_MZKAN.BIN__000048", 0, 0, 1),  # the insect book
+    "FS_WAL.back": stone_at("_DATA_FS_WAL.BIN__0000d8", 45, 201, 0, chunk=3),  # fishing record
     # The diary's idle hint おやすみ, drawn at screen (40, 16) after a second without input
     # (atlas entry 6 of the table in front of the sheet; ZUKAN.OVL places it).
     "NIKKI_W.good_night": Button(
@@ -264,6 +265,17 @@ BUTTONS: dict[str, Button] = {
         {  # the kite record
             "TK_WAL.kite": (-132, (0, 200, 11, 40, 0, 0x00), 0, None, "game"),
         },
+    ),
+    # The fishing record's つり道具, over the tackle box's picture; the sheet has no free texels
+    # measured beside it, so Bean.
+    "FS_WAL.tackle": Button(
+        "_DATA_FS_WAL.BIN__0000d8",
+        "balloon",
+        (0, 200, 44, 40),
+        0,
+        drawn_4bpp=True,
+        chunk=0,
+        face="bean",
     ),
     # The kite book's 作るたこ決定 (a true 4bpp TIM, 12 VRAM words: no room to widen).
     "TZICON.make_this_kite": Button(
@@ -340,10 +352,6 @@ BUTTONS: dict[str, Button] = {
         face="bean",
     ),
 }
-
-
-def _face(button: Button, game: Face) -> Face:
-    return game if button.face == "game" else pixel_face(button.face)
 
 
 def lines_block(face: Face, lines: Sequence[str], entry: Entry) -> paint.Ink:
@@ -680,7 +688,7 @@ def buttons(
         for entry, button in sorted(group, key=lambda eb: eb[0].id):
             what = f"the {entry.id.removeprefix(FAMILY)} button"
             box = boxes[button]
-            RECIPES[button.kind](canvas, button, box, entry, _face(button, face), what)
+            RECIPES[button.kind](canvas, button, box, entry, face_named(button.face, face), what)
             if button.widen:
                 edits += size_edits(archive, inv, button, box, what)
         edits += canvas.patches()

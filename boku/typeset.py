@@ -228,6 +228,11 @@ def pixel_face(slug: str) -> PixelFace:
     return PixelFace.load(FACES_DIR / f"{slug}.txt")
 
 
+def face_named(slug: str, game: Face) -> Face:
+    """`game` for "game", else the tracked face `slug` -- how a recipe's `face` field reads."""
+    return game if slug == "game" else pixel_face(slug)
+
+
 def wrap(text: str, face: Face, width: int) -> list[str]:
     """Greedy word wrap at `width` pixels, in `face`'s own advances. `\\n` forces a break.
 
@@ -257,6 +262,7 @@ __all__ = [
     "Glyph",
     "PixelFace",
     "TypesetError",
+    "face_named",
     "pixel_face",
     "wrap",
 ]

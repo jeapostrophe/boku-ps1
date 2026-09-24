@@ -396,7 +396,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 11 | `tex@T_TITLE.*` | title menu: new game / continue / summer memories / settings | 4 lines |
 | 12 | `tex@T_CONFIG.*` | settings value plates | ~6 plates |
 | 13 | `tex@SUB.*` | action-button words, deduplicated across the 8 atlas images in 6 files | ~12 words |
-| 14 | `tex@FS_WAL.*`, `tex@PK_WAL.*`, `tex@TK_WAL.*` | record-screen field labels + the bait and tackle names | ~6 labels + a list |
+| 14 | `rec@FS_WAL.*`, `btn@FS_WAL.*`, `btn@PK_WAL.*`, `btn@TK_WAL.*` | record-screen field labels, the bait and tackle names, and their buttons | 16 strings |
 | 15 | `tex@MITIM.*` | result badge words | ~4 words |
 | 16 | `tex@TZICON.*` | kite-workshop balloon, confirm, back | 3 strings |
 | 17 | `tex@T_MEMORY.0` | album heading plate | 1 line |

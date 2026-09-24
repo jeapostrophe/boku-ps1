@@ -19,14 +19,12 @@ import os
 import subprocess
 import sys
 from collections import Counter
-from pathlib import Path
 
 import pytest
 
 from boku import REPO_ROOT
 from boku import texture_books as books
 from boku import texture_paint as paint
-from boku.build import build
 from boku.png import read as read_png
 from boku.texture_text import read_entries
 from boku.textures import Texture
@@ -194,27 +192,13 @@ BOOKS_ON_SCREEN = {
 DITHER = 8
 
 
-@pytest.fixture(scope="module")
-def image(texture_edits, real_image, disc_dir, tmp_path_factory) -> Path:
-    if os.environ.get("BOKU_EMU_TESTS") != "1":
-        pytest.skip("set BOKU_EMU_TESTS=1: an image build and Beetle boots")
-    for var in ("BOKU_LIBRETRO_CORE", "BOKU_LIBRETRO_SYSTEM"):
-        if not os.environ.get(var):
-            pytest.skip(f"{var} is not set (research/tooling-setup.md)")
-    out = build(
-        source=real_image, out_dir=tmp_path_factory.mktemp("image"), disc_dir=disc_dir,
-        binary_patches=texture_edits.edits, name="books",
-    )  # fmt: skip
-    return out.written.image.with_suffix(".cue")
-
-
 @pytest.mark.parametrize("mode", sorted(BOOKS_ON_SCREEN), ids=["kite", "insect"])
 def test_a_book_on_beetle_shows_its_english(
-    mode, image, texture_inventory, texture_patched, tmp_path
+    mode, texture_image, texture_inventory, texture_patched, tmp_path
 ):  # fmt: skip
     pack, (ox, oy), boxes = BOOKS_ON_SCREEN[mode]
     command = [
-        sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"), str(image),
+        sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"), str(texture_image),
         "--core", os.environ["BOKU_LIBRETRO_CORE"], "--system", os.environ["BOKU_LIBRETRO_SYSTEM"],
         "--work", str(tmp_path), "--frames", "7300", "--shot", "7290:book", *BOOK_PAGE,
         "--poke", f"6500:0x800237E0={mode:02x}", "--poke", f"6500:0x800237E4={mode:02x}",

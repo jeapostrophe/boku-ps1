@@ -1,13 +1,14 @@
 """`GFX-07` on Beetle PSX: what the player sees is the English the build typeset.
 
-One image carrying only the texture edits (`boku.texture_text.build_edits`) is built per
-module and booted on the core Mode One runs (`tools/libretro/run_core.py`). Each test drives
-it to a screen and compares the screenshot with the rebuilt texture: every texel the build
-changed that is still opaque -- the English and the ground painted in round it -- must show
-its CLUT colour exactly (Beetle draws the 5-bit channels shifted left by three), and there
-must be enough of them that the English was really drawn. Texels the build did not change
-are not compared, and neither are texels it made transparent. A stock image fails: the
-Japanese is on screen where the English texture says otherwise.
+One image carrying only the texture edits (`boku.texture_text.build_edits`; the session's
+`texture_image`, `tests/conftest.py`) is booted on the core Mode One runs
+(`tools/libretro/run_core.py`). Each test drives it to a screen and compares the screenshot
+with the rebuilt texture: every texel the build changed that is still opaque -- the English and
+the ground painted in round it -- must show its CLUT colour exactly (Beetle draws the 5-bit
+channels shifted left by three), and there must be enough of them that the English was really
+drawn. Texels the build did not change are not compared, and neither are texels it made
+transparent. A stock image fails: the Japanese is on screen where the English texture says
+otherwise.
 
 Where a sprite lands on screen and through which CLUT it is drawn were measured on the stock
 image (`research/texture-recipes.md`); the screen x, y of each sprite is read from its record
@@ -28,7 +29,6 @@ import pytest
 
 from boku import REPO_ROOT
 from boku import texture_text as tt
-from boku.build import build
 from boku.png import read as read_png
 from boku.tim import parse_exact
 
@@ -61,17 +61,12 @@ SHOTS = {"title": 3650, "message": 4250, "sound": 4400}
 
 
 @pytest.fixture(scope="module")
-def shots(beetle, texture_edits, real_image, disc_dir, tmp_path_factory) -> dict:
+def shots(beetle, texture_image, tmp_path_factory) -> dict:
     """Build an image carrying only the texture edits, boot it once, shoot every screen."""
-    out = build(
-        source=real_image, out_dir=tmp_path_factory.mktemp("image"), disc_dir=disc_dir,
-        binary_patches=texture_edits.edits, name="gfx07",
-    )  # fmt: skip
-    assert out.written is not None
     core, system = beetle
     work = tmp_path_factory.mktemp("beetle")
     args = [
-        sys.executable, str(RUNNER), str(out.written.image.with_suffix(".cue")),
+        sys.executable, str(RUNNER), str(texture_image),
         "--core", core, "--system", system, "--work", str(work),
         "--frames", str(max(SHOTS.values())),
     ]  # fmt: skip
@@ -179,17 +174,12 @@ BEACH_ON_SCREEN = (161, 178)
 
 
 def test_the_beach_notice_on_beetle_is_the_painted_english(
-    beetle, texture_edits, texture_inventory, texture_patched, real_image, disc_dir,
-    tmp_path_factory,
+    beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
 ):  # fmt: skip
-    out = build(
-        source=real_image, out_dir=tmp_path_factory.mktemp("beach"), disc_dir=disc_dir,
-        binary_patches=texture_edits.edits, name="gfx09",
-    )  # fmt: skip
     core, system = beetle
     work = tmp_path_factory.mktemp("beach-beetle")
     args = [
-        sys.executable, str(RUNNER), str(out.written.image.with_suffix(".cue")),
+        sys.executable, str(RUNNER), str(texture_image),
         "--core", core, "--system", system, "--work", str(work),
         "--frames", str(BEACH_SHOT), "--shot", f"{BEACH_SHOT}:beach",
         "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
@@ -227,20 +217,15 @@ paper is, or paper where ink is) is ~200 off."""
 
 
 def test_a_diary_page_on_beetle_is_the_english_entry(
-    beetle, texture_edits, texture_inventory, texture_patched, real_image, disc_dir,
-    tmp_path_factory,
+    beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
 ):  # fmt: skip
     from boku import diary
     from boku.tim import luminance
 
-    out = build(
-        source=real_image, out_dir=tmp_path_factory.mktemp("diary"), disc_dir=disc_dir,
-        binary_patches=texture_edits.edits, name="gfx04",
-    )  # fmt: skip
     core, system = beetle
     work = tmp_path_factory.mktemp("diary-beetle")
     args = [
-        sys.executable, str(RUNNER), str(out.written.image.with_suffix(".cue")),
+        sys.executable, str(RUNNER), str(texture_image),
         "--core", core, "--system", system, "--work", str(work),
         "--frames", str(DIARY_SHOT), "--shot", f"{DIARY_SHOT}:diary",
         "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
@@ -267,3 +252,45 @@ def test_a_diary_page_on_beetle_is_the_english_entry(
             far.append((x, y))
     assert len(changed) > 1000, "the page was not rebuilt"
     assert far == [], f"{len(far)} of {len(changed)} changed texels are off, first {far[:5]}"
+
+
+ALBUM_PRESSES = [(3300, "START"), (3700, "DOWN"), (3760, "DOWN"), (3900, "CIRCLE"),
+                 (4400, "CIRCLE"), (4900, "CIRCLE")]  # fmt: skip
+"""Title -> Summer Memories -> the card's finished file -> "is this file all right?" -> yes:
+the album opens by ~5900 (measured on Beetle with a generated finished card)."""
+ALBUM_SHOT = 6200
+ALBUM_HEADING_ON_SCREEN = (36, 24)
+"""Where the heading plaque's box lands (measured by matching its texels; drawn exactly)."""
+BASE = REPO_ROOT / "work" / "saves" / "newgame.ram"
+
+
+def test_the_album_heading_on_beetle_is_the_typeset_english(
+    beetle, texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory,
+):  # fmt: skip
+    """`T_MEMORY` is reached only with a finished game on the card; `boku save --finished`
+    makes one (PLAN `ENV-08`)."""
+    if not BASE.is_file():
+        pytest.skip(f"no {BASE}: `./make.sh saves` dumps it")
+    work = tmp_path_factory.mktemp("album")
+    card = work / "finished.mcd"
+    subprocess.run(
+        [sys.executable, "-m", "boku", "save", "--base", str(BASE), "--finished",
+         "--out", str(card), "--disc", str(disc_dir)],
+        cwd=REPO_ROOT, check=True, capture_output=True,
+    )  # fmt: skip
+    core, system = beetle
+    args = [
+        sys.executable, str(RUNNER), str(texture_image),
+        "--core", core, "--system", system, "--work", str(work), "--memcard", str(card),
+        "--frames", str(ALBUM_SHOT + 10), "--shot", f"{ALBUM_SHOT}:album",
+    ]  # fmt: skip
+    for at, button in ALBUM_PRESSES:
+        args += ["--press", f"{at}:{button}"]
+    subprocess.run(args, check=True, capture_output=True, timeout=600)
+    shot = read_png((work / "album.png").read_bytes())
+    n, wrong = compare(
+        shot, texture_inventory, texture_patched, tt.MEMORY_ALBUM, tt.MEMORY_CLUT,
+        tt.MEMORY_HEADING, ALBUM_HEADING_ON_SCREEN,
+    )  # fmt: skip
+    assert n > 200, "the build changed too few texels where the check looked"
+    assert wrong == [], f"{len(wrong)} of {n} texels differ, first {wrong[:5]}"

@@ -23,7 +23,6 @@ import pytest
 from boku import REPO_ROOT
 from boku import texture_paint as paint
 from boku import texture_text as tt
-from boku.build import build
 from boku.png import read as read_png
 from boku.save import G_FLAGS
 from boku.textures import Texture
@@ -88,20 +87,11 @@ BASE = REPO_ROOT / "work" / "saves" / "newgame.ram"
 
 
 def test_the_closing_card_on_beetle_is_the_english(
-    texture_edits, texture_inventory, texture_patched, real_image, disc_dir, tmp_path_factory
+    texture_image, texture_inventory, texture_patched, disc_dir, tmp_path_factory
 ):  # fmt: skip
-    if os.environ.get("BOKU_EMU_TESTS") != "1":
-        pytest.skip("set BOKU_EMU_TESTS=1: an image build and a Beetle boot to the ending")
-    for var in ("BOKU_LIBRETRO_CORE", "BOKU_LIBRETRO_SYSTEM"):
-        if not os.environ.get(var):
-            pytest.skip(f"{var} is not set (research/tooling-setup.md)")
     if not BASE.is_file():
         pytest.skip(f"no {BASE}: `./make.sh saves` dumps it")
     work = tmp_path_factory.mktemp("credits")
-    out = build(
-        source=real_image, out_dir=work / "image", disc_dir=disc_dir,
-        binary_patches=texture_edits.edits, name="credits",
-    )  # fmt: skip
     card = work / "ending.mcd"
     subprocess.run(
         [sys.executable, "-m", "boku", "save", "--base", str(BASE), *ENDING_CARD,
@@ -110,7 +100,7 @@ def test_the_closing_card_on_beetle_is_the_english(
     )  # fmt: skip
     subprocess.run(
         [sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"),
-         str(out.written.image.with_suffix(".cue")),
+         str(texture_image),
          "--core", os.environ["BOKU_LIBRETRO_CORE"], "--system", os.environ["BOKU_LIBRETRO_SYSTEM"],
          "--work", str(work), "--memcard", str(card), "--frames", str(SHOT + 10),
          "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-save.press"),
