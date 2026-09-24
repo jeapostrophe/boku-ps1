@@ -129,7 +129,7 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | 花火大会 / 線香花火 | | the fireworks festival / sparklers (*senkō hanabi*) | | | `E0812.0`, `E1131.0` |
 | 浴衣 | yukata | yukata | | | `E1104.6` |
 | お風呂 | ofuro | the bath | | | `E0020.0` |
-| 居候 | isōrō | freeloader | lodger | Moe teasing; also in the day-1 diary page | `E0832.2` |
+| 居候 | isōrō | freeloader (said of Boku, teasing) / staying at (Boku of himself) | lodger | "freeloader" is Moe teasing him; Boku's own day-1 diary page says "I'm staying at Uncle's house" — "freeloader" is too aggressive for a 9-year-old (Jay, 2026-09-24) | `E0832.2`, `nikki@NIKKI_001` |
 | なぜでしょう？ / なんでしょう？ | | Why is that, I wonder? / What could it be, I wonder? | | **Boku's tic**, quiz-show deadpan; Moe echoes it | `E0832.8`, `E1506.0`, `E1632.13`, `E6000.4` |
 | ヒック！ | hikku | Hic! | | he hiccups when afraid; the narrator calls it "my usual habit" | `E0405.1`, `E6004.18` |
 | バヨヨ〜ン！ | bayoyōn | Bayoyooon! | | Shirabe's exit line | `E0402.12`, `E1404.16` |

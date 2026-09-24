@@ -304,9 +304,9 @@ drag queen?" — a nine-year-old's TV word in 1975, neither sanitised nor sharpe
 * **The picture diary** (94 pages, `research/textures.md`) is Boku's own writing: almost all
   kana, five to eight words a line, plain statements and one exclamation. English: a
   third-grader's sentences, short and declarative, correctly spelled — the Japanese is not
-  misspelled, it is just young. "Mom is having a baby, so it's a big fuss! I'm a freeloader
-  at Uncle's house. I wonder if there will be lots of fun things?" (*isōrō* as glossary § 3
-  has it.) Hand-lettered, not typeset.
+  misspelled, it is just young. "Mom is having a baby, so it's a big fuss! I'm staying at
+  Uncle's house. I wonder if there will be lots of fun things?" (*isōrō* is "staying at" in
+  Boku's own mouth, not "freeloader" — glossary § 3.) Hand-lettered, not typeset.
   SETTLED (Q10.10, 2026-09-20).
 * **Insect book and kite book covers, the calendar, signs**: translated in place when redrawn.
 * **Signs read out by the narrator** (`E1707.0`) are translated in the narration; the sign

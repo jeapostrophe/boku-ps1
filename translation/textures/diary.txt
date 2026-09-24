@@ -11,8 +11,9 @@
 # Pages 072-099 are the generic pool (a day when nothing happened) and carry one text.
 
 # --- NIKKI_001: day 1, Mom's baby and staying at Uncle's
-# NOTE NIKKI_001: "isoro" is "freeloader" by glossary 3, which names this page; the style guide 14 sample ("I'm staying at Uncle's house") predates that entry.
-nikki@NIKKI_001	Mom is having a baby, so it's a big fuss! I'm a freeloader at Uncle's house. I wonder if there will be lots of fun things?
+# NOTE NIKKI_001: isoro is "staying at" here, not glossary 3's "freeloader": Boku says it of
+# himself, and in a 9-year-old's English it is too aggressive (Jay, 2026-09-24, PLAN TRN-11).
+nikki@NIKKI_001	Mom is having a baby, so it's a big fuss! I'm staying at Uncle's house. I wonder if there will be lots of fun things?
 # --- NIKKI_002: generic, bugs are faster than me
 # NOTE NIKKI_002: the page writes the bugs as a doubled "mushi-mushi", Boku's child word for bugs (again on NIKKI_010); rendered plain "bugs".
 nikki@NIKKI_002	Bugs are fast. I am slow. I only have 2 legs. Those guys have lots. I lose.
@@ -36,8 +37,10 @@ nikki@NIKKI_011	On top of the hill. I flew the kite Uncle gave me. It was really
 # --- NIKKI_012: the daytime shooting star on the kite hill (the satellite)
 nikki@NIKKI_012	On top of the kite hill, a shooting star in the daytime. What it really was: a satellite, friends with UFOs too. On the other side of the blue sky, the great big universe.
 # --- NIKKI_013: Uncle's special fly
-# NOTE NIKKI_013: "Ojioji Pond" (o-ji-o-ji-ike) is what the page says, confirmed against the image; the name is nowhere in the script, so it is Boku's own name for the pond of the giant fish, kept as a sound. "The big yamame" is the fish the uncle calls the master of the pond.
-nikki@NIKKI_013	The special fly Uncle gave me. With this, the big yamame in Ojioji Pond is mine. All of it, all of it is mine.
+# NOTE NIKKI_013: the page says o-ji-o-ji-ike, a name nowhere in the script: Boku's own name for
+# the giant fish's pond, built on oji (uncle), so "Uncle's Pond" (Jay, 2026-09-24, PLAN TRN-11).
+# "The big yamame" is the fish the uncle calls the master of the pond.
+nikki@NIKKI_013	The special fly Uncle gave me. With this, the big yamame in Uncle's Pond is mine. All of it, all of it is mine.
 # --- NIKKI_016: the morning glory bloomed
 nikki@NIKKI_016	The morning glory I grew bloomed. It bloomed really pretty. But when it gets to be noon, it wilts. Is it not getting enough nutrients?
 # --- NIKKI_017: the sun sinking into the sea
