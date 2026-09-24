@@ -579,7 +579,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the fortune and kite-crash banners draw one centred English line in a 120 × 36 panel,
       proven on Beetle (`asm/banners.asm`, 2026-09-23); the sumo hint and strength rows are drawn
       by banner routines, proven on Beetle (2026-09-24); the insect box waits on its layout) and 1 `not-placeable` (the
-      specimen label, dead code): code labels are placed by rewriting their immediates, the
+      specimen label, dead code); the bug-sumo move names (`musi@2C`) are drawn by no retail
+      path and stay in the original bytes (`boku.arrays.UNREACHABLE`; reopen if a retail path
+      shows them), freeing 690 bytes: code labels are placed by rewriting their immediates, the
       save title and both date labels by `boku.code_text` and `asm/labels.asm` (2026-09-23;
       the save date seen on Beetle, the caught label proven in `tests/mips.py`). Moved too (2026-09-23): the executable-held event block `exe@80029920` (the
       uncle's daily 18:00 call), seen in English on Beetle. Help .11/.12 (543 px) needs a third bottom row on the help
