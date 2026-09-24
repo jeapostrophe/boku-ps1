@@ -136,10 +136,8 @@ languages.
 
 * `PK_ITM` `0x00006c` (= `SBP01.TIM`), the **radio-exercise attendance card** — **P**. A flat
   frontal card, blue print on white: a two-line title and a footer line; the 31 stamp boxes are
-  numerals. *Looked at again for `GFX-07` (2026-09-22):* the title has about 65 px beside the
-  picture, and *Attendance Card* alone is 100 px in the game's 12 px glyphs; the footer is ~6 px
-  type. It needs the same small type the action buttons do ([texture-recipes.md](texture-recipes.md)
-  § "Measured while looking at the rest of `GFX-07`").
+  numerals. The title has about 62 px beside the picture and the footer ~6 px type; built in
+  the Sprout face ([texture-recipes.md](texture-recipes.md) § "Buttons", the attendance card).
 * `PK_ITM` `0x012acc` (census `maybe`) — **N**, *resolved*: an old book prop whose title is
   embossed dark-on-dark and does not resolve at any CLUT. The player never reads it.
 
@@ -386,7 +384,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 2 | `mzkan@MZKAN.n` | insect spreads: species name (glossary § 4a), family, wingspan/body length, food, body paragraph — all pixels (§ "The 26 encyclopedia spreads"); one id per page, written to child *n* of both `MZKAN0` and `MZKAN1` | 9 × 5 fields |
 | 3 | `tzkan@TZKAN.n` | kite spreads: kite name, difficulty bracket, how to build it | 8 × 3 fields |
 | 4 | `tex@DOPA1`, `tex@MOPA1`, `tex@TOPA1` | 3 book cover titles + the insect book's author-and-photographer credit | 4 strings |
-| 5 | `tex@PK_ITM.0` | radio-exercise attendance card: title + footer line | 2 lines |
+| 5 | `btn@PK_ITM.title`, `btn@PK_ITM.footer` | radio-exercise attendance card: title + footer line | 2 strings |
 | 6 | `tex@M_I14000.0` | **Saori's farewell note** — the highest-value string here | ~25 chars, 4 columns |
 | 7 | `tex@M_I23000.*` | hunting-association warning board | 4 short strings |
 | 8 | `tex@M_I18000.0` | "keep out!" sign | 1 line |

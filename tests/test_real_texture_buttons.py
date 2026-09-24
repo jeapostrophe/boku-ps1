@@ -90,6 +90,35 @@ def test_a_stone_carries_its_english_bold_and_no_japanese(
     )
 
 
+@pytest.mark.parametrize("key", sorted(k for k, b in tb.BUTTONS.items() if b.kind == "label"))
+def test_a_card_label_carries_its_english_and_no_japanese(
+    key, texture_inventory, texture_patched, game
+):  # fmt: skip
+    """The attendance card: the only printed (saturated) pixels in the label's box are the
+    English lines in their face, once."""
+    button = tb.BUTTONS[key]
+    canvas = rebuilt(texture_inventory, texture_patched, button)
+    palette = canvas.palette(button.clut, button.chunk)
+    x0, y0, w, h = button.box
+    near = [(x, y) for x, y in paint.points((x0 - 2, y0 - 2, w + 4, h + 4))
+            if 0 <= x < canvas.width and 0 <= y < canvas.height]  # fmt: skip
+    # the tinted fringe of the hole punched in the card's corner stays as it was
+    hole = paint.grown({p for p in near if not palette[canvas.at(p)][3]}, 2, 2, 2, 2)
+    printed = {
+        p for p in paint.points(button.box)
+        if tb.saturation(palette[canvas.at(p)]) > tb.INK_SATURATION and p not in hole
+    }  # fmt: skip
+    block = tb.lines_block(tb._face(button, game), lines_of(ENTRIES[key]), ENTRIES[key])
+    placed = [
+        moved for dx, dy in paint.points(button.box)
+        if (moved := {(x + dx, y + dy) for x, y in block}) <= printed
+    ]  # fmt: skip
+    assert len(placed) == 1, "the English lines, in their face, are not on the card once"
+    assert printed - placed[0] == set(), (
+        f"printed besides the English: {sorted(printed - placed[0])}"
+    )
+
+
 @pytest.mark.parametrize(
     "key", sorted(k for k, b in tb.BUTTONS.items() if b.kind in ("plank", "plate"))
 )
@@ -200,7 +229,8 @@ SCREENS = {
     "bag": (
         [*BOOT, "--press", f"{FREE + 30}:TRIANGLE", "--press", f"{FREE + 330}:CIRCLE"], False,
         {FREE + 790: [("PK_WAL.belongings", (-248, -140), None),
-                      ("PK_WAL.back", (176, 110), None)]},
+                      ("PK_WAL.back", (176, 110), None),
+                      ("PK_ITM.title", (176, 26), "drawn"), ("PK_ITM.footer", (176, 26), "drawn")]},
     ),
     "kite_record": (
         [*BOOT, "--poke", f"{FREE}:0x80047EC0=0101", "--press", f"{FREE + 30}:TRIANGLE",
@@ -226,7 +256,8 @@ SCREENS = {
 }  # fmt: skip
 """Measured on the English image by matching each box's texels near where the recon put it
 (`research/texture-recipes.md` § "Buttons"). A texture origin is where the texture's (0, 0)
-lands on screen; `skip` is a screen rectangle the hand cursor is drawn over. The diary's and
+lands on screen; `skip` is a screen rectangle the hand cursor is drawn over, or "drawn" for
+a picture the game draws dithered (`check_drawn`). The diary's and
 the kite book's balloons are idle hints; the kite record needs kite 0 owned (the poke);
 bug sumo and the insect box are forced by the recon's pokes. Not compared, though seen: the
 bug-sumo desk's stone, drawn through a CLUT that is not in its TIM."""
@@ -273,7 +304,40 @@ def test_the_buttons_on_beetle_are_the_typeset_english(
     for frame, buttons in shots.items():
         shot = read_png((tmp_path / f"{screen}-{frame}.png").read_bytes())
         for key, origin, skip in buttons:
-            check_on_screen(shot, texture_inventory, texture_patched, key, origin, skip)
+            if skip == "drawn":
+                check_drawn(shot, texture_inventory, texture_patched, key, origin)
+            else:
+                check_on_screen(shot, texture_inventory, texture_patched, key, origin, skip)
+
+
+DITHER = 8
+"""How far Beetle's dither moves each channel of the attendance card: measured, every texel
+of it is its colour exactly or 8 less on all three channels."""
+
+
+def check_drawn(shot, inv, patched: bytes, key: str, origin) -> None:
+    """For an item picture the game draws dithered (the attendance card in the bag): every
+    opaque texel of the box is on screen within `DITHER` of its rebuilt colour on each channel;
+    and enough of them are ones the build changed."""
+    ox, oy = origin
+    button = tb.BUTTONS[key]
+    canvas = rebuilt(inv, patched, button)
+    stock = paint.Canvas(inv.get(button.texture), drawn_4bpp=button.drawn_4bpp)
+    palette = canvas.palette(button.clut, button.chunk)
+    compared, changed, wrong = 0, 0, []
+    for x, y in paint.points(button.placed):
+        colour = palette[canvas.at((x, y))]
+        if not colour[3]:
+            continue
+        at = ((oy + y) * shot.width + ox + x) * 4
+        seen = shot.rgba[at : at + 3]
+        compared += 1
+        changed += canvas.at((x, y)) != stock.at((x, y))
+        want = [c >> 3 << 3 for c in colour[:3]]
+        if not all(0 <= w - s <= DITHER for s, w in zip(seen, want, strict=True)):
+            wrong.append((x, y, tuple(seen)))
+    assert changed > 60, f"{key}: the build changed too few texels where the check looked"
+    assert wrong == [], f"{key}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"
 
 
 def check_on_screen(shot, inv, patched: bytes, key: str, origin, skip) -> None:

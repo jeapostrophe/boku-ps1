@@ -65,3 +65,9 @@ btn@MZ02.next_page	Page // Next
 btn@SAMP.species_list	Species // List
 btn@SAMP.medicine	Medicine
 btn@SAMP.syringe	Syringe
+
+# --- the radio-exercise attendance card (PK_ITM, item 0x6c), set in Sprout: its title beside
+# the radio picture (` // ` breaks it) and its footer under the grid, between the reference
+# marks the Japanese has (drawn as *).
+btn@PK_ITM.title	Radio // Calisthenics // Attendance Card
+btn@PK_ITM.footer	* Healthy summer vacation! *

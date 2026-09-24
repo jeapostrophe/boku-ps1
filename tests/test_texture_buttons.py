@@ -348,3 +348,64 @@ def test_a_balloon_keeps_a_pixel_of_paper_between_its_english_and_shading_inside
         return  # refusing is right too
     marked = {p for p in paint.points(button.box) if canvas.at(p) == MARK}
     assert not paint.grown(marked, 1, 1, 1, 1) & shade
+
+
+def card_fixture():
+    """A pale card, a faint gradient down it, and "Japanese" printed in blue with a pale-blue
+    antialias fringe -- the attendance card's shape."""
+    words = [0] * 256
+    for k in range(8):  # 1-8: near-white, a little pinker each step (the gradient)
+        words[1 + k] = (31) | (31 - (k & 1)) << 5 | (31 - k // 2) << 10
+    words[20] = 0 | 20 << 5 | 30 << 10  # the printed blue
+    words[21] = 27 | 29 << 5 | 31 << 10  # its fringe: pale, less saturated than the type
+    words[22] = 28 | 30 << 5 | 31 << 10  # a pale-blue shadow line, unsaturated enough to pass
+    w, h = 40, 20
+    px = [1 + y * 8 // h for y in range(h) for _ in range(w)]
+    japanese = set()
+    for x in range(10, 30, 4):
+        for y in range(6, 12):
+            px[y * w + x], px[y * w + x + 1] = 20, 21
+            japanese |= {(x, y), (x + 1, y)}
+    raw = synth.tim(
+        1, synth.pixel_block(w // 2, h, bytes(px)), clut=synth.clut_block(256, 1, words)
+    )
+    tim = parse_exact(raw)
+    place = Occurrence(ARCHIVE_NAME, "\\_DATA\\X.BIN", 0, 0x1000, tim.length)
+    canvas = paint.Canvas(Texture("x", "0" * 40, tim, (place,)))
+    return canvas, japanese, tb.Button("x", "label", (4, 3, 32, 14), 0)
+
+
+def test_a_label_clears_the_japanese_with_its_fringe_before_the_english_goes_on():
+    """Jay, 2026-09-23: the mock-up's card labels were painted over the Japanese. The whole
+    of the Japanese goes -- its pale fringe too -- and only the English is left printed."""
+    canvas, japanese, button = card_fixture()
+    tb.label(canvas, button, button.box, Entry("btn@x.t", "Go", "b:1"), Blocks(), "the card")
+    left = {p for p in paint.points(button.box) if canvas.at(p) in (20, 21)}
+    assert left == {p for p in left if canvas.at(p) == 20}, "the fringe is still printed"
+    assert paint.normalised(left) == paint.normalised(Blocks().ink("Go"))
+    refilled = {canvas.at(p) for p in japanese} - {20}
+    assert refilled <= set(range(1, 9)), "the card is refilled from its own ground"
+
+
+def test_a_label_takes_no_colour_from_a_rule_just_above_it():
+    """The card's footer sits under the grid, whose pale-blue shadow is one row above the
+    type: refilled from its own rows, the footer does not grow a band of the shadow."""
+    canvas, _, button = card_fixture()
+    w = canvas.width
+    shadow_row = 4  # a row above the type (rows 6-11), inside a box that starts at row 3
+    stock = bytearray(canvas.stock)
+    for x in range(w):
+        stock[shadow_row * w + x] = 22
+    canvas.stock, canvas.pixels = bytes(stock), bytearray(stock)
+    box = (4, 5, 32, 12)
+    tb.label(canvas, button, box, Entry("btn@x.t", "Go", "b:1"), Blocks(), "the card")
+    assert 22 not in {canvas.at(p) for p in paint.points(box)}
+
+
+def test_a_label_box_that_cuts_through_something_printed_is_refused():
+    """The title's first box took in a column of the radio picture's frame, which the recipe
+    then cleared as type."""
+    canvas, _, button = card_fixture()
+    tight = (10, 3, 26, 14)  # its left edge on the first stroke
+    with pytest.raises(TextureTextError, match="reaches the edge of its box"):
+        tb.label(canvas, button, tight, Entry("btn@x.t", "Go", "b:1"), Blocks(), "the card")

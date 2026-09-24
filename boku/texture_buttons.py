@@ -50,10 +50,11 @@ PAPER = 200
 class Button:
     texture: str
     kind: str
-    """`stone`, `plank`, `plate` or `balloon` (`RECIPES`)."""
+    """`stone`, `plank`, `plate`, `balloon` or `label` (`RECIPES`)."""
     box: paint.Box
     """A stone: the rows and columns the Japanese is inked in (`STONE_TEXT`). A plank: the
-    board. A plate or a balloon: the whole sprite, outline and tail included."""
+    board. A plate or a balloon: the whole sprite, outline and tail included. A label: the
+    part of the card its type is printed in."""
     clut: int
     """The CLUT the screen draws it through (measured on Beetle)."""
     drawn_4bpp: bool = False
@@ -322,6 +323,12 @@ BUTTONS: dict[str, Button] = {
         chunk=1,
         face="bean",
     ),
+    # The radio-exercise attendance card (`PK_ITM`, item 0x6c; seen in the bag): its title
+    # beside the radio picture and its footer under the grid, set in Sprout.
+    "PK_ITM.title": Button("_DATA_PK_ITM.BIN__00006c", "label", (11, 10, 62, 27), 0, face="sprout"),
+    "PK_ITM.footer": Button(
+        "_DATA_PK_ITM.BIN__00006c", "label", (4, 139, 104, 10), 0, face="sprout"
+    ),
     "SAMP.syringe": Button(
         "_DATA_SAMP.BIN__014e48",
         "balloon",
@@ -587,7 +594,68 @@ def balloon(
     )
 
 
-RECIPES = {"stone": stone, "plank": plank, "plate": plate, "balloon": balloon}
+def label(
+    canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
+) -> None:
+    """Coloured type printed on a pale card (the radio-exercise card): the Japanese's whole
+    rectangle, grown a pixel, is cleared first -- refilled from the card beside it in the
+    box's rows, which on flat paper is the paper itself -- and the English lines set centred
+    where it was, in the most saturated colour the Japanese used. `box` must hold the type
+    and a pixel of card round it, and nothing else printed; the tinted fringe of a hole
+    punched through the card (within `EDGE` of transparency) is not type."""
+    x0, y0, w, h = box
+    colours = {p: _colour(canvas, button, p) for p in paint.points(box)}
+    around = {p: _colour(canvas, button, p)
+              for p in paint.points((x0 - EDGE, y0 - EDGE, w + 2 * EDGE, h + 2 * EDGE))
+              if 0 <= p[0] < canvas.width and 0 <= p[1] < canvas.height}  # fmt: skip
+    holes = paint.grown({p for p, c in around.items() if not c[3]}, EDGE, EDGE, EDGE, EDGE)
+    ink = found({p for p, c in colours.items() if c[3] and saturation(c) > INK_SATURATION
+                 and p not in holes}, what)  # fmt: skip
+    jx, jy, jw, jh = paint.extent(ink)
+    if jx == x0 or jy == y0 or jx + jw == x0 + w or jy + jh == y0 + h:
+        raise TextureTextError(
+            f"{what}: the type reaches the edge of its box {box}: the box takes in more than "
+            f"the type (a picture's frame, a rule), which would be cleared with it"
+        )
+    rect = set(paint.points((jx - 1, jy - 1, jw + 2, jh + 2))) & set(colours)
+    near = (x0 - LABEL_MARGIN, y0, w + 2 * LABEL_MARGIN, h)
+    around = {p: _colour(canvas, button, p) for p in paint.points(near)
+              if 0 <= p[0] < canvas.width}  # fmt: skip
+    donors = {p for p, c in around.items() if p not in rect and c[3]
+              and saturation(c) <= INK_SATURATION and luminance(c) >= PAPER}  # fmt: skip
+    strongest = max(saturation(colours[p]) for p in ink)
+    core = [p for p in ink if saturation(colours[p]) >= strongest - CORE_SPREAD]
+    ink_index = canvas.most_used(core, stock=True)
+    block = lines_block(face, lines_of(entry), entry)
+    fits(entry, paint.grown(block, 1, 1, 1, 1), box, what)
+    left = canvas.fill_from_nearest(rect, donors, reach=LABEL_REACH)
+    if left:
+        raise TextureTextError(f"{what}: {len(left)} pixel(s) of the label had nothing near to "
+                               f"be refilled from, first {left[:3]}")  # fmt: skip
+    cx, cy = centred(block, (jx, jy, jw, jh))
+    _, _, bw, bh = paint.extent(block)
+    # centred on the Japanese, but kept a pixel inside the box when the English is wider
+    cx = min(max(cx, x0 + 1), x0 + w - 1 - bw)
+    cy = min(max(cy, y0 + 1), y0 + h - 1 - bh)
+    canvas.stamp((cx, cy), block, ink_index)
+
+
+def saturation(colour) -> int:
+    return max(colour[:3]) - min(colour[:3])
+
+
+LABEL_MARGIN = 6
+"""How far left and right of a label's box its refill may take the card's colour from. Only
+the box's own rows give colour: a rule or a shadow just above or below the type (the grid
+over the card's footer) must not be drawn down into it."""
+LABEL_REACH = 64
+"""How far a cleared pixel looks for a donor: across the widest label, from its own row."""
+INK_SATURATION = 40
+"""A card's pixel more saturated than this is its printed type (the card is near-white)."""
+CORE_SPREAD = 30
+"""The type's own colour: within this much saturation of its most saturated pixel."""
+
+RECIPES = {"stone": stone, "plank": plank, "plate": plate, "balloon": balloon, "label": label}
 
 
 def buttons(

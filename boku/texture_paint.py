@@ -238,8 +238,8 @@ class Canvas:
     def paint_out(self, box: Box, mask: Ink, *, avoid: Ink = frozenset()):
         return paint_out(self.pixels, self.width, box, mask, avoid=avoid)
 
-    def fill_from_nearest(self, mask: Ink, donors: Ink, *, parity: bool = False):
-        return fill_from_nearest(self.pixels, self.width, mask, donors, parity=parity)
+    def fill_from_nearest(self, mask: Ink, donors: Ink, *, parity: bool = False, reach: int = 8):
+        return fill_from_nearest(self.pixels, self.width, mask, donors, parity=parity, reach=reach)
 
     def patches(self) -> list[ByteEdit]:
         """The verified byte edits that turn the stock image into this one, at every copy."""

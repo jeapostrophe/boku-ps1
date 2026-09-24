@@ -273,24 +273,35 @@ in transparent columns the art may take.
 | bug sumo (`M_S01100` `0x164b4`, CLUT 2; `MUSI.OVL` 22-byte records from `0x8007A538`, `{u16 semi, s16 x, y, u8 u, v, u16 w, h, u16 tpage x, y, clut x, y, u8 depth, abr}`, one per balloon in each of the two tables) | *Release* +12 and *Bug // Rank* +8 into the free x 484–511; the rest fit; the swap plate (4bpp, slice 3, record `0x8007A7B4`) +8, set by the `plate` recipe (its ground is a checkerboard: refilled from donors an even number of steps away, only its text area, not the arrow); the とじる board (8bpp, CLUT 5, records `0x8007A742`, `0x8007A786`) by the `plank` recipe, its punched-through Japanese transparent | the stone on this screen is drawn through a CLUT not in its TIM |
 | insect box (`MZ02`, CLUT 4, the same texture as `SAMP.BIN`'s copy; `SAMP` `0x14e48`, CLUT 6 slices 0–1) | *Bug // Cage*, *Bug // Box* in the game's glyphs; the rest in Bean; *Remove // Specimen* in Sprout — one pixel short in Bean | no free texels (one 44×40 slot at x 684, y 160, and nothing wider) |
 
+**The attendance card** (`PK_ITM` `0x6c`, item 0x6c; seen in the bag, drawn dithered: every
+texel its colour or 8 less on each channel). Its title (beside the radio picture) and its
+footer (under the grid) are printed blue on a near-white card whose ground turns faintly pink
+toward the bottom, so the `label` recipe finds the type by saturation (not the tinted fringe
+of the punched hole in its corner), clears the whole of its rectangle grown a pixel (Jay,
+2026-09-23: the mock-up had painted over the Japanese) — refilled from the card beside it in
+the same rows, so the grid's pale shadow one row above the footer is not drawn down into it,
+and on the flat title ground that is the paper itself — and sets the English in Sprout, in
+the type's own blue: *Radio // Calisthenics // Attendance Card* beside the picture (its box
+stops a column short of the picture's frame) and the footer between the reference marks,
+drawn as `*`.
+
 `M_S01100` `0x164b4` also carries the bug-record card (its labels beside numbers drawn at run
 time: the catch date, wins and losses, the value in saw-stag beetles), laid out like `FS_WAL`
 below, not built.
 
 **Proof.** `tests/test_real_texture_buttons.py`: each stone's dark pixels are exactly its
 English bold in the disc's glyphs (only its outline besides), each balloon's type exactly its
-English lines, each board's dark pixels exactly its English, each widened sprite's stored sizes
-grown and moved; on Beetle (`./make.sh emu-test`) settings, load (a generated day-5 card), the
-diary desk, the desk (tackle and belongings), the bag, the kite record, the kite book, bug sumo
-and the insect box show every opaque texel of each button's box in its rebuilt colour (but
-where the hand cursor covers it), and the stock image fails every one.
+English lines, each board's dark pixels and each card label's printed pixels exactly its
+English, each widened sprite's stored sizes grown and moved; on Beetle (`./make.sh emu-test`)
+settings, load (a generated day-5 card), the diary desk, the desk (tackle and belongings), the
+bag, the kite record, the kite book, bug sumo and the insect box show every opaque texel of
+each button's box in its rebuilt colour (but where the hand cursor covers it; the attendance
+card within its dither), and the stock image fails every one.
 
 ## Measured while looking at the rest of `GFX-07`
 
 What remains of the row is listed in `PLAN.md` `GFX-07`; these are the facts it rests on.
 
-* The attendance card (`PK_ITM` `0x6c`) has the same problem — see
-  [textures-plan.md](textures-plan.md) § "The two item pictures".
 * `FS_WAL`, the fishing record: its labels sit beside numbers the game draws at run time over
   the texture's own `.` and `cm`, so the English has to be laid out against the screen, not
   just the atlas. Opening the tackle box from the desk (△, cursor on it, ○) does nothing on a
