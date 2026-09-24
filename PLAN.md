@@ -339,40 +339,16 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       after playing): the game already holds a page — pressing confirm stops auto-advance and
       the line stays up with the voice audible; only the long lines were ever hard, and they
       now fit. Reopen trigger: a playtester who cannot finish reading with confirm held.
-- [ ] **[TXT-07]** **Measure what each box can hold.** Measured for the dialogue band on the running prototype
-      (`research/vwf-prototype.md`): 272 px usable (296 to the screen edge), ~46 characters a
-      line at 5.85 px, 4 clean lines a page, lines 4–5 must end before x ≈ 262 for the
-      next-page pencil, and overflow is clipped silently at x = 319 — the engine never wraps,
-      so the inserter breaks lines and `PIPE-06` measures them in pixels. **Under Jay's band
-      (H=37, pitch 11, three lines; now at Y=191 so every row is inside what DuckStation's
-      default crop shows — the game programs all 240 rows, the crop stops near 232, and the
-      stock next-page marker reached 230; line 3 ends before 238 px for the marker), days 1–7
-      + shared, 764 rows: advance model c1 (sheet untouched) needs a 4th line on 68 pages, a
-      5th on 8 and overflows 3 SELECT rows; c2 (cells re-aligned) leaves 4 pages
-      (`E0771.0`, `E0772.1`, `E0773.2`, `E4028.11`) — 757 of 761 lines laid out. Jay ranked
-      c1 > c2 with "lint decides fit" (2026-09-20), so the build is c2; c1 stays behind
-      `--advance-model c1`.** **Measured 2026-09-22**
-      (`research/data/text-boxes.tsv`, enforced by build and lint): controls help,
-      memory-card messages, config labels, item names; SELECT rows and `[SEL]` rows over
-      code-file menus use the drawn 248-px row; descriptions and captions (x 184–301, five
-      lines, wrapped by the build), summer-memories labels 0–5. Widest English per surface (2026-09-23):
-      insect names 145 px, fish 90, sumo moves 96, against stock 96 / 48 / 84. Widened and proven on Beetle
-      (2026-09-23): help .0/.1/.3/.5/.8, config .4, the quiz-rate popup. RULED
-      (Jay, 2026-09-24): descriptions/captions/fishing messages take option c (retail pen,
-      12 px pitch, five lines from y 118) — BUILT 2026-09-24 (`276c41d`), seen on Beetle; the panel-bound lines get shorter one-line versions — BUILT 2026-09-24 (`00a85d2`): extras .1
-      "Specimens", items .0/.1/.3; the refused card message was .3, now two rows
-      (`boku.card_messages`); seen on Beetle.
-      Bug sumo's boxes measured (hint, rank board, notebook names).
-      Still to measure: kite names and the cage HUD, fishing. Original row — for every box geometry the game uses:
-      lines × pixel width under the new renderer (today: a page is at most 3 columns × 16
-      glyphs, `research/text-format.md`; mock-up measurements of band height, line pitch —
-      minimum 12 for the game's glyphs, 13 for Galmuri9 — and characters per line per font are
-      in `research/font-candidates.md`; the whole-game fit there is an estimate from 80 sample
-      pages, so `PIPE-06`'s page-length lint is the real gate). Also: every other text surface
-      steps a fixed 12 px, so left-aligned narrow cells look gappy there until each surface
-      gets its own advance — that is `TXT-05`'s surface list. Output is data the translation lints and the
-      translation agents both consume. Harmed: the player, by text that overflows; the
-      translators, by limits discovered after the fact.
+- [x] **[TXT-07]** **Measure what each box can hold.** DONE 2026-09-24: every surface's box is in
+      `research/data/text-boxes.tsv`, measured on Beetle or read off the code, and enforced by
+      the build and `boku lint` — the dialogue band (c2 advance, three lines under Jay's band;
+      `research/vwf-prototype.md`); select rows; controls help (three bottom rows); memory-card
+      messages (`.3` on two rows); config and summer-memories labels; item names and their
+      one-line versions (Jay, 2026-09-24); descriptions, captions and fishing messages (option
+      c, Jay, 2026-09-24); kite names; the tackle screen; the cage HUD (date a row down); the
+      fish-catch title (centred, `asm/hud_resident.asm`); the insect box (grid and notebook);
+      bug sumo's boxes. `boku lint --encoder cellmap`: 0 errors; `build-days`: 0 refused.
+      Harmed (was): the player, by text that overflows; the translators, by limits found late.
 - [x] **[TXT-10]** **The hand cursor on button screens.** DONE 2026-09-23: the select passes
       `a3 = 1` to the hand drawer `0x80042B64` (`asm/select.asm`, `SEL_CURSOR_SIDE`), which
       draws the game's own right-pointing hand (ONMEM sprite 0); the build no longer edits the
