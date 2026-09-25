@@ -824,14 +824,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the Redux gate drop frames, so a glyph record's byte 1 flags the panel tile `solid` and
       `movie_sub_blit` fills it without the mask walk; gate 10/10, Beetle skips no STR frame in
       `M27` or `M28` (`research/movies.md` § 11). Harmed (was): the player.
-- [ ] **[FMV-05]** **No subtitles on the opening movie in real play** (Jay's playtest,
-      2026-09-23, DuckStation, new game): `M27` has 16 cues and the review tooling showed them —
-      but that review reached the movie through a poked movie table. Reproduce the real
-      new-game path, find why no cue draws, and gate on that path. Measured 2026-09-23: on
-      the real cold boot → New Game path Beetle draws the `M27` cues, and on DuckStation
-      (Jay's version, settings and BIOS) the block loads, `M27` is selected and the uploaded
-      slices carry the text — not reproduced; needs Jay's route and a DuckStation screenshot. Harmed: the player, at the
-      opening that frames the game.
+- [x] **[FMV-05]** **No subtitles on the opening movie in real play.** CLOSED 2026-09-25: not
+      reproduced on the current build. Jay, on DuckStation with `days-20260925T0246Z-0fdd1d70`
+      (`./make.sh build-days`): let the game load, Confirm after the Millennium Kitchen logo, START
+      at the title, Confirm for New Game — "the subtitles appeared just fine". The 2026-09-23
+      playtest that saw none was an earlier build; Beetle had drawn the `M27` cues on the same
+      path since then. Reopen if a real play shows the opening without cues. Harmed (was): the
+      player, at the opening that frames the game.
 
 ## Voice-over — speech with no text on the disc, outside the movies
 
