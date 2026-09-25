@@ -59,6 +59,7 @@ def walked(tmp_path: Path):
 
 def walk(walked, **kwargs) -> reader.Walkthrough:
     disc, days = walked
+    kwargs.setdefault("build", disc.parent / "build" / "days")
     sources = reader.Sources(
         disc_dir=disc, days=days, clips=None, movies=None, textures=None, **kwargs
     )
@@ -375,3 +376,105 @@ def test_the_english_images_are_the_edits_the_build_writes(real_walkthrough, tex
         return edit.file, edit.offset, edit.old, edit.new
 
     assert sorted(real_walkthrough.texture_edits, key=key) == sorted(texture_edits.edits, key=key)
+
+
+# --- never stale (Jay, 2026-09-25) ----------------------------------------------------------------
+
+
+def git_head() -> str:
+    """The commit, from git itself rather than from the reader's own call."""
+    import subprocess
+
+    return subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "--short=8", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()  # fmt: skip
+
+
+def built(tmp_path: Path, build_id: str) -> Path:
+    build = tmp_path / "build" / "days"
+    build.mkdir(parents=True)
+    (build / reader.BUILD_ID_NAME).write_text(build_id + "\n", encoding="utf-8")
+    return build
+
+
+def test_the_page_says_which_commit_and_build_it_was_made_from(walked, tmp_path):
+    build = built(tmp_path, "20260925T0300Z-deadbeef")
+    walkthrough = walk(walked, build=build)
+    assert walkthrough.made["build"] == "20260925T0300Z-deadbeef"
+    assert walkthrough.made["commit"] == git_head()
+    index = reader.write_site(walkthrough, tmp_path / "work" / "reader")
+    assert page_data(index)["made"] == walkthrough.made
+
+
+def test_a_translation_file_newer_than_the_build_is_said(walked, tmp_path):
+    """One second is enough: the page is read against an image that lacks the change."""
+    import os
+
+    _, days = walked
+    build = built(tmp_path, "20260925T0300Z-deadbeef")
+    stamp = (build / reader.BUILD_ID_NAME).stat().st_mtime
+    os.utime(days / "shared.txt", (stamp + 1, stamp + 1))
+    walkthrough = walk(walked, build=build)
+    assert [n for n in walkthrough.notices if "shared.txt" in n and "20260925T0300Z-deadbeef" in n]
+    # ...and on every section: the page reopens wherever Jay left it, not at section 0.
+    assert "shared.txt" in walkthrough.made["stale"]
+
+
+def test_a_build_newer_than_every_translation_file_says_nothing(walked, tmp_path):
+    import os
+
+    _, days = walked
+    build = built(tmp_path, "20260925T0300Z-deadbeef")
+    stamp = max(p.stat().st_mtime for p in days.glob("*.txt"))
+    os.utime(build / reader.BUILD_ID_NAME, (stamp + 1, stamp + 1))
+    assert not [n for n in walk(walked, build=build).notices if "newer" in n]
+
+
+def test_no_build_at_all_is_said(walked, tmp_path):
+    notices = walk(walked, build=tmp_path / "nowhere").notices
+    assert [n for n in notices if "build-days" in n]
+
+
+def build_days() -> str:
+    text = (REPO_ROOT / "make.sh").read_text(encoding="utf-8")
+    body = text[text.index("cmd_build_days() {") :]
+    return body[: body.index("\n}\n")]
+
+
+def test_build_days_rewrites_the_reader_after_the_build_id(tmp_path):
+    """`make.sh`'s `cmd_build_days` ends by running the reader against the build it just
+    made -- after the id is written, or the page names the previous build and calls itself
+    stale."""
+    body = build_days()
+    id_at = body.index(f"> build/days/{reader.BUILD_ID_NAME}")
+    reader_at = body.index("uv run boku reader")
+    assert id_at < reader_at
+    assert "--build build/days" in body[reader_at:].splitlines()[0]
+
+
+def test_the_build_id_is_stamped_with_the_time_the_build_began():
+    """An edit saved while the build runs is newer than the build's inputs; stamped with its
+    end, the id would be newer than the edit and hide it."""
+    body = build_days()
+    marker_at = body.index("touch ")
+    assert marker_at < body.index("build_prototype.py")
+    stamp = next(line for line in body.splitlines() if "touch -r" in line)
+    assert stamp.strip().endswith(f"build/days/{reader.BUILD_ID_NAME}")
+
+
+def test_a_build_from_another_commit_whose_code_differs_is_said(walked, tmp_path):
+    """Code alone (a texture recipe, the movie renderer) changes what the image draws while
+    no translation file moves. The commit is git's: the parent of the last one that touched
+    boku/, which differs from HEAD there by construction."""
+    touched = reader.git("rev-list", "-1", "HEAD", "--", "boku")
+    before = reader.git("rev-parse", "--short=8", f"{touched}^")
+    stale = walk(walked, build=built(tmp_path, f"20260101T0000Z-{before}")).made["stale"]
+    assert before in stale and "boku/" in stale
+
+
+def test_a_build_from_this_commit_says_nothing_about_code(walked, tmp_path):
+    head = reader.git("rev-parse", "--short=8", "HEAD")
+    build = built(tmp_path, f"20260101T0000Z-{head}")
+    stale = walk(walked, build=build).made.get("stale", "")
+    assert "boku/" not in stale

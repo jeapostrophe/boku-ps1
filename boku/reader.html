@@ -34,6 +34,8 @@ header .where { font-weight: 600; min-width: 0; overflow: hidden; text-overflow:
 .progress { flex: 1 1 8rem; height: 6px; background: var(--chip); border-radius: 3px;
   overflow: hidden; }
 .progress div { height: 100%; background: var(--accent); width: 0; }
+.made { color: var(--dim); font-size: .78rem; flex-basis: 100%; }
+.made.stale { color: var(--err); font-weight: 600; }
 .count { font-variant-numeric: tabular-nums; color: var(--dim); font-size: .9rem; }
 #toc { position: fixed; left: 0; bottom: 0; width: 17rem; overflow-y: auto;
   border-right: 1px solid var(--rule); background: var(--bg); padding: .5rem .6rem 3rem;
@@ -118,6 +120,7 @@ p.notes { margin: .4rem 0 0; font-size: .83rem; color: var(--dim); }
   <span id="state"></span>
   <div class="progress" title="how far through the walkthrough"><div id="bar"></div></div>
   <span class="count" id="count"></span>
+  <span class="made" id="made"></span>
   <button id="prev" title="previous (k)">&lsaquo; prev</button>
   <button id="next" title="next (j)">next &rsaquo;</button>
   <button id="helpbtn" title="keys (?)">?</button>
@@ -353,6 +356,11 @@ document.addEventListener("keydown", (event) => {
 });
 
 function start() {
+  const made = W.made || {};
+  $("made").textContent = `made ${made.at || "?"} from ${made.commit || "no commit"}` +
+    (made.uncommitted ? " with uncommitted translation edits" : "") +
+    ` · days build ${made.build || "none"}` + (made.stale ? ` · STALE: ${made.stale}` : "");
+  $("made").classList.toggle("stale", !!made.stale);
   toc();
   if (window.innerWidth >= 900) toggleToc(true);
   let wanted = location.hash.slice(1);

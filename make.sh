@@ -60,7 +60,8 @@ usage: ./make.sh <verb> [arguments]
                                 build/days/ -- proportional English, every line laid
                                 out in the dialogue band's pixels, containers grown
                                 and members relocated where a line outgrew its
-                                sectors. Extra arguments go to `boku build`
+                                sectors; then the reader (work/reader/) against it.
+                                Extra arguments go to `boku build`
   patch [arguments]             emit the release patches into build/patch/
                                 (./make.sh patch --help for the switches)
   apply-patch ORIG PATCH --out FILE
@@ -90,7 +91,8 @@ usage: ./make.sh <verb> [arguments]
                                 the movie subtitles (translation/README.md)
                                 (./make.sh lint-translation --help for the switches)
   reader [arguments]            the whole translation, in order, as one page to read and
-                                cite ids from -> work/reader/index.html (boku/reader.py)
+                                cite ids from -> work/reader/index.html (boku/reader.py);
+                                build-days runs it too
   coverage [arguments]          per in-game day, every line the player can meet and what
                                 the build did with it -- translated, refused (English
                                 exists, the image did not get it), missing (never given to
@@ -219,13 +221,19 @@ cmd_smoke() {
 # not one because the font build needs armips and the image build does not, and because the
 # edit set is the artefact the two agree through (boku.build.load_edit_set).
 cmd_build_days() {
-    local font="build/vwf"
-    echo "== 1/2: assembling the TXT-05 renderer -> $font/edits.json =="
+    local font="build/vwf" began="build/.days-began"
+    # The id is stamped with the time the build began, so an edit saved while it runs
+    # reads as newer than the build (boku.reader.stale_build).
+    mkdir -p build && touch "$began"
+    echo "== 1/3: assembling the TXT-05 renderer -> $font/edits.json =="
     uv run python tools/vwf/build_prototype.py --edits-only --out "$font"
     echo
-    echo "== 2/2: building translation/days through it -> build/days/ =="
+    echo "== 2/3: building translation/days through it -> build/days/ =="
     uv run boku build --vwf "$font/edits.json" --translation translation/days \
         --textures translation/textures --name days --out build/days --skip-unfitted "$@"
+    # A dry run writes no image, so it gets no id and no reader: stamping one would say the
+    # image has edits it does not.
+    case " $* " in *" --dry-run "*) rm -f "$began"; return ;; esac
     # A second .cue named by the revision, so the emulator's window title says what is
     # being played while builds and edits overlap (Jay, 2026-09-20). Same image.img.
     local id
@@ -233,6 +241,13 @@ cmd_build_days() {
     rm -f build/days/days-*.cue
     cp build/days/image.cue "build/days/days-$id.cue"
     echo "$id" > build/days/BUILD-ID.txt
+    touch -r "$began" build/days/BUILD-ID.txt
+    rm -f "$began"
+    # TRN-14: the reader is rewritten with every build, so it can never be older than the
+    # image it is read against (Jay, 2026-09-25).
+    echo
+    echo "== 3/3: the reader, against this build -> work/reader/index.html =="
+    uv run boku reader --build build/days
     echo
     echo "== build id $id: load build/days/days-$id.cue =="
 }

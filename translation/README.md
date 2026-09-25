@@ -12,7 +12,10 @@ menus and screens, the clips, the movie subtitles and every typeset texture besi
 run `./make.sh reader` and open `work/reader/index.html` (never tracked: it is the Japanese and the
 game's pixels). `j`/`k` step through it, `c` copies the current item's id for a comment; the
 lint's findings sit on the items they are about, and each section shows its unit's state from
-[status.tsv](#statustsv).
+[status.tsv](#statustsv). `./make.sh build-days` rewrites the page after every build. Its header
+names the commit and the days build it was made from, and says so in red when that build lacks
+what the page shows: a translation file saved after the build began, or code or translation
+committed since the build's commit.
 
 ## Translating the whole game
 

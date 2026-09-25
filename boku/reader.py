@@ -22,6 +22,10 @@ It is **read-only** over the translation: edits go to the files; rebuild and rel
 gitignored `work/` and never anywhere the repo would track** (CLAUDE.md § "This repo is
 public"). It is one static HTML file plus the texture images beside it; the walkthrough is
 embedded as JSON and drawn a section at a time, so it opens from `file://` with no server.
+
+It never goes stale unseen (Jay, 2026-09-25): `./make.sh build-days` ends by rewriting it,
+its header, on every section, names the commit and the days build it was made from
+(`provenance`) and says when that build lacks what the page shows (`stale_build`).
 """
 
 from __future__ import annotations
@@ -33,10 +37,12 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
 from bisect import bisect_right
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
+from datetime import UTC, datetime
 from pathlib import Path
 
 from boku import REPO_ROOT, exchange_notebook, movie_cues
@@ -85,6 +91,9 @@ from boku.translation import SampleScenes
 from boku.typeset import FONT_SHEET_ID, GameFace, TypesetError
 
 DEFAULT_OUT_DIR = REPO_ROOT / "work" / "reader"
+DEFAULT_BUILD_DIR = REPO_ROOT / "build" / "days"
+BUILD_ID_NAME = "BUILD-ID.txt"
+"""What `./make.sh build-days` writes beside the image: `<UTC time>-<git describe>`."""
 STATUS_FILE = REPO_ROOT / "translation" / "status.tsv"
 MOVIE_REVIEW_DIR = REPO_ROOT / "work" / "movie-review"
 """`./make.sh movie-review`'s stills: `<movie>/shots/<first frame>-{first,middle,last}.png`."""
@@ -288,6 +297,8 @@ class Walkthrough:
     """What the walk could not do, said once at the top of the page."""
     texture_edits: list[ByteEdit] = field(default_factory=list)
     """Every edit the texture groups made, which the English images are drawn from."""
+    made: dict[str, str] = field(default_factory=dict)
+    """What the page was made from (`provenance`), shown at its top."""
 
 
 @dataclass(frozen=True)
@@ -303,6 +314,9 @@ class Sources:
     voice: Path = VOICE_DIR
     movie_review: Path = MOVIE_REVIEW_DIR
     cells: Path = DEFAULT_CELLS
+    build: Path = DEFAULT_BUILD_DIR
+    """The days build the page is read against: its id is shown, and a translation file
+    newer than it is said (`stale_build`)."""
 
 
 def build_walkthrough(
@@ -354,7 +368,73 @@ def build_walkthrough(
     walkthrough.sections = [
         replace(section, status=statuses.get(section.unit or "")) for section in sections
     ]
+    walkthrough.made = provenance(Path(sources.build))
+    stale = stale_build(sources)
+    if stale:
+        walkthrough.made["stale"] = stale
+        walkthrough.notices.insert(0, stale)
     return walkthrough
+
+
+def git(*arguments: str) -> str:
+    """`git -C <repo> ...`'s output, or `""` where there is no git or no repository."""
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), *arguments], capture_output=True, text=True, check=True
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return done.stdout.strip()
+
+
+def build_id(build: Path) -> str:
+    path = build / BUILD_ID_NAME
+    return path.read_text(encoding="utf-8").strip() if path.is_file() else ""
+
+
+BUILD_INPUTS = ("boku", "tools", "asm", "translation")
+"""What a days build is made from, as far as git sees it: a change here since the build's
+commit is a change the image does not have."""
+
+
+def provenance(build: Path) -> dict[str, str]:
+    """When the page was made, from which commit (and whether the build inputs had edits not
+    yet committed), and the id of the days build beside it."""
+    return {
+        "at": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
+        "commit": git("rev-parse", "--short=8", "HEAD"),
+        "uncommitted": "yes" if git("status", "--porcelain", "--", *BUILD_INPUTS) else "",
+        "build": build_id(build),
+    }
+
+
+def stale_build(sources: Sources) -> str | None:
+    """What to say when the days build is missing, or older than what the page shows: a
+    translation file modified after the build began, or a build input committed since the
+    build's commit (`BUILD_INPUTS`; the id's `git describe` names that commit)."""
+    stamp = Path(sources.build) / BUILD_ID_NAME
+    if not stamp.is_file():
+        return (
+            f"No days build at {sources.build}: run ./make.sh build-days to play what this shows."
+        )
+    built_id = build_id(Path(sources.build))
+    files = [
+        *translation_paths([sources.days]),
+        *(p for p in (there(sources.clips), there(sources.movies)) if p is not None),
+        *(sorted(Path(sources.textures).glob("*.txt")) if sources.textures is not None else []),
+    ]
+    said = []
+    newer = [p.name for p in files if p.stat().st_mtime > stamp.stat().st_mtime]
+    if newer:
+        said.append(f"{', '.join(newer)} changed after the days build {built_id} began")
+    commit = built_id.split("-", 1)[1].removesuffix("-dirty") if "-" in built_id else ""
+    moved = git("diff", "--name-only", commit, "HEAD", "--", *BUILD_INPUTS) if commit else ""
+    if moved:
+        dirs = sorted({f"{name.split('/', 1)[0]}/" for name in moved.splitlines()})
+        said.append(f"the build is of {commit}, and {', '.join(dirs)} changed since")
+    if not said:
+        return None
+    return "; ".join(said) + ": the game image does not have that yet (./make.sh build-days)."
 
 
 def there(path: Path | None) -> Path | None:
@@ -1028,7 +1108,12 @@ def walkthrough_json(walkthrough: Walkthrough, out_dir: Path) -> dict:
                 "blocks": blocks,
             }
         )  # fmt: skip
-    return {"states": list(STATES), "notices": walkthrough.notices, "sections": sections}
+    return {
+        "states": list(STATES),
+        "made": walkthrough.made,
+        "notices": walkthrough.notices,
+        "sections": sections,
+    }
 
 
 def write_site(walkthrough: Walkthrough, out_dir: Path = DEFAULT_OUT_DIR) -> Path:
@@ -1110,6 +1195,10 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         help=f"./make.sh movie-review's stills (default: {MOVIE_REVIEW_DIR})",
     )  # fmt: skip
     parser.add_argument(
+        "--build", type=Path, default=defaults.build, metavar="DIR",
+        help=f"the days build the page is read against (default: {DEFAULT_BUILD_DIR})",
+    )  # fmt: skip
+    parser.add_argument(
         "--cells", type=Path, default=defaults.cells, metavar="FILE",
         help=f"the cell map the lint measures in (default: {DEFAULT_CELLS}, which "
         f"./make.sh build-days writes; without it the stock cells)",
@@ -1121,6 +1210,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
                 voice=args.voice,
                 movie_review=args.movie_review,
                 cells=args.cells,
+                build=args.build,
             ),
             args.out,
         )
