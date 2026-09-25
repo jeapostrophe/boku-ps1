@@ -943,9 +943,10 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       worth bending anything for (romhack.ing withholds machine-assisted translations from web
       download; Jay, 2026-09-20: the scene's view of AI is not an input).
       Needs from Jay (2026-09-25, from `REL-04`): the GitHub repo as `origin` (there is no remote);
-      the first version tag; and **[MINE: product]** whether to ship the PPF — 76.7 MB, because PPF
-      has no copy operation and so carries the changed containers' original bytes in the clear,
-      against 8.1 MB for the xdelta: (a) both, (b) xdelta only, (c) PPF as a separate download.
+      the first version tag; and the PPF (76.7 MB — PPF has no copy operation, so it carries the changed
+      containers' original bytes in the clear; the xdelta is 8.1 MB): RULED (c) by Jay, 2026-09-25 —
+      generated, but a separate download from the main release zip; "if Millennium Kitchen wants
+      we'll remove it". The machinery split is to build.
       Harmed: everyone who is not Jay.
 - [x] **[REL-04]** **The release machinery.** DONE 2026-09-25 (`8158ad9`): `./make.sh release`
       refuses anything uncommitted, runs build-days, and writes `release/v<version>/` — xdelta +
