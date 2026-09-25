@@ -928,26 +928,42 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       the play targets; Jay has **no way to test on real hardware** (2026-09-21), so the
       accuracy check is XEBRA and the release says plainly that hardware was not tested.
       Harmed: players on whatever was not tested.
-- [ ] **[REL-02]** **Mode One integration**, in `~/Dev/retro-trainer`. RULED (Jay, 2026-09-25):
-      Mode One does not apply the patch — `./make.sh export-to-mode-one` applies it here and hands
-      Mode One the patched image and its checksum (Mode One pins the checksum). The integration is
-      done in that repo, following its own rules. Harmed: Jay, the first player.
+- [x] **[REL-02]** **Mode One integration**, in `~/Dev/retro-trainer`. DONE 2026-09-25 (boku-ps1
+      `a14f43d`; retro-trainer `7d6b50c` and the pin commit after it): RULED by Jay — Mode One
+      does not apply the patch. `./make.sh export-to-mode-one` (`boku.mode_one`) packs `build/days`
+      with chdman as retro-trainer's `one/roms/boku.chd` and pins that file's SHA-1 in
+      `one/index/boku.sha1`, which Mode One's index compiles in. Measured: chdman is deterministic;
+      the CHD boots to the title on Beetle with Mode One's BIOS. Each export re-pins, so Mode One is
+      rebuilt (`./one/make.sh ios deploy`, `push-roms`), and a playthrough from another build boots
+      fresh keeping its memory card (`SlotMeta.disc_identity`). Harmed (was): Jay, the first player.
 - [ ] **[REL-03]** **Public release.** GitHub Release as the primary home: both patch
       formats, the `.cue`, four hashes each side, plain instructions (extract CHD → hash →
       patch), credits (README § "Related work"), and a plain statement of how the translation was made.
       GitHub is the distribution. Listing on romhack.ing / romhacking.net is optional and not
       worth bending anything for (romhack.ing withholds machine-assisted translations from web
-      download; Jay, 2026-09-20: the scene's view of AI is not an input). Harmed: everyone who is not Jay.
-- [ ] **[REL-04]** **The release machinery.** Jay, 2026-09-25: it was not in the plan. A `make.sh`
-      verb that builds the release — the patched image, both patch formats computed against the
-      Redump base, the hashes each side, the notes — and stores it locally (gitignored), and a
-      script that posts it as a GitHub Release with `gh` (run by Jay; posting is `REL-03`). Harmed:
-      everyone who is not Jay, and any translator cutting a release from the repo.
-- [ ] **[REL-05]** **Boku's controller in Mode One, with a Run toggle.** Jay, 2026-09-25: a profile
-      based on FF7's, with only D-pad, Cross, Circle, Triangle and Run (no L1, L2, R1, R2,
-      Square, Select, Start). Run is a new Mode One feature only Boku uses: with the toggle on,
-      Up on the D-pad also holds Cross — the game's run "throttle". Built in `~/Dev/retro-trainer`.
-      Harmed: Jay, playing on Mode One's controller.
+      download; Jay, 2026-09-20: the scene's view of AI is not an input).
+      Needs from Jay (2026-09-25, from `REL-04`): the GitHub repo as `origin` (there is no remote);
+      the first version tag; and **[MINE: product]** whether to ship the PPF — 76.7 MB, because PPF
+      has no copy operation and so carries the changed containers' original bytes in the clear,
+      against 8.1 MB for the xdelta: (a) both, (b) xdelta only, (c) PPF as a separate download.
+      Harmed: everyone who is not Jay.
+- [x] **[REL-04]** **The release machinery.** DONE 2026-09-25 (`8158ad9`): `./make.sh release`
+      refuses anything uncommitted, runs build-days, and writes `release/v<version>/` — xdelta +
+      PPF against the Redump base, `PATCH.json`/`README.txt` (four hashes a side), the `.cue`,
+      `RELEASE-NOTES.md` (`boku/release-notes.md` + README § "How the translation is made" and §
+      "Related work and credit"), one zip carrying them under their real names — after applying
+      each patch back through `apply_patch` to the built image. Version: HEAD's `v<version>` tag,
+      else a git-describe snapshot that cannot be posted. `./make.sh publish-release DIR` prints
+      the `gh release create --verify-tag` line and runs it only with `--yes`. Measured: stock
+      xdelta3 reproduces the build; the build is deterministic across two runs; PPF 76.7 MB,
+      xdelta 8.1 MB. Harmed (was): everyone who is not Jay.
+- [x] **[REL-05]** **Boku's controller in Mode One, with a Run toggle.** DONE 2026-09-25
+      (retro-trainer `7d6b50c`): FF7's layout with only D-pad, ○, ✕, △ and Run — plus Start, kept
+      because the title screen advances only on Start (measured on Beetle with Mode One's BIOS; ○
+      and ✕ do nothing there). Run is `SlotAction::Throttle`, only in Boku's profile: with it on, Up
+      (and Up-diagonals) also holds ✕, folded in Rust (`ControlLayout::apply_throttle`), the toggle
+      state held in Swift; unit-tested. On-device checks are retro-trainer PLAN § Next session.
+      Harmed (was): Jay, playing on Mode One's controller.
 - [x] **[DOC-01]** **README audited against what was built.** DONE 2026-09-25 (`19f2665`): Status
       describes the state, not 2026-09-20 counts; § "Using it" gives the prerequisites, the import
       step and the verbs by task (build-days, reader, lint-translation, mockup, coverage, textures
