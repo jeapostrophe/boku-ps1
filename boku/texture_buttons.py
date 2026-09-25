@@ -9,14 +9,17 @@ buttons it is given, a texture at a time, so each texture's edits come from one 
 The recipes (`RECIPES`), after Jay's ruling (2026-09-23): a **stone** is textured, so only
 the Japanese's own pixels change -- its ink and the antialias touching it -- each refilled from
 the nearest clean pixel of the stone, and the English is set bold in the game's glyphs in the
-ink the Japanese used; a **plank** is the same on a board, and a **plate** the same on a
-dithered plate at the glyphs' own weight. A **balloon** is flat paper, so the whole label
-area is blanked to paper first and the English set on it, every inked pixel keeping a pixel of
-paper round it; `layout` widens and repacks balloons where their texture has room.
+ink the Japanese used; a **plank** is the same on a board, a **plate** the same on a
+dithered plate at the glyphs' own weight, and a **badge** the same for coloured type on a
+coloured badge (the insect cage's "rare" starburst). A **label** is printed type on a card.
+A **balloon** is flat paper, so the whole label area is blanked to paper first and the English
+set on it, every inked pixel keeping a pixel of paper round it; `layout` widens and repacks
+balloons where their texture has room.
 """
 
 from __future__ import annotations
 
+import dataclasses
 import struct
 from collections import defaultdict
 from collections.abc import Sequence
@@ -50,11 +53,12 @@ PAPER = 200
 class Button:
     texture: str
     kind: str
-    """`stone`, `plank`, `plate`, `balloon` or `label` (`RECIPES`)."""
+    """`stone`, `plank`, `plate`, `balloon`, `label` or `badge` (`RECIPES`)."""
     box: paint.Box
-    """A stone: the rows and columns the Japanese is inked in (`STONE_TEXT`). A plank: the
-    board. A plate or a balloon: the whole sprite, outline and tail included. A label: the
-    part of the card its type is printed in."""
+    """A stone or a badge: the rows and columns the Japanese is inked in (`STONE_TEXT` on every
+    stone of the common drawing; measured on the cage's own). A plank: the board. A plate or a
+    balloon: the whole sprite, outline and tail included. A label: the part of the card its
+    type is printed in."""
     clut: int
     """The CLUT the screen draws it through (measured on Beetle)."""
     drawn_4bpp: bool = False
@@ -68,6 +72,12 @@ class Button:
     """A plate or balloon whose sprite carries a picture beside the Japanese (bug sumo's swap
     plate and its arrow): the part of `box`, relative to it, the Japanese is in
     (`text_area`)."""
+    frames: tuple[int, ...] = ()
+    """A sprite that turns through frames: how far down the sheet each further frame is, the
+    Japanese at the same place in each; the English is set into every one."""
+    ink_dark: int = INK_DARK
+    """A stone: the luminance under which a pixel is the Japanese's ink (`INK_DARK` on the
+    stones' shared ramp)."""
 
     @property
     def placed(self) -> paint.Box:
@@ -207,6 +217,17 @@ BUTTONS: dict[str, Button] = {
     "SAMP.back": stone_at("_DATA_SAMP.BIN__014e48", 318, 24, 5),  # specimen box
     "MZKAN.back": stone_at("_DATA_MZKAN.BIN__000048", 0, 0, 1),  # the insect book
     "FS_WAL.back": stone_at("_DATA_FS_WAL.BIN__0000d8", 45, 201, 0, chunk=3),  # fishing record
+    # The insect cage's two buttons (`MITIM`, a 4bpp sheet whose sprite table is `KAGO_UV.BIN`;
+    # shown when a bug is picked in the cage): a smaller stone of its own drawing, and a leaf.
+    # Both in the game's glyphs, 出す as "Take" (Jay, 2026-09-24: "Take Out" in Bean looked
+    # bad). The leaf's ramp is lighter than the stones': its type's faint tails reach 85.
+    "MITIM.back": Button("_DATA_MITIM.BIN__000000", "stone", (27, 106, 36, 13), 4),
+    "MITIM.take_out": Button("_DATA_MITIM.BIN__000000", "stone", (30, 84, 32, 13), 1, ink_dark=90),
+    # The cage header's "rare" starburst (希少, red on yellow), turning through three frames;
+    # Bean, as the game's glyphs are wider than the burst.
+    "MITIM.rare": Button(
+        "_DATA_MITIM.BIN__000000", "badge", (5, 7, 23, 10), 2, face="bean", frames=(24, 48)
+    ),
     # The diary's idle hint おやすみ, drawn at screen (40, 16) after a second without input
     # (atlas entry 6 of the table in front of the sheet; ZUKAN.OVL places it).
     "NIKKI_W.good_night": Button(
@@ -339,6 +360,13 @@ BUTTONS: dict[str, Button] = {
 }
 
 
+def frames_of(button: Button) -> tuple[Button, ...]:
+    """`button` and each further frame of its sprite (`Button.frames`)."""
+    x, y, w, h = button.box
+    return (button, *(dataclasses.replace(button, box=(x, y + dy, w, h), frames=())
+                      for dy in button.frames))  # fmt: skip
+
+
 def lines_block(face: Face, lines: Sequence[str], entry: Entry) -> paint.Ink:
     """`lines` set a `face.pitch` apart, each centred on the widest, normalised."""
     inks = [ink_of(face, entry, line) for line in lines]
@@ -363,8 +391,8 @@ def stone(
     x0, y0, w, h = box
     ground = inside_stone(canvas, button, (x0 - DONOR_MARGIN, y0, w + 2 * DONOR_MARGIN, h))
     lum = {p: luminance(_colour(canvas, button, p)) for p in ground}
-    ink = {p for p in set(paint.points(box)) & ground if lum[p] < INK_DARK}
-    _repaint(canvas, box, entry, face, what, ground, lum, ink)
+    ink = {p for p in set(paint.points(box)) & ground if lum[p] < button.ink_dark}
+    _repaint(canvas, box, entry, face, what, ground, lum, ink, clean=button.ink_dark)
 
 
 def plate(
@@ -378,6 +406,29 @@ def plate(
     lum = {p: luminance(_colour(canvas, button, p)) for p in area}
     ink = {p for p in area if lum[p] < INK_DARK}
     _repaint(canvas, room, entry, face, what, area, lum, ink, bold=False, parity=True)
+
+
+BADGE_RED = 60
+"""A badge's red type: red minus green over this (the starburst's yellows are under 20)."""
+
+
+def badge(
+    canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
+) -> None:
+    """A stone's recipe for coloured type on a coloured badge (the cage's "rare" starburst,
+    red on yellow): the type is what is redder than the badge or dark, and the English is set
+    at its own weight in the entry the type used most. A dark pixel within `EDGE` of the
+    burst's transparency is its outline, not type (its notches run into the box)."""
+    x0, y0, w, h = box
+    region = (x0 - DONOR_MARGIN, y0 - DONOR_MARGIN, w + 2 * DONOR_MARGIN, h + 2 * DONOR_MARGIN)
+    colours = {p: _colour(canvas, button, p) for p in paint.points(region)}
+    ground = {p for p, c in colours.items() if c[3]}  # the burst's notches run into the type
+    lum = {p: luminance(colours[p]) for p in ground}
+    outline = ground - inside_stone(canvas, button, region)
+    ink = {p for p in set(paint.points(box)) & ground
+           if colours[p][0] - colours[p][1] > BADGE_RED
+           or (lum[p] < INK_DARK and p not in outline)}  # fmt: skip
+    _repaint(canvas, box, entry, face, what, ground, lum, ink, bold=False)
 
 
 def text_area(button: Button, box: paint.Box) -> paint.Box:
@@ -407,7 +458,19 @@ def plank(
 
 
 def _repaint(
-    canvas, room, entry, face, what, ground, lum, ink, *, inked=None, bold=True, parity=False
+    canvas,
+    room,
+    entry,
+    face,
+    what,
+    ground,
+    lum,
+    ink,
+    *,
+    inked=None,
+    bold=True,
+    parity=False,
+    clean=INK_DARK,
 ) -> None:
     """Refill `ink` and its antialias (darker than `SOFT`, touching it, inside `room`) from the
     nearest pixel of `ground` that is neither, and stamp the English (`bold`) in `room`, in
@@ -416,7 +479,7 @@ def _repaint(
     box = set(paint.points(room))
     soft = {p for p in paint.grown(ink, 1, 1, 1, 1) & box & ground - ink if lum[p] < SOFT}
     mask = ink | soft
-    donors = {p for p in ground - mask if lum[p] >= INK_DARK}
+    donors = {p for p in ground - mask if lum[p] >= clean}
     text = ink_of(face, entry)
     text = paint.normalised(paint.bold(text) if bold else text)
     fits(entry, text, room, what)
@@ -617,7 +680,10 @@ INK_SATURATION = 40
 CORE_SPREAD = 30
 """The type's own colour: within this much saturation of its most saturated pixel."""
 
-RECIPES = {"stone": stone, "plank": plank, "plate": plate, "balloon": balloon, "label": label}
+RECIPES = {
+    "stone": stone, "plank": plank, "plate": plate, "balloon": balloon, "label": label,
+    "badge": badge,
+}  # fmt: skip
 
 
 def buttons(
@@ -632,8 +698,8 @@ def buttons(
             raise TextureTextError(
                 f"{entry.where}: there is no button {key!r} (boku.texture_buttons.BUTTONS)"
             )
-        button = BUTTONS[key]
-        by_texture[button.texture, button.drawn_4bpp].append((entry, button))
+        for button in frames_of(BUTTONS[key]):
+            by_texture[button.texture, button.drawn_4bpp].append((entry, button))
     edits: list[ByteEdit] = []
     for (texture_id, drawn_4bpp), group in by_texture.items():
         canvas = paint.Canvas(inv.get(texture_id), drawn_4bpp=drawn_4bpp)

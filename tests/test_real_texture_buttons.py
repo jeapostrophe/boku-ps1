@@ -63,7 +63,12 @@ right of the wing's shading (measured on `TZICON`'s stone, atlas rows 72-86; the
 bottoms reach row 86, where they meet the lip)."""
 
 
-@pytest.mark.parametrize("key", sorted(k for k, b in tb.BUTTONS.items() if b.kind == "stone"))
+STANDARD = [k for k, b in tb.BUTTONS.items()
+            if b.kind == "stone" and b.box[2:] == tb.STONE_TEXT[2:]]  # fmt: skip
+"""The stones of the one drawing every "Back" but the cage's shares (`tb.STONE_TEXT`)."""
+
+
+@pytest.mark.parametrize("key", sorted(STANDARD))
 def test_a_stone_carries_its_english_bold_and_no_japanese(
     key, texture_inventory, texture_patched, game
 ):  # fmt: skip
@@ -274,13 +279,25 @@ SCREENS = {
          7920: [("MZ02.prev_page", (-568, 168), (71, 186, 8, 21))],
          8040: [("MZ02.next_page", (-592, 8), (46, 187, 7, 11))]},
     ),
+    "cage": (
+        [*BOOT, "--poke", f"{FREE}:0x80045A10=04ff00000103000000000000",
+         "--press", f"{FREE + 30}:TRIANGLE", "--press", f"{FREE + 330}:RIGHT",
+         "--press", f"{FREE + 400}:RIGHT", "--press", f"{FREE + 470}:UP",
+         "--press", f"{FREE + 560}:CIRCLE", "--press", f"{FREE + 1000}:CIRCLE"], False,
+        {FREE + 900: [("MITIM.rare", (193, 20), None)],
+         FREE + 1200: [("MITIM.take_out", (192, 112), None),
+                       ("MITIM.back", (240, 88), (280, 170, 16, 26))]},
+    ),
 }  # fmt: skip
 """Measured on the English image by matching each box's texels near where the recon put it
 (`research/texture-recipes.md` § "Buttons"). A texture origin is where the texture's (0, 0)
 lands on screen; `skip` is a screen rectangle the hand cursor is drawn over, or "drawn" for
 a picture the game draws dithered (`check_drawn`). The diary's and
 the kite book's balloons are idle hints; the kite record needs kite 0 owned (the poke);
-bug sumo and the insect box are forced by the recon's pokes. Not compared, though seen: the
+bug sumo and the insect box are forced by the recon's pokes. The cage: a rare bug (type 4,
+`0x80045B04`'s list) poked into cage slot 0, the desk's cage opened, ○ on the bug for its two
+buttons; the rare starburst turns through its three frames, so the shot is checked against
+each (`tb.frames_of`), and the hand cursor sits on the stone. Not compared, though seen: the
 bug-sumo desk's stone, drawn through a CLUT that is not in its TIM."""
 BASE = REPO_ROOT / "work" / "saves" / "newgame.ram"
 
@@ -313,6 +330,8 @@ def test_the_buttons_on_beetle_are_the_typeset_english(
         for key, origin, skip in buttons:
             if skip == "drawn":
                 check_drawn(shot, texture_inventory, texture_patched, key, origin)
+            elif tb.BUTTONS[key].frames:
+                check_a_frame(shot, texture_inventory, texture_patched, key, origin)
             else:
                 check_on_screen(shot, texture_inventory, texture_patched, key, origin, skip)
 
@@ -337,6 +356,28 @@ def check_on_screen(shot, inv, patched: bytes, key: str, origin, skip) -> None:
     button = tb.BUTTONS[key]
     check_texels(shot, inv, patched, button, button.clut, button.chunk,
                  paint.points(box_of(button)), origin, key, skip=skip)  # fmt: skip
+
+
+FRAME_CHANGED = 30
+"""A turning badge's frame is small: this many of its texels changed is enough to know the
+English is there."""
+
+
+def check_a_frame(shot, inv, patched: bytes, key: str, origin) -> None:
+    """A button whose sprite turns through frames (`tb.Button.frames`): the frame on screen,
+    whichever it is, passes `check_on_screen`'s test. `origin` is where the first frame's
+    texture origin lands; each frame is drawn at the same screen place."""
+    first = tb.BUTTONS[key]
+    failures = []
+    for button in tb.frames_of(first):
+        at = (origin[0] - button.box[0] + first.box[0], origin[1] - button.box[1] + first.box[1])
+        try:
+            check_texels(shot, inv, patched, button, button.clut, button.chunk,
+                         paint.points(button.box), at, key, at_least=FRAME_CHANGED)  # fmt: skip
+            return
+        except AssertionError as error:
+            failures.append(str(error))
+    raise AssertionError(f"{key}: no frame is on screen as rebuilt: {failures}")
 
 
 def check_texels(shot, inv, patched: bytes, source, clut: int, chunk: int, points, origin,
@@ -365,3 +406,98 @@ def check_texels(shot, inv, patched: bytes, source, clut: int, chunk: int, point
             wrong.append((x, y, seen))
     assert changed > at_least, f"{what}: the build changed too few texels where the check looked"
     assert wrong == [], f"{what}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"
+
+
+MITIM = "_DATA_MITIM.BIN__000000"
+CAGE = {"MITIM.take_out": (2, "dark"), "MITIM.back": (8, "dark"), "MITIM.rare": (3, "red")}
+"""The cage's buttons and badge on the `MITIM` sheet: which record of its sprite table
+`KAGO_UV.BIN` each is drawn by, and how its type is told from the sprite."""
+
+
+def test_every_stone_and_badge_is_checked_at_the_texture():
+    cage = {k for k, b in tb.BUTTONS.items() if b.texture == MITIM}
+    assert set(CAGE) == cage
+    assert set(STANDARD) | cage == {
+        k for k, b in tb.BUTTONS.items() if b.kind in ("stone", "badge")
+    }
+
+
+@pytest.fixture(scope="module")
+def cage_sprites(archive) -> dict[int, paint.Box]:
+    """`KAGO_UV.BIN`'s records: `u32 n`, then n of `{u16 x_words, y, w_words, h, mode, clut}`,
+    x and w in 4bpp VRAM words from `MITIM`'s own place."""
+    member = archive.member("KAGO_UV.BIN")
+    data = archive.boku[member.offset : member.offset + member.size]
+    (n,) = struct.unpack_from("<I", data)
+    out = {}
+    for i in range(n):
+        x, y, w, h, _, _ = struct.unpack_from("<6H", data, 4 + 12 * i)
+        out[i] = (x * 4, y, w * 4, h)
+    return out
+
+
+def cage_type(colour, how: str) -> bool:
+    """The type's colours, read wider than the recipe reads them: red for the badge (its
+    yellows' red and green are within 20), dark for the stone and the leaf."""
+    if not colour[3]:
+        return False
+    if how == "red":
+        return colour[0] - colour[1] > 40 or luminance(colour) < 60
+    return luminance(colour) < 90
+
+
+@pytest.mark.parametrize("which", ["rebuilt", "stock"])
+@pytest.mark.parametrize("key", sorted(CAGE))
+def test_a_cage_button_carries_its_english_and_no_japanese(
+    key, which, texture_inventory, texture_patched, game, cage_sprites
+):  # fmt: skip
+    """In every frame of the sprite the English -- bold on the stone and the leaf, in the
+    badge's red on the starburst -- is inked once; no other type-coloured pixel is left where
+    the Japanese was (the button's box; a pixel below it the stone's lip has dark flecks of its
+    own) but the sprite's outline (within `tb.EDGE` of transparency); and no pixel changed that
+    is neither the English nor within a pixel of the Japanese (the lip, the veins and the
+    burst's notches stay). Type is read wider than the recipe reads it (`cage_type`), so a
+    faint tail the recipe missed is still found: the leaf's す left one, which is why the leaf
+    has its own `ink_dark`."""
+    record, how = CAGE[key]
+    button = tb.BUTTONS[key]
+    stock = paint.Canvas(texture_inventory.get(MITIM))
+    canvas = stock if which == "stock" else rebuilt(texture_inventory, texture_patched, button)
+    text = tb.lines_block(face_named(button.face, game), lines_of(ENTRIES[key]), ENTRIES[key])
+    english = paint.normalised(paint.bold(text) if button.kind == "stone" else text)
+    failing = set()
+    problems = []
+    for frame in tb.frames_of(button):
+        dy = frame.box[1] - button.box[1]
+        x, y, w, h = cage_sprites[record]
+        sprite = (x, y + dy, w, h)
+        palette = canvas.palette(frame.clut)
+        typed = {p for p in paint.points(sprite) if cage_type(palette[canvas.at(p)], how)}
+        was = {p for p in paint.points(frame.box) if cage_type(palette[stock.at(p)], how)}
+        japanese = set(paint.points(frame.box))
+        outline = set(paint.points(sprite)) - tb.inside_stone(stock, frame, sprite)
+        placed = [moved for ox, oy in paint.points(sprite)
+                  if (moved := {(x + ox, y + oy) for x, y in english}) <= typed]  # fmt: skip
+        if len(placed) != 1:
+            problems.append(f"frame at y {sprite[1]}: the English is inked {len(placed)} times")
+            failing.add(frame.box)
+            continue
+        if how == "red" and not all(
+            palette[canvas.at(p)][0] - palette[canvas.at(p)][1] > tb.BADGE_RED for p in placed[0]
+        ):
+            problems.append(f"frame at y {sprite[1]}: the English is not in the badge's red")
+            failing.add(frame.box)
+        kept = {p for p in typed if canvas.at(p) == stock.at(p)}
+        left = (typed - kept | kept & japanese - outline) - placed[0]
+        changed = {p for p in paint.points(sprite) if canvas.at(p) != stock.at(p)}
+        damaged = changed - placed[0] - paint.grown(was, 1, 1, 1, 1)
+        for what, pixels in (("other type pixel(s)", left), ("pixel(s) of the art changed",
+                                                               damaged)):  # fmt: skip
+            if pixels:
+                problems.append(f"frame at y {sprite[1]}: {len(pixels)} {what}, first "
+                                f"{sorted(pixels)[:3]}")  # fmt: skip
+                failing.add(frame.box)
+    if which == "stock":
+        assert len(failing) == len(tb.frames_of(button)), problems
+    else:
+        assert problems == []

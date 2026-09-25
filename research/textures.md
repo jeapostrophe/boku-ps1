@@ -106,7 +106,7 @@ The category names are exactly the TSV's `category` values, so they grep.
 | `picture-diary page` | **94** | the `NIKKI.BIN` pages, 240×192 8bpp |
 | `insect/fish/item book` | **48** (1) | encyclopedia spreads, book covers, one item card |
 | `signage or label` | **18** (9) | signs, posters, a note, packaging, calligraphy |
-| `title/menu/UI art` | **17** (7) | title menu, settings, action buttons, record screens, result badges |
+| `title/menu/UI art` | **17** (7) | title menu, settings, action buttons, record screens, the insect cage's sprites |
 | `calendar/clock` | **1** | the August wall calendar in a close-up screen |
 | `font/glyph sheet` | **1** | see below |
 | `credits` | **1** | the production/copyright line, one copy each in `OTI00`…`OTI04` |
@@ -158,8 +158,9 @@ that decision, image by image; where the two disagree about a path, it wins.
    atlases) — field labels ("size / average / largest / cm"), bait and tackle names, and dozens of
    small oval buttons carrying one to three characters ("back", "look", "net"). Flat ground, but
    many small pieces spread over large atlases, and English is wider than two kana. The
-   insect-catch result badges (`MITIM.BIN`: a "rare" starburst, "BIG!", size crowns) belong here
-   too — transparent ground, one word each. The production/copyright strip is the same *kind* of
+   insect cage's sprites (`MITIM.BIN`: a "rare" starburst, "BIG!", size crowns, and its two
+   buttons — [texture-recipes.md](texture-recipes.md) § "Buttons") belong here too —
+   transparent ground, one word each. The production/copyright strip is the same *kind* of
    image, flat type on transparent, but it is the publisher's own credit line and `GFX-03` leaves
    it alone (**N**): translating it is the owner's call, not the audit's.
 3. **Encyclopedia and diary pages** — the insect book (`MZKAN0`, `MZKAN1`; note `MZKAN.BIN`
@@ -223,7 +224,7 @@ one correct for the wooden desk and one correct for the photograph printed on th
   for the 65 `M_I*` close-up screens, the 36 book-opening frames, the 13 item pictures, 14 of the
   UI atlases, the 6 opening/ending screens, the ~100 images that no classification rule had
   claimed, and the 21 images caught by the packing-budget bug above; plus about 35 individual
-  zoomed crops. The unclaimed-image re-look is where the copyright strip, the result badges and
+  zoomed crops. The unclaimed-image re-look is where the copyright strip, the insect cage's sprites and
   three more book covers were found — the size-class pass alone had missed them, which is the
   measure of how much a pass over 824 images at once misses.
 * **Skimmed:** the last two of the eight kite pictures (`TK_ITM`) were seen only at 1:1 on their

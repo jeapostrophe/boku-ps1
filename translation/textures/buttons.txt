@@ -77,3 +77,12 @@ btn@PK_ITM.footer	Have a healthy summer!
 
 # --- the fishing record's balloon (FS_WAL; つり道具), in Bean
 btn@FS_WAL.tackle	Fishing // Tackle
+
+# --- the insect cage (MITIM): ○ on a bug shows two buttons side by side, a leaf (出す, take it
+# out) and a stone of its own drawing (もどる); and the cage's header marks a rare bug with a
+# turning starburst (希少, "rare"). The buttons in the game's glyphs, 出す as "Take" (Jay,
+# 2026-09-24: "Take Out" in Bean "looks bad, it should just be 'Take'"); the starburst in Bean,
+# as the game's glyphs are wider than it.
+btn@MITIM.take_out	Take
+btn@MITIM.back	Back
+btn@MITIM.rare	RARE!

@@ -228,7 +228,7 @@ constant-index.
 | `BOKU_XA.XCH` (6) | `u32 48`, 48 × 12-byte XA clip records | `xa_init` `0x8002AFB4` → `g_xa_clips` |
 | `DEMO_00`…`04.KEY` (11–15) | attract-mode replay: `char map[8]`, day at `+8`, hour `+9`, flags, then pad-input records from `+0xC` | `demo_start` `0x80020DA0` |
 | `EVVER.BIN` (31) | **map-variant selector**: 9 `u32` offsets by area letter (`'A'`…), each a table of `{char name[3], …, u32 day_mask (bit 31 = also run a condition), char set[4], char suffix[]}`; appends the variant digits to a 3-character map base | `map_variant_name` `0x80030CD0` |
-| `KAGO_UV.BIN` (52) | `u32 18`, sprite UV/size records for the insect-cage UI | `0x80042ABC`, `0x80042B28` via `g_kago_uv` |
+| `KAGO_UV.BIN` (52) | `u32 18`, sprite UV/size records for the insect-cage UI: `MITIM.BIN`'s sprites, converted against its VRAM place (0x250, 0x100) | `0x80042ABC`, `0x80042B28` via `g_kago_uv` |
 | `MOV_VOL.BIN` (128) | sections `"MOV\0", u32 movie_id`, then 12-byte volume records; a map's child 5 has the same records | `0x8001E300` scans `g_mov_vol` for the section; records read through `g_vol_recs` |
 | `MUSIDATA.BIN` (130) | 60 × 10 bytes of insect stats (`+7` = class 0/1/2) | `g_musidata`, 8 sites |
 

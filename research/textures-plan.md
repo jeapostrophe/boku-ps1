@@ -6,8 +6,9 @@
 says what it is — and 2026-09-23, `GFX-09`: the beach notice is frontal, not at an angle, and is
 in both variants of its map, so it is **P** twice; and `GFX-10`: the epilogue's closing card is translated, **P**;
 and 2026-09-24, `GFX-08`: Saori's farewell note, the hunting-association board, the keep-out
-sign and the bug-trading notebook's cover are built programmatically, **P** — the counts below
-are now **146 P, 22 R, 0 S, 30 N** of 198; the tables keep the audit's original
+sign, the bug-trading notebook's cover and the cage's sprites (`MITIM`) are built
+programmatically, **P** — the counts below
+are now **147 P, 21 R, 0 S, 30 N** of 198; the tables keep the audit's original
 split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
@@ -282,11 +283,13 @@ question; it is noted here so the two sides do not both assume the other has it.
   "Back", built with them ([texture-recipes.md](texture-recipes.md) § "Buttons") — above a
   wreath and two pencils (`H`, `HB`), which carry no Japanese.
 
-### **R** — 1
+### `MITIM` — **P** (was **R**)
 
-* `MITIM` — the insect-catch result badges: a "rare" starburst, size crowns, male/female marks,
-  on a transparent 4bpp sheet with 10 CLUTs. `BIG!` is already Latin. Stylised badge lettering,
-  not type.
+* `MITIM` — the insect cage's sprites, not catch-result badges as first read: a "rare"
+  starburst (希少) that marks a rare bug in the cage's header, the leaf 出す and the stone もどる
+  shown when a bug is picked, crowns, `BIG!`, `NEW!` (already Latin), male/female marks and the
+  hand cursor, on a transparent 4bpp sheet with 10 CLUTs. Built 2026-09-24 as the other
+  buttons are ([texture-recipes.md](texture-recipes.md) § "Buttons").
 
 ### **N** — 4, all census `maybe`, all *resolved as having no Japanese*
 
@@ -338,8 +341,9 @@ tiles would be invisible to it twice over. **Audited, and there is none.**
   emit 8×12 sprites at `u = 0x48 + 8·d` with a caller-chosen CLUT — it is **the game's
   general-purpose number font**, serving the cage HUD, fishing, bug sumo, the insect book, the
   item menu and the `TITLE` file list. Latin and numerals throughout; nothing to translate, and
-  nothing spells a word with it. `\_DATA\KAGO_UV.BIN` is its sprite table: `u32 18` followed by
-  18 twelve-byte rects, 2×8 to 10×24 — digits and unit marks, never kana components.
+  nothing spells a word with it. (`\_DATA\KAGO_UV.BIN` is *not* its sprite table, as this note
+  first said: `cage_init` converts it against `MITIM`'s place in VRAM (0x250, 0x100), and its
+  18 records are `MITIM`'s sprites — [texture-recipes.md](texture-recipes.md) § "Buttons".)
   Two census notes were corrected from this look: `\_DATA\KAGO.BIN` `0x2784` is green cage
   bars, not the number strip, and `\_DATA\KAGO2.BIN` `0x0` is a second, narrower strip of its
   own (120×10, 15 cells), not a copy of `NUMBER.TIM`.
@@ -407,7 +411,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 12 | `tex@T_CONFIG.*` | settings value plates | ~6 plates |
 | 13 | `tex@SUB.*` | action-button words, deduplicated across the 8 atlas images in 6 files | ~12 words |
 | 14 | `rec@FS_WAL.*`, `btn@FS_WAL.*`, `btn@PK_WAL.*`, `btn@TK_WAL.*` | record-screen field labels, the bait and tackle names, and their buttons | 16 strings |
-| 15 | `tex@MITIM.*` | result badge words | ~4 words |
+| 15 | `btn@MITIM.take_out`, `.back`, `.rare` | the cage's two buttons and its "rare" badge | 3 words |
 | 16 | `tex@TZICON.*` | kite-workshop balloon, confirm, back | 3 strings |
 | 17 | `tex@T_MEMORY.0` | album heading plate | 1 line |
 | 18 | `tex@M_S01000.0` | the bug-trading notebook's cover, "Bug // Trading // Notebook" | 3 lines |

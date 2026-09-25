@@ -428,6 +428,24 @@ size of the sprite, each checked against its measured bytes first. A sprite may 
 | bug sumo (`M_S01100` `0x164b4`, CLUT 2; `MUSI.OVL` 22-byte records from `0x8007A538`, `{u16 semi, s16 x, y, u8 u, v, u16 w, h, u16 tpage x, y, clut x, y, u8 depth, abr}`, one per balloon in each of the two tables) | *Release* +12 and *Bug // Rank* +8 into the free x 484–511; the rest fit; the swap plate (4bpp, slice 3, record `0x8007A7B4`) +8, set by the `plate` recipe (its ground is a checkerboard: refilled from donors an even number of steps away, only its text area, not the arrow); the とじる board (8bpp, CLUT 5, records `0x8007A742`, `0x8007A786`) by the `plank` recipe, its punched-through Japanese transparent | the stone on this screen is drawn through a CLUT not in its TIM |
 | insect box (`MZ02`, CLUT 4, the same texture as `SAMP.BIN`'s copy; `SAMP` `0x14e48`, CLUT 6 slices 0–1) | *Bug // Cage*, *Bug // Box*, *Take // Out* and the page pencils' *Prev* / *Next* (Jay, 2026-09-24) in the game's glyphs; the rest in Bean | no free texels (one 44×40 slot at x 684, y 160, and nothing wider) |
 
+**The insect cage** (`MITIM`, a true 4bpp sheet, 10 CLUTs). Its sprite table is `KAGO_UV.BIN`
+(`u32 18`, then the table's 12-byte entries): `cage_init` (`0x80043468`) loads `MITIM` to VRAM
+(0x250, 0x100) with its CLUTs at (0x270, 0x1E0) and converts `KAGO_UV` against that place, so
+its 18 records are `MITIM`'s sprites — the crowns (11–14), `BIG!` (0–1), `NEW!` (9–10), the
+male/female marks (6–7), the hand cursor (17), and the three with Japanese:
+
+| sprite (record) | rect, CLUT | where | English |
+|---|---|---|---|
+| leaf 出す (2) | (24, 80) 40×24, CLUT 1 | ○ on a bug in the cage view: the left of two buttons, at screen (216, 192) | *Take*, bold, the `stone` recipe (its ink read darker than 90: the leaf's ramp is lighter and its type's faint tails reach 85) |
+| stone もどる (8) | (24, 104) 40×24, CLUT 4 | beside it at (264, 192), the hand cursor above it | *Back*, bold, the `stone` recipe — a smaller stone of its own drawing |
+| starburst 希少 (3–5) | (0, 0/24/48) 32×24, CLUT 2 | the cage header, at (193, 20), for a rare bug (a type in the list at `0x80045B04`, each stored +1), turning a frame every few draws (`0x80045B24`) | *RARE!* in Bean, the `badge` recipe, the same in each frame (`Button.frames`) |
+
+The two buttons are in the game's glyphs, 出す as *Take* (Jay, 2026-09-24: *Take // Out* in
+Bean, with *Back* beside it in Bean, "looks bad"). The `badge` recipe is a stone's for coloured type on a coloured badge: the
+type is what is redder than the burst's yellow (`BADGE_RED`) or dark but not its outline,
+refilled from the opaque burst round it (its notches run into the type, so not only from its
+inside as a stone's is), and the English set at its own weight in the red the type used most.
+
 **The attendance card** (`PK_ITM` `0x6c`, item 0x6c; seen in the bag, drawn dithered: every
 texel its colour or 8 less on each channel). Its title (beside the radio picture) and its
 footer (under the grid) are printed blue on a near-white card whose ground turns faintly pink
@@ -447,7 +465,9 @@ English, each widened sprite's stored sizes grown and moved; on Beetle (`./make.
 settings, load (a generated day-5 card), the diary desk, the desk (tackle and belongings), the
 bag, the kite record, the kite book, the insect book, bug sumo and the insect box show every opaque texel of
 each button's box in its rebuilt colour (but where the hand cursor covers it; the attendance
-card within its dither), and the stock image fails every one.
+card within its dither), and the stock image fails every one; the cage's buttons and its
+rare starburst (a rare bug poked into cage slot 0, whichever frame of the burst is on screen)
+likewise.
 
 ## `OTI0n` — the epilogue's closing card (PLAN `GFX-10`)
 

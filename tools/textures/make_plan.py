@@ -261,10 +261,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_MITIM\.BIN__",
         1,
-        "R",
-        "insect-catch result badges: a 'rare' starburst, size crowns, male/female marks",
-        "new (~4 words); BIG! is already Latin",
-        "stylised badge lettering on a transparent 4bpp sheet, 10 CLUTs",
+        "P",
+        "the insect cage's sprites: a 'rare' starburst, the take-out and back buttons, "
+        "crowns, male/female marks",
+        "new (3 words); BIG! and NEW! are already Latin",
+        "transparent 4bpp sheet, 10 CLUTs, sprite table KAGO_UV.BIN: the starburst and the two "
+        "buttons repainted in the game's glyphs and Bean (research/texture-recipes.md Buttons)",
     ),
     (
         r"^_DATA_TZICON\.BIN__",
