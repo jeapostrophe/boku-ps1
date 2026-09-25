@@ -936,18 +936,18 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       the CHD boots to the title on Beetle with Mode One's BIOS. Each export re-pins, so Mode One is
       rebuilt (`./one/make.sh ios deploy`, `push-roms`), and a playthrough from another build boots
       fresh keeping its memory card (`SlotMeta.disc_identity`). Harmed (was): Jay, the first player.
-- [ ] **[REL-03]** **Public release.** GitHub Release as the primary home: both patch
-      formats, the `.cue`, four hashes each side, plain instructions (extract CHD → hash →
-      patch), credits (README § "Related work"), and a plain statement of how the translation was made.
-      GitHub is the distribution. Listing on romhack.ing / romhacking.net is optional and not
-      worth bending anything for (romhack.ing withholds machine-assisted translations from web
-      download; Jay, 2026-09-20: the scene's view of AI is not an input).
-      Needs from Jay (2026-09-25, from `REL-04`): the GitHub repo as `origin` (there is no remote);
-      the first version tag; and the PPF (76.7 MB — PPF has no copy operation, so it carries the changed
-      containers' original bytes in the clear; the xdelta is 8.1 MB): RULED (c) by Jay, 2026-09-25 —
-      generated, but a separate download from the main release zip; "if Millennium Kitchen wants
-      we'll remove it". The machinery split is to build.
-      Harmed: everyone who is not Jay.
+- [ ] **[REL-03]** **Public release.** GitHub Release as the primary home. The machinery is built
+      (`REL-04`, `ca619fc`): the main download is the xdelta, the `.cue`, four hashes each side,
+      plain instructions (extract CHD → hash → patch), credits (README § "Related work") and a
+      plain statement of how the translation was made; the PPF is a separate, optional download
+      (Jay, 2026-09-25: "if Millennium Kitchen wants we'll remove it") — `release --no-ppf` /
+      `publish-release --withdraw-ppf` remove it in one step. Left: create the GitHub repository
+      and set `origin`; pick the first version, tag and push it; `./make.sh release`, then
+      `./make.sh publish-release release/v<version> --yes` (`--draft` first if wanted). `REL-01`'s
+      sentence on where it has been played is in `boku/release-notes.md`. Listing on romhack.ing /
+      romhacking.net is optional and not worth bending anything for (romhack.ing withholds
+      machine-assisted translations from web download; Jay, 2026-09-20: the scene's view of AI is
+      not an input). Harmed: everyone who is not Jay.
 - [x] **[REL-04]** **The release machinery.** DONE 2026-09-25 (`8158ad9`): `./make.sh release`
       refuses anything uncommitted, runs build-days, and writes `release/v<version>/` — xdelta +
       PPF against the Redump base, `PATCH.json`/`README.txt` (four hashes a side), the `.cue`,
