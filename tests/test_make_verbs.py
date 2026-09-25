@@ -93,6 +93,6 @@ def test_every_readme_section_a_tracked_file_cites_is_a_heading():
             cited += 1
             section = " ".join((double or single or bare).split())  # a quote may wrap a line
             if not any(h.startswith(section) for h in headings):
-                dangling.append(f'{name}: README § "{section}"')
+                dangling.append(f"{name}: README \u00a7 {section!r}")  # not a citation itself
     assert cited, "no README § citation found in any tracked file -- the pattern is out of date"
     assert not dangling, f"{len(dangling)} citation(s) of a README section that is gone: {dangling}"
