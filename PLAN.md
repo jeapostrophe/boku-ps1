@@ -563,7 +563,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       texture group (original beside English), the diary and the books: 3,337 items; each id one
       click or `c` to copy, lint findings and translators' notes on their items, each unit's
       `TRN-04` state from `translation/status.tsv`. No comment box (Jay). `tools/reader/`,
-      `work/reader/` and `work/reader-review/` removed. Harmed (was): the translation's reviewer.
+      `work/reader/` and `work/reader-review/` removed. 2026-09-25 (`7cec03e`): `./make.sh
+      build-days` rewrites the reader after every build; its header names the commit and days
+      build it was made from, and says in red when that build lacks what the page shows.
+      Harmed (was): the translation's reviewer.
 - [x] **[TRN-08]** **The packet, redone to Jay's spec, and the comparison.** DONE 2026-09-22
       (`~/.claude/session-notes/boku-ps1/2026-09-22-trn08-comparison.md`): `boku packet`
       writes `system.md` once — the day-file format, the whole style guide, the whole
