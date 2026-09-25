@@ -715,6 +715,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       "Back" in the game's glyphs (Jay's ruling); the header's rare-bug starburst reads "RARE!" in
       Bean, its own red, all three frames (the game's glyphs are wider than the burst); on Beetle. Harmed: the player who
       examines the thing and reads nothing.
+- [ ] **[GFX-11]** **The cage's rare-bug starburst says "Wow!" in the game's glyphs.** Jay,
+      2026-09-25 (§24b, from the mock-ups): "Wow!" (29 px) in the game's font, spilling a little
+      past the 23-px burst — nothing on that screen conflicts — replacing "RARE!" in Bean, all three
+      frames. Harmed: the player, who sees two fonts on one screen.
 - [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
       the board is frontal wood, painted not captioned, in both map variants (`M_C15000`, which
       day 1 loads, and `M_C15100`). `beach_notice` in `boku/texture_text.py` paints
@@ -922,13 +926,27 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       the play targets; Jay has **no way to test on real hardware** (2026-09-21), so the
       accuracy check is XEBRA and the release says plainly that hardware was not tested.
       Harmed: players on whatever was not tested.
-- [ ] **[REL-02]** **Mode One integration**, in `~/Dev/retro-trainer`: the PPF as a
-      `provisioning.ron` step against the Redump base SHA-1, a `PATCHES.md` provenance entry,
-      the post-patch SHA-1 pinned in its index, the CHD source path in its provisioning
-      scripts. Harmed: Jay, the first player.
+- [ ] **[REL-02]** **Mode One integration**, in `~/Dev/retro-trainer`. RULED (Jay, 2026-09-25):
+      Mode One does not apply the patch — `./make.sh export-to-mode-one` applies it here and hands
+      Mode One the patched image and its checksum (Mode One pins the checksum). The integration is
+      done in that repo, following its own rules. Harmed: Jay, the first player.
 - [ ] **[REL-03]** **Public release.** GitHub Release as the primary home: both patch
       formats, the `.cue`, four hashes each side, plain instructions (extract CHD → hash →
       patch), credits (README § "Related work"), and a plain statement of how the translation was made.
       GitHub is the distribution. Listing on romhack.ing / romhacking.net is optional and not
       worth bending anything for (romhack.ing withholds machine-assisted translations from web
       download; Jay, 2026-09-20: the scene's view of AI is not an input). Harmed: everyone who is not Jay.
+- [ ] **[REL-04]** **The release machinery.** Jay, 2026-09-25: it was not in the plan. A `make.sh`
+      verb that builds the release — the patched image, both patch formats computed against the
+      Redump base, the hashes each side, the notes — and stores it locally (gitignored), and a
+      script that posts it as a GitHub Release with `gh` (run by Jay; posting is `REL-03`). Harmed:
+      everyone who is not Jay, and any translator cutting a release from the repo.
+- [ ] **[REL-05]** **Boku's controller in Mode One, with a Run toggle.** Jay, 2026-09-25: a profile
+      based on FF7's, with only D-pad, Cross, Circle, Triangle and Run (no L1, L2, R1, R2,
+      Square, Select, Start). Run is a new Mode One feature only Boku uses: with the toggle on,
+      Up on the D-pad also holds Cross — the game's run "throttle". Built in `~/Dev/retro-trainer`.
+      Harmed: Jay, playing on Mode One's controller.
+- [ ] **[DOC-01]** **README audited against what was built.** Jay, 2026-09-25: accurate and concise
+      relative to the project as it stands; it names a few `make.sh` verbs but should name the
+      other relevant ones, the reader among them. Harmed: a contributor or translator starting
+      from the README.
