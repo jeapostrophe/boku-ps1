@@ -176,7 +176,8 @@ that reads the game needs them, and nothing they write is ever committed.
 | time and see the movie subtitles | `./make.sh movies` (decode to `work/movies/`), `./make.sh movie-timing` (each cue against the transcripts), `./make.sh movie-review` (each cue on Beetle, with the narration) |
 | drive an emulator | `./make.sh smoke` (boot on both headless emulators), `boot-save`, `examine`, `sumo-bout` (Beetle from a generated save) |
 | test | `./make.sh test`, `./make.sh lint`; `./make.sh emu-test` for the tests that boot an emulator |
-| make a patch | `./make.sh patch --modified build/days/image.img` (PPF + xdelta + both sides' hashes into `build/patch/`); `./make.sh apply-patch DUMP PATCH --out FILE` applies one, checking both hashes. The release build and the Mode One export are PLAN `REL-04` and `REL-02` |
+| make a patch | `./make.sh patch --modified build/days/image.img` (PPF + xdelta + both sides' hashes into `build/patch/`); `./make.sh apply-patch DUMP PATCH --out FILE` applies one, checking both hashes. |
+| play on Mode One | `./make.sh export-to-mode-one` (packs `build/days` as Mode One's `boku.chd` and pins its SHA-1; then rebuild Mode One) |
 
 ## Layout
 
@@ -211,10 +212,10 @@ build/      (ignored)  the renderer's edit set (vwf/), the days build (days/), t
 
 * **Public release:** a patch against the Redump-verified image, via GitHub Releases, with the
   base and result checksums stated. Never an image (PLAN `REL-03`, `REL-04`).
-* **Mode One** (`~/Dev/retro-trainer/one`) runs PS1 on Beetle PSX and pins the post-patch
-  SHA-1 in its index. It does not apply the patch: an export verb here is to apply it and hand
-  Mode One the patched image and its checksum (Jay, 2026-09-25, PLAN `REL-02`) — so the build must be
-  deterministic and must be confirmed on that core.
+* **Mode One** (`~/Dev/retro-trainer/one`), the phone frontend Jay plays on: it does not apply
+  the patch. `./make.sh export-to-mode-one` packs the built image as its `one/roms/boku.chd`
+  and pins that file's SHA-1 in its index (`boku/mode_one.py` says how). It runs PS1 on Beetle
+  PSX, so the build must be confirmed on that core.
 
 ## Reference material
 

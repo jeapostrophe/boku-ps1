@@ -15,6 +15,7 @@ from boku.coverage import add_arguments as add_coverage_arguments
 from boku.extract import SCRIPT_DIR_NAME, main_extract
 from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
 from boku.lint import add_arguments as add_lint_arguments
+from boku.mode_one import add_arguments as add_mode_one_arguments
 from boku.movies import add_arguments as add_movies_arguments
 from boku.packets import add_arguments as add_packet_arguments
 from boku.packets import add_save_arguments as add_save_event_arguments
@@ -599,6 +600,18 @@ def build_parser() -> argparse.ArgumentParser:
                 "any flag or saved byte changed, summed so the game accepts it. The layout, "
                 "the saved regions, the title and the icon are read from your import "
                 "(research/save-format.md)."
+            ),
+        )
+    )
+
+    add_mode_one_arguments(
+        subcommands.add_parser(
+            "export-to-mode-one",
+            help="pack the built image as Mode One's boku.chd and pin its SHA-1 there",
+            description=(
+                "PLAN REL-02: chdman-pack build/days/image.cue into the retro-trainer "
+                "checkout's one/roms/boku.chd and write that file's SHA-1 to its "
+                "one/index/boku.sha1, the checksum Mode One's index pins (boku.mode_one)."
             ),
         )
     )

@@ -1,11 +1,11 @@
 """PPF 3.0 -- write one, read one, apply one, without trusting anybody's applier.
 
-PPF is the format Mode One's patcher takes (`~/Dev/retro-trainer/src/one/patch.rs`) and
-the one DuckStation picks up from beside a CHD, so `PIPE-05` ships it alongside the
-canonical xdelta. It is a list of *overwrites*: an offset, a length, and the bytes that go
-there. That is all. It cannot insert, cannot delete and **cannot change the image's
-length** -- which is fine here, because nothing this project emits grows the image
-(`PIPE-04`).
+PPF is the format DuckStation picks up from beside a CHD, so `PIPE-05` ships it alongside
+the canonical xdelta. (retro-trainer's `src/one/patch.rs` reads it too, and the real-disc
+tests use it as a third applier; Mode One itself is handed the built image, `PLAN REL-02`.)
+It is a list of *overwrites*: an offset, a length, and the bytes that go there. That is
+all. It cannot insert, cannot delete and **cannot change the image's length** -- which is
+fine here, because nothing this project emits grows the image (`PIPE-04`).
 
 The format, from Icarus/Paradox's `PPF3.txt`
 --------------------------------------------

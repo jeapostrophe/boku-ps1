@@ -6,10 +6,10 @@ What goes out
 
 * `Boku no Natsuyasumi (Japan) [T-En boku-ps1 v<version>].xdelta` -- canonical. This is
   what the scene expects and what every front-end on every desktop can apply.
-* `... .ppf` -- the bonus path. Mode One's patcher takes PPF, and DuckStation picks up a
-  `.ppf` sitting beside a CHD with the same base name, which is a materially nicer
-  experience than "extract, patch, recompress" (`research/ps1-translation-practice.md`
-  §2.4). Only possible because nothing we emit changes the image's length.
+* `... .ppf` -- the bonus path. DuckStation picks up a `.ppf` sitting beside a CHD with
+  the same base name, which is a materially nicer experience than "extract, patch,
+  recompress" (`research/ps1-translation-practice.md` §2.4). Only possible because nothing
+  we emit changes the image's length.
 * `PATCH.json` -- size, CRC32, MD5 and SHA-1 of *both* the required original and the
   expected result, plus each patch's own hash. This is the contract `boku apply-patch`
   checks against, and what a release page quotes.

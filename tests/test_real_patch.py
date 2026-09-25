@@ -248,8 +248,9 @@ ONE_PATCH = Path.home() / "Dev" / "retro-trainer" / "target" / "debug" / "exampl
 def test_the_first_consumers_applier_gets_the_same_image(
     real_image: Path, trial_image: Path, patch_bytes, tmp_path
 ):
-    """Mode One is who this `.ppf` is emitted for (`PLAN REL-02`), and its applier is a
-    third implementation again -- Rust, written from the format rather than from the C.
+    """retro-trainer's PPF applier is a third implementation again -- Rust, written from the
+    format rather than from the C. (Mode One itself is handed the built image, not this
+    patch: `PLAN REL-02`, `boku.mode_one`.)
 
     It runs only if retro-trainer has already been built: this never builds there, because
     `cargo` would write into that repo's `target/`. Skips otherwise.

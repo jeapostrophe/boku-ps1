@@ -66,6 +66,11 @@ usage: ./make.sh <verb> [arguments]
                                 (./make.sh patch --help for the switches)
   apply-patch ORIG PATCH --out FILE
                                 apply one of our patches, checking both hashes
+  export-to-mode-one [arguments]
+                                pack build/days/ as Mode One's one/roms/boku.chd in
+                                ~/Dev/retro-trainer (--mode-one DIR, or $BOKU_MODE_ONE)
+                                and pin its SHA-1 in one/index/boku.sha1; needs chdman
+                                (./make.sh export-to-mode-one --help for the switches)
   packet [arguments]            assemble a translator packet into work/packets/<unit>/:
                                 system.md (format, story bible, style guide, glossary,
                                 checklist -- each whole) given once, one <EVENT>.md per
@@ -323,6 +328,9 @@ case "$verb" in
         ;;
     apply-patch)
         exec uv run boku apply-patch "$@"
+        ;;
+    export-to-mode-one)
+        exec uv run boku export-to-mode-one "$@"
         ;;
     packet)
         exec uv run boku packet "$@"
