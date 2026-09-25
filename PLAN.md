@@ -690,7 +690,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       bug-record card `rec@M_S01100.*` (all three copies), and the `T_MEMORY` heading proven on
       Beetle with a finished-game card — `tests/test_real_texture_records.py`. (`M_S02000`'s stone
       is never loaded — `research/texture-recipes.md`.)
-- [ ] **[GFX-08]** **The images with writing, per image** — RULED (Jay, 2026-09-24,
+- [x] **[GFX-08]** **The images with writing, per image** — DONE 2026-09-24, every image built or left by Jay's ruling. RULED (Jay, 2026-09-24,
       `work/review/decisions.html` §21). Left Japanese: the three book covers (`G8-D`, `G8-M`,
       `G8-T` — "not important and conveys the style of the game in Japanese") and the model-kit
       box `M_I19000`. To build, all programmatic (Jay: an image model changed the font and the
@@ -706,9 +706,10 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       on Beetle — tall kept (Jay, 2026-09-24); **the keep-out sign** (`G8-I18`, "Don't // come in!") and **the
       bug-trading notebook cover** (`G8-NB`, "Bug // Trading // Notebook") DONE 2026-09-24
       (`8ec5c76`): marker lettering found by colour, painted out, set in the game's glyphs in the
-      marker's own colour, on Beetle (`research/texture-recipes.md` § "Marker signs"); **`MITIM`** — the result badges and the cage's
-      出す / もどる buttons (it is `KAGO_UV`'s atlas): Jay, 2026-09-24, from the mock-ups — "Take",
-      not "Take Out", and the game-glyph versions. Harmed: the player who
+      marker's own colour, on Beetle (`research/texture-recipes.md` § "Marker signs"); **`MITIM`** — the insect cage's sprites (table `KAGO_UV.BIN`)
+      DONE 2026-09-24 (`b3331bc`): the two buttons shown when a bug is picked read "Take" and
+      "Back" in the game's glyphs (Jay's ruling); the header's rare-bug starburst reads "RARE!" in
+      Bean, its own red, all three frames (the game's glyphs are wider than the burst); on Beetle. Harmed: the player who
       examines the thing and reads nothing.
 - [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
       the board is frontal wood, painted not captioned, in both map variants (`M_C15000`, which
