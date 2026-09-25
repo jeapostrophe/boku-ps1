@@ -82,8 +82,10 @@ btn@FS_WAL.tackle	Fishing // Tackle
 # --- the insect cage (MITIM): ○ on a bug shows two buttons side by side, a leaf (出す, take it
 # out) and a stone of its own drawing (もどる); and the cage's header marks a rare bug with a
 # turning starburst (希少, "rare"). The buttons in the game's glyphs, 出す as "Take" (Jay,
-# 2026-09-24: "Take Out" in Bean "looks bad, it should just be 'Take'"); the starburst in Bean,
-# as the game's glyphs are wider than it.
+# 2026-09-24: "Take Out" in Bean "looks bad, it should just be 'Take'"). The starburst in the
+# game's glyphs too, "Wow!" (Jay, 2026-09-25: the burst is there to excite), running past the
+# Japanese's 23 px onto the burst's spikes; the build refuses a word that, with its shadow,
+# is wider than the 32-px sprite.
 btn@MITIM.take_out	Take
 btn@MITIM.back	Back
-btn@MITIM.rare	RARE!
+btn@MITIM.rare	Wow!

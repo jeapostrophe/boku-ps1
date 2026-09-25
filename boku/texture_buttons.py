@@ -10,11 +10,12 @@ The recipes (`RECIPES`), after Jay's ruling (2026-09-23): a **stone** is texture
 the Japanese's own pixels change -- its ink and the antialias touching it -- each refilled from
 the nearest clean pixel of the stone, and the English is set bold in the game's glyphs in the
 ink the Japanese used; a **plank** is the same on a board, a **plate** the same on a
-dithered plate at the glyphs' own weight, and a **badge** the same for coloured type on a
-coloured badge (the insect cage's "rare" starburst). A **label** is printed type on a card.
-A **balloon** is flat paper, so the whole label area is blanked to paper first and the English
-set on it, every inked pixel keeping a pixel of paper round it; `layout` widens and repacks
-balloons where their texture has room.
+dithered plate at the glyphs' own weight. A **badge** (the insect cage's "rare" starburst) has
+coloured type on a coloured ground: the type is refilled from the badge round it, and the
+English, with a drop shadow, may run past the Japanese onto the rest of its sprite. A
+**label** is printed type on a card. A **balloon** is flat paper, so the whole label area is
+blanked to paper first and the English set on it, every inked pixel keeping a pixel of paper
+round it; `layout` widens and repacks balloons where their texture has room.
 """
 
 from __future__ import annotations
@@ -55,10 +56,10 @@ class Button:
     kind: str
     """`stone`, `plank`, `plate`, `balloon`, `label` or `badge` (`RECIPES`)."""
     box: paint.Box
-    """A stone or a badge: the rows and columns the Japanese is inked in (`STONE_TEXT` on every
-    stone of the common drawing; measured on the cage's own). A plank: the board. A plate or a
-    balloon: the whole sprite, outline and tail included. A label: the part of the card its
-    type is printed in."""
+    """A stone: the rows and columns the Japanese is inked in (`STONE_TEXT` on every stone of
+    the common drawing; measured on the cage's own). A plank: the board. A plate, a balloon or
+    a badge: the whole sprite, outline and tail included (`text` is where a badge's Japanese
+    is). A label: the part of the card its type is printed in."""
     clut: int
     """The CLUT the screen draws it through (measured on Beetle)."""
     drawn_4bpp: bool = False
@@ -69,9 +70,9 @@ class Button:
     """`game` (the dialogue glyphs) or a tracked pixel face (`bean`)."""
     widen: Widen | None = None
     text: paint.Box | None = None
-    """A plate or balloon whose sprite carries a picture beside the Japanese (bug sumo's swap
-    plate and its arrow): the part of `box`, relative to it, the Japanese is in
-    (`text_area`)."""
+    """A plate, balloon or badge whose sprite carries more than the Japanese (bug sumo's swap
+    plate and its arrow, the cage's starburst): the part of `box`, relative to it, the Japanese
+    is in (`text_area`)."""
     frames: tuple[int, ...] = ()
     """A sprite that turns through frames: how far down the sheet each further frame is, the
     Japanese at the same place in each; the English is set into every one."""
@@ -223,10 +224,11 @@ BUTTONS: dict[str, Button] = {
     # bad). The leaf's ramp is lighter than the stones': its type's faint tails reach 85.
     "MITIM.back": Button("_DATA_MITIM.BIN__000000", "stone", (27, 106, 36, 13), 4),
     "MITIM.take_out": Button("_DATA_MITIM.BIN__000000", "stone", (30, 84, 32, 13), 1, ink_dark=90),
-    # The cage header's "rare" starburst (希少, red on yellow), turning through three frames;
-    # Bean, as the game's glyphs are wider than the burst.
+    # The cage header's "rare" starburst (希少, red on yellow), turning through three frames:
+    # the box is the whole 32x24 sprite (the English may run past the Japanese's 23 px onto its
+    # spikes, Jay 2026-09-25), `text` where the Japanese is.
     "MITIM.rare": Button(
-        "_DATA_MITIM.BIN__000000", "badge", (5, 7, 23, 10), 2, face="bean", frames=(24, 48)
+        "_DATA_MITIM.BIN__000000", "badge", (0, 0, 32, 24), 2, text=(5, 7, 23, 10), frames=(24, 48)
     ),
     # The diary's idle hint おやすみ, drawn at screen (40, 16) after a second without input
     # (atlas entry 6 of the table in front of the sheet; ZUKAN.OVL places it).
@@ -415,20 +417,41 @@ BADGE_RED = 60
 def badge(
     canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
 ) -> None:
-    """A stone's recipe for coloured type on a coloured badge (the cage's "rare" starburst,
-    red on yellow): the type is what is redder than the badge or dark, and the English is set
-    at its own weight in the entry the type used most. A dark pixel within `EDGE` of the
-    burst's transparency is its outline, not type (its notches run into the box)."""
-    x0, y0, w, h = box
-    region = (x0 - DONOR_MARGIN, y0 - DONOR_MARGIN, w + 2 * DONOR_MARGIN, h + 2 * DONOR_MARGIN)
-    colours = {p: _colour(canvas, button, p) for p in paint.points(region)}
-    ground = {p for p, c in colours.items() if c[3]}  # the burst's notches run into the type
+    """Coloured type on a coloured badge (the cage's "rare" starburst: red on yellow, with dark
+    shading): the type, in `text_area` -- what is redder than the badge (`BADGE_RED`), and what
+    is dark but not the burst's outline (within `EDGE` of its transparency) -- is refilled from
+    the badge round it, and the English is set at its own weight in the red the type used most,
+    with a drop shadow one pixel down and right in the dark it used most (the game's own text
+    shadow), centred where the Japanese was. It may run past the Japanese onto the rest of the
+    sprite, `box`, spikes and transparency alike, but not out of it."""
+    area = set(paint.points(text_area(button, box)))
+    colours = {p: _colour(canvas, button, p) for p in paint.points(box)}
+    ground = {p for p, c in colours.items() if c[3]}
     lum = {p: luminance(colours[p]) for p in ground}
-    outline = ground - inside_stone(canvas, button, region)
-    ink = {p for p in set(paint.points(box)) & ground
-           if colours[p][0] - colours[p][1] > BADGE_RED
-           or (lum[p] < INK_DARK and p not in outline)}  # fmt: skip
-    _repaint(canvas, box, entry, face, what, ground, lum, ink, bold=False)
+    outline = ground - inside_stone(canvas, button, box)
+    red = {p for p in area & ground if colours[p][0] - colours[p][1] > BADGE_RED}
+    dark = {p for p in area & ground - red - outline if lum[p] < INK_DARK}
+    found(red, what)
+    found(dark, what)
+    type_ = red | dark
+    text = paint.normalised(ink_of(face, entry))
+    shadowed = text | {(x + 1, y + 1) for x, y in text}
+    ax, ay = centred(shadowed, paint.extent(type_))
+    english = {(x + ax, y + ay) for x, y in text}
+    shadow = {(x + ax, y + ay) for x, y in shadowed} - english
+    if not (english | shadow) <= colours.keys():
+        _, _, w, h = paint.extent(shadowed)
+        raise TextureTextError(
+            f"{entry.where}: {entry.text!r} is {w}x{h} px with its shadow and, centred on the "
+            f"Japanese, runs out of the {box[2]}x{box[3]} sprite; nothing is cut to fit (README)"
+        )
+    soft = {p for p in paint.grown(type_, 1, 1, 1, 1) & area & ground - type_ if lum[p] < SOFT}
+    mask = type_ | soft
+    donors = {p for p in ground - mask if lum[p] >= INK_DARK}
+    pen, shade = canvas.most_used(red, stock=True), canvas.most_used(dark, stock=True)
+    filled_from_nearest(canvas, mask, donors, what=what)
+    canvas.stamp((0, 0), shadow, shade)
+    canvas.stamp((0, 0), english, pen)
 
 
 def text_area(button: Button, box: paint.Box) -> paint.Box:

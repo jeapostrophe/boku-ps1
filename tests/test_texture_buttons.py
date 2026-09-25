@@ -401,3 +401,42 @@ def test_a_label_box_that_cuts_through_something_printed_is_refused():
     tight = (10, 3, 26, 14)  # its left edge on the first stroke
     with pytest.raises(TextureTextError, match="reaches the edge of its box"):
         tb.label(canvas, button, tight, Entry("btn@x.t", "Go", "b:1"), Blocks(), "the card")
+
+
+def badge_canvas(dark_shading: bool) -> paint.Canvas:
+    """A 32x24 badge: yellow ground (entry 1) inside a transparent margin, and "type" in its
+    text area (5, 7, 23, 10) -- red strokes (entry 2), with dark shading (entry 3) under them
+    when `dark_shading`."""
+    words = [0, 31 | 28 << 5 | 4 << 10, 24 | 4 << 5 | 4 << 10, 8 | 4 << 5 | 4 << 10]
+    w, h = 32, 24
+    px = [1 if 2 <= x < w - 2 and 2 <= y < h - 2 else 0 for y in range(h) for x in range(w)]
+    for x in range(8, 26, 4):
+        for y in range(8, 15):
+            px[y * w + x] = 2
+            if dark_shading:
+                px[(y + 1) * w + x + 1] = 3
+    raw = synth.tim(
+        1, synth.pixel_block(w // 2, h, bytes(px)),
+        clut=synth.clut_block(256, 1, words + [0] * (256 - len(words))),
+    )  # fmt: skip
+    tim = parse_exact(raw)
+    place = Occurrence(ARCHIVE_NAME, "\\_DATA\\X.BIN", 0, 0x1000, tim.length)
+    return paint.Canvas(Texture("x", "0" * 40, tim, (place,)))
+
+
+BADGE = tb.Button("x", "badge", (0, 0, 32, 24), 0, text=(5, 7, 23, 10))
+
+
+def test_a_badge_sets_its_english_in_the_red_over_the_dark_shading():
+    canvas = badge_canvas(dark_shading=True)
+    tb.badge(canvas, BADGE, BADGE.box, Entry("t.x", "II", "t:1"), Blocks(), "the badge")
+    left = {canvas.at(p) for p in paint.points((5, 7, 23, 10))}
+    assert {2, 3} <= left, "the English in red over its dark shadow"
+
+
+def test_a_badge_with_no_dark_shading_is_refused_rather_than_shadowed_in_red():
+    """With no dark in the type there is no shadow colour to take; the recipe refuses rather
+    than draw the shadow in the English's own red (a thick red smear)."""
+    canvas = badge_canvas(dark_shading=False)
+    with pytest.raises(TextureTextError, match="no type where the recipe measured it"):
+        tb.badge(canvas, BADGE, BADGE.box, Entry("t.x", "II", "t:1"), Blocks(), "the badge")

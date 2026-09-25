@@ -438,13 +438,18 @@ male/female marks (6–7), the hand cursor (17), and the three with Japanese:
 |---|---|---|---|
 | leaf 出す (2) | (24, 80) 40×24, CLUT 1 | ○ on a bug in the cage view: the left of two buttons, at screen (216, 192) | *Take*, bold, the `stone` recipe (its ink read darker than 90: the leaf's ramp is lighter and its type's faint tails reach 85) |
 | stone もどる (8) | (24, 104) 40×24, CLUT 4 | beside it at (264, 192), the hand cursor above it | *Back*, bold, the `stone` recipe — a smaller stone of its own drawing |
-| starburst 希少 (3–5) | (0, 0/24/48) 32×24, CLUT 2 | the cage header, at (193, 20), for a rare bug (a type in the list at `0x80045B04`, each stored +1), turning a frame every few draws (`0x80045B24`) | *RARE!* in Bean, the `badge` recipe, the same in each frame (`Button.frames`) |
+| starburst 希少 (3–5) | (0, 0/24/48) 32×24, CLUT 2 | the cage header, at (193, 20), for a rare bug (a type in the list at `0x80045B04`, each stored +1), turning a frame every four draws (`0x80045B24`): each frame is on screen 8 video frames, measured on Beetle | *Wow!* in the game's glyphs (Jay, 2026-09-25: the burst is there to excite), the `badge` recipe, the same in each frame (`Button.frames`) |
 
-The two buttons are in the game's glyphs, 出す as *Take* (Jay, 2026-09-24: *Take // Out* in
-Bean, with *Back* beside it in Bean, "looks bad"). The `badge` recipe is a stone's for coloured type on a coloured badge: the
-type is what is redder than the burst's yellow (`BADGE_RED`) or dark but not its outline,
-refilled from the opaque burst round it (its notches run into the type, so not only from its
-inside as a stone's is), and the English set at its own weight in the red the type used most.
+Every word on the sheet is the game's glyphs, one face on the screen: 出す as *Take* (Jay,
+2026-09-24: *Take // Out* in Bean, with *Back* beside it in Bean, "looks bad"), and 希少 as
+*Wow!* (2026-09-25), 29 px against the Japanese's 23. The `badge` recipe works on the whole
+32×24 sprite, the Japanese's area its `text`: the type there is what is redder than the burst's
+yellow (`BADGE_RED`), and what is dark but not the burst's outline; it is refilled from the
+opaque burst round it, so its own shading comes back (the notches run into the type, so not
+only from the burst's inside as a stone's is). The English is set at its own weight in the red
+the type used most, over a drop shadow one pixel down and right in the dark it used most (the
+game's text shadow), centred where the Japanese was, running onto the spikes and the
+transparency beside them; a word that would leave the sprite is refused.
 
 **The attendance card** (`PK_ITM` `0x6c`, item 0x6c; seen in the bag, drawn dithered: every
 texel its colour or 8 less on each channel). Its title (beside the radio picture) and its

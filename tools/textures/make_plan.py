@@ -266,7 +266,7 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
         "crowns, male/female marks",
         "new (3 words); BIG! and NEW! are already Latin",
         "transparent 4bpp sheet, 10 CLUTs, sprite table KAGO_UV.BIN: the starburst and the two "
-        "buttons repainted in the game's glyphs and Bean (research/texture-recipes.md Buttons)",
+        "buttons repainted in the game's glyphs (research/texture-recipes.md Buttons)",
     ),
     (
         r"^_DATA_TZICON\.BIN__",
