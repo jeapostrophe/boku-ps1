@@ -5,14 +5,14 @@ store, and answers it in the store's own numbers. The fix for an overflow is ano
 or a wider box, never a shorter translation (README § "Who this is for"), so a finding
 reports what is over and by how much and stops there; nothing here rewrites English.
 
-    ./make.sh lint-translation                  # translation/days + translation/samples
+    ./make.sh lint-translation                  # translation/days (+ any translation/samples)
     ./make.sh lint-translation --encoder stock  # in the retail 14-px full-width cells
 
 What it checks, and where each rule comes from
 ----------------------------------------------
 * **`unknown-id`** -- the id is not a line in the script. Voice-only ids count: they have
   no text on the disc and are listed so the ids line up
-  (`translation/samples/README.md`).
+  (`translation/days/README.md` § Format).
 * **`translated-twice`** -- one id given English in two places. Whichever the build's
   loader picked, the other was written for nothing.
 * **`select-options` / `select-shape`** -- the option count is `g_select_lines` in the
@@ -75,7 +75,7 @@ What it checks, and where each rule comes from
   movies are drawn only in that font; without one the pixel rules are a `cue-unmeasured`
   warning, never a pass.
 * **`reader-vs-loader`** -- this module's parse against `boku.translation.SampleScenes`,
-  the loader the image build reads English through. Two parsers of one provisional format
+  the loader the image build reads English through. Two parsers of one format
   is a real risk, so they are compared rather than trusted.
 
 The label and the marks

@@ -3,21 +3,29 @@
 An English translation patch for the PlayStation original of *Boku no Natsuyasumi* (ぼくのなつやすみ,
 SCEI / Millennium Kitchen, 2000, **SCPS-10088**) — built in the open, tools and translation both.
 
-> **Status, 2026-09-20: the approach works.** A patched disc image boots — on PCSX-Redux and on
-> Beetle PSX, the core Mode One uses — and draws English left to right in a band under the
-> scene (`./make.sh trial`). The archive, text format, event scripts, font, renderer, memory
-> map and textures are decoded and written up under [research/](research/): the script is
-> 2,977 lines / ~75,000 glyphs, 181 textures carry Japanese, and the game checks nothing it
-> loads. **Days 1–7 of the script play in English on Beetle PSX**
-> (`./make.sh build-days`): proportional text in a translucent three-line band under the
-> scene (inside the rows every emulator shows), speaker labels in the original's `Uncle「…」`
-> form, page arrows, choice menus with the game's own hand pointing at the row; 757 of 761
-> lines laid out and reinserted, members relocated where they grew, the map work area raised
-> so the biggest scene fits. Each build names its cue by revision
-> (`build/days/days-<stamp>-<hash>.cue`) so a play report can say what it tested. The rest of the script waits on that being played and
-> judged. Ruled 2026-09-20: the game's own font with a width table, the smallest band, the
-> tab-separated day files as the format, and the programmatic redraw for the diary pages;
-> every texture that carries Japanese has a chosen path ([research/textures-plan.md](research/textures-plan.md)).
+## Status
+
+**The whole game is translated and the build carries all of it; what is left is playing it,
+Jay's read of the script, and the release.** The open work is [PLAN.md](PLAN.md).
+
+* **Text.** The game draws English left to right, proportionally, in its own glyph sheet, in a
+  translucent three-line band under the scene, with speaker labels in the original's
+  `Uncle「…」` form and choice menus as rows beside the game's own hand. Every event of the 31
+  days, the day-independent events, and the menus, books and screens are translated and
+  reviewed against the Japanese by a second agent; where each unit stands is
+  [translation/status.tsv](translation/status.tsv). A line that outgrows its space is
+  relocated, never cut.
+* **Textures.** Every image that carries Japanese has a ruled path
+  ([research/textures-plan.md](research/textures-plan.md)); the picture diary, the two
+  encyclopedias, the title and menu plates, the buttons, the records and the signs are set in
+  English at build time from your import.
+* **Movies and voices.** The narrated movies and the theme song are subtitled inside the video
+  frames; the voice clips with no text on the disc — the five epilogues, the first night's
+  narration, bug sumo, voice-only lines in events — are subtitled in the band. The voices
+  themselves stay Japanese.
+* **Where it is seen.** Each piece is confirmed on Beetle PSX (the core Mode One runs) wherever
+  play can reach it, most on PCSX-Redux too, and Jay plays the builds on DuckStation. Not yet done: a full
+  playthrough, confirmation on the release targets, and the release itself.
 
 ## Why the PS1 version
 
@@ -75,8 +83,8 @@ the scenes one after another, a day's worth or the whole game in play order (`./
 packet`, `translation/README.md`). The box limits are not handed to it: the
 lint measures every page and `./make.sh mockup` draws them. A second agent reviews against the
 Japanese, and then it gets played.
-Scenes will be readable in order outside the game, with alternatives side by side, in a
-small reader built for this project rather than a generic localization platform. The project
+Scenes are readable in order outside the game, the Japanese beside the English, in a reader
+built for this project rather than a generic localization platform (`./make.sh reader`). The project
 is made for Jay and his friends and published for anyone who wants it; everything that
 produced the script is here to inspect, and pull requests that improve it are welcome.
 
@@ -91,39 +99,26 @@ test it, so expect to find the places where it quietly assumed its own workflow.
 | | Content | Plan |
 |---|---|---|
 | 1 | Text drawn by the game's own renderer — dialogue, menus, item and insect names | **The priority.** |
-| 2 | Japanese text inside textures (198 images; the picture diary is 94 of them) | After 1. Two paths, chosen per image in [research/textures-plan.md](research/textures-plan.md): **programmatic** (147 — paint the Japanese out of its panel or board and set the English with the game's own glyphs, at build time from your import; the diary, the encyclopedia spreads, the UI plates, the beach notice, the farewell note on the log, the hunters' warning board, the two marker signs, the insect cage's buttons and badge), **redraw** (21 — stylised lettering, book covers). 30 stay Japanese by the charter — a shop sign is a shop sign. |
-| 3 | Narration inside the movies (`__STR/M27.IKI`, the opening; `M28.IKI`, the one ending movie) | In scope since 2026-09-20 — Jay, after playing: the opening "definitely needs subtitles". The player draws 24-bit frames straight into VRAM, so the subtitles are composited into each frame by a hook in the player (`asm/movie.asm`, ruled 2026-09-22 over burning them in — [research/movies.md](research/movies.md) § 5, § 7); keyed by movie from `translation/movies.txt` and carried by every days build, proven on two movies on both emulators. Left: the narration itself (PLAN `FMV-02`) and the ending's check (`FMV-04`). |
+| 2 | Japanese text inside textures — the picture diary, the encyclopedias, menu plates and buttons, signs | After 1. Each image's path is in [research/textures-plan.md](research/textures-plan.md). The ones translated are **programmatic**: the Japanese is painted out of its panel and the English set in the game's own glyphs (or one of the project's two small pixel faces where the space is too small), at build time from your import, so only the English is committed ([translation/textures/](translation/textures/README.md)). The rest stay Japanese by the charter or by Jay's ruling — a shop sign is a shop sign; the book covers convey the game's style. |
+| 3 | Narration and songs inside the movies (`__STR/*.IKI`: the opening `M27`, the one ending movie `M28`, and three more) | In scope since 2026-09-20 — Jay, after playing: the opening "definitely needs subtitles". The player draws 24-bit frames straight into VRAM, so the subtitles are composited into each frame by a hook in the player (`asm/movie.asm`, ruled 2026-09-22 over burning them in — [research/movies.md](research/movies.md)), keyed by movie and frame from `translation/movies.txt`. |
 | 4 | Voices (`__STR/BOKU_XA.XAM`) | **Kept Japanese on purpose** — subtitles, not a dub (see above). |
-| 5 | Voice-overs with no text — the five endings (a still with narration over it, after the one ending movie) and voice-only clips in play, such as the narrator at the well | In scope since 2026-09-22 (Jay, from playing). Inventory, mechanism and translation: PLAN § Voice-over (`VO-01`–`VO-04`). |
+| 5 | Voice-overs with no text — the five endings (a still with narration over it, after the one ending movie) and voice-only clips in play, such as the narrator at the well | In scope since 2026-09-22 (Jay, from playing): subtitled in the dialogue band while the clip plays ([research/voice-only.md](research/voice-only.md); the English is in the day files and `translation/clips.txt`). |
 
-## The central risk: the game writes vertically
+## The central risk was vertical text
 
-The original draws all dialogue top-to-bottom in pre-placed boxes (Jay, from playing it; the
-renderer itself has not been read yet). The boxes stay where they
-are; how text is drawn inside them is what has to change, and that means changing — or working
-around — the renderer in a 512 KB MIPS executable. The fallbacks, cheapest first:
-
-1. The game's font already has Latin glyphs: patch the renderer to advance horizontally with a
-   per-glyph width table and wrap inside the existing box.
-2. It doesn't, or they are unusable: the same patch plus a replacement glyph sheet made from a
-   redistributable (SIL OFL) font.
-3. The renderer can't reasonably be bent: leave it alone and add a hand-written subtitle
-   overlay drawn on top of the normal interface.
-
-First good news (2026-09-20, static analysis, `research/font.md`): the game's text stepper
-already has a **horizontal mode** behind a flag bit, and its 12×12 font sheet already contains
-A–Z, a–z, digits and most punctuation — full-width, so a width table is still needed, and the
-Japanese punctuation is drawn for vertical lines. And direction turns out to be an *argument*: dialogue is vertical because two call sites pass
-a literal 1 (`research/text-renderer.md`). Twenty of the game's 26 text surfaces are already
-horizontal. What is left is real but bounded: the dialogue panel is a narrow strip down the
-right edge and has to become a band, SELECT menus and two overlay screens are hard-coded
-vertical, and a width table has to be hooked in. The first half of that has now been seen running: `PLAN TXT-04`'s trial image draws
-horizontal English in a bottom band on both emulators. The width table is the next piece.
-
-Both the PS2 sequel's English patch and the PSP port's Spanish patch hit vertical text in
-their versions of this engine and converted it to horizontal with a variable-width font, so
-(1)/(2) have precedent in the family — but neither is this executable, and what the PS1
-renderer actually does is PLAN § *Text renderer*.
+The original draws all its dialogue top to bottom in a narrow strip down the right of the
+screen (Jay, from playing it), and a 512 KB MIPS executable decides that. The fallbacks were,
+cheapest first: bend the renderer to advance horizontally with a per-glyph width table; the
+same with a replacement glyph sheet; or leave it alone and draw a subtitle overlay on top. The
+first held. The text stepper already had a horizontal mode, direction is an *argument* (the
+dialogue is vertical because two call sites pass a literal 1), and the 12×12 font sheet already
+has A–Z, a–z and the digits; the punctuation it lacks is drawn for this project. The renderer
+patches (`asm/`, armips) draw each text surface proportionally — one hook per surface, as every
+comparable project needed — and the dialogue panel became the band under the scene. The detail
+is [research/text-renderer.md](research/text-renderer.md) and
+[research/vwf-prototype.md](research/vwf-prototype.md). The PS2 sequel's English patch and the
+PSP port's Spanish patch converted vertical text the same way in their versions of this engine
+([research/renderer-prior-art.md](research/renderer-prior-art.md)).
 
 ## What the disc looks like
 
@@ -134,40 +129,54 @@ the same scheme, and at least largely the same glyph order, as the PSP port and 
 Details, measurements and what is still unknown: [research/disc-recon.md](research/disc-recon.md)
 and [research/boku-bin.md](research/boku-bin.md) (the archive's 1,302 members, mapped).
 
-## The approach
+## How the build works
 
-1. **Recon** the archive, the text tables, the event scripts and the textures until every
-   piece of Japanese on the disc has a known home.
-2. **Reverse-engineer the text renderer** and settle how English gets on screen.
-3. **Trial**: one English line, on screen, in a rebuilt image.
-4. **Pipeline**: import → extract to ids → translation files → reinsert → image → patch, with
-   an unchanged round trip reproducing the original image byte for byte as the standing gate.
-5. **Translate** with agents that are given the story, the scene, the speakers and the box
-   limits — then review, then play it.
-6. **Textures**, then release.
+Import → extract to line ids → the committed translation files → the build → a patched image →
+a patch. The build lays each line out in its box's pixels, rebuilds every copy of it and every
+container around it, relocates a member that outgrows its sectors, typesets the textures,
+assembles the renderer and movie hooks, and regenerates each touched sector's EDC/ECC. The
+standing gate is the null round trip: every text site reinserted unchanged through the full
+rebuild reproduces the original image byte for byte. How the containers grow is
+[research/relocation.md](research/relocation.md).
 
-## The import step
+## Using it
+
+Every recurring command is a verb of `./make.sh`. **`./make.sh help` is the full list**, with
+what each verb does and where its switches are; most take `--help`. It needs `uv` (which
+installs Python and the Python tools on first use) and, for a CHD, `chdman` (MAME's —
+`brew install rom-tools`). `build-days` needs armips; the emulator verbs — and `saves` and
+`duckstation-cards`, which boot a new game on Beetle once to start from — need PCSX-Redux or
+the Beetle PSX core and a retail BIOS: [research/tooling-setup.md](research/tooling-setup.md)
+says how to set those up. `./make.sh help` names what the other verbs need.
+
+### The import step
+
+It comes first, once:
 
 ```
 ./make.sh import path/to/your-dump.chd      # or .cue / .bin / .img, or set BOKU_DISC
+./make.sh extract                           # the decoded script, into disc/script/
 ```
 
-It verifies the image against the Redump checksum (recorded in
-[research/disc-recon.md](research/disc-recon.md) § "The dump") and refuses anything else,
-then writes `disc/image.img`, `disc/image.cue`, `disc/manifest.json` and the extracted files
-under `disc/files/`. `./make.sh extract` then writes the decoded script and per-scene flow graphs under
-`disc/script/`. Nothing else
-in the repo works without it, and nothing it writes is ever committed. It needs `uv`, and
-`chdman` (from MAME) for CHD input.
+`import` verifies the image against the Redump checksum (recorded in
+[research/disc-recon.md](research/disc-recon.md) § "The dump") and refuses anything else, then
+writes `disc/image.img`, `disc/image.cue`, `disc/manifest.json` and the extracted files under
+`disc/files/`; `extract` writes the script as line ids and per-scene flow graphs. Everything
+that reads the game needs them, and nothing they write is ever committed.
 
-## Starting from any day
+### The verbs, by task
 
-`./make.sh duckstation-cards` writes memory cards, generated from your import, that start the
-game on any morning from August 2 to 31, on August 31 with the stars for each of the five
-endings, or as a finished game (Summer Memories), and bug-sumo saves: a cage of maxed-out beetles, the
-mantis fight next, the secret shortcut open ([research/sumo.md](research/sumo.md)). `INDEX.tsv` beside them lists every slot;
-[research/save-format.md](research/save-format.md) § "Playing a generated save in
-DuckStation" says how to put one in slot 1 without touching your own card.
+| to | run |
+|---|---|
+| build the game in English and play it | `./make.sh build-days`, then load `build/days/days-<stamp>-<hash>.cue` — named by the revision, so a play report can say what it tested |
+| start from any day | `./make.sh duckstation-cards`: memory cards that start any morning from August 2 to 31, August 31 with the stars for each of the five endings, a finished game (Summer Memories), and bug-sumo saves ([research/sumo.md](research/sumo.md)); `INDEX.tsv` beside them lists every slot, and [research/save-format.md](research/save-format.md) § "Playing a generated save in DuckStation" says how to put one in slot 1 without touching your own card. `saves` writes the same saves a card each for the headless tools, `save` one card from parameters |
+| read the translation | `./make.sh reader` → `work/reader/index.html`: the whole translation in play order, the Japanese beside the English, each id one key to copy, the lint's findings on their lines. `build-days` rewrites it, and its header says which build it was read against |
+| check the translation | `./make.sh lint-translation` (ids, choice menus, page counts, fit in pixels, movie cues); `./make.sh mockup` (every page drawn at the band's geometry, no emulator); `./make.sh coverage` (per day, what the build did with every line); `./make.sh textures check` (the texture strings typeset, and what each refused) |
+| translate | `./make.sh packet` and `./make.sh save-event` — the workflow is [translation/README.md](translation/README.md) |
+| time and see the movie subtitles | `./make.sh movies` (decode to `work/movies/`), `./make.sh movie-timing` (each cue against the transcripts), `./make.sh movie-review` (each cue on Beetle, with the narration) |
+| drive an emulator | `./make.sh smoke` (boot on both headless emulators), `boot-save`, `examine`, `sumo-bout` (Beetle from a generated save) |
+| test | `./make.sh test`, `./make.sh lint`; `./make.sh emu-test` for the tests that boot an emulator |
+| make a patch | `./make.sh patch --modified build/days/image.img` (PPF + xdelta + both sides' hashes into `build/patch/`); `./make.sh apply-patch DUMP PATCH --out FILE` applies one, checking both hashes. The release build and the Mode One export are PLAN `REL-04` and `REL-02` |
 
 ## Layout
 
@@ -177,49 +186,35 @@ PLAN.md              the only task ledger — open work, by stable id
 CLAUDE.md            rules for agents working here
 LICENSE              MIT — all tools and patches' source
 LICENSE-translation  CC BY-SA 4.0 — the English script and the context notes
-make.sh              every recurring command: import, extract, movies, voice-only, packet, save-event, mockup, reader, build-days, patch, apply-patch, save(s), duckstation-cards, boot-save, sumo-bout, examine, test, emu-test, lint, smoke
-boku/                the Python package: import, extract, movies, voice-only, trial, build (text,
-                     texture recipes, buttons, records, the encyclopedias and the close-ups, code-file arrays
-                     moved whole when they grow, labels drawn from code immediates, the memory-card
-                     save title), patch,
-                     apply-patch, save, sumo (the bug-sumo cage), the reader; boku/faces/ holds the two
-                     small pixel faces drawn for this project (Bean, Sprout)
-asm/                 armips source for the executable patches
+make.sh              every recurring command (./make.sh help)
+boku/                the Python package behind the verbs; boku/faces/ holds the two small pixel
+                     faces drawn for this project (Bean, Sprout)
+asm/                 armips source for the executable and overlay patches
 tests/               pytest; the disc-dependent tests skip when there is no import
-tools/               Ghidra scripts, headless PCSX-Redux and Beetle PSX runners, the VWF prototype build
-                     and the page mock-ups drawn with its font (tools/vwf/mockup.py)
-translation/         the English: story bible, style guide, glossary, the translator's checklist,
-                     open questions, samples, the day files, movies.txt, the movie subtitles,
-                     clips.txt, the subtitles of the clips native code plays
-                     (translation/README.md), textures/, the strings the build typesets
-                     into textures, and status.tsv, each unit's TRN-04 state
+tools/               the renderer build and page mock-ups (vwf/), headless PCSX-Redux and Beetle
+                     PSX drivers (redux/, libretro/), Ghidra symbol scripts, the texture census
+                     and plan, the diary redraw prototype
+translation/         the English and what a translator reads first (translation/README.md)
 research/            what has been learned: formats, prior art, practice. One subject per file
-                     (two are raw research-agent reports, framed as such at the top).
-research/data/       the tables a note would otherwise have to list: the script walk, the
-                     texture census and plan, movies.tsv — what every FMV id plays,
-                     which `./make.sh movies` regenerates and a test diffs — and
-                     voice-only.tsv, every voice with no text, from `./make.sh voice-only`.
-                     glyph-table.tsv and text-boxes.tsv (what each menu box holds, which
-                     the build and the lint read) are kept by hand, not generated
-disc/        (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
-reference/   (ignored)  third-party material kept locally — see below
-work/        (ignored)  scratch: dumps, traces, contact sheets, Ghidra projects, translator
-                        packets (work/packets/), page mock-ups (work/mockup/), the reader
-                        (work/reader/); saves/ the
-                        generated memory-card corpus and saves/duckstation/ the same packed
-                        to play (research/save-format.md)
-build/       (ignored)  patched files, patched image, the patch
+                     (two are raw research-agent reports, framed as such at the top)
+research/data/       the tables a note would otherwise list; glyph-table.tsv and text-boxes.tsv
+                     are kept by hand, the rest are regenerated by the verbs ./make.sh help names
+disc/       (ignored)  your import: image.img, image.cue, manifest.json, files/, script/
+reference/  (ignored)  third-party material kept locally — see below
+work/       (ignored)  scratch, and everything derived from the game: translator packets, page
+                       mock-ups, the reader, saves, decoded movies and voices, review pages
+build/      (ignored)  the renderer's edit set (vwf/), the days build (days/), the patch (patch/),
+                       and what the lower-level verbs write (trial/, image/)
 ```
-
-Tools are Python, managed with `uv`; assembly patches are armips.
 
 ## Delivery
 
 * **Public release:** a patch against the Redump-verified image, via GitHub Releases, with the
-  base and result checksums stated. Never an image.
-* **Mode One** (`~/Dev/retro-trainer/one`): its patcher takes IPS/UPS/BPS/PPF and pins the
-  post-patch SHA-1 in its index, and it runs PS1 on Beetle PSX — so the build must be
-  deterministic, must emit PPF, and must be confirmed on that core.
+  base and result checksums stated. Never an image (PLAN `REL-03`, `REL-04`).
+* **Mode One** (`~/Dev/retro-trainer/one`) runs PS1 on Beetle PSX and pins the post-patch
+  SHA-1 in its index. It does not apply the patch: an export verb here is to apply it and hand
+  Mode One the patched image and its checksum (Jay, 2026-09-25, PLAN `REL-02`) — so the build must be
+  deterministic and must be confirmed on that core.
 
 ## Reference material
 
@@ -261,8 +256,9 @@ is surveyed in [research/ps1-translation-practice.md](research/ps1-translation-p
 
 You need your own dump of the game. After the import step you have everything the project has.
 Translation changes are edits to the id-keyed files; say in the PR what you were looking at in
-the game. Disagreements about style are welcome — the translation's style guide will be a file
-in this repo, and it can be argued with like any other.
+the game. Disagreements about style are welcome — the translation's style guide is
+[translation/style-guide.md](translation/style-guide.md), and it can be argued with like any
+other file.
 
 ## Licence
 

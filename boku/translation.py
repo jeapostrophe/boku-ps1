@@ -96,28 +96,26 @@ class PreEncoded:
             yield TranslationEntry(line_id=line_id, words=tuple(self.words[line_id]))
 
 
-# --- the provisional loader for the draft samples ------------------------------------------
+# --- the loader for the translation files -------------------------------------------------
 
 
 @dataclass
 class SampleScenes:
-    """**PROVISIONAL.** Reads `translation/samples/*.txt`, whose own README calls its
-    format provisional and points at `PIPE-01`/`PIPE-02` for the real one.
+    """Reads the committed translation files, in the day-file format
+    (`translation/days/README.md` § Format, ruled as `PLAN PIPE-02`). Named for the three
+    draft samples it was first written for; the day files, `shared.txt`, `arrays.txt` and
+    `clips.txt` are read through it.
 
-    It exists so the pipeline has something real to build before that decision is made,
-    and it is deliberately the thinnest possible reader of what those three drafts already
-    contain: `#` comments, and `line id <TAB> speaker <TAB> English`, where ` // ` is a
-    page break in the same position as the original's, ` | ` separates the options of a
-    `[SEL]` row, and a row whose speaker is `(voice only)` has no text on the disc and is
-    listed only so the ids line up -- unless it carries English, which is then a subtitle
-    for the clip (`voice_only`, `PLAN VO-02`).
-
-    **Do not build on this.** When `PIPE-02` is settled, the committed format gets its own
-    source and this one can go.
+    It is deliberately the thinnest possible reader: `#` comments, and
+    `line id <TAB> speaker <TAB> English`, where ` // ` is a page break in the same position
+    as the original's, ` | ` separates the options of a `[SEL]` row, and a row whose speaker
+    is `(voice only)` has no text on the disc and is listed only so the ids line up --
+    unless it carries English, which is then a subtitle for the clip (`voice_only`,
+    `PLAN VO-02`).
     """
 
     entries: tuple[TranslationEntry, ...]
-    name: str = "translation/samples (provisional)"
+    name: str = "translation files"
     problems: tuple[str, ...] = ()
 
     PAGE_BREAK = " // "
@@ -175,7 +173,7 @@ class SampleScenes:
     def from_directory(cls, directory: Path) -> SampleScenes:
         paths = sorted(Path(directory).glob("*.txt"))
         if not paths:
-            raise TranslationError(f"{directory} holds no *.txt sample scenes")
+            raise TranslationError(f"{directory} holds no *.txt translation files")
         source = cls.from_paths(paths)
-        source.name = f"{directory} ({len(paths)} file(s), provisional format)"
+        source.name = f"{directory} ({len(paths)} file(s))"
         return source

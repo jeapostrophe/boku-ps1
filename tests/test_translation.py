@@ -1,10 +1,11 @@
-"""The provisional reader for the draft samples, and the seam it sits behind.
+"""The reader for the translation files, and the seam it sits behind.
 
-`PIPE-02` — the committed translation format — is Jay's decision and is not made here, so
-what is tested is only that the loader reads what `translation/days/` *already
-contains*, and that the seam (`TranslationSource`) is what the build depends on rather
-than any particular file format. The day files are tracked, so the fixtures here are the real
-ones: the loader is checked against the translation it exists to read.
+`PIPE-02` — the committed translation format — is Jay's ruling
+(`translation/days/README.md` § Format), so what is tested is that the loader reads what
+`translation/days/` *contains*, and that the seam (`TranslationSource`) is what the build
+depends on rather than any particular file format. The day files are tracked, so the
+fixtures here are the real ones: the loader is checked against the translation it exists to
+read.
 """
 
 from __future__ import annotations

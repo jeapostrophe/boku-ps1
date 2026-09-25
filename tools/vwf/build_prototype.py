@@ -32,7 +32,7 @@ punctuation in `placeholder-glyphs.txt`. The rebuilt sheet is disc-derived: it l
 `build/` and is never tracked.
 
 `--days translation/days` takes the English from the reviewed day files instead of the
-sample lines (`boku.translation.SampleScenes`, the provisional reader both share): every
+sample lines (`boku.translation.SampleScenes`, the reader both share): every
 message and select whose id the import knows is laid out and written in place; a line that
 does not fit its site, or has the wrong page or option count, is left Japanese and listed
 in the summary and in `manifest.json` -> `unfitted` -- never cut, never silently dropped.

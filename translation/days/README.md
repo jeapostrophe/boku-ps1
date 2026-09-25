@@ -6,8 +6,8 @@ day-independent event the day's flow hands over to, named in the file's header. 
 the translation agents (README § "How the translation is made"); reviewed against the
 Japanese by a second agent; then played. Licence: CC BY-SA 4.0 (`LICENSE-translation`).
 
-The format is the samples' provisional one ([../samples/README.md](../samples/README.md) —
-the real one is PLAN `PIPE-01`'s), written out in § Format below. That section is addressed to
+The format is § Format below (ruled by Jay, PLAN `PIPE-02`; `boku/translation.py` loads it).
+That section is addressed to
 the translator and is quoted whole into every translator packet (`boku packet`), so it states
 the format and nothing the tools measure: fit on screen is `boku lint`'s job, and page mock-ups
 are `./make.sh mockup`'s.
@@ -64,39 +64,28 @@ are `./make.sh mockup`'s.
 
 There is no Japanese in these files, notes included (`boku save-event` refuses an answer
 that holds any). A page that does not fit the band is not the translator's to flag: `./make.sh
-lint-translation` measures every page and `./make.sh mockup` draws it, and `./make.sh reader`
-shows the lint's findings on the lines they are about. With an
-imported disc,
-`python3 work/rec05/scenes.py --dump 171 184` prints the source beside them.
+lint-translation` measures every page and `./make.sh mockup` draws it. `./make.sh reader`
+shows every line with its Japanese beside it and the lint's findings on the lines they are
+about.
 
 Each unit's state (undrafted to finalized) is [../status.tsv](../status.tsv), defined in
-`translation/README.md` § status.tsv; the table below says only where each file began.
+`translation/README.md` § status.tsv; the table below says what each file holds and where it
+began.
 
-| file | events | began |
+| file | holds | began |
 |---|---|---|
-| [day01.txt](day01.txt) | `E0103`–`E0190` (27 events, 85 lines), `E0001` | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20) |
-| `arrays.txt` | the lines outside every event — memory-card and save messages, the title and config screens, the controls help, item, kite, fish and insect names and descriptions, captions, the insect book, bug sumo, the kite and diary menus (308 lines on 42 surfaces: 34 arrays, six labels spelled out in code, the save title and one message the program holds; `research/text-outside-events.md`); keyed by the extract's `<file>@<offset>.<item>` ids | PLAN `TRN-09`; `./make.sh packet --arrays` makes its packet, and `boku lint` says which lines the build cannot place |
-| [shared.txt](shared.txt) | 76 day-independent events (158 rows: 89 text, 36 menus, 33 voice-only): every one day 1 can reach, the nearest outdoors, those days 2–7 handed the day files, and the nine `boku coverage` found no day file had asked for (Ken-bo's fur, the sisters' room, the far waters, the beach, Saori's camp) | PLAN `TRN-03` pilot, translated and reviewed against the Japanese (2026-09-20); the extension verified against the scene data and `EVVER.BIN` the same day; the coverage nine translated and reviewed against the Japanese the same day |
+| `day01.txt`–`day31.txt` | each day's events, `E<dd>xx`, in play order, and any day-independent event its day hands over to (`day01.txt` holds `E0001`) | day 1: the PLAN `TRN-03` pilot (2026-09-20); days 2–7 the same workflow; all 31 days, day 1 again among them, the `TRN-10` whole-game session (2026-09-23) |
+| [shared.txt](shared.txt) | the day-independent events (§ shared.txt) | the `TRN-03` pilot, extended as later days reached more of them, completed by `TRN-10` |
+| [arrays.txt](arrays.txt) | the lines outside every event — memory-card and save messages, the title and config screens, the controls help, item, kite, fish and insect names and descriptions, captions, the insect book, bug sumo, the kite and diary menus (`research/text-outside-events.md`); keyed by the extract's `<file>@<offset>.<item>` ids | PLAN `TRN-09`; `./make.sh packet --arrays` makes its packet, and `boku lint` says which lines the build cannot place |
 
 ## shared.txt
 
 Not every line a player reads on a given day has that day's id. The bath, the fridge, the
 bookshelf, the dinner quiz and its answer, the night rule on the path, the diary at bedtime and
-the sixty-odd "examine" descriptions around the house have no day at all, and a player who
-finishes day 1 in the game meets them in Japanese unless they are translated with it. So
-[shared.txt](shared.txt) holds every day-independent event that day 1 can reach — an event with
-no day in its id, sitting in a map variant loaded on August 1 (`EVVER.BIN`), with an entry
-condition day 1 satisfies, at a place the day-1 flow can walk to (the house and grounds for
-certain; whether day 1 can leave the gate is untested, the header sets out the evidence each
-way, and the nearest outdoor one-liners are translated on the assumption that it can). It is
-written in the day files' format with two
-additions the day files did not need: a `[SEL]` whose first row is the question lists the
-question as the first option, and a message with no speaker on the disc — the examine
-descriptions, "It's locked." — carries `(unlabelled)` in the speaker column. Later days reach
-more day-independent events; they go into this file, not into a day file, so that each event
-is translated once — the breakfast chorus (E0006/E0007), the pots drying behind the workshop
-(E8054), the beehive beats (E4038/E4039), the beetle trees (E8063) and the kite menu on the
-hill (E4026) are there from days 2–7, each with the header stating when it can fire.
+the sixty-odd "examine" descriptions around the house have no day at all. [shared.txt](shared.txt)
+holds every such event — no day in its id, or a day its entry condition ignores — so that each
+is translated once, however many days reach it; `boku save-event` sends a part with no day
+there. Its header says what it holds and why.
 
 ## Lessons from the pilot
 

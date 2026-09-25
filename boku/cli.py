@@ -209,8 +209,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="DIR",
         help=(
             "directory of translation files to apply; with none, only the executable "
-            "patches are written. The committed format is PLAN PIPE-02 and is not settled "
-            "-- the reader here is the provisional one for translation/samples/"
+            "patches are written. The format is translation/days/README.md's (PLAN PIPE-02)"
         ),
     )
     builder.add_argument(
@@ -319,7 +318,7 @@ def build_parser() -> argparse.ArgumentParser:
         "patch",
         help="emit the release patches from an original and a built image",
         description=(
-            "Write an xdelta (canonical) and a PPF (Mode One and DuckStation) turning "
+            "Write an xdelta (canonical) and a PPF (DuckStation and the common patchers) turning "
             "the original image into the built one, plus a PATCH.json and a README "
             "stating size, CRC32, MD5 and SHA-1 of both sides. Neither image is written."
         ),

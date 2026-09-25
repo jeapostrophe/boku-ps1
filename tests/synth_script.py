@@ -389,7 +389,7 @@ class SynthStore:
 
 
 def write_translation(path: Path, rows: list[tuple[str, str, str]], header: str = "") -> Path:
-    """A translation file in the provisional format: `id <TAB> speaker <TAB> English`."""
+    """A translation file in the day-file format: `id <TAB> speaker <TAB> English`."""
     lines = [f"# {header}"] if header else []
     lines += ["\t".join(row) for row in rows]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

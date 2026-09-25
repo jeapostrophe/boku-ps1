@@ -120,7 +120,7 @@ class Store:
 
         `lines.jsonl` holds the ids with text on the disc; a voice-only line has none and
         is named only by a node of its event's flow graph, and the sample format lists it
-        so the ids line up (`translation/samples/README.md`).
+        so the ids line up (`translation/days/README.md` § Format).
         """
         ids = set(self.lines)
         for scene in self.scenes:

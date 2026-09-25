@@ -54,9 +54,9 @@ usage: ./make.sh <verb> [arguments]
                                 container a grown line moves
                                 (./make.sh build --help for the switches)
   build-days [arguments]        the whole thing: assemble the TXT-05 renderer into
-                                build/vwf/edits.json, then build the reviewed
-                                translation (days 1-7 + shared.txt) and the English
-                                textures (translation/textures/) through it into
+                                build/vwf/edits.json, then build the translation
+                                (translation/days/) and the English textures
+                                (translation/textures/) through it into
                                 build/days/ -- proportional English, every line laid
                                 out in the dialogue band's pixels, containers grown
                                 and members relocated where a line outgrew its

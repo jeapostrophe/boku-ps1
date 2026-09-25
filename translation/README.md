@@ -2,7 +2,8 @@
 
 The English, and everything a translator reads before writing it. Licence: CC BY-SA 4.0
 (`LICENSE-translation`). The day files and their format are [days/README.md](days/README.md);
-the provisional sample format is [samples/README.md](samples/README.md); the voice and
+the three sample scenes the style rulings were read from, since folded into the day files, are
+[samples/README.md](samples/README.md); the voice and
 register are [style-guide.md](style-guide.md) and [bible.md](bible.md); names are
 [glossary.md](glossary.md); open questions for Jay are [QUESTIONS.md](QUESTIONS.md); speech
 with no text on the disc is [voice-only.md](voice-only.md).
@@ -58,8 +59,9 @@ The orchestrator (a script, or a parent agent that never translates) drives the 
    now that it has seen the whole game; for each part it revises, it answers with the whole
    block again and the same `save-event` command replaces the old one.
 
-Days 1–7, `shared.txt` and `arrays.txt` already hold reviewed English, and a whole-game run
-replaces those blocks as it reaches them: tag the tree first, as `TRN-08` did, and compare.
+Every unit already holds reviewed English ([status.tsv](#statustsv)), and a new whole-game run
+replaces each block as it reaches it: tag the tree first, as `TRN-10` did
+(`pre-trn10-2026-09-23`), and compare.
 Every answer still goes through the independent review against the Japanese
 (`./make.sh packet --like FILE --for-review`) before it counts as reviewed.
 
@@ -70,8 +72,8 @@ cue per row, tab-separated:
 
 ```
 movie <TAB> first frame <TAB> last frame <TAB> English [<TAB> options]
-M27	120	300	Far away, I could see the village | of Sagi-no-sato at the foot of the mountain...
-M28	1044	1158	The flowers, too, that bloom across | this wide meadow,	panel
+M27	1105	1213	『The heat of that day was as if all the workings | of life on earth had become tangled and snarled,
+M27	3034	3258	All the flowers that bloom across | this wide meadow,	panel
 ```
 
 * **movie** is the file the movie plays — the `file` column of
@@ -128,8 +130,8 @@ right of Boku's portrait — `boku.clip_subs.clip_box`). A day file's row, keyed
 XCH.34	Narrator	And so the first day of that summer vacation came to an end.
 ```
 
-* **id** is `XCH.` and the clip's two-digit number. Every worded clip already has a row with
-  no English; a row without English is listed so the ids line up and draws nothing.
+* **id** is `XCH.` and the clip's two-digit number. Every worded clip has a row; a row
+  without English draws nothing.
 * **speaker** is for the reader of the file; it is not drawn.
 * **English** is drawn in the dialogue band while the clip plays, with no speaker label, in
   pages split by ` // ` wherever you put them; each page stays up for its share of the clip,
@@ -137,7 +139,7 @@ XCH.34	Narrator	And so the first day of that summer vacation came to an end.
   seconds of narration, so give it as many pages as it needs.
 
 `./make.sh lint-translation` checks every row — a clip the table has, every page inside the
-band — and `tools/vwf/build_prototype.py` refuses a file it would fail.
+band — and `./make.sh build-days` refuses a file it would fail.
 
 ## status.tsv
 

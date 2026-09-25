@@ -801,7 +801,7 @@ def lay_out(
             select_type, variant = (int(part) for part in kind[3:].split("."))
             shape = selects.shape(select_type, variant)
             # A box that opens with a question spends its first lines on it, and the
-            # committed row lists the question first; the provisional loader has no field
+            # committed row lists the question first; the loader has no field
             # for that, so the split is made here with the lint's own rule rather than
             # with a second reading of the convention.
             prompts, options = entry.prompts, entry.options

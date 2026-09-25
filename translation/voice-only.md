@@ -9,8 +9,9 @@ what the sequences are. Style: the narrator's voice is style guide § 6; everyth
 follows the speaker's register in the bible.
 
 There is no text layer for any of these — no message on the disc, no line id. Ids below are
-the events that *surround* them; the translation files will be keyed by movie or clip and
-time, a format `PIPE-01` does not yet define. Transcribing needs a listener (or an ASR pass
+the events that *surround* them; their English is keyed by movie and frame
+(`movies.txt`), by clip (`clips.txt`) or by the event's `(voice only)` row
+(`translation/README.md`). Transcribing needs a listener (or an ASR pass
 checked by one).
 
 ## The frame of the game — first-class
