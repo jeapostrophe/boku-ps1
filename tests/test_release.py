@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from boku import REPO_ROOT
-from boku.build import CUE_NAME, CUE_TEXT, IMAGE_NAME
+from boku.build import CUE_NAME, CUE_TEXT, IMAGE_NAME, cue_text
 from boku.build import MANIFEST_NAME as BUILD_MANIFEST
 from boku.coverage import (
     BUILD_ID_NAME,
@@ -29,14 +29,25 @@ from boku.coverage import (
     SOURCE_SHA1_FIELD,
     WRITTEN_FIELD,
 )
-from boku.patchfile import MANIFEST_NAME, hashes_of, patch_stem
+from boku.patchfile import (
+    _CONVERT,
+    _CONVERT_PPF,
+    MANIFEST_NAME,
+    apply_patch,
+    hashes_of,
+    patch_stem,
+)
 from boku.release import (
     BASE_NAME,
     BUILD_ARGS_NAME,
     CREDITS_HEADING,
     HOW_MADE_HEADING,
-    NOTES_NAME,
+    MAIN,
+    NOTES_PATH,
     NOTES_TEMPLATE,
+    PPF,
+    PPF_NOTES_TEMPLATE,
+    RELEASE_FORMAT,
     RELEASE_MANIFEST,
     STATUS_PATH,
     ReleaseRefused,
@@ -50,7 +61,7 @@ from boku.release import (
 )
 from tests.test_patchfile import IMAGE_SIZE, needs_xdelta3
 
-TRACKED_INPUTS = ("README.md", NOTES_TEMPLATE, STATUS_PATH)
+TRACKED_INPUTS = ("README.md", NOTES_TEMPLATE, PPF_NOTES_TEMPLATE, STATUS_PATH)
 #: The bare repository standing in for GitHub, beside `repo` in the test's tmp_path.
 REMOTE_NAME = "github.git"
 
@@ -143,13 +154,16 @@ def make_build(repo: Path, base: Path, built: Path, *, dirty: bool = False, args
     return build
 
 
-def assemble(repo: Path, base: Path, build: Path, base_sha1: str | None = None) -> Path:
+def assemble(
+    repo: Path, base: Path, build: Path, base_sha1: str | None = None, *, ppf: bool = True
+) -> Path:
     return assemble_release(
         repo=repo,
         base=base,
         build_dir=build,
         out_root=repo / "release",
         base_sha1=base_sha1 or hashes_of(base).sha1,
+        ppf=ppf,
     )
 
 
@@ -252,25 +266,36 @@ def test_a_missing_readme_section_is_refused():
 # Assembling
 
 
+def unzip(bundle: Path) -> tuple[str, dict[str, bytes]]:
+    """A zip's one top-level folder, and its members by file name."""
+    with zipfile.ZipFile(bundle) as archive:
+        (folder,) = {str(Path(name).parent) for name in archive.namelist()}
+        return folder, {Path(name).name: archive.read(name) for name in archive.namelist()}
+
+
+def contract(directory: Path) -> dict:
+    return json.loads((directory / MANIFEST_NAME).read_text())
+
+
 @needs_xdelta3
-def test_a_release_holds_both_patches_the_cue_and_the_notes(repo, images):
+def test_the_main_download_holds_the_xdelta_the_cue_and_the_notes(repo, images):
     base, built = images
     git(repo, "tag", "v0.2.0")
     out = assemble(repo, base, make_build(repo, base, built))
 
     assert out == (repo / "release" / "v0.2.0").resolve()
-    patch = json.loads((out / MANIFEST_NAME).read_text())
+    main = out / MAIN.directory
+    patch = contract(main)
     stem = patch_stem("0.2.0")
-    assert {entry["file"] for entry in patch["patches"]} == {f"{stem}.xdelta", f"{stem}.ppf"}
+    assert [entry["file"] for entry in patch["patches"]] == [f"{stem}.xdelta"]
     assert patch["original"]["name"] == BASE_NAME
     assert patch["original"]["sha1"] == hashes_of(base).sha1
     assert patch["result"]["sha1"] == hashes_of(built).sha1
 
-    cue = (out / f"{stem}.cue").read_text()
-    assert f'FILE "{patch["result"]["name"]}" BINARY' in cue
-    assert "TRACK 01 MODE2/2352" in cue
+    cue = (main / f"{stem}.cue").read_text()
+    assert cue == cue_text(patch["result"]["name"])
 
-    notes = (out / NOTES_NAME).read_text()
+    notes = (out / NOTES_PATH).read_text()
     for side in ("original", "result"):
         for key in ("crc32", "md5", "sha1"):
             assert patch[side][key] in notes
@@ -283,26 +308,89 @@ def test_a_release_holds_both_patches_the_cue_and_the_notes(repo, images):
 
 
 @needs_xdelta3
-def test_the_bundle_is_the_one_asset_and_holds_every_file_under_its_real_name(repo, images):
-    """GitHub renames an uploaded asset whose name has spaces or brackets, and PATCH.json,
-    README.txt and the .cue name the files -- so they travel inside one archive."""
+def test_the_ppf_is_not_in_the_main_download_and_its_contract_does_not_describe_it(repo, images):
+    """Jay, 2026-09-25: the PPF is a different download, so that it can be withdrawn."""
     base, built = images
     git(repo, "tag", "v0.2.0")
     out = assemble(repo, base, make_build(repo, base, built))
     manifest = json.loads((out / RELEASE_MANIFEST).read_text())
+    _, main = unzip(out / manifest["assets"][0]["file"])
+    assert not [name for name in main if name.endswith(".ppf")]
+    for name in (MANIFEST_NAME, "README.txt"):
+        assert b"ppf" not in main[name].lower(), f"{name} describes a PPF it does not carry"
 
-    (asset,) = manifest["assets"]
-    assert all(c.isalnum() or c in "-._" for c in asset["file"])
-    assert asset["sha1"] == hashes_of(out / asset["file"]).sha1
+
+@needs_xdelta3
+def test_the_ppf_download_stands_alone(repo, images, tmp_path):
+    """Its own PATCH.json, README and cue: extracted by itself, `boku apply-patch` checks
+    it against full SHA-1s (not the PPF's 8-digit fingerprint) and gives the build."""
+    base, built = images
+    git(repo, "tag", "v0.2.0")
+    out = assemble(repo, base, make_build(repo, base, built))
+    manifest = json.loads((out / RELEASE_MANIFEST).read_text())
+    assert [asset["file"] for asset in manifest["assets"]] == [
+        MAIN.asset("0.2.0"),
+        PPF.asset("0.2.0"),
+    ]
+    folder, members = unzip(out / manifest["assets"][1]["file"])
     stem = patch_stem("0.2.0")
-    with zipfile.ZipFile(out / asset["file"]) as bundle:
-        members = {Path(name).name: bundle.read(name) for name in bundle.namelist()}
-        assert {Path(name).parent.name for name in bundle.namelist()} == {stem}
-    shipped = {p.name for p in out.iterdir()} - {RELEASE_MANIFEST, asset["file"]}
-    assert set(members) == shipped
+    assert set(members) == {f"{stem}.ppf", MANIFEST_NAME, "README.txt", f"{stem}.cue"}
+    # Extracted side by side, the two downloads must not overwrite each other's PATCH.json.
+    assert folder != unzip(out / manifest["assets"][0]["file"])[0]
+    assert b"DuckStation" in members["README.txt"]
+    alone = tmp_path / "alone"
+    alone.mkdir()
     for name, data in members.items():
-        assert data == (out / name).read_bytes()
-    assert not any(name.endswith((".img", ".bin", ".iso", ".chd")) for name in members)
+        (alone / name).write_bytes(data)
+    # The contract must name the file itself: apply_patch honours a PATCH.json only for a
+    # patch it lists, and otherwise falls back to the 8-digit fingerprint.
+    assert [entry["file"] for entry in contract(alone)["patches"]] == [f"{stem}.ppf"]
+    readme = members["README.txt"].decode()
+    assert _CONVERT_PPF in readme and _CONVERT not in readme  # a .chd works for DuckStation
+    result = apply_patch(base, alone / f"{stem}.ppf", tmp_path / "patched.img")
+    assert result.sha1 == hashes_of(built).sha1
+
+
+@needs_xdelta3
+def test_every_download_is_its_directory_under_its_real_names(repo, images):
+    """GitHub renames an uploaded asset whose name has spaces or brackets, and PATCH.json,
+    README.txt and the .cue name the files -- so they travel inside archives."""
+    base, built = images
+    git(repo, "tag", "v0.2.0")
+    out = assemble(repo, base, make_build(repo, base, built))
+    manifest = json.loads((out / RELEASE_MANIFEST).read_text())
+    for asset, directory in zip(manifest["assets"], (MAIN.directory, PPF.directory), strict=True):
+        assert all(c.isalnum() or c in "-._" for c in asset["file"])
+        assert asset["sha1"] == hashes_of(out / asset["file"]).sha1
+        _, members = unzip(out / asset["file"])
+        assert members == {p.name: p.read_bytes() for p in (out / directory).iterdir()}
+        assert not any(name.endswith((".img", ".bin", ".iso", ".chd")) for name in members)
+
+
+@needs_xdelta3
+def test_no_ppf_releases_the_main_download_alone_and_never_builds_a_ppf(repo, images, monkeypatch):
+    """The mode that ships without the PPF cannot be stopped by the PPF writer."""
+
+    def refuse(*args, **kwargs):
+        raise AssertionError("make_ppf ran for a --no-ppf release")
+
+    monkeypatch.setattr("boku.patchfile.make_ppf", refuse)
+    base, built = images
+    git(repo, "tag", "v0.2.0")
+    out = assemble(repo, base, make_build(repo, base, built), ppf=False)
+    manifest = json.loads((out / RELEASE_MANIFEST).read_text())
+    assert [asset["file"] for asset in manifest["assets"]] == [MAIN.asset("0.2.0")]
+    assert not (out / PPF.directory).exists()
+    assert ".ppf" not in (out / NOTES_PATH).read_text()
+
+
+@needs_xdelta3
+def test_the_notes_offer_the_ppf_when_it_ships(repo, images):
+    base, built = images
+    git(repo, "tag", "v0.2.0")
+    notes = (assemble(repo, base, make_build(repo, base, built)) / NOTES_PATH).read_text()
+    assert PPF.asset("0.2.0") in notes
+    assert f"{patch_stem('0.2.0')}.ppf" in notes
 
 
 @needs_xdelta3
@@ -310,10 +398,12 @@ def test_the_same_commit_gives_the_same_release_bytes(repo, images):
     base, built = images
     git(repo, "tag", "v0.2.0")
     build = make_build(repo, base, built)
-    first = assemble(repo, base, build)
-    before = {p.name: p.read_bytes() for p in first.iterdir()}
-    second = assemble(repo, base, build)
-    assert {p.name: p.read_bytes() for p in second.iterdir()} == before
+
+    def contents(out: Path) -> dict[str, bytes]:
+        return {str(p.relative_to(out)): p.read_bytes() for p in out.rglob("*") if p.is_file()}
+
+    before = contents(assemble(repo, base, build))
+    assert contents(assemble(repo, base, build)) == before
 
 
 @needs_xdelta3
@@ -389,6 +479,30 @@ def test_a_patch_that_does_not_reproduce_the_build_is_not_released(repo, images,
     assert not (repo / "release" / "v0.2.0").exists()
 
 
+@needs_xdelta3
+def test_a_ppf_that_does_not_reproduce_the_build_is_not_released(repo, images, monkeypatch):
+    """The xdelta is right and the PPF alone is wrong: the check must run on the PPF's own
+    download too, not only on the main one."""
+    import boku.patchfile as patchfile
+
+    base, built = images
+    git(repo, "tag", "v0.2.0")
+    build = make_build(repo, base, built)
+    real = patchfile.build_patches
+
+    def broken_ppf(original, modified, out_dir, **kwargs):
+        made = real(original, modified, out_dir, **kwargs)
+        data = bytearray(made.ppf_path.read_bytes())
+        data[-1] ^= 0xFF  # the last byte of the last record's data
+        made.ppf_path.write_bytes(bytes(data))
+        return made
+
+    monkeypatch.setattr("boku.release.build_patches", broken_ppf)
+    with pytest.raises(ReleaseRefused, match=r"\.ppf does not"):
+        assemble(repo, base, build)
+    assert not (repo / "release" / "v0.2.0").exists()
+
+
 # ---------------------------------------------------------------------------
 # Publishing
 
@@ -437,7 +551,7 @@ def test_without_yes_nothing_is_posted(tagged_release, repo, gh_stub, capsys):
     assert not gh_stub.exists()
     said = capsys.readouterr().out
     assert "gh release create v0.2.0" in said
-    assert "nothing was posted" in said
+    assert "nothing was changed on GitHub" in said
 
 
 def test_with_yes_gh_is_given_the_tag_the_bundle_and_the_notes(tagged_release, repo, gh_stub):
@@ -449,13 +563,15 @@ def test_with_yes_gh_is_given_the_tag_the_bundle_and_the_notes(tagged_release, r
     )
     assert called == expected[1:]
     assert called[:3] == ["release", "create", "v0.2.0"]
-    assert str(tagged_release / manifest["assets"][0]["file"]) in called
+    for asset in manifest["assets"]:
+        assert str(tagged_release / asset["file"]) in called
+    assert len(manifest["assets"]) == 2
     assert "--verify-tag" in called and "--draft" in called
-    assert called[called.index("--notes-file") + 1] == str(tagged_release / NOTES_NAME)
+    assert called[called.index("--notes-file") + 1] == str(tagged_release / NOTES_PATH)
     assert called[called.index("--repo") + 1] == "owner/boku-ps1"
 
 
-def test_only_the_bundle_is_uploaded_whatever_else_is_in_the_directory(
+def test_only_the_bundles_are_uploaded_whatever_else_is_in_the_directory(
     tagged_release, repo, gh_stub
 ):
     (tagged_release / "stray.img").write_bytes(b"\0" * 2352)
@@ -473,9 +589,10 @@ def test_a_snapshot_is_not_published(repo, images, gh_stub):
     assert not gh_stub.exists()
 
 
-def test_a_bundle_changed_after_the_build_is_not_published(tagged_release, repo, gh_stub):
+@pytest.mark.parametrize("which", [0, 1])
+def test_a_bundle_changed_after_the_build_is_not_published(tagged_release, repo, gh_stub, which):
     manifest = json.loads((tagged_release / RELEASE_MANIFEST).read_text())
-    with (tagged_release / manifest["assets"][0]["file"]).open("ab") as bundle:
+    with (tagged_release / manifest["assets"][which]["file"]).open("ab") as bundle:
         bundle.write(b"!")
     assert publish(tagged_release, repo, yes=True) == 1
     assert not gh_stub.exists()
@@ -581,3 +698,42 @@ def test_release_preflight_through_make_sh_builds_nothing(tmp_path, monkeypatch)
 def test_the_build_args_file_is_the_one_make_sh_writes():
     script = (REPO_ROOT / "make.sh").read_text(encoding="utf-8")
     assert BUILD_ARGS_NAME in script, f"make.sh no longer writes {BUILD_ARGS_NAME}"
+
+
+@needs_xdelta3
+def test_withdrawing_the_ppf_deletes_its_asset_and_replaces_the_notes(
+    repo, images, github_remote, gh_stub
+):
+    """The tag cut again with --no-ppf; the stub records both gh calls, one argument a line."""
+    base, built = images
+    git(repo, "tag", "-a", "-m", "v0.2.0", "v0.2.0")
+    git(repo, "push", "-q", str(github_remote), "v0.2.0")
+    out = assemble(repo, base, make_build(repo, base, built), ppf=False)
+    assert publish(out, repo, yes=True, withdraw_ppf=True) == 0
+    called = gh_stub.read_text().splitlines()
+    edit = called.index("edit")
+    assert called[:4] == ["release", "delete-asset", "v0.2.0", PPF.asset("0.2.0")]
+    assert "--yes" in called[:edit]
+    assert called[edit - 1 : edit + 2] == ["release", "edit", "v0.2.0"]
+    assert called[called.index("--notes-file") + 1] == str(out / NOTES_PATH)
+    assert "create" not in called
+
+
+def test_withdrawing_from_a_release_that_still_carries_the_ppf_is_refused(
+    tagged_release, repo, gh_stub, capsys
+):
+    assert publish(tagged_release, repo, yes=True, withdraw_ppf=True) == 1
+    assert "--no-ppf" in capsys.readouterr().out
+    assert not gh_stub.exists()
+
+
+def test_a_release_of_the_one_zip_layout_is_refused_as_an_older_format(
+    tagged_release, repo, gh_stub, capsys
+):
+    path = tagged_release / RELEASE_MANIFEST
+    manifest = json.loads(path.read_text())
+    # 1 is the one-zip layout of the first release machinery, its notes not at NOTES_PATH.
+    path.write_text(json.dumps({**manifest, "format": 1}))
+    assert publish(tagged_release, repo, yes=True) == 1
+    assert f"format-{RELEASE_FORMAT}" in capsys.readouterr().out
+    assert not gh_stub.exists()

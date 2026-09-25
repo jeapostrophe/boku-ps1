@@ -66,6 +66,9 @@ TEAM = "boku-ps1"
 MANIFEST_NAME = "PATCH.json"
 README_NAME = "README.txt"
 MANIFEST_FORMAT = 1
+#: The `format` of each entry of `PATCH.json`'s `patches`.
+FORMAT_XDELTA = "xdelta3"
+FORMAT_PPF = "ppf3"
 
 DEFAULT_OUT_DIR = Path("build/patch")
 
@@ -116,7 +119,7 @@ class Hashes:
 @dataclass(frozen=True)
 class PatchSet:
     out_dir: Path
-    ppf_path: Path
+    ppf_path: Path | None
     xdelta_path: Path
     manifest_path: Path
     readme_path: Path
@@ -283,11 +286,13 @@ def build_patches(
     *,
     version: str | None = None,
     original_name: str | None = None,
+    ppf: bool = True,
 ) -> PatchSet:
     """Write both patches, the manifest and the README into `out_dir`.
 
     `original_name` is what the instructions call the base (default: `original`'s own
     name) -- a release names the file its extraction step writes, not `image.img`.
+    `ppf=False` writes the xdelta alone (`boku release --no-ppf`).
 
     Built in a staging directory and moved into place at the end, the way `boku trial`
     builds: a failure leaves the previous complete release or nothing, never this run's
@@ -307,18 +312,19 @@ def build_patches(
     stem = patch_stem(version)
 
     with staged(out_dir, suffix="building") as stage:
-        ppf_path = stage / f"{stem}.ppf"
-        try:
-            ppf_path.write_bytes(
-                make_ppf(
-                    original,
-                    modified,
-                    ppf_description(version, original_hashes.sha1, result_hashes.sha1),
+        ppf_path = stage / f"{stem}.ppf" if ppf else None
+        if ppf_path is not None:
+            try:
+                ppf_path.write_bytes(
+                    make_ppf(
+                        original,
+                        modified,
+                        ppf_description(version, original_hashes.sha1, result_hashes.sha1),
+                    )
                 )
-            )
-            _prove_ppf(original, ppf_path, result_hashes.sha1, stage)
-        except PpfError as error:
-            raise PatchError(str(error)) from error
+                _prove_ppf(original, ppf_path, result_hashes.sha1, stage)
+            except PpfError as error:
+                raise PatchError(str(error)) from error
         xdelta_path = stage / f"{stem}.xdelta"
         make_xdelta(original, modified, xdelta_path, expected_sha1=result_hashes.sha1)
         manifest = _manifest(
@@ -334,12 +340,11 @@ def build_patches(
             ppf_path=ppf_path,
             xdelta_path=xdelta_path,
         )
-        (stage / MANIFEST_NAME).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-        (stage / README_NAME).write_text(_readme(manifest), encoding="utf-8")
+        write_contract(stage, manifest)
 
     return PatchSet(
         out_dir=out_dir,
-        ppf_path=out_dir / f"{stem}.ppf",
+        ppf_path=out_dir / f"{stem}.ppf" if ppf else None,
         xdelta_path=out_dir / f"{stem}.xdelta",
         manifest_path=out_dir / MANIFEST_NAME,
         readme_path=out_dir / README_NAME,
@@ -378,7 +383,7 @@ def _manifest(
     original_name: str,
     result: Hashes,
     result_name: str,
-    ppf_path: Path,
+    ppf_path: Path | None,
     xdelta_path: Path,
 ) -> dict:
     """Everything a person or a script needs, and nothing that changes between runs.
@@ -386,39 +391,102 @@ def _manifest(
     No timestamp on purpose: two builds of the same two images must produce the same
     bytes, or nobody can reproduce a release and check it against what we published.
     """
+    patches = [
+        {
+            "file": xdelta_path.name,
+            "format": FORMAT_XDELTA,
+            "size": xdelta_path.stat().st_size,
+            "sha1": hashes_of(xdelta_path).sha1,
+            "apply": f'xdelta3 -d -s "{original_name}" "{xdelta_path.name}" "{result_name}"',
+        }
+    ]
+    if ppf_path is not None:
+        patches.append(
+            {
+                "file": ppf_path.name,
+                "format": FORMAT_PPF,
+                "size": ppf_path.stat().st_size,
+                "sha1": hashes_of(ppf_path).sha1,
+                "apply": (
+                    f'boku apply-patch "{original_name}" "{ppf_path.name}" --out "{result_name}"'
+                ),
+            }
+        )
     return {
         "format": MANIFEST_FORMAT,
         "game": GAME_NAME,
         "tool": f"{TEAM} v{version}",
         "original": original.as_dict(original_name),
         "result": result.as_dict(result_name),
-        "patches": [
-            {
-                "file": xdelta_path.name,
-                "format": "xdelta3",
-                "size": xdelta_path.stat().st_size,
-                "sha1": hashes_of(xdelta_path).sha1,
-                "apply": f'xdelta3 -d -s "{original_name}" "{xdelta_path.name}" "{result_name}"',
-            },
-            {
-                "file": ppf_path.name,
-                "format": "ppf3",
-                "size": ppf_path.stat().st_size,
-                "sha1": hashes_of(ppf_path).sha1,
-                "apply": (
-                    f'boku apply-patch "{original_name}" "{ppf_path.name}" --out "{result_name}"'
-                ),
-            },
-        ],
+        "patches": patches,
     }
+
+
+def write_contract(directory: Path, manifest: dict, formats: set[str] | None = None) -> None:
+    """`PATCH.json` and `README.txt` into `directory`, for the patches of `formats` only.
+
+    A download that carries one patch must not describe the other: `apply_patch` honours
+    a manifest only for a patch it lists, and a README is followed literally.
+    """
+    if formats is not None:
+        manifest = {
+            **manifest,
+            "patches": [entry for entry in manifest["patches"] if entry["format"] in formats],
+        }
+    if not manifest["patches"]:
+        raise PatchError(f"no patch of formats {sorted(formats or ())} to describe")
+    (directory / MANIFEST_NAME).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (directory / README_NAME).write_text(_readme(manifest), encoding="utf-8")
+
+
+_CONVERT = """  Do not apply the patch to a .iso (2048-byte sectors) or to a .chd. Convert first
+  (chdman extractcd), hash the result, patch that.
+"""
+
+_CONVERT_PPF = """\
+  To write a patched file, do not apply the patch to a .iso (2048-byte sectors) or to a
+  .chd. Convert first (chdman extractcd), hash the result, patch that. DuckStation
+  (below) writes nothing, so a .chd works there -- but hash the extracted image once.
+"""
+
+_XDELTA_HOW = """  Or the standard tools. xdelta3 (the canonical patch):
+
+    {apply}
+
+  The patch is NOT armored: it carries no whole-file digest of your dump, so nothing
+  checks that the *right* file went in end to end -- the four hashes above are what does
+  that, which is why they lead. xdelta3 does still carry a 32-bit Adler-32 per window and
+  will stop with "the supplied source likely does not match" on a clearly wrong dump.
+  Applying needs an xdelta3 build with LZMA secondary compression, which every mainstream
+  one has; the browser patcher at RomPatcher.js does not, and cannot apply this patch.
+"""
+
+_PPF_HOW = """  The .ppf is {what}. DuckStation applies it at load time if you
+  drop it next to your disc image with the same base name (a .chd works) and tick
+  Settings -> CD-ROM -> Apply Image Patches, which is OFF by default. No other PPF applier
+  refuses a wrong image: the Icarus/Paradox one asks and carries on if you say yes, and
+  DuckStation does not check at all.
+"""
 
 
 def _readme(manifest: dict) -> str:
     original = manifest["original"]
     result = manifest["result"]
     by_format = {entry["format"]: entry for entry in manifest["patches"]}
-    xdelta = by_format["xdelta3"]
-    ppf = by_format["ppf3"]
+    xdelta = by_format.get(FORMAT_XDELTA)
+    ppf = by_format.get(FORMAT_PPF)
+    ours = xdelta or ppf
+    convert = _CONVERT if xdelta else _CONVERT_PPF
+    how = []
+    if xdelta:
+        how.append(_XDELTA_HOW.format(apply=xdelta["apply"]))
+    if ppf:
+        what = "a bonus for two specific tools" if xdelta else "for DuckStation and PPF tools"
+        how.append(_PPF_HOW.format(what=what))
+    listed = "".join(
+        f"  {entry['file']}\n    {entry['size']:,} bytes, sha1 {entry['sha1']}\n"
+        for entry in manifest["patches"]
+    )
 
     def block(side: dict) -> str:
         return (
@@ -437,39 +505,17 @@ WHAT YOU NEED
   you patch: if these four numbers do not match, the patch is not for your file.
 
 {block(original)}
-  Do not apply the patch to a .iso (2048-byte sectors) or to a .chd. Convert first
-  (chdman extractcd), hash the result, patch that.
-
+{convert}
 HOW TO APPLY IT
   Ours, which checks both hashes for you and never writes to your dump:
 
-    boku apply-patch "{original["name"]}" "{xdelta["file"]}" --out "{result["name"]}"
+    boku apply-patch "{original["name"]}" "{ours["file"]}" --out "{result["name"]}"
 
-  Or the standard tools. xdelta3 (the canonical patch):
-
-    {xdelta["apply"]}
-
-  The patch is NOT armored: it carries no whole-file digest of your dump, so nothing
-  checks that the *right* file went in end to end -- the four hashes above are what does
-  that, which is why they lead. xdelta3 does still carry a 32-bit Adler-32 per window and
-  will stop with "the supplied source likely does not match" on a clearly wrong dump.
-  Applying needs an xdelta3 build with LZMA secondary compression, which every mainstream
-  one has; the browser patcher at RomPatcher.js does not, and cannot apply this patch.
-
-  The .ppf is a bonus for two specific tools. DuckStation applies it at load time if you
-  drop it next to your disc image with the same base name (a .chd works) and tick
-  Settings -> CD-ROM -> Apply Image Patches, which is OFF by default. No other PPF applier
-  refuses a wrong image: the Icarus/Paradox one asks and carries on if you say yes, and
-  DuckStation does not check at all.
-
+{"\n".join(how)}
 WHAT YOU SHOULD GET
 {block(result)}
 THE PATCHES THEMSELVES
-  {xdelta["file"]}
-    {xdelta["size"]:,} bytes, sha1 {xdelta["sha1"]}
-  {ppf["file"]}
-    {ppf["size"]:,} bytes, sha1 {ppf["sha1"]}
-
+{listed}
 IF THE HASHES DO NOT MATCH
   You have a different dump. Nothing here is a fix for that: get a dump whose SHA-1 is
   the one stated above. This patch is free; it is never sold and never shipped with a

@@ -10,10 +10,9 @@ $coverage The voices stay Japanese on purpose: this is a translation with subtit
 
 ## Download
 
-`$bundle` holds everything, under the names the instructions below use:
+`$bundle` is the download, under the names the instructions below use:
 
 * `$xdelta` — the patch (xdelta3).
-* `$ppf` — the same patch as PPF, for DuckStation (below).
 * `$cue` — the cue sheet for the patched image.
 * `PATCH.json` and `README.txt` — both sides' hashes, for a script and for a person.
 
@@ -59,13 +58,7 @@ $original_table
 
 4. **Play**: put `$cue` beside `$result_name` and open the `.cue` in your emulator. You
    can recompress with `chdman createcd -i "$cue" -o "patched.chd"`.
-
-**DuckStation, without patching anything:** give `$ppf` your CHD's name with `.ppf` in
-place of `.chd` (`Boku.chd` → `Boku.ppf`), put it beside the CHD, and tick *Settings →
-CD-ROM → Apply Image Patches*, which is off by default. DuckStation checks nothing, and the
-hashes above are of the extracted image, not the CHD — extract it once (steps 1 and 2) to
-check your dump.
-
+$ppf_section
 ## What you should get
 
 $result_table

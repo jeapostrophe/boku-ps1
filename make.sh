@@ -72,14 +72,16 @@ usage: ./make.sh <verb> [arguments]
                                 and pin its SHA-1 in one/index/boku.sha1; needs chdman
                                 (./make.sh export-to-mode-one --help for the switches)
   release [arguments]           cut a release of HEAD: refuse anything uncommitted, run
-                                build-days, then write both patches against the Redump
-                                base, the .cue, the notes and the zip into
-                                release/v<version>/ (v<version> is HEAD's tag, else a
-                                snapshot named by git describe) and apply each patch back
+                                build-days, then write the patches against the Redump
+                                base, the .cue and the notes into release/v<version>/
+                                (v<version> is HEAD's tag, else a snapshot named by git
+                                describe) -- the xdelta in one zip, the PPF in its own
+                                (--no-ppf: no PPF) -- and apply each patch back
                                 (uv run boku release --help)
-  publish-release DIR [--yes]   print the gh release create line that posts DIR's zip and
+  publish-release DIR [--yes]   print the gh release create line that posts DIR's zips and
                                 notes under its (already pushed) tag; post only with --yes
-                                (--draft, --prerelease, --repo OWNER/REPO)
+                                (--draft, --prerelease, --repo OWNER/REPO; --withdraw-ppf
+                                takes the PPF off a posted release)
   packet [arguments]            assemble a translator packet into work/packets/<unit>/:
                                 system.md (format, story bible, style guide, glossary,
                                 checklist -- each whole) given once, one <EVENT>.md per

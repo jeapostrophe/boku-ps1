@@ -416,17 +416,33 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="DIR",
         help=f"where release/v<version>/ goes (default: {RELEASE_ROOT}/)",
     )
+    release.add_argument(
+        "--no-ppf",
+        dest="ppf",
+        action="store_false",
+        help="no PPF download and no PPF section in the notes (boku.release says why)",
+    )
     release.set_defaults(
-        run=lambda args: main_release(REPO_ROOT, args.base, args.build, args.out, args.preflight)
+        run=lambda args: main_release(
+            REPO_ROOT, args.base, args.build, args.out, args.preflight, args.ppf
+        )
     )
 
     publish = subcommands.add_parser(
         "publish-release",
         help="post a release/v<version>/ directory as a GitHub Release with gh",
         description=(
-            "PLAN REL-04: print the gh release create line that posts the directory's zip "
+            "PLAN REL-04: print the gh release create line that posts the directory's zips "
             "with its RELEASE-NOTES.md, under its version tag (which must already be pushed); "
             "run it only with --yes. A snapshot, a moved tag or a changed file is refused."
+        ),
+    )
+    publish.add_argument(
+        "--withdraw-ppf",
+        action="store_true",
+        help=(
+            "instead take the PPF off the posted release: DIR is that tag cut again with "
+            "release --no-ppf (boku.release says how)"
         ),
     )
     publish.add_argument("release_dir", type=Path, metavar="DIR", help="release/v<version>")
@@ -446,6 +462,7 @@ def build_parser() -> argparse.ArgumentParser:
             prerelease=args.prerelease,
             github=args.repo,
             git_repo=REPO_ROOT,
+            withdraw_ppf=args.withdraw_ppf,
         )
     )
 

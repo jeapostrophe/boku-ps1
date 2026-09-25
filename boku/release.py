@@ -3,23 +3,32 @@ r"""`REL-04`: cut a release from a clean commit, and post it with `gh`.
 `./make.sh release` refuses a tree with anything uncommitted, builds the days image, and
 then `assemble_release` turns that build into `release/v<version>/`:
 
-* the two patches, `PATCH.json` and `README.txt` exactly as `boku patch` writes them
-  (`boku.patchfile`, `PIPE-05`), naming the base as the file the instructions tell a
-  player to extract (`BASE_NAME`);
-* a `.cue` for the patched image under its release name;
-* `RELEASE-NOTES.md`, the GitHub release page: the template `boku/release-notes.md` filled
-  from `PATCH.json`, the build's manifest, `translation/status.tsv` and two sections of
-  `README.md` quoted whole (`HOW_MADE_HEADING`, `CREDITS_HEADING`) -- one home for each;
-* `boku-ps1-v<version>.zip`, all of the above under their real names. It is the only
-  asset uploaded: GitHub renames an asset whose name has spaces or brackets, and
-  `PATCH.json`, `README.txt` and the `.cue` all name the files, so loose uploads would
-  arrive with names nothing in them refers to;
-* `RELEASE.json`, what `boku publish-release` reads: version, tag, commit and the asset's
-  SHA-1.
+* `xdelta/`, the main download: the xdelta patch, its `PATCH.json` and `README.txt`
+  (`boku.patchfile.write_contract`, `PIPE-05`; the base named as the file the
+  instructions tell a player to extract, `BASE_NAME`), a `.cue` for the patched image,
+  and `RELEASE-NOTES.md` -- the GitHub release page: the template `boku/release-notes.md`
+  filled from `PATCH.json`, the build's manifest, `translation/status.tsv` and two
+  sections of `README.md` quoted whole (`HOW_MADE_HEADING`, `CREDITS_HEADING`);
+* `ppf/`, the optional download: the PPF, its own `PATCH.json` and `README.txt` (the
+  DuckStation route) and the `.cue`, so it applies correctly on its own;
+* one zip of each, `boku-ps1-v<version>.zip` and `boku-ps1-v<version>-ppf.zip`, the files
+  under their real names. The zips are the assets: GitHub renames an asset whose name has
+  spaces or brackets, and `PATCH.json`, `README.txt` and the `.cue` all name the files;
+* `RELEASE.json`, what `boku publish-release` reads: version, tag, commit and each
+  asset's SHA-1.
 
-Every patch is then applied to the base through `boku.patchfile.apply_patch` -- the path a
-player's `boku apply-patch` takes -- and the result must hash to the built image, or
-nothing is written.
+Every patch is then applied to the base through `boku.patchfile.apply_patch`, from its own
+directory -- the path a player's `boku apply-patch` takes, against the `PATCH.json` that
+travels with it -- and the result must hash to the built image, or nothing is written.
+
+The PPF is separate because it carries every changed byte in the clear, the game's own
+relocated data included (Jay, 2026-09-25: "if Millennium Kitchen wants we'll remove it").
+`./make.sh release --no-ppf` cuts a release without it: no PPF built, no `ppf/`, no PPF
+zip, no PPF section in the notes. To withdraw it from a release already posted, cut that
+tag again with `--no-ppf` and run `./make.sh publish-release release/v<version>
+--withdraw-ppf --yes`: it deletes the PPF asset and replaces the page's notes with the
+PPF-less ones. The main zip on GitHub is left as posted; its copy of the notes offers the
+PPF only "while the release page lists it", which stays true.
 
 The version is git's. A commit carrying one `v<version>` tag releases as that version; any
 other commit is a snapshot named by `git describe` (`0.2.0-3-gabcdef12`, or `0-g<sha>`
@@ -48,9 +57,10 @@ from boku.coverage import BUILD_ID_NAME, CoverageError, Manifest
 from boku.importer import IMAGE_SHA1, sha1_of
 from boku.packets import markdown_sections
 from boku.patchfile import (
+    FORMAT_PPF,
+    FORMAT_XDELTA,
     GAME_NAME,
     MANIFEST_NAME,
-    README_NAME,
     TEAM,
     PatchError,
     apply_patch,
@@ -58,6 +68,7 @@ from boku.patchfile import (
     hashes_of,
     patch_stem,
     ppf_description,
+    write_contract,
 )
 from boku.ppf import DESCRIPTION_SIZE
 from boku.reader import STATES, STATUS_FILE, ReaderRefused, build_revision, read_status
@@ -65,10 +76,34 @@ from boku.staging import StagingRefused, check_out_dir, staged
 
 RELEASE_ROOT = Path("release")
 RELEASE_MANIFEST = "RELEASE.json"
-RELEASE_FORMAT = 1
+#: 2: two downloads, each its own directory and zip (1 was one zip of everything).
+RELEASE_FORMAT = 2
 RELEASE_KEYS = ("version", "tag", "commit", "title", "assets")
 NOTES_NAME = "RELEASE-NOTES.md"
 NOTES_TEMPLATE = Path("boku/release-notes.md")
+PPF_NOTES_TEMPLATE = Path("boku/release-notes-ppf.md")
+
+
+@dataclass(frozen=True)
+class Download:
+    """One asset: its directory under release/v<version>/, the patch format it carries, and
+    what its zip's name and top folder add to the plain ones -- so that the two zips,
+    extracted side by side, do not overwrite each other's PATCH.json."""
+
+    directory: str
+    format: str
+    suffix: str
+
+    def asset(self, version: str) -> str:
+        """Letters, digits, '.' and '-' only, so GitHub keeps the name as is."""
+        return f"{TEAM}-{TAG_PREFIX}{version}{self.suffix}.zip"
+
+
+#: The main download first: it carries the notes.
+MAIN = Download("xdelta", FORMAT_XDELTA, "")
+PPF = Download("ppf", FORMAT_PPF, "-ppf")
+#: The release page, which also travels in the main download.
+NOTES_PATH = Path(MAIN.directory) / NOTES_NAME
 STATUS_PATH = STATUS_FILE.relative_to(REPO_ROOT)
 TAG_PREFIX = "v"
 HOW_MADE_HEADING = "How the translation is made"
@@ -238,8 +273,10 @@ def render_notes(
     status: dict,
     readme: str,
     cue_name: str,
-    bundle_name: str,
+    ppf_template: str,
 ) -> str:
+    """The release page. `patch` is the whole `PATCH.json`: the PPF's section is filled in
+    when it lists a PPF, and left out when it does not (`--no-ppf`)."""
     by_format = {entry["format"]: entry for entry in patch["patches"]}
     values = {
         "version": made.version,
@@ -247,13 +284,12 @@ def render_notes(
         "built_from": (
             f"tag `{made.tag}`" if made.tag else "an untagged commit: a snapshot, not a release"
         ),
-        "bundle": bundle_name,
+        "bundle": MAIN.asset(made.version),
         "base_name": patch["original"]["name"],
         "base_stem": Path(patch["original"]["name"]).stem,
         "result_name": patch["result"]["name"],
         "cue": cue_name,
-        "xdelta": by_format["xdelta3"]["file"],
-        "ppf": by_format["ppf3"]["file"],
+        "xdelta": by_format[MAIN.format]["file"],
         "base_sha1": patch["original"]["sha1"],
         "original_table": _hash_table(patch["original"]),
         "result_table": _hash_table(patch["result"]),
@@ -262,11 +298,19 @@ def render_notes(
         "how_made": readme_section(readme, HOW_MADE_HEADING),
         "credits": readme_section(readme, CREDITS_HEADING),
     }
+    ppf = by_format.get(PPF.format)
     try:
+        values["ppf_section"] = (
+            Template(ppf_template).substitute(
+                values, ppf=ppf["file"], ppf_bundle=PPF.asset(made.version)
+            )
+            if ppf
+            else ""
+        )
         return Template(template).substitute(values)
     except (KeyError, ValueError) as error:
         raise ReleaseRefused(
-            f"{NOTES_TEMPLATE} has a placeholder we do not fill: {error}"
+            f"{NOTES_TEMPLATE} or {PPF_NOTES_TEMPLATE} has a placeholder we do not fill: {error}"
         ) from error
 
 
@@ -308,24 +352,27 @@ def _built_image(build_dir: Path, made: Revision, base_sha1: str) -> tuple[Path,
     return image, build_manifest
 
 
-def _bundle(stage: Path, names: list[str], bundle: Path, folder: str, stamp: int) -> None:
-    """A zip of `names` under `folder/`, byte-identical for the same files and commit time."""
+def _bundle(directory: Path, bundle: Path, folder: str, stamp: int) -> None:
+    """A zip of `directory`'s files under `folder/`, byte-identical for the same files and
+    commit time."""
     date_time = time.gmtime(max(stamp, 315532800))[:6]  # a zip date cannot precede 1980
     with zipfile.ZipFile(bundle, "w") as archive:
-        for name in sorted(names):
-            info = zipfile.ZipInfo(f"{folder}/{name}", date_time=date_time)
+        for path in sorted(directory.iterdir()):
+            info = zipfile.ZipInfo(f"{folder}/{path.name}", date_time=date_time)
             info.external_attr = 0o644 << 16
             info.compress_type = zipfile.ZIP_DEFLATED
-            archive.writestr(info, (stage / name).read_bytes(), compresslevel=9)
+            archive.writestr(info, path.read_bytes(), compresslevel=9)
 
 
-def _prove(stage: Path, base: Path, patch: dict, built_sha1: str, bundle: Path) -> None:
-    """Apply every patch the way a player's `boku apply-patch` does, and read the bundle back."""
-    produced = stage / ".release-proof.img"
+def _prove(directory: Path, base: Path, built_sha1: str, bundle: Path) -> None:
+    """Apply the download's patch as a player's `boku apply-patch` would -- against the
+    `PATCH.json` beside it, alone -- and read its zip back."""
+    produced = directory.parent / ".release-proof.img"
+    contract = json.loads((directory / MANIFEST_NAME).read_text(encoding="utf-8"))
     try:
-        for entry in patch["patches"]:
+        for entry in contract["patches"]:
             try:
-                result = apply_patch(base, stage / entry["file"], produced)
+                result = apply_patch(base, directory / entry["file"], produced)
             except PatchError as error:
                 raise ReleaseRefused(f"{entry['file']} does not apply: {error}") from error
             if result.sha1 != built_sha1:
@@ -348,8 +395,12 @@ def assemble_release(
     build_dir: Path,
     out_root: Path,
     base_sha1: str = IMAGE_SHA1,
+    ppf: bool = True,
 ) -> Path:
-    """Write `out_root/v<version>/` from HEAD's days build. Returns the directory."""
+    """Write `out_root/v<version>/` from HEAD's days build. Returns the directory.
+
+    `ppf=False` is `--no-ppf`: the release carries no PPF download and its notes no PPF
+    section."""
     require_clean_tree(repo)
     made = revision(repo)
     actual_base = sha1_of(base)
@@ -370,6 +421,7 @@ def assemble_release(
     except ReaderRefused as error:
         raise ReleaseRefused(str(error)) from error
     template = (repo / NOTES_TEMPLATE).read_text(encoding="utf-8")
+    ppf_template = (repo / PPF_NOTES_TEMPLATE).read_text(encoding="utf-8")
     readme = (repo / "README.md").read_text(encoding="utf-8")
 
     out_dir = out_root / f"{TAG_PREFIX}{made.version}"
@@ -378,15 +430,26 @@ def assemble_release(
     except StagingRefused as error:
         raise ReleaseRefused(str(error)) from error
     stem = patch_stem(made.version)
-    bundle_name = f"{TEAM}-{TAG_PREFIX}{made.version}.zip"
+    downloads = [MAIN, PPF] if ppf else [MAIN]
     with staged(out_dir, suffix="releasing") as stage:
+        patches = stage / ".patches"
         try:
-            build_patches(base, image, stage, version=made.version, original_name=BASE_NAME)
+            build_patches(
+                base, image, patches, version=made.version, original_name=BASE_NAME, ppf=ppf
+            )
         except PatchError as error:
             raise ReleaseRefused(str(error)) from error
-        patch = json.loads((stage / MANIFEST_NAME).read_text(encoding="utf-8"))
+        patch = json.loads((patches / MANIFEST_NAME).read_text(encoding="utf-8"))
         cue_name = f"{stem}.cue"
-        (stage / cue_name).write_text(cue_text(patch["result"]["name"]), encoding="utf-8")
+        by_format = {entry["format"]: entry["file"] for entry in patch["patches"]}
+        for download in downloads:
+            directory = stage / download.directory
+            directory.mkdir()
+            name = by_format[download.format]
+            (patches / name).rename(directory / name)
+            write_contract(directory, patch, {download.format})
+            (directory / cue_name).write_text(cue_text(patch["result"]["name"]), encoding="utf-8")
+        shutil.rmtree(patches)
         notes = render_notes(
             template,
             made=made,
@@ -395,15 +458,19 @@ def assemble_release(
             status=status,
             readme=readme,
             cue_name=cue_name,
-            bundle_name=bundle_name,
+            ppf_template=ppf_template,
         )
-        (stage / NOTES_NAME).write_text(notes, encoding="utf-8")
-        shipped = [entry["file"] for entry in patch["patches"]]
-        shipped += [MANIFEST_NAME, README_NAME, cue_name, NOTES_NAME]
-        bundle = stage / bundle_name
+        (stage / NOTES_PATH).write_text(notes, encoding="utf-8")
         commit_time = int(_git(repo, "show", "-s", "--format=%ct", made.commit))
-        _bundle(stage, shipped, bundle, stem, commit_time)
-        _prove(stage, base, patch, built_sha1, bundle)
+        assets = []
+        for download in downloads:
+            bundle = stage / download.asset(made.version)
+            directory = stage / download.directory
+            _bundle(directory, bundle, f"{stem}{download.suffix}", commit_time)
+            _prove(directory, base, built_sha1, bundle)
+            assets.append(
+                {"file": bundle.name, "size": bundle.stat().st_size, "sha1": sha1_of(bundle)}
+            )
         manifest = {
             "format": RELEASE_FORMAT,
             "version": made.version,
@@ -411,9 +478,7 @@ def assemble_release(
             "commit": made.commit,
             "build": build_manifest.build_id,
             "title": f"{GAME_NAME}, English v{made.version}",
-            "assets": [
-                {"file": bundle_name, "size": bundle.stat().st_size, "sha1": hashes_of(bundle).sha1}
-            ],
+            "assets": assets,
         }
         (stage / RELEASE_MANIFEST).write_text(
             json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
@@ -421,7 +486,9 @@ def assemble_release(
     return out_dir.resolve()
 
 
-def main_release(repo: Path, base: Path, build_dir: Path, out_root: Path, preflight: bool) -> int:
+def main_release(
+    repo: Path, base: Path, build_dir: Path, out_root: Path, preflight: bool, ppf: bool = True
+) -> int:
     try:
         if preflight:
             require_clean_tree(repo)
@@ -429,14 +496,17 @@ def main_release(repo: Path, base: Path, build_dir: Path, out_root: Path, prefli
             kind = f"tag {made.tag}" if made.tag else "a snapshot (no version tag on HEAD)"
             print(f"release v{made.version} of {made.commit[:8]}, {kind}")
             return 0
-        out = assemble_release(repo=repo, base=base, build_dir=build_dir, out_root=out_root)
+        out = assemble_release(
+            repo=repo, base=base, build_dir=build_dir, out_root=out_root, ppf=ppf
+        )
     except (ReleaseRefused, OSError, ValueError) as error:
         print(f"boku release: {error}")
         return 1
     manifest = json.loads((out / RELEASE_MANIFEST).read_text(encoding="utf-8"))
     print(f"wrote {out}/")
-    for path in sorted(out.iterdir()):
-        print(f"  {path.name}  {path.stat().st_size:,} bytes")
+    for path in sorted(out.rglob("*")):
+        if path.is_file():
+            print(f"  {path.relative_to(out)}  {path.stat().st_size:,} bytes")
     if manifest["tag"]:
         print(f"post it with: ./make.sh publish-release {out}")
     else:
@@ -456,7 +526,7 @@ def publish_command(
     command = ["gh", "release", "create", manifest["tag"]]
     command += [str(release_dir / asset["file"]) for asset in manifest["assets"]]
     command += ["--repo", github, "--verify-tag", "--title", manifest["title"]]
-    command += ["--notes-file", str(release_dir / NOTES_NAME)]
+    command += ["--notes-file", str(release_dir / NOTES_PATH)]
     if draft:
         command.append("--draft")
     if prerelease:
@@ -491,8 +561,8 @@ def _publishable(release_dir: Path, git_repo: Path) -> dict:
             f"tag {tag} is now {tagged[:8]}, and this release was built from "
             f"{manifest['commit'][:8]}; rebuild it"
         )
-    if not (release_dir / NOTES_NAME).is_file():
-        raise ReleaseRefused(f"{NOTES_NAME} is missing from {release_dir}")
+    if not (release_dir / NOTES_PATH).is_file():
+        raise ReleaseRefused(f"{NOTES_PATH} is missing from {release_dir}")
     for asset in manifest["assets"]:
         path = release_dir / asset["file"]
         if not path.is_file() or hashes_of(path).sha1 != asset["sha1"]:
@@ -511,13 +581,22 @@ def main_publish(
     github: str | None,
     git_repo: Path,
     remote: str | None = None,
+    withdraw_ppf: bool = False,
 ) -> int:
     """Say what would be posted; post it only with `--yes`.
 
+    `withdraw_ppf` instead takes the PPF off the posted release (the module docstring).
     `remote` is where the tag is looked up (default: the GitHub repository over https).
     """
     try:
         manifest = _publishable(release_dir, git_repo)
+        if withdraw_ppf and any(
+            asset["file"] == PPF.asset(manifest["version"]) for asset in manifest["assets"]
+        ):
+            raise ReleaseRefused(
+                f"{release_dir} still carries the PPF; cut it again with ./make.sh release "
+                f"--no-ppf, whose notes are the ones the page gets"
+            )
         github = github or github_repo(git_repo)
         if not github:
             raise ReleaseRefused(
@@ -539,19 +618,39 @@ def main_publish(
     except ReleaseRefused as error:
         print(f"boku publish-release: {error}")
         return 1
-    command = publish_command(release_dir, manifest, github, draft=draft, prerelease=prerelease)
-    visibility = "a draft" if draft else "public"
-    print(f"posting {tag} ({commit[:8]}) to {github}, {visibility}:")
-    for asset in manifest["assets"]:
-        print(f"  {asset['file']}  {asset['size']:,} bytes  sha1 {asset['sha1']}")
-    print(f"  notes: {release_dir / NOTES_NAME}")
+    if withdraw_ppf:
+        commands = withdraw_commands(release_dir, manifest, github)
+        print(f"withdrawing the PPF from {tag} on {github}, and replacing its notes with")
+    else:
+        commands = [
+            publish_command(release_dir, manifest, github, draft=draft, prerelease=prerelease)
+        ]
+        visibility = "a draft" if draft else "public"
+        print(f"posting {tag} ({commit[:8]}) to {github}, {visibility}:")
+        for asset in manifest["assets"]:
+            print(f"  {asset['file']}  {asset['size']:,} bytes  sha1 {asset['sha1']}")
+    print(f"  notes: {release_dir / NOTES_PATH}")
     if pushed is None:
         print(f"tag {tag} is not on {github} yet: git push origin {tag} before --yes")
-    print(shlex.join(command))
+    for command in commands:
+        print(shlex.join(command))
     if not yes:
-        print("dry run: nothing was posted. Add --yes to post it.")
+        print("dry run: nothing was changed on GitHub. Add --yes to do it.")
         return 0
-    return subprocess.run([gh, *command[1:]], check=False).returncode
+    for command in commands:
+        status = subprocess.run([gh, *command[1:]], check=False).returncode
+        if status:
+            return status
+    return 0
+
+
+def withdraw_commands(release_dir: Path, manifest: dict, github: str) -> list[list[str]]:
+    """Delete the posted PPF asset, then give the page the PPF-less notes."""
+    tag, asset, notes = manifest["tag"], PPF.asset(manifest["version"]), release_dir / NOTES_PATH
+    return [
+        ["gh", "release", "delete-asset", tag, asset, "--repo", github, "--yes"],
+        ["gh", "release", "edit", tag, "--repo", github, "--notes-file", str(notes)],
+    ]
 
 
 def remote_tag_commit(git_repo: Path, remote: str, tag: str) -> str | None:
