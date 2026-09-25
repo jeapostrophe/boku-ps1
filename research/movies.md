@@ -333,8 +333,8 @@ is milestone 1 as measured, with § 8's changes named where they apply.
 
 **Where the code is.** The island `0x80012E04…0x80013070` (`text-renderer.md` § 6 candidate
 2) held all three routines in milestone 1 — 620 of 620 bytes. Since § 8 it holds
-`movie_sub_frame_no`, `movie_sub_frame` and `movie_sub_blit` (612 of the 620 bytes since
-`FMV-10`'s shade path; the addresses are the
+`movie_sub_frame_no`, `movie_sub_frame` and `movie_sub_blit` (576 of the 620 bytes since
+`FMV-10`'s hatch path; the addresses are the
 build's, in `edits.json` → `movie_subtitles.islands`), and the loader is in the second
 island. The island is not assembled under `ORIGINAL` (dead retail code has no stock
 claim to check, and restating it would put 620 bytes of the executable in the repo). Its
@@ -360,8 +360,9 @@ run's 5575–5578, **22–25 frames (~0.4 s) later**; on Redux 11–12 vsyncs.
 **The blit.** For the frame number the hook holds, every cue in range, every line, every
 glyph whose 14 columns meet the slice's 16: rows `y − 1 …`, columns clipped to the slice,
 white where the glyph bit is set, else the renderer's dark shadow (0x18, 0x18, 0x14) where
-the outline bit is; a record whose byte 1 is k > 0 (the panel tile, § 11) is not walked but
-shaded, every byte of its columns >> k. `s0`–`s4` on the stack; `t`, `v`, `a` and `at` caller-saved, as
+the outline bit is; a record whose byte 1 is set (the panel tile, § 11) is not walked: its
+checkerboard is painted directly, the same pixels its outline mask names. `s0`–`s4` on the
+stack; `t`, `v`, `a` and `at` caller-saved, as
 `LoadImage` treats them from the same site. **Which frame the number names**, measured on
 Redux (`work/fmv04/patched-vwf-fmv04/dumps/k199.txt`): decoded frame k is header frame k + 1,
 and while its slices upload the hook's number is k + 1 for the first 18 and k + 2 for the
@@ -369,8 +370,9 @@ last two — the next header arrives mid-frame — so a cue's first and last fra
 slice boundary, 1/15 s early; for frames 60 and 400 all twenty slices saw one number. The
 gate predicts per slice from the number the hook recorded, so it is exact; a viewer cannot
 see it. Which slice first sees the next header depends on how long the blit takes: with
-`FMV-10`'s shaded panel it is slice 19 of frame 199, not 18. So the gate names a frame by
-its first slice's header, and allows only that header and the next across its slices.
+the shaded panel `FMV-10` tried first it was slice 19 of frame 199, not 18 (the hatch is back
+at 18). So the gate names a frame by its first slice's header, and allows only that header
+and the next across its slices.
 
 **Measured.** Redux, `tools/redux/movie-sub.lua` on the stock and the built image
 (`work/fmv04/stock/`, `work/fmv04/patched-vwf-fmv04/`, `redux.log` and `dumps/` in each):
@@ -630,27 +632,33 @@ vsync on Beetle through all of `M27` and `M28` from the days build, every header
 1-4239 and 1-4194 seen. `FMV-09` answered the skip with a `solid` flag and a fill without
 the mask test (`@@solid`, 6 instructions a pixel), which `FMV-10` replaced:
 
-**The see-through panel (`FMV-10`, 2026-09-24), measured.** Two were built
-(`boku.movie_block.PANEL_STYLES`, chosen by `build_prototype.py --movie-panel`):
+**The see-through panel (`FMV-10`, 2026-09-24), measured.** Two were built and put in
+front of Jay: a translucent one that darkens the picture to a quarter of its light, and a
+hatched one, a checkerboard of `DARK` with the picture between. He preferred the hatch
+("looks much better"), which ships:
 
-* **`shade`, shipped.** The tile record's byte 1 is a shift k (2) and its last word is
-  `0xFF >> k` in each byte. `movie_sub_blit`'s `@@shade` darkens each tile row's bytes in
-  place, a word at a time — `lwr`/`lwl`, `srlv k`, `and` the mask, `swr`/`swl`, the last
-  bytes one at a time — so each channel keeps a quarter of its light: 9 instructions and 2
-  loads for 4 bytes. `render` names such a pixel `Shade(k)`, and the gate paints it as the
-  stock pixel shifted. Redux gate 10 of 10 (331 of 332 frames decoded, as before); Beetle
-  skips no header number in `M27` or `M28`.
-* **`hatch`, not shipped.** A checkerboard of `DARK` in the tile's outline mask, drawn by
-  the ordinary mask walk. Beetle skips nothing, but on Redux the `M60` fixture drops frames
-  again (271 decoded, "EXIT 3 dumps still due"): the mask walk is too slow for a 38-tile
-  panel. A hatch fast path would need island space the shade path has taken (8 bytes free).
+* **`hatch`, shipped.** `boku.movie_block.PANEL_MASKS` is the tile's checkerboard (outline
+  bits where mask column + row is even; 14 is even, so it runs on unbroken across tiles and
+  rows), and the tile's record has byte 1 set. `movie_sub_blit`'s `@@hatch` paints those
+  pixels without walking the masks: per row it starts at the first dark column and stores
+  every other pixel, about 4 instructions a pixel of panel. `render` draws the tile from its
+  masks, which are the same pixels (the Redux gate holds the routine to `render`).
+  Redux gate 10 of 10 (331 of 332 frames decoded; the next header reaches frame 199 at
+  slice 18, as on the stock disc); Beetle skips no header number in `M27` (1-4239) or
+  `M28` (1-4194). The island holds 576 of its 620 bytes.
+* **Drawn by the mask walk instead, the same hatch dropped frames on Redux** (271 decoded,
+  "EXIT 3 dumps still due") though Beetle skipped none: a glyph walk costs 13 instructions a
+  dark pixel. That is why the fast path exists.
+* **Translucent, not shipped** (`964f5e7`; the island holds one fast path, and Jay chose
+  the hatch): each channel
+  >> 2, a word at a time with `lwr`/`lwl`/`swr`/`swl`. It passed both measures too; its
+  review is kept at `work/movie-review-shade/`.
 
-What the shade does to the picture (Beetle, `work/movie-review/`): over `M28`'s black the
-panel cannot be seen at all, so the ending looks like `M260`; the credits crossing it fall to
-a quarter of their brightness, a dim grey under the white text and its dark outline, so they
-no longer compete with it. Over `M27`'s daylight shots it is a translucent dark band. The
-Redux gate's `M60` fixture cue carries a two-row shaded panel and is matched pixel for pixel
-(`tests/test_real_movie_subtitle.py`).
+What the hatch does to the picture (Beetle, `work/movie-review/`): the credits behind a line
+are broken up by the checkerboard, so the white text with its outline reads over them;
+over `M28`'s black it is a faint dark mesh, and over `M27`'s daylight shots a screen the
+picture shows through. The Redux gate's `M60` fixture cue carries a two-row hatched panel and
+is matched pixel for pixel (`tests/test_real_movie_subtitle.py`).
 
 **When "Everything in this whole wide world," is sung.** The transcript's segment began at
 138.6 s (frame 2080), where the ASR started it, but the line is sung from 153.2 s: Whisper on

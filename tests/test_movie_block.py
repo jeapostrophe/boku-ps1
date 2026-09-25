@@ -84,9 +84,9 @@ ROW = 8
 """A movie row: u32 name, u16 cues_offset, u16 cue_count."""
 
 
-def one(cues: list[mb.Cue], font=FONT, panel_style: str = "shade") -> bytes:
+def one(cues: list[mb.Cue], font=FONT) -> bytes:
     """The block for one movie, as the loader leaves it once that movie has started."""
-    return mb.select(mb.encode_block({NAME: cues}, font, panel_style=panel_style), NAME)
+    return mb.select(mb.encode_block({NAME: cues}, font), NAME)
 
 
 def test_the_block_is_laid_out_as_the_docstring_says():
@@ -458,11 +458,15 @@ def test_a_clip_index_past_a_u16_is_named_as_that_not_as_missing_words():
 
 
 def dark_box(pixels) -> tuple[range, range]:
-    """The columns and rows the panel's pixels span, checked to fill that box."""
+    """The columns and rows the panel's pixels span, checked to hold every dark square of the
+    checkerboard over that box (FMV-10); that the others are left alone is the hatched-panel
+    test's."""
     xs = sorted({x for x, _ in pixels})
     ys = sorted({y for _, y in pixels})
     box = (range(xs[0], xs[-1] + 1), range(ys[0], ys[-1] + 1))
-    assert len(pixels) == len(box[0]) * len(box[1]), "the panel is a filled rectangle"
+    parity = (xs[0] + ys[0]) % 2
+    squares = {(x, y) for x in box[0] for y in box[1] if (x + y) % 2 == parity}
+    assert squares <= set(pixels), "the panel's dark squares are all drawn"
     return box
 
 
@@ -518,50 +522,32 @@ def records(block: bytes, count: int) -> list[bytes]:
     ]
 
 
-def test_a_shaded_panel_tile_carries_its_shift_and_byte_mask_and_no_glyph_does():
-    """FMV-10: byte 1 of a record is the shade shift k -- 0 for every glyph, which the routine
-    draws from its masks; k for the shaded panel tile, whose columns `movie_sub_blit` darkens
-    a word at a time, each byte >> k, masked with the word the record's last four bytes hold.
-    Sorted font `[' ', 'a', 'b']`, then the tile."""
-    block = mb.encode_block({NAME: [mb.Cue(1, 2, ("ab",), panel=True)]}, FONT, panel_style="shade")
-    tile = records(block, 4)
-    assert [r[1] for r in tile] == [0, 0, 0, mb.SHADE_SHIFT]
-    k = mb.SHADE_SHIFT
-    assert struct.unpack_from("<I", tile[3], 60) == (
-        int.from_bytes(bytes([0xFF >> k] * 4), "little"),
+def test_the_panel_tile_record_is_flagged_hatch_and_no_glyph_is():
+    """FMV-10: byte 1 of a record tells `movie_sub_blit` to paint the tile's checkerboard
+    without walking its masks (the fast path that keeps a two-row panel inside the frame's
+    time); every glyph record keeps it 0. Sorted font `[' ', 'a', 'b']`, then the tile."""
+    tile = records(mb.encode_block({NAME: [mb.Cue(1, 2, ("ab",), panel=True)]}, FONT), 4)
+    assert [r[1] for r in tile] == [0, 0, 0, 1]
+
+
+def test_the_panel_masks_are_the_checkerboard_the_fast_path_paints():
+    """`@@hatch` paints DARK where mask column + row is even, without reading the masks, and
+    `render` (the gate's prediction) reads them: they agree only while the tile is glyph-free
+    and outlined on exactly those pixels."""
+    assert mb.PANEL_MASKS.glyph == (0,) * mb.MASK
+    assert mb.PANEL_MASKS.outline == tuple(
+        bits(*[c for c in range(mb.MASK) if (c + r) % 2 == 0]) for r in range(mb.MASK)
     )
-    assert all(r[60:] == bytes(4) for r in tile[:3])
 
 
-def test_a_shaded_panel_darkens_what_is_under_it_and_the_text_is_drawn_over_it():
-    """`render` names a shaded pixel by the shade, since its colour is the picture's own
-    darkened: every pixel of the panel box that the text does not cover."""
-    pixels = mb.render(one([mb.Cue(10, 20, ("ab",), panel=True)], panel_style="shade"), 15)
-    shaded = {p for p, c in pixels.items() if c == mb.Shade(mb.SHADE_SHIFT)}
-    plain = mb.render(one([mb.Cue(10, 20, ("ab",))]), 15)
-    assert shaded == set(pixels) - set(plain), "every panel pixel the text leaves is shaded"
-    assert mb.Shade(2).of(bytes([0xFF, 0x80, 0x03])) == bytes([0x3F, 0x20, 0x00])
-    box = dark_box(pixels)
-    assert box == (range(146, 174), range(199, 227))
-
-
-def test_a_hatched_panel_is_a_checkerboard_of_dark_drawn_as_a_glyph():
-    """The other see-through panel: a glyph record (shift 0) whose outline is every other
-    pixel, so the routine's own mask walk draws it and the picture shows between."""
-    block = one([mb.Cue(10, 20, ("ab",), panel=True)], panel_style="hatch")
+def test_a_hatched_panel_is_dark_on_alternate_pixels_and_the_picture_shows_between():
+    block = one([mb.Cue(10, 20, ("ab",), panel=True)])
     pixels = mb.render(block, 15)
     plain = mb.render(one([mb.Cue(10, 20, ("ab",))]), 15)
-    hatch = {p for p, c in pixels.items() if p not in plain}
+    hatch = {p for p in pixels if p not in plain}
     assert hatch and all(pixels[p] == mb.DARK for p in hatch)
     assert all((x + y) % 2 == (146 + 199) % 2 for x, y in hatch), "a checkerboard"
-    assert len(hatch) >= 28 * 28 // 2 - len(plain)
-
-
-def test_the_panel_styles_are_what_the_routine_is_given():
-    """`shade` rides the routine's fast path; `hatch` is an ordinary glyph record."""
-    assert mb.PANEL_STYLES["shade"].shift == mb.SHADE_SHIFT > 0
-    assert mb.PANEL_STYLES["hatch"].shift == 0
-    assert mb.PANEL_STYLE in mb.PANEL_STYLES
+    assert dark_box(pixels) == (range(146, 174), range(199, 227))
 
 
 def test_a_panel_row_with_no_text_is_still_held_to_the_frame():

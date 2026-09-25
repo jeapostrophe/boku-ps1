@@ -84,8 +84,6 @@ from boku.movie_block import (  # noqa: E402
     GLYPHS_OFFSET_FIELD,
     MAGIC,
     MASK,
-    PANEL_STYLE,
-    PANEL_STYLES,
     RECORD_SIZE,
     SCREEN_WIDTH,
     BlockError,
@@ -1062,7 +1060,6 @@ def movie_block_for(
     cue_file: Path,
     exe: bytes,
     clips: Mapping[int, Sequence[int]] | None = None,
-    panel_style: str = PANEL_STYLE,
 ) -> tuple[bytes, dict]:
     """The block for `cue_file`'s cues and the `clips` words over `font`, and the record of
     what went in it.
@@ -1091,10 +1088,7 @@ def movie_block_for(
         if unknown:
             raise BlockError(f"{unknown} are in research/data/movies.tsv but not g_movie_table")
         block = encode_block(
-            {names[movie]: cues for movie, cues in movies.items()},
-            font,
-            clips=clips,
-            panel_style=panel_style,
+            {names[movie]: cues for movie, cues in movies.items()}, font, clips=clips
         )
     except BlockError as error:
         raise BuildRefused(f"the movie cues: {error}. Nothing further was written.") from error
@@ -1107,7 +1101,6 @@ def movie_block_for(
         "sha1": hashlib.sha1(block).hexdigest(),
         "cues": {movie: len(cues) for movie, cues in sorted(movies.items())},
         "clips": sorted(clips or ()),
-        "panel_style": panel_style,
     }
     return block, record
 
@@ -1491,9 +1484,7 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     work.mkdir(parents=True, exist_ok=True)
     (work / "font-sheet.tim").write_bytes(new_tim)
     clips = clip_words_for(Path(args.clip_subs), archive, font, cells)
-    block, movie_subtitles = movie_block_for(
-        font, Path(args.movie_cues), stock_exe, clips, args.movie_panel
-    )
+    block, movie_subtitles = movie_block_for(font, Path(args.movie_cues), stock_exe, clips)
     (work / MOVIE_BLOCK_NAME).write_bytes(block)
     # `Archive.blob` copies, and each overlay is wanted three times below; cut once.
     stock_overlays = {name: archive.blob(archive.member(name)) for name in DRAWING_OVERLAYS}
@@ -1730,13 +1721,6 @@ def main() -> int:
         "--movie-cues",
         default=str(CUE_FILE),
         help="the movie subtitle file (default: translation/movies.txt; boku.movie_cues)",
-    )
-    parser.add_argument(
-        "--movie-panel",
-        choices=sorted(PANEL_STYLES),
-        default=PANEL_STYLE,
-        help=f"the panel behind `panel` movie cues (default {PANEL_STYLE}; FMV-10); hatch "
-        "fails the Redux movie gate (research/movies.md § 11)",
     )
     parser.add_argument(
         "--clip-subs",

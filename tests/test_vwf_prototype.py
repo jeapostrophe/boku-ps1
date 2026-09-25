@@ -639,7 +639,6 @@ def prototype_arguments(tool, out: Path, **extra) -> argparse.Namespace:
         "label": False,
         "font": None,
         "movie_cues": str(tool.CUE_FILE),
-        "movie_panel": tool.PANEL_STYLE,
         "clip_subs": str(tool.clip_subs.CLIP_FILE),
         "asm": str(tool.ASM),
         "armips": str(tool.DEFAULT_ARMIPS),

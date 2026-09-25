@@ -48,7 +48,6 @@ from boku.movie_block import (
     SLICE_WIDTH,
     SLICES,
     WHITE,
-    Shade,
     movie_names,
     render,
     select,
@@ -281,7 +280,7 @@ def patched(build: Path, plays: dict[str, Play]) -> dict[str, dict[int, Frame]]:
 
 # --- the gates -------------------------------------------------------------------------------
 
-Pixels = dict[tuple[int, int], tuple[int, int, int] | Shade]
+Pixels = dict[tuple[int, int], tuple[int, int, int]]
 
 
 def predicted(block: bytes, name: int, frame: Frame) -> Pixels:
@@ -299,17 +298,11 @@ def pixel(row: bytes, x: int) -> bytes:
     return row[BYTES_PER_PIXEL * x : BYTES_PER_PIXEL * (x + 1)]
 
 
-def drawn_as(colour: tuple[int, int, int] | Shade, under: bytes) -> bytes:
-    """The bytes the routine leaves where it draws `colour` over the decoded pixel `under`."""
-    return colour.of(under) if isinstance(colour, Shade) else bytes(colour)
-
-
 def painted(rows: tuple[bytes, ...], pixels: Pixels) -> tuple[bytes, ...]:
     out = [bytearray(row) for row in rows]
     for (x, y), colour in pixels.items():
         assert 0 <= x < SCREEN_WIDTH and 0 <= y < FRAME_HEIGHT, f"({x}, {y}) is off the frame"
-        at = slice(BYTES_PER_PIXEL * x, BYTES_PER_PIXEL * (x + 1))
-        out[y][at] = drawn_as(colour, bytes(out[y][at]))
+        out[y][BYTES_PER_PIXEL * x : BYTES_PER_PIXEL * (x + 1)] = bytes(colour)
     return tuple(bytes(row) for row in out)
 
 
@@ -379,8 +372,13 @@ def test_inside_its_cue_the_frame_is_the_stock_decode_plus_exactly_its_own_text(
         f"{sorted(set(frame.sub_frame))}); the cue is not where the test thinks"
     )
     assert WHITE in pixels.values() and DARK in pixels.values()
-    assert any(isinstance(c, Shade) for c in pixels.values()) == PANEL[movie], (
-        "the M60 fixture's panel is the shaded one the build installs by default"
+    hatched = {  # dark, a gap, dark: the checkerboard's rows, rare in an outline
+        (x, y)
+        for (x, y), c in pixels.items()
+        if c == DARK and (x + 1, y) not in pixels and pixels.get((x + 2, y)) == DARK
+    }
+    assert (len(hatched) > 1000) == PANEL[movie], (
+        "the M60 fixture's panel is the hatched one, a checkerboard of DARK over its box"
     )
     assert all((y < FRAME_HEIGHT // 2) == AT_TOP[movie] for _, y in pixels), (
         f"{movie}'s fixture cue is not in the half of the frame its position names"
@@ -405,9 +403,9 @@ def test_the_other_movies_cue_is_not_drawn(movie, block, names, stock, patched):
     theirs = predicted(block, names[other(movie)], frame)
     base = stock[movie][INSIDE].rows
     telling = {
-        (x, y): drawn_as(colour, pixel(base[y], x))
+        (x, y): bytes(colour)
         for (x, y), colour in theirs.items()
-        if (x, y) not in own and pixel(base[y], x) != drawn_as(colour, pixel(base[y], x))
+        if (x, y) not in own and pixel(base[y], x) != bytes(colour)
     }
     assert len(telling) > 100, f"{other(movie)}'s cue would barely show over {movie}; vacuous"
     drawn = [(x, y) for (x, y), colour in telling.items() if pixel(frame.rows[y], x) == colour]
