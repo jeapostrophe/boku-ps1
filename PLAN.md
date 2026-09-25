@@ -791,7 +791,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       that frames the whole game.
 - [x] **[FMV-02]** **Translate the movies' narration and songs.** DONE 2026-09-23:
       `translation/movies.txt` — the narration of `M27`, `M28`, `M60`, `M120`, `M260` and the
-      two songs (ruled yes: 6 cues in the opening, 10 in the ending), reviewed against the
+      the theme song in both places it plays (ruled yes: 6 cues in the opening, 10 in the ending), reviewed against the
       transcripts; an optional per-cue position (`top` / `bottom`,
       `boku.movie_block.POSITIONS`) that the parser and lint check and the block carries; each
       song cue's position measured against the credits; `movie-timing` times the song
@@ -946,7 +946,13 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       Square, Select, Start). Run is a new Mode One feature only Boku uses: with the toggle on,
       Up on the D-pad also holds Cross — the game's run "throttle". Built in `~/Dev/retro-trainer`.
       Harmed: Jay, playing on Mode One's controller.
-- [ ] **[DOC-01]** **README audited against what was built.** Jay, 2026-09-25: accurate and concise
-      relative to the project as it stands; it names a few `make.sh` verbs but should name the
-      other relevant ones, the reader among them. Harmed: a contributor or translator starting
-      from the README.
+- [x] **[DOC-01]** **README audited against what was built.** DONE 2026-09-25 (`19f2665`): Status
+      describes the state, not 2026-09-20 counts; § "Using it" gives the prerequisites, the import
+      step and the verbs by task (build-days, reader, lint-translation, mockup, coverage, textures
+      check, packet/save-event, the movie and emulator verbs, test/lint, patch/apply-patch), with
+      `./make.sh help` as the verbs' one home. Corrected: the texture, movie and voice-over rows,
+      the central-risk section, the reader, Delivery's Mode One bullet (`REL-02`), Contributing and
+      Layout; `translation/README.md`, `translation/days/README.md` and the code comments that
+      still called the ruled day-file format provisional. `tests/test_make_verbs.py` checks every
+      verb cited in a tracked file exists, the usage text lists every verb, and every README §
+      citation names a heading. Harmed (was): a contributor or translator starting from the README.
