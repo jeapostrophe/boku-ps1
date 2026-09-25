@@ -715,10 +715,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       "Back" in the game's glyphs (Jay's ruling); the header's rare-bug starburst reads "RARE!" in
       Bean, its own red, all three frames (the game's glyphs are wider than the burst); on Beetle. Harmed: the player who
       examines the thing and reads nothing.
-- [ ] **[GFX-11]** **The cage's rare-bug starburst says "Wow!" in the game's glyphs.** Jay,
-      2026-09-25 (§24b, from the mock-ups): "Wow!" (29 px) in the game's font, spilling a little
-      past the 23-px burst — nothing on that screen conflicts — replacing "RARE!" in Bean, all three
-      frames. Harmed: the player, who sees two fonts on one screen.
+- [x] **[GFX-11]** **The cage's rare-bug starburst says "Wow!" in the game's glyphs.** DONE
+      2026-09-25 (`319f0c2`; Jay's §24b): "Wow!" (29 px) in the burst's red over a dark drop shadow,
+      running onto the spikes, the Japanese refilled from the burst's own shading; the `badge`
+      recipe refuses a word that would leave the 32×24 sprite. All three frames seen on Beetle
+      (each lasts 8 video frames); nothing on the cage screen is in Bean any more
+      (`research/texture-recipes.md` § "Buttons"). Harmed (was): the player.
 - [x] **[GFX-09]** **The beach notice — reworded.** DONE 2026-09-24 (`86cb8a7`): seen on Beetle,
       the board is frontal wood, painted not captioned, in both map variants (`M_C15000`, which
       day 1 loads, and `M_C15100`). `beach_notice` in `boku/texture_text.py` paints
