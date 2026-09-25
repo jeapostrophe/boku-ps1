@@ -344,10 +344,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 - [x] **[TRN-13]** **The insect box's page pencils: "Prev" / "Next".** DONE 2026-09-24
       (`e5b046f`; Jay's §17.8e): both in the game font, proven on Beetle; the one-font test has no
       exception left. Harmed (was): the player.
-- [ ] **[TRN-15]** **The bug-trading notebook says "Trade" throughout.** Jay, 2026-09-24 (§23b):
-      the exchange balloon matches the cover's "Trading" — "Trade" (fits the balloon), and the
-      plate beside the arrow widened the 1 px "Trade" needs rather than keeping "Swap". Harmed:
-      the player, who sees two words for one thing.
+- [x] **[TRN-15]** **The bug-trading notebook says "Trade" throughout.** DONE 2026-09-24
+      (`06f4c4f`; Jay's §23b): the exchange balloon and the plate beside the two cards' arrow say
+      "Trade", matching the cover's "Trading"; the plate widened 10 columns (pairs keep its
+      checkerboard's phase) and its sprite width in `MUSI.OVL` follows, checked by its texture
+      test; on Beetle. Harmed (was): the player.
 - [x] **[TRN-11]** **Jay's 2026-09-24 wording rulings** (`work/review/decisions.html`), all applied 2026-09-24:
       §8b and §9 DONE (`136d26f`, Beetle): the card message "The MEMORY CARD has no
       free blocks." on one row (the two-row machinery removed); "Specimens+Cage" in the menu's
@@ -812,15 +813,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       the tooling is `./make.sh movie-timing` / `movie-review` (`research/movies.md` § 10–11):
       a cue may drift up to `DRIFT` (2 s) off its speech when reading needs it, one 17 cps limit,
       `M27`'s four fast cues retimed (1221 → 5.0 s). Harmed (was): the player.
-- [ ] **[FMV-10]** **A see-through panel behind the movie songs.** Jay, 2026-09-24, from
-      `work/movie-review/`: the opaque black box on `M27`'s and `M28`'s song cues is "a bit too
-      jarring" and makes the movies inconsistent (`M260` has none) — a hatched or translucent
-      panel instead, still keeping the credits from showing through the text.
-      Interim 2026-09-24 (`964f5e7`): a translucent panel (`@@shade`, a quarter of the light) —
-      Redux 10/10, Beetle skip-free. Jay compared it with a hatched build: "The hatched version
-      looks much better" — make hatched fit (its fast path needs ~60 bytes the routine's space
-      lacks), else show him the half-light shade. Harmed: the
-      player, watching the opening and the ending.
+- [x] **[FMV-10]** **A see-through panel behind the movie songs.** DONE 2026-09-24 (`78f9034`;
+      Jay chose the hatch over the translucent panel): the panel tile is a checkerboard of dark
+      (`boku.movie_block.PANEL_MASKS`), painted by `movie_sub_blit`'s own `@@hatch` fast path (576
+      of 620 bytes); Redux gate 10/10, Beetle skips no STR frame in `M27` or `M28`; the translucent
+      review is kept at `work/movie-review-shade/` (`research/movies.md` § 11). Harmed (was): the player.
 - [x] **[FMV-09]** **Jay's §22 movie rulings.** DONE 2026-09-24 (`72e1f71`): 22.1 a panel fills
       both rows of its position; 22.2 `M27`'s song cues at the bottom with `panel`; 22.3 one 『 』
       pair per narrated sentence (`movie_timing._marks`, 11 sentences). The two-row panel made
