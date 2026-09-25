@@ -282,8 +282,12 @@ def build_patches(
     out_dir: Path,
     *,
     version: str | None = None,
+    original_name: str | None = None,
 ) -> PatchSet:
     """Write both patches, the manifest and the README into `out_dir`.
+
+    `original_name` is what the instructions call the base (default: `original`'s own
+    name) -- a release names the file its extraction step writes, not `image.img`.
 
     Built in a staging directory and moved into place at the end, the way `boku trial`
     builds: a failure leaves the previous complete release or nothing, never this run's
@@ -320,7 +324,7 @@ def build_patches(
         manifest = _manifest(
             version=version,
             original=original_hashes,
-            original_name=original.name,
+            original_name=original_name or original.name,
             result=result_hashes,
             # Never `modified.name`: this pipeline's two images are `disc/image.img` and
             # `build/trial/image.img`, so that would print `xdelta3 -d -s image.img ...

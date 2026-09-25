@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from boku import REPO_ROOT
 from boku.archive import DEFAULT_DISC_DIR
 from boku.build import DEFAULT_BUILD_NAME, DEFAULT_IMAGE, IMAGE_NAME, main_build
 from boku.coverage import add_arguments as add_coverage_arguments
@@ -21,7 +22,9 @@ from boku.packets import add_arguments as add_packet_arguments
 from boku.packets import add_save_arguments as add_save_event_arguments
 from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
+from boku.reader import DEFAULT_BUILD_DIR
 from boku.reader import add_arguments as add_reader_arguments
+from boku.release import RELEASE_ROOT, main_publish, main_release
 from boku.save import add_arguments as add_save_arguments
 from boku.texture_text import TEXTURE_TEXT_DIR
 from boku.texture_text import main_check as main_texture_check
@@ -379,6 +382,70 @@ def build_parser() -> argparse.ArgumentParser:
             args.out,
             args.expect_original_sha1,
             args.expect_result_sha1,
+        )
+    )
+
+    release = subcommands.add_parser(
+        "release",
+        help="turn HEAD's days build into release/v<version>/ (./make.sh release builds it first)",
+        description="PLAN REL-04: what a release holds and checks is boku.release's docstring.",
+    )
+    release.add_argument(
+        "--preflight",
+        action="store_true",
+        help="only check the tree is clean and print the version it would release",
+    )
+    release.add_argument(
+        "--base",
+        type=Path,
+        default=DEFAULT_IMAGE,
+        metavar="IMAGE",
+        help=f"the Redump dump the patches apply to (default: {DEFAULT_IMAGE})",
+    )
+    release.add_argument(
+        "--build",
+        type=Path,
+        default=DEFAULT_BUILD_DIR,
+        metavar="DIR",
+        help="the days build of HEAD (default: build/days)",
+    )
+    release.add_argument(
+        "--out",
+        type=Path,
+        default=RELEASE_ROOT,
+        metavar="DIR",
+        help=f"where release/v<version>/ goes (default: {RELEASE_ROOT}/)",
+    )
+    release.set_defaults(
+        run=lambda args: main_release(REPO_ROOT, args.base, args.build, args.out, args.preflight)
+    )
+
+    publish = subcommands.add_parser(
+        "publish-release",
+        help="post a release/v<version>/ directory as a GitHub Release with gh",
+        description=(
+            "PLAN REL-04: print the gh release create line that posts the directory's zip "
+            "with its RELEASE-NOTES.md, under its version tag (which must already be pushed); "
+            "run it only with --yes. A snapshot, a moved tag or a changed file is refused."
+        ),
+    )
+    publish.add_argument("release_dir", type=Path, metavar="DIR", help="release/v<version>")
+    publish.add_argument("--yes", action="store_true", help="post it; without this, a dry run")
+    publish.add_argument("--draft", action="store_true", help="post it as a draft release")
+    publish.add_argument("--prerelease", action="store_true", help="mark it a prerelease")
+    publish.add_argument(
+        "--repo",
+        metavar="OWNER/REPO",
+        help="the GitHub repository (default: from the origin remote)",
+    )
+    publish.set_defaults(
+        run=lambda args: main_publish(
+            args.release_dir,
+            yes=args.yes,
+            draft=args.draft,
+            prerelease=args.prerelease,
+            github=args.repo,
+            git_repo=REPO_ROOT,
         )
     )
 

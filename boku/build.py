@@ -149,8 +149,13 @@ MANIFEST_FORMAT = 1
 EXE_PATH = f"/{EXE_NAME}"
 ARCHIVE_PATH = f"/{ARCHIVE_NAME}"
 
-CUE_TEXT = f'FILE "{IMAGE_NAME}" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n'
-"""One data track, raw 2352-byte sectors. The emulators want a cue beside the image."""
+
+def cue_text(image_name: str) -> str:
+    """One data track, raw 2352-byte sectors. The emulators want a cue beside the image."""
+    return f'FILE "{image_name}" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n'
+
+
+CUE_TEXT = cue_text(IMAGE_NAME)
 
 
 class BuildRefused(Exception):

@@ -29,6 +29,7 @@ from boku.coverage import (
     REFUSED_FIELD,
     RELOCATIONS_FIELD,
     RESULT_SHA1_FIELD,
+    SOURCE_SHA1_FIELD,
     SURFACE,
     TRANSLATED,
     WRITTEN_FIELD,
@@ -488,6 +489,7 @@ def test_the_manifest_fields_are_the_ones_the_build_writes():
         MEMBER_FIELD,
         BUILD_FIELD,
         RESULT_SHA1_FIELD,
+        SOURCE_SHA1_FIELD,
     ):
         assert f'"{field}"' in source, f"boku.build no longer writes {field}"
 

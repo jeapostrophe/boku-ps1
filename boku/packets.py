@@ -199,7 +199,7 @@ _SLOT = re.compile(r"\bslots?\s+((?:\d+)(?:\s*,\s*\d+)*)")
 _BASE = re.compile(r"^([A-Z])(\d+)$")
 
 
-def _sections(text: str, level: int) -> list[tuple[str, list[str]]]:
+def markdown_sections(text: str, level: int) -> list[tuple[str, list[str]]]:
     """`(heading, body lines)` for every heading of exactly `level` hashes, in order."""
     out: list[tuple[str, list[str]]] = []
     current: list[str] | None = None
@@ -282,7 +282,9 @@ _FLAG_ITEM = re.compile(r"^(\d+(?:\s*[/,\u2013-]\s*\d+)*)\s+(.+)$", re.S)
 def parse_flags(bible: str) -> dict[int, str]:
     """The bible's § 8 "Flags evident from the script" list: `n name` items joined by ` · `,
     `37/38` naming two flags, `57-60` a run of them, `131-145, 147-153` two runs."""
-    body = next((lines for heading, lines in _sections(bible, 2) if heading.startswith("8.")), [])
+    body = next(
+        (lines for heading, lines in markdown_sections(bible, 2) if heading.startswith("8.")), []
+    )
     text = " ".join(body)
     start = text.find("**Flags evident")
     if start < 0:
@@ -304,7 +306,9 @@ def parse_flags(bible: str) -> dict[int, str]:
 
 def parse_places(bible: str) -> tuple[tuple[str, str], ...]:
     """The bible's § 7 base -> place table, with `G04 / G05` and `H01-H03` expanded."""
-    body = next((lines for heading, lines in _sections(bible, 2) if heading.startswith("7.")), [])
+    body = next(
+        (lines for heading, lines in markdown_sections(bible, 2) if heading.startswith("7.")), []
+    )
     out: list[tuple[str, str]] = []
     for line in body:
         cells = _table_cells(line)
@@ -474,7 +478,9 @@ def document_body(text: str) -> str:
 
 def format_section(readme: str) -> str:
     """`translation/days/README.md` § Format, the day-file format as the translator reads it."""
-    body = next((lines for heading, lines in _sections(readme, 2) if heading == FORMAT_SECTION), [])
+    body = next(
+        (lines for heading, lines in markdown_sections(readme, 2) if heading == FORMAT_SECTION), []
+    )
     return "\n".join(body).strip()
 
 

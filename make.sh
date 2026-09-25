@@ -71,6 +71,15 @@ usage: ./make.sh <verb> [arguments]
                                 ~/Dev/retro-trainer (--mode-one DIR, or $BOKU_MODE_ONE)
                                 and pin its SHA-1 in one/index/boku.sha1; needs chdman
                                 (./make.sh export-to-mode-one --help for the switches)
+  release [arguments]           cut a release of HEAD: refuse anything uncommitted, run
+                                build-days, then write both patches against the Redump
+                                base, the .cue, the notes and the zip into
+                                release/v<version>/ (v<version> is HEAD's tag, else a
+                                snapshot named by git describe) and apply each patch back
+                                (uv run boku release --help)
+  publish-release DIR [--yes]   print the gh release create line that posts DIR's zip and
+                                notes under its (already pushed) tag; post only with --yes
+                                (--draft, --prerelease, --repo OWNER/REPO)
   packet [arguments]            assemble a translator packet into work/packets/<unit>/:
                                 system.md (format, story bible, style guide, glossary,
                                 checklist -- each whole) given once, one <EVENT>.md per
@@ -246,6 +255,8 @@ cmd_build_days() {
     rm -f build/days/days-*.cue
     cp build/days/image.cue "build/days/days-$id.cue"
     echo "$id" > build/days/BUILD-ID.txt
+    # REL-04: a release is only of a build given no arguments (boku.release.BUILD_ARGS_NAME).
+    printf '%s\n' "$@" > build/days/BUILD-ARGS.txt
     touch -r "$began" build/days/BUILD-ID.txt
     rm -f "$began"
     # TRN-14: the reader is rewritten with every build, so it can never be older than the
@@ -255,6 +266,18 @@ cmd_build_days() {
     uv run boku reader --build build/days
     echo
     echo "== build id $id: load build/days/days-$id.cue =="
+}
+
+# REL-04: a release is HEAD and nothing else. The tree is checked before the build, so a
+# dirty one wastes no build, and again by `boku release` after it, which also refuses a build
+# of any other commit or one given arguments: the release is the default build.
+cmd_release() {
+    case " $* " in *" --preflight "*) uv run boku release "$@"; return ;; esac
+    uv run boku release --preflight
+    cmd_build_days
+    echo
+    echo "== the release -> release/v<version>/ =="
+    uv run boku release "$@"
 }
 
 # ENV-06: the corpus's base is a new game's RAM at the first dialogue, dumped once from your own
@@ -331,6 +354,12 @@ case "$verb" in
         ;;
     export-to-mode-one)
         exec uv run boku export-to-mode-one "$@"
+        ;;
+    release)
+        cmd_release "$@"
+        ;;
+    publish-release)
+        exec uv run boku publish-release "$@"
         ;;
     packet)
         exec uv run boku packet "$@"

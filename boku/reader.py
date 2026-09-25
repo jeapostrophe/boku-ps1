@@ -392,6 +392,17 @@ def build_id(build: Path) -> str:
     return path.read_text(encoding="utf-8").strip() if path.is_file() else ""
 
 
+def build_revision(built_id: str) -> tuple[str, bool]:
+    """The commit a build id names, and whether its tree had uncommitted edits.
+
+    `./make.sh build-days` writes `<UTC stamp>-<git describe --always --dirty>`; `("", False)`
+    for an id that names no commit."""
+    if "-" not in built_id:
+        return "", False
+    described = built_id.split("-", 1)[1]
+    return described.removesuffix("-dirty"), described.endswith("-dirty")
+
+
 BUILD_INPUTS = ("boku", "tools", "asm", "translation")
 """What a days build is made from, as far as git sees it: a change here since the build's
 commit is a change the image does not have."""
@@ -427,7 +438,7 @@ def stale_build(sources: Sources) -> str | None:
     newer = [p.name for p in files if p.stat().st_mtime > stamp.stat().st_mtime]
     if newer:
         said.append(f"{', '.join(newer)} changed after the days build {built_id} began")
-    commit = built_id.split("-", 1)[1].removesuffix("-dirty") if "-" in built_id else ""
+    commit, _ = build_revision(built_id)
     moved = git("diff", "--name-only", commit, "HEAD", "--", *BUILD_INPUTS) if commit else ""
     if moved:
         dirs = sorted({f"{name.split('/', 1)[0]}/" for name in moved.splitlines()})

@@ -177,6 +177,7 @@ that reads the game needs them, and nothing they write is ever committed.
 | drive an emulator | `./make.sh smoke` (boot on both headless emulators), `boot-save`, `examine`, `sumo-bout` (Beetle from a generated save) |
 | test | `./make.sh test`, `./make.sh lint`; `./make.sh emu-test` for the tests that boot an emulator |
 | make a patch | `./make.sh patch --modified build/days/image.img` (PPF + xdelta + both sides' hashes into `build/patch/`); `./make.sh apply-patch DUMP PATCH --out FILE` applies one, checking both hashes. |
+| cut a release | tag `v<version>` and push it, then `./make.sh release` (both patches, hashes, notes and a zip into `release/v<version>/`) and `./make.sh publish-release release/v<version> --yes` |
 | play on Mode One | `./make.sh export-to-mode-one` (packs `build/days` as Mode One's `boku.chd` and pins its SHA-1; then rebuild Mode One) |
 
 ## Layout
@@ -206,12 +207,17 @@ work/       (ignored)  scratch, and everything derived from the game: translator
                        mock-ups, the reader, saves, decoded movies and voices, review pages
 build/      (ignored)  the renderer's edit set (vwf/), the days build (days/), the patch (patch/),
                        and what the lower-level verbs write (trial/, image/)
+release/    (ignored)  cut releases, one release/v<version>/ each (./make.sh release)
 ```
 
 ## Delivery
 
 * **Public release:** a patch against the Redump-verified image, via GitHub Releases, with the
-  base and result checksums stated. Never an image (PLAN `REL-03`, `REL-04`).
+  base and result checksums stated. Never an image. Tag the commit `v<version>`, push the
+  tag, then `./make.sh release` (writes `release/v<version>/`) and `./make.sh publish-release
+  release/v<version> --yes`. The release page quotes this README's § "How the translation is
+  made" and § "Related work and credit" whole; what a release holds and checks is
+  `boku/release.py`'s docstring.
 * **Mode One** (`~/Dev/retro-trainer/one`), the phone frontend Jay plays on: it does not apply
   the patch. `./make.sh export-to-mode-one` packs the built image as its `one/roms/boku.chd`
   and pins that file's SHA-1 in its index (`boku/mode_one.py` says how). It runs PS1 on Beetle

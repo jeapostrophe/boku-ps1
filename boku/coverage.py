@@ -88,9 +88,11 @@ RELOCATIONS_FIELD = "relocations"
 MEMBER_FIELD = "member"
 BUILD_FIELD = "build"
 RESULT_SHA1_FIELD = "result_sha1"
+SOURCE_SHA1_FIELD = "source_sha1"
 """The fields of the build's manifest this tool reads (`boku.build.manifest_json`). The
 first two are required; a build that moved no member may carry no `relocations`, whose
-entries this reads by `member`; the last two only name the image in the header."""
+entries this reads by `member`; `build` and `result_sha1` name the image in the header, and
+`source_sha1` is what `boku.release` checks the base against."""
 
 BUILD_ID_NAME = "BUILD-ID.txt"
 """`make.sh`'s `cmd_build_days` writes the emulator-visible build id here, beside the
@@ -121,6 +123,8 @@ class Manifest:
     """The manifest's own `build` name -- which build this is (`days`, `trial`, ...)."""
     result_sha1: str = ""
     """SHA-1 of the image the build wrote, as the manifest recorded it."""
+    source_sha1: str = ""
+    """SHA-1 of the image the build started from."""
     build_id: str = ""
     """`BUILD-ID.txt` beside the manifest, when `make.sh build-days` left one: the id the
     emulator's window title carries, so a report can be matched to a play session."""
@@ -168,6 +172,7 @@ class Manifest:
             ),
             build=str(document.get(BUILD_FIELD, "")),
             result_sha1=str(document.get(RESULT_SHA1_FIELD, "")),
+            source_sha1=str(document.get(SOURCE_SHA1_FIELD, "")),
             build_id=build_id.read_text(encoding="utf-8").strip() if build_id.is_file() else "",
         )
 
