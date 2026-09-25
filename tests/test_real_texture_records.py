@@ -118,11 +118,14 @@ FISH_ROUTE = ["TRIANGLE:400", "RIGHT:60", "CIRCLE:400", "LEFT:60", "DOWN:40", "D
               "DOWN:40", "DOWN:40", "r60"]  # fmt: skip
 """△ opens the desk on the belongings; RIGHT to the tackle box and ○; LEFT into the tackle
 list, DOWN x4 to the summer's catch: the record shows."""
-ONE_CARD = ["r1100", "LEFT:90", "LEFT:90", "CIRCLE:400"]
-"""At the bug-sumo desk: LEFT x2 to the notebook, ○: the offered bug's card alone."""
 TWO_CARDS = ["r1100", "CIRCLE:900", "CIRCLE:50", "LEFT:40", "CIRCLE:400", "LEFT:90", "LEFT:90",
              "CIRCLE:400"]  # fmt: skip
 """A bug taken in hand first, then the notebook: the offered card over the held one."""
+NOTEBOOK = ["r1100", "LEFT:90"]
+"""At the bug-sumo desk, one LEFT puts the hand on the notebook, whose balloon (虫を交かん) names
+the trade."""
+ONE_CARD = [*NOTEBOOK, "LEFT:90", "CIRCLE:400"]
+"""A second LEFT along the notebook, ○: the offered bug's card alone."""
 SCREENS = {
     # screen: (card, the sumo desk?, route, the buttons on it (boku.texture_buttons) with where
     # each texture's (0, 0) lands, the records on it: (member, copy, the sprite's texture box
@@ -133,9 +136,10 @@ SCREENS = {
                  ("FS_WAL", (0, 0, 0), (48, 154, 88, 64), (0, -58))]),  # the four-row list
     "one_card": (NOTEBOOK_CARD, True, ONE_CARD, [],
                  [("M_S01100", (256, 1, 5), None, (-388, 48))]),
-    "two_cards": (NOTEBOOK_CARD, True, TWO_CARDS, [],
+    "two_cards": (NOTEBOOK_CARD, True, TWO_CARDS, [("M_S01100.trade_plate", (-48, -112))],
                   [("M_S01100", (0, 0, 4), None, (-132, 18)),
                    ("M_S01100", (0, 106, 4), None, (-132, 18))]),
+    "notebook": (NOTEBOOK_CARD, True, NOTEBOOK, [("M_S01100.swap", (-392, 104))], []),
 }  # fmt: skip
 MARKER_SIGNS_ON = {"one_card": [("M_S01000", (-264, 90))]}
 """The marker signs (`boku.texture_text.MARKER_SIGNS`) a screen shows, and where each texture's

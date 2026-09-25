@@ -259,7 +259,7 @@ def test_a_sprite_record_grows_its_width_in_texels():
 
 
 def test_a_refill_with_parity_keeps_a_checkerboard_in_phase():
-    """The swap plate's ground is a checkerboard of two entries; a refilled pixel must take
+    """The trade plate's ground is a checkerboard of two entries; a refilled pixel must take
     the entry its own square has."""
     w = h = 12
     px = bytearray((x + y) % 2 + 1 for y in range(h) for x in range(w))

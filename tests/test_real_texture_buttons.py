@@ -128,10 +128,11 @@ def test_a_card_label_carries_its_english_and_no_japanese(
     "key", sorted(k for k, b in tb.BUTTONS.items() if b.kind in ("plank", "plate"))
 )
 def test_a_board_carries_its_english_and_no_japanese(
-    key, texture_inventory, texture_patched, game
+    key, archive, texture_inventory, texture_patched, game
 ):  # fmt: skip
-    """The Close board (bold, its punched-through Japanese transparent) and the swap plate:
-    every dark or transparent pixel of the room is the English, once."""
+    """The Close board (bold, its punched-through Japanese transparent) and the trade plate:
+    every dark or transparent pixel of the room is the English, once; a widened one's stored
+    sizes follow its art."""
     button = tb.BUTTONS[key]
     canvas = rebuilt(texture_inventory, texture_patched, button)
     room = tb.text_area(button, box_of(button)) if button.kind == "plate" else button.box
@@ -141,6 +142,8 @@ def test_a_board_carries_its_english_and_no_japanese(
     ink = ink_of(game, ENTRIES[key])
     english = paint.normalised(paint.bold(ink) if button.kind == "plank" else ink)
     assert paint.normalised(dark) == english
+    if button.widen:
+        assert_sizes_follow(archive, texture_inventory, texture_patched, button)
 
 
 STROKE = 8

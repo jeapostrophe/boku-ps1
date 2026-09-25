@@ -43,16 +43,17 @@ btn@TK_WAL.kite	Fly a // Kite
 # --- the kite book (TZICON): the balloon over the confirm button
 btn@TZICON.make_this_kite	Make
 
-# --- bug sumo (M_S01100): the balloons, the swap plate beside its arrow, the Close board.
-# me: 自分, the balloon over Boku's own side.
+# --- bug sumo (M_S01100): the balloons, the trade plate beside its arrow, the Close board.
+# me: 自分, the balloon over Boku's own side. swap (虫を交かん) and trade_plate, beside the two
+# cards' arrow, say "Trade", as the notebook's cover says "Trading" (Jay, 2026-09-24).
 btn@M_S01100.release	Release
-btn@M_S01100.swap	Swap
+btn@M_S01100.swap	Trade
 btn@M_S01100.cage	Bug // Cage
 btn@M_S01100.rank	Bug // Rank
 btn@M_S01100.me	Me
 btn@M_S01100.gong	Gong
 btn@M_S01100.place	Place // Bug
-btn@M_S01100.trade_plate	Swap
+btn@M_S01100.trade_plate	Trade
 btn@M_S01100.close	Close
 
 # --- the insect box (MZ02, SAMP)

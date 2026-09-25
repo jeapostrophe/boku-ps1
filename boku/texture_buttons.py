@@ -308,7 +308,7 @@ BUTTONS: dict[str, Button] = {
         drawn_4bpp=True,
         chunk=3,
         text=(12, 2, 26, 16),
-        widen=Widen(8, (SpriteRecord("MUSI.OVL", 0x8007A7B4, 40),)),
+        widen=Widen(10, (SpriteRecord("MUSI.OVL", 0x8007A7B4, 40),)),
     ),
     "M_S01100.close": Button("_DATA_M_S01100.BIN__0164b4", "plank", (129, 205, 34, 14), 5),
     # The insect box (`HHON.OVL`; sprite tables in `SAMP.BIN`). No free texels to widen
@@ -399,7 +399,7 @@ def plate(
     canvas: paint.Canvas, button: Button, box: paint.Box, entry: Entry, face: Face, what: str
 ) -> None:
     """A stone's recipe, in the game's glyphs at their own weight, on a plate whose ground is
-    dithered (bug sumo's swap plate): only `button.text` of the sprite is touched, and a pixel
+    dithered (bug sumo's trade plate): only `button.text` of the sprite is touched, and a pixel
     is refilled from a donor an even number of steps away, so the dither keeps its phase."""
     room = text_area(button, box)
     area = set(paint.points(room))
