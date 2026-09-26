@@ -150,18 +150,29 @@ usage: ./make.sh <verb> [arguments]
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
                                 -- and report each one's result; missing prerequisites
-                                (emulator, env var, BIOS) fail loudly rather than
+                                (emulator, core, BIOS) fail loudly rather than
                                 being skipped (research/tooling-setup.md)
 
-Everything runs through uv, which installs Python and the dev tools on first use.
+Everything runs through uv, which installs Python and the dev tools on first use. The
+verbs that boot an emulator find Beetle PSX's core, its BIOS directory and PCSX-Redux's
+BIOS in ~/Dev/retro-trainer/config/ (or $BOKU_MODE_ONE's) unless BOKU_LIBRETRO_CORE,
+BOKU_LIBRETRO_SYSTEM or REDUX_BIOS says otherwise (tools/libretro/emulator_paths.py).
 EOF
+}
+
+# ENV-09: the emulator tests read BOKU_LIBRETRO_CORE, BOKU_LIBRETRO_SYSTEM and REDUX_BIOS from
+# the environment, so `test` and `emu-test` export whichever tools/libretro/emulator_paths.py
+# finds; the tools themselves resolve them (run_core.py, field.py, smoke.sh, run-headless.sh).
+emulator_env() {
+    eval "$(uv run python tools/libretro/emulator_paths.py --exports)"
 }
 
 # ENV-05: the two headless boot gates, run in sequence and reported clearly, so a
 # contributor never has to go find tools/redux/run-headless.sh or tools/libretro/smoke.sh
-# by hand. Each gate's own prerequisites are checked here, before it runs, because
-# tools/redux/run-headless.sh only *warns* about a missing REDUX_BIOS and then spends
-# 10-20s failing slowly -- that is not "say which prerequisite and exit non-zero".
+# by hand. Redux's BIOS is checked here, before its gate runs, because
+# tools/redux/run-headless.sh only *warns* about a missing BIOS and then spends 10-20s
+# failing slowly -- that is not "say which prerequisite and exit non-zero". smoke.sh checks
+# Beetle's own.
 cmd_smoke() {
     local image="${1:-}"
     local status=0 redux_status=0 beetle_status=0
@@ -173,15 +184,9 @@ cmd_smoke() {
         echo "       install it, or set REDUX_APP to point at it -- research/tooling-setup.md" >&2
         echo "       section \"Reproducing it on a fresh Mac\"" >&2
         redux_status=127
-    elif [ -z "${REDUX_BIOS:-}" ]; then
-        echo "smoke: REDUX_BIOS is not set -- the bundled OpenBIOS never reaches this game's" >&2
-        echo "       entry point, so the gate would only fail slowly. Set REDUX_BIOS to a" >&2
-        echo "       retail Japanese BIOS dump -- research/tooling-setup.md section \"The BIOS" >&2
-        echo "       question\"" >&2
-        redux_status=127
-    elif [ ! -f "$REDUX_BIOS" ]; then
-        echo "smoke: REDUX_BIOS=$REDUX_BIOS does not exist -- research/tooling-setup.md" >&2
-        echo "       section \"The BIOS question\"" >&2
+    elif ! uv run python tools/libretro/emulator_paths.py --check bios >/dev/null; then
+        # The bundled OpenBIOS never reaches this game's entry point, so without a retail
+        # BIOS the gate would only fail slowly; the check has said what to set.
         redux_status=127
     elif [ -n "$image" ]; then
         ./tools/redux/run-headless.sh --iso "$image" || redux_status=$?
@@ -197,21 +202,7 @@ cmd_smoke() {
 
     echo
     echo "== gate 2/2: Beetle PSX headless boot (tools/libretro/smoke.sh) =="
-    if [ -z "${BOKU_LIBRETRO_CORE:-}" ]; then
-        echo "smoke: BOKU_LIBRETRO_CORE is not set -- set it to the mednafen_psx_libretro" >&2
-        echo "       dylib -- research/tooling-setup.md section \"Beetle PSX, headless\"" >&2
-        beetle_status=127
-    elif [ ! -f "$BOKU_LIBRETRO_CORE" ]; then
-        echo "smoke: BOKU_LIBRETRO_CORE=$BOKU_LIBRETRO_CORE does not exist" >&2
-        beetle_status=127
-    elif [ -z "${BOKU_LIBRETRO_SYSTEM:-}" ]; then
-        echo "smoke: BOKU_LIBRETRO_SYSTEM is not set -- set it to the directory holding" >&2
-        echo "       scph5500.bin -- research/tooling-setup.md section \"Beetle PSX, headless\"" >&2
-        beetle_status=127
-    elif [ ! -d "$BOKU_LIBRETRO_SYSTEM" ]; then
-        echo "smoke: BOKU_LIBRETRO_SYSTEM=$BOKU_LIBRETRO_SYSTEM is not a directory" >&2
-        beetle_status=127
-    elif [ -n "$image" ]; then
+    if [ -n "$image" ]; then
         ./tools/libretro/smoke.sh "$image" || beetle_status=$?
     else
         ./tools/libretro/smoke.sh || beetle_status=$?
@@ -406,9 +397,11 @@ case "$verb" in
         exec uv run python tools/libretro/movie_review.py "$@"
         ;;
     test)
+        emulator_env
         exec uv run pytest "$@"
         ;;
     emu-test)
+        emulator_env
         BOKU_EMU_TESTS=1 exec uv run pytest tests/test_real_movie_subtitle.py \
             tests/test_real_texture_text_beetle.py tests/test_real_texture_buttons.py \
             tests/test_real_texture_books.py tests/test_real_credits_card.py \

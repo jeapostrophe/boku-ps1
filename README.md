@@ -146,8 +146,10 @@ what each verb does and where its switches are; most take `--help`. It needs `uv
 installs Python and the Python tools on first use) and, for a CHD, `chdman` (MAME's —
 `brew install rom-tools`). `build-days` needs armips; the emulator verbs — and `saves` and
 `duckstation-cards`, which boot a new game on Beetle once to start from — need PCSX-Redux or
-the Beetle PSX core and a retail BIOS: [research/tooling-setup.md](research/tooling-setup.md)
-says how to set those up. `./make.sh help` names what the other verbs need.
+the Beetle PSX core and a retail BIOS. They are found in `~/Dev/retro-trainer/config/` without
+any setup; anywhere else, set `BOKU_LIBRETRO_CORE` and `BOKU_LIBRETRO_SYSTEM` —
+[research/tooling-setup.md](research/tooling-setup.md) § "Where the emulator verbs find the core
+and the BIOS". `./make.sh help` names what the other verbs need.
 
 ### The import step
 

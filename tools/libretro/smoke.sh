@@ -3,9 +3,9 @@
 #
 #   tools/libretro/smoke.sh [CONTENT.cue]           # default disc/image.cue
 #
-# Needs BOKU_LIBRETRO_CORE (the mednafen_psx dylib) and BOKU_LIBRETRO_SYSTEM (the directory
-# holding scph5500.bin); research/tooling-setup.md § "Beetle PSX, headless" says where
-# retro-trainer keeps both. Screenshots and the memory card go under work/beetle/smoke/,
+# Needs the mednafen_psx core and the directory holding scph5500.bin: BOKU_LIBRETRO_CORE and
+# BOKU_LIBRETRO_SYSTEM, else where emulator_paths.py finds them (retro-trainer's config/);
+# research/tooling-setup.md § "Beetle PSX, headless". Screenshots and the memory card go under work/beetle/smoke/,
 # which is gitignored -- nothing is written next to the image.
 #
 # The exit codes are run_core.py's own, one for one (its --help lists them), plus 9 for
@@ -30,8 +30,10 @@ fail() {
     exit "$1"
 }
 
-[ -n "${BOKU_LIBRETRO_CORE:-}" ] || fail 2 "BOKU_LIBRETRO_CORE is not set"
-[ -n "${BOKU_LIBRETRO_SYSTEM:-}" ] || fail 2 "BOKU_LIBRETRO_SYSTEM is not set"
+# Resolved here, not left to run_core, because the messages below name the paths.
+BOKU_LIBRETRO_CORE="$(uv run python "$here/emulator_paths.py" --check core)" || exit 2
+BOKU_LIBRETRO_SYSTEM="$(uv run python "$here/emulator_paths.py" --check system)" || exit 2
+export BOKU_LIBRETRO_CORE BOKU_LIBRETRO_SYSTEM
 [ -f "$content" ] || fail 2 "no content at $content"
 
 rm -rf "$work"

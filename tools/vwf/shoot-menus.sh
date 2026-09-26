@@ -22,8 +22,8 @@
 # STOCK image -- that is the measurement of the island being dead code; on a patched image
 # the walkers jump into it by design.
 #
-# Beetle needs BOKU_LIBRETRO_CORE and BOKU_LIBRETRO_SYSTEM, Redux REDUX_BIOS
-# (research/tooling-setup.md). Redux runs ~14,000 frames of free roam; allow ten minutes.
+# Beetle needs its core and BIOS, Redux a BIOS (tools/libretro/emulator_paths.py finds
+# them; research/tooling-setup.md). Redux runs ~14,000 frames of free roam; allow ten minutes.
 set -u
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 image=${1:-$repo/build/vwf/image.cue}

@@ -10,13 +10,13 @@ from __future__ import annotations
 
 import argparse
 import math
-import os
 import struct
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 
-import run_core  # noqa: E402 -- beside this file, so on sys.path when run as a script
+import emulator_paths  # noqa: E402 -- beside this file, so on sys.path when run as a script
+import run_core  # noqa: E402
 
 MODE_ACTIVE = 0x800237E1
 """The running mode (`0x800237E0` is the one asked for; `mode_set` `0x80011A98`)."""
@@ -43,13 +43,11 @@ class StepError(Exception):
 class Game:
     def __init__(self, image: Path, card: bytes, work: Path) -> None:
         (work / "saves").mkdir(parents=True, exist_ok=True)
-        self.fe = run_core.Frontend(
-            Path(os.environ["BOKU_LIBRETRO_CORE"]),
-            Path(os.environ["BOKU_LIBRETRO_SYSTEM"]),
-            work / "saves",
-            {},
-            4,
-        )
+        try:
+            core, system = emulator_paths.core(), emulator_paths.system()
+        except emulator_paths.NotFound as exc:
+            raise SystemExit(str(exc)) from exc
+        self.fe = run_core.Frontend(core, system, work / "saves", {}, 4)
         self.fe.lib.retro_init()
         if not self.fe.load_game(image, True):
             raise StepError(f"the core refused {image}")

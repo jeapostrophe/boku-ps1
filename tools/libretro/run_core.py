@@ -8,10 +8,10 @@ what the core drew -- ctypes against `libretro.h`, standard library only.
 
     tools/libretro/run_core.py disc/image.cue --frames 2400 --shot 2300:title
 
-`--core` (or `BOKU_LIBRETRO_CORE`) names the core dylib and `--system` (or
-`BOKU_LIBRETRO_SYSTEM`) the directory holding `scph5500.bin`; both are machine paths and have
-no default here. `research/tooling-setup.md` § "Beetle PSX, headless" says where retro-trainer
-keeps its build.
+`--core` names the core dylib and `--system` the directory holding `scph5500.bin`; without
+them, `emulator_paths.py` finds each (`BOKU_LIBRETRO_CORE` / `BOKU_LIBRETRO_SYSTEM`, else the
+retro-trainer checkout's `config/`) or says what to install. `research/tooling-setup.md`
+§ "Beetle PSX, headless" says where retro-trainer keeps its build.
 
 Frame numbering: frame N is the state after the N-th `retro_run` call, so the first frame is
 1. Beetle counts a frame per `retro_run`; PCSX-Redux counts GPU vsyncs, so the two disagree on
@@ -33,7 +33,6 @@ from __future__ import annotations
 
 import argparse
 import ctypes
-import os
 import struct
 import sys
 import time
@@ -52,6 +51,8 @@ from ctypes import (
     c_void_p,
 )
 from pathlib import Path
+
+import emulator_paths  # beside this file, so on sys.path when run as a script
 
 EXIT_OK = 0
 EXIT_USAGE = 2
@@ -756,14 +757,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--core",
         type=Path,
-        default=os.environ.get("BOKU_LIBRETRO_CORE"),
-        help="core dylib; default $BOKU_LIBRETRO_CORE",
+        help="core dylib; default $BOKU_LIBRETRO_CORE, else retro-trainer's (emulator_paths.py)",
     )
     p.add_argument(
         "--system",
         type=Path,
-        default=os.environ.get("BOKU_LIBRETRO_SYSTEM"),
-        help="system directory holding the BIOS; default $BOKU_LIBRETRO_SYSTEM",
+        help="system directory holding the BIOS; default $BOKU_LIBRETRO_SYSTEM, else "
+        "retro-trainer's (emulator_paths.py)",
     )
     p.add_argument(
         "--work",
@@ -870,12 +870,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def resolve_paths(args) -> tuple[Path, Path, Path]:
-    if args.core is None:
-        raise UsageError("no core: pass --core or set BOKU_LIBRETRO_CORE")
-    if args.system is None:
-        raise UsageError("no system directory: pass --system or set BOKU_LIBRETRO_SYSTEM")
-    core = Path(args.core).expanduser()
-    system = Path(args.system).expanduser()
+    try:
+        core = Path(args.core).expanduser() if args.core else emulator_paths.core()
+        system = Path(args.system).expanduser() if args.system else emulator_paths.system()
+    except emulator_paths.NotFound as exc:
+        raise UsageError(f"{exc} (or pass --core / --system)") from exc
     if not core.is_file():
         raise UsageError(f"core is not a file: {core}")
     if not system.is_dir():

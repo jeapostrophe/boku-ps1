@@ -6,10 +6,8 @@
 # A thin layer over run-headless.sh (which owns the flags, the wall clock and the
 # image-unchanged guard). Adds what the scripts here share: BOKU_REDUX_DIR so they can
 # dofile lib.lua, BOKU_REPO, BOKU_WORK (gitignored scratch for screenshots and save
-# states — game pixels and RAM never leave it), and a default for REDUX_BIOS.
-#
-# REDUX_BIOS defaults to the SCPH-5500 dump retro-trainer keeps on this machine; it is
-# read in place and never copied. Set REDUX_TIMEOUT (seconds) for long runs.
+# states — game pixels and RAM never leave it). run-headless.sh finds the BIOS.
+# Set REDUX_TIMEOUT (seconds) for long runs.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 repo=$(cd "$here/../.." && pwd)
@@ -20,7 +18,6 @@ case "$script" in */*) ;; *) script="$here/$script" ;; esac
 export BOKU_REDUX_DIR="$here"
 export BOKU_REPO="$repo"
 export BOKU_WORK="${BOKU_WORK:-$repo/work/txt01-emu}"
-export REDUX_BIOS="${REDUX_BIOS:-$HOME/Dev/retro-trainer/config/system/scph5500.bin}"
 mkdir -p "$BOKU_WORK/shots" "$BOKU_WORK/states"
 
 exec "$here/run-headless.sh" --lua "$script" -- "$@"

@@ -21,7 +21,7 @@ every `SAMPLE` frames, the shots are aimed by interpolating those samples, and e
 labelled from the number read at that very frame, never the one aimed at
 (`research/movies.md` § 10 has what the number says about the picture on screen).
 
-Needs BOKU_LIBRETRO_CORE / BOKU_LIBRETRO_SYSTEM (run_core.py), ffmpeg, the import, and a
+Needs Beetle's core and BIOS (emulator_paths.py), ffmpeg, the import, and a
 build whose `edits.json` carries the movie hooks.
 """
 

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import importlib.util
 import struct
+import sys
 import types
 import zlib
 from pathlib import Path
@@ -34,6 +35,8 @@ RUN_CORE_PATH = REPO_ROOT / "tools" / "libretro" / "run_core.py"
 
 
 def _load_run_core():
+    # run_core imports emulator_paths from beside itself, as it does when run as a script.
+    sys.path.insert(0, str(RUN_CORE_PATH.parent))
     spec = importlib.util.spec_from_file_location("run_core_under_test", RUN_CORE_PATH)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None

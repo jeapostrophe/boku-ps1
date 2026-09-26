@@ -6,7 +6,7 @@
 #   tools/vwf/stack-watch.sh [image.cue]      # default build/vwf/image.cue
 #
 # Needs tools/vwf/shoot-menus.sh's Beetle free-roam state and RAM (work/txt05/menus/roam/),
-# made from the same image, and BOKU_LIBRETRO_CORE / BOKU_LIBRETRO_SYSTEM. For each scenario
+# made from the same image, and Beetle (tools/libretro/emulator_paths.py). For each scenario
 # the state's RAM from STACK_LO up to the stack's top is filled with a sentinel
 # (tools/vwf/state_poke.py --fill), the scenario runs, and --scan reports the lowest byte
 # that changed. The overlays are forced into their modes the way book-pokes.lua does it.

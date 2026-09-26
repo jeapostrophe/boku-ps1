@@ -6,7 +6,8 @@
 #   tools/redux/run-headless.sh [--iso PATH] [--lua PATH] [--] [extra redux flags...]
 #
 # Defaults: disc/image.cue and tools/redux/smoke.lua. Requires PCSX-Redux installed at
-# $REDUX_APP, and REDUX_BIOS pointing at a retail Japanese BIOS dump: the bundled
+# $REDUX_APP, and a retail Japanese BIOS dump -- REDUX_BIOS, else where
+# tools/libretro/emulator_paths.py finds one (retro-trainer's config/system/): the bundled
 # OpenBIOS reads this disc but never reaches the game's entry point, so the default
 # gate FAILS without one. research/tooling-setup.md has the measurement.
 #
@@ -99,11 +100,15 @@ export BOKU_EXE_SAMPLES="$samples"
 # Positional parameters, not a string: "-bios $REDUX_BIOS" expanded unquoted splits a
 # path containing a space into two arguments and globs one containing * or ?.
 set --
-if [ -n "${REDUX_BIOS:-}" ]; then
+if [ -z "${REDUX_BIOS:-}" ]; then
+	REDUX_BIOS=$(uv run --project "$repo" python "$repo/tools/libretro/emulator_paths.py" \
+		--check bios) || REDUX_BIOS=
+fi
+if [ -n "$REDUX_BIOS" ]; then
 	[ -f "$REDUX_BIOS" ] || { echo "no BIOS at $REDUX_BIOS" >&2; exit 127; }
 	set -- -bios "$REDUX_BIOS"
 else
-	echo "warning: REDUX_BIOS unset — falling back to the bundled OpenBIOS, which does" >&2
+	echo "warning: no BIOS — falling back to the bundled OpenBIOS, which does" >&2
 	echo "         not reach this game's entry point. Expect the gate to report exit 5." >&2
 fi
 

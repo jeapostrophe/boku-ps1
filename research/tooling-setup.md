@@ -283,9 +283,11 @@ sits in a loop at 0x8003xxxx indefinitely.
 With a retail Japanese BIOS (`SCPH-5500 (JP)`, which PCSX-Redux fingerprints as `ff3eeb8c`) the
 executable is loaded at frame ~720, its entry point is reached at frame 835 and the game runs
 (the frame-90 hit this section used to claim was the BIOS shell — see the last section). `run-headless.sh` takes the path in
-`REDUX_BIOS`. The disc is `SCPS-10088`, i.e. NTSC-J, so SCPH-5500 is the matching region; a copy
-lives at `~/Dev/retro-trainer/config/system/scph5500.bin` on this machine. A BIOS dump is not
-this repo's to ship.
+`REDUX_BIOS`, and when that is unset, `scph5500.bin` in Beetle's system directory as
+§ "Where the emulator verbs find the core and the BIOS" resolves it. The disc is `SCPS-10088`,
+i.e. NTSC-J, so SCPH-5500 is the matching region; a copy lives at
+`~/Dev/retro-trainer/config/system/scph5500.bin` on this machine. A BIOS dump is not this repo's
+to ship.
 
 ### The gate, red then green
 
@@ -389,6 +391,31 @@ windows of `0x80010000…` against `disc/files/SCPS_100.88`, which `run-headless
 and passes in through `BOKU_EXE_SAMPLES` (no byte of the game is written into a tracked file). The
 OpenBIOS observation ("the PC sits at `0x8003xxxx` indefinitely") was not re-measured.
 
+## Where the emulator verbs find the core and the BIOS
+
+PLAN `ENV-09`. Every verb that boots an emulator needs three machine paths, and
+`tools/libretro/emulator_paths.py` is the one place that resolves them:
+
+| variable | what | when it is unset |
+|---|---|---|
+| `BOKU_LIBRETRO_CORE` | the Beetle PSX (`mednafen_psx`) libretro core | `<retro-trainer>/config/cores/mednafen_psx_libretro.dylib` (`.so` off macOS) |
+| `BOKU_LIBRETRO_SYSTEM` | the directory holding `scph5500.bin` | `<retro-trainer>/config/system` |
+| `REDUX_BIOS` | PCSX-Redux's BIOS file | `scph5500.bin` in the system directory above |
+
+`<retro-trainer>` is `$BOKU_MODE_ONE`, else `~/Dev/retro-trainer` — Mode One's checkout, the
+same one `./make.sh export-to-mode-one` writes into. A variable that is set wins; one naming a
+path that does not exist is an error, not a reason to look elsewhere. Every tool resolves them
+itself — `run_core.py` (whose `--core`/`--system` beat everything), the field driver,
+`smoke.sh`, `run-headless.sh` — and `./make.sh test` / `emu-test` export them for the tests,
+which read the variables. When nothing is found, the tool that needed it stops with the
+variable to set and where it looked.
+
+**On a machine without retro-trainer** you need: a Beetle PSX core for your platform (a build of
+`libretro/beetle-psx-libretro`, the source retro-trainer's is pinned to — § "Beetle PSX, as it
+stands on this machine"), and `scph5500.bin`, the retail Japanese BIOS, dumped from your own
+console. Put them anywhere and set `BOKU_LIBRETRO_CORE` and `BOKU_LIBRETRO_SYSTEM` (the BIOS's
+directory); `REDUX_BIOS` then follows. `./make.sh smoke` checks all three.
+
 ## Beetle PSX, headless
 
 `tools/libretro/run_core.py` is a libretro frontend: one file of Python and `ctypes` against
@@ -416,8 +443,9 @@ uv run python tools/libretro/run_core.py disc/image.cue --work work/beetle/resum
     --state-in work/beetle/stock/first-dialogue.state --frames 300 --shot 300:later
 ```
 
-Neither path has a default in a tracked file — pass `--core`/`--system` or set the two
-variables. Everything written goes under `--work` (default `work/beetle/`, gitignored):
+The two `export` lines are what the defaults already are on a machine laid out like this one
+(§ "Where the emulator verbs find the core and the BIOS"); `--core`/`--system` beat both.
+Everything written goes under `--work` (default `work/beetle/`, gitignored):
 screenshots, states, and `saves/`, which is what the core is given as its save directory, so
 nothing the core writes can land next to the image. Memory card 1 is **not** a file there: with
 the core's default `use_mednafen_memcard0_method = libretro` it is the frontend's `SAVE_RAM`,

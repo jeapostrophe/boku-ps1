@@ -29,7 +29,6 @@ case "$script" in */*) ;; *) script="$here/$script" ;; esac
 export BOKU_REDUX_DIR="$here"
 export BOKU_REPO="$repo"
 export BOKU_WORK="${BOKU_WORK:-$repo/work/txt04}"
-export REDUX_BIOS="${REDUX_BIOS:-$HOME/Dev/retro-trainer/config/system/scph5500.bin}"
 mkdir -p "$BOKU_WORK/shots" "$BOKU_WORK/states"
 
 exec "$here/run-headless.sh" --iso "$image" --lua "$script" -- "$@"

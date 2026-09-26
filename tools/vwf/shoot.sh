@@ -5,8 +5,8 @@
 #
 #   tools/vwf/shoot.sh [image.cue]
 #
-# Beetle PSX needs BOKU_LIBRETRO_CORE and BOKU_LIBRETRO_SYSTEM, PCSX-Redux REDUX_BIOS
-# (research/tooling-setup.md). Both emulators run in the foreground and exit by themselves.
+# Beetle PSX needs its core and BIOS, PCSX-Redux a BIOS (tools/libretro/emulator_paths.py
+# finds them; research/tooling-setup.md). Both emulators run in the foreground and exit by themselves.
 set -eu
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 image=${1:-$repo/build/vwf/image.cue}

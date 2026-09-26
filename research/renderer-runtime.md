@@ -9,7 +9,7 @@ from process start unless "state-relative". Screenshots are the game's pixels an
 [`symbols/text-renderer.symbols.tsv`](symbols/text-renderer.symbols.tsv).
 
 How to run anything below: `tools/redux/run-txt01.sh <script.lua>` (wraps `run-headless.sh`;
-sets `REDUX_BIOS` to its documented default and the scratch directory). `drive.lua` is the
+sets the scratch directory; `run-headless.sh` finds the BIOS). `drive.lua` is the
 general driver — load a save state, play a pad script, arm probes (`BOKU_PROBE=dialog,voice,pad,
 prim,dbg,heap,heapraise`), shoot frames, save a state; `trial-pokes.lua` is the in-RAM trial;
 `shot2png.py` and `sstate_vram.py` turn the dumps into PNGs. The emulator runs at roughly 130–190
