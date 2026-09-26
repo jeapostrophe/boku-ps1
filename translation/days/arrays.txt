@@ -408,7 +408,7 @@ zukan@32E8	[SEL]	Write in your diary and go to sleep? | Yes | No
 
 # --- exe@code:80037544: caught, month, day
 exe@code:80037544	(unlabelled)	Caught {month}/{day}
-# NOTE exe@code:80037544: the Japanese is 採取 ("collected") and the date. "Caught" alone keeps the
+# NOTE exe@code:80037544: the Japanese is saishu ("collected") and the date. "Caught" alone keeps the
 #   bout screen's bottom row clear: "Date caught" ran into "Red-legged Stag Beetle" there
 #   (research/sumo.md § The desk's text).
 

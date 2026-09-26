@@ -48,8 +48,8 @@ XCH.13	Fat	First, yours truly takes you on!
 XCH.14	Fat	Haven't got one. Switch.
 XCH.15	Fat	Go all out!
 XCH.16	Fat	Hehe, going well, going great!
-# NOTE XCH.16: 好調 上々 (kōchō jōjō), "going well, first-rate" — Jay, 2026-09-24: he is
-#   congratulating Boku on a bout, so 上々 (first-rate), not 強情 (stubborn), though the ear hears gōjō.
+# NOTE XCH.16: kōchō jōjō, "going well, first-rate" — Jay, 2026-09-24: he is congratulating
+#   Boku on a bout, so jōjō (first-rate), not gōjō (stubborn), though the ear hears gōjō.
 XCH.17	Fat	Uh-oh-oh-oh!
 # NOTE XCH.17: a sound of anxiety (Jay's ear), the partner of XCH.16 with the bout going badly.
 XCH.18	Fat	Hahaha... I did it!
