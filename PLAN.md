@@ -571,11 +571,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       or superseded by a later ruling of his. `translation/locked.tsv` (66 ids) is the record:
       `tests/test_locked.py` holds the translation to it, packet parts name the locked words, and
       `save-event` refuses an answer that drops them. Harmed (was): the player, and Jay.
-- [ ] **[TRN-16]** **A second-pass translator on the `additive-word` lines.** Jay, 2026-09-25, reading
-      in the reader: "many many examples of the 'additive-word' heuristic" (166) — a second-pass
-      translator decides, per line, whether the added word fits the voice of the character speaking,
-      keeps or rewrites it, and the heuristic's findings are then settled. Harmed: the player,
-      reading words the Japanese doesn't say in a voice that isn't the speaker's.
+- [x] **[TRN-16]** **A second-pass translator on the `additive-word` lines.** DONE 2026-09-26
+      (`761fcf5`): Jay's 166 flagged lines judged in their scenes by three Opus translators given
+      the whole `--game` brief, then checked against the Japanese by an independent Opus judge
+      (163 accepted, 3 keeps overturned). 153 kept words are recorded as `# VOICE <id>: <word> --
+      <why>` notes (boku.lint `VOICE_NOTE`, honoured by the heuristic; `voice-note` warns on one that
+      settles nothing); 13 lines rewritten minimally; none touched Jay's locked words.
+      lint-translation: additive-word 166 → 0. Harmed (was): the player.
 - [ ] **[TRN-17]** **An awkward-English sweep of the whole translation.** Jay, 2026-09-25: an agent
       reads the whole game for lines that are correct but read awkwardly in English (e.g.
       `E0175.0`), proposes rewrites, an independent judge checks them against the Japanese, and the
