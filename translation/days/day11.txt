@@ -5,6 +5,7 @@ E1121.0	Aunt	Eek! What Moe bought isn't mirin, it's salad oil! // Oh, nooo! // M
 # --- E1130: G15 -- the sisters' room
 E1130.0	Moe	Ehehe... // Actually, right now, Onee-chan is really happy...
 E1130.1	Boku	Why?
+# VOICE E1130.2: just -- Just because carries doshitemo, a refusal to give a reason
 E1130.2	Moe	Just because.
 E1130.3	Moe	Because I'm happy, that's why.
 

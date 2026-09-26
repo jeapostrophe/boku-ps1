@@ -262,6 +262,7 @@ E6000.1	Saori	......
 E6000.2	Boku	Aren't you happy?
 E6000.3	Saori	Somehow... you know.
 E6000.4	Boku	Why is that, I wonder?
+# VOICE E6000.5: just -- carries doshitemo (it simply won't be otherwise)
 E6000.5	Saori	I just can't be.
 E6000.6	Boku	But now you'll be famous overnight, lady.
 E6000.7	Saori	Haha... Dummy. Ever heard of the crested ibis? // I finally found a place where wolves live, and I can't tell anybody.
@@ -317,6 +318,7 @@ E6004.31	Saori	Hehe, how's that!
 E6004.32	Boku	Huh? It really worked.
 E6004.33	Saori	Ohh, is that so.
 E6004.34	Boku	...Yeah.
+# VOICE E6004.35: really -- translates sungee, Saori's slangy sugoi
 E6004.35	Saori	It must have been a really tiny snake, huh.
 E6004.36	Boku	That's not...
 E6004.37	Saori	About 5 centimeters long.
@@ -397,6 +399,7 @@ E8021.0	(unlabelled)	Two moldy bread rolls from school lunch are in here.
 E8022.0	(unlabelled)	Found a Spider Man Rider card! But it's soaked through and falling apart.
 
 # --- E8023: A17 -- the secret base
+# VOICE E8023.0: just -- translates dake (only one of the pair)
 E8023.0	(unlabelled)	There's just one sandal in here.
 
 # --- E8024: A17 -- the secret base
@@ -541,7 +544,7 @@ E0830.4	Moe	Ahaha... I only like the things I like.
 E0830.5	Boku	So what do you like?
 E0830.6	Moe	Japanese and art, and I like music too.
 E0830.7	Boku	And what don't you like?
-E0830.8	Moe	...English! // ...The teacher is the vice-principal, and somehow I just can't warm to that teacher. // So intense, so completely all-out, that when class is over, every one of us is wiped out.
+E0830.8	Moe	...English! // ...The teacher is the vice-principal, and somehow I can't warm to that teacher. // So intense, so all-out, that when class is over, every one of us is wiped out.
 E0830.9	Boku	Hmm, so the teacher tries too hard.
 
 # --- E0833: G15 -- the sisters' room; I08 -- close-up
@@ -553,6 +556,7 @@ E0808.0	(unlabelled)	Got the axe.
 # --- E0851: A18 -- the secret base
 E0851.0	Guts	Boku-chan, what do you like on TV?
 E0851.1	Boku	I like the ones who transform but don't get bigger.
+# VOICE E0851.2: just -- just like you is the English for -rashii
 E0851.2	Guts	Hmm, that's just like you, Boku-chan.
 # NOTE E0851.1: the Kamen Rider heroes, as against Ultraman, who grows giant (glossary § 6).
 
@@ -628,6 +632,7 @@ E1010.2	Uncle	Huh? This is... what was it again? // Oh well. It's a bit too soft
 E1007.0	Narrator	It was a half-finished pressed-flower piece, a very lovely thing, made with dainty yellow flowers.
 
 # --- E1051: A18 -- the secret base
+# VOICE E1051.0: just -- carries -rya ii noni, Guts's you-need-only scorn for swimming schools
 E1051.0	Guts	I hear in the city they've got things called swimming schools? // You should just learn to swim on your own in the river nearby...
 
 # --- E1052: A18 -- the secret base
@@ -652,6 +657,7 @@ E1205.2	Narrator	and I stood on tiptoe, just a little...
 
 # --- E1214: H26 -- the workshop
 E1214.0	Uncle	Boku-kun, that great big fly is finished.
+# VOICE E1214.1: very -- translates domo in domo arigato
 E1214.1	Boku	Wow, thank you very much, Uncle.
 
 # --- E1251: A18 -- the secret base
@@ -673,7 +679,7 @@ E1306.0	(voice only)
 E1306.1	(voice only)
 
 # --- E1451: A18 -- the secret base
-E1451.0	Guts	My very earliest memory is a real weird one. // I think it was on TV or something... // some clumsy-looking guy in a big helmet // standing in a pitch-black desert, holding a flag.
+E1451.0	Guts	My earliest memory is a real weird one. // I think it was on TV or something... // some clumsy-looking guy in a big helmet // standing in a pitch-black desert, holding a flag.
 E1451.1	Specs	Wasn't that... // Commander Armstrong of Apollo?
 
 # --- E1452: A18 -- the secret base
@@ -717,10 +723,13 @@ E1504.7	Shirabe	Tell me, tell me.
 E1504.8	Uncle	Yes! When Uncle was still smaller than you are now, // it's a story his grandpa told him... // Once in a long while, on the rocks along the shore, you find // a stone with a strange shape, like a big bald octopus.
 E1504.9	Boku	Yeah, yeah, that's it.
 E1504.10	Uncle	And that, you see...
+# VOICE E1504.11: actually -- carries nanto, the uncle's would-you-believe-it reveal
 E1504.11	Uncle	is actually a whale's ear bone!
 E1504.12	Boku	Huh? A whale!
 E1504.13	Uncle	That's right. // Whales and dolphins, the mammals that live in the sea... // after they die, their bodies sink to the sea floor, // but the ear bones aren't joined to the other bones, // so they come away from the body first and wash up on the shore, they say.
+# VOICE E1504.14: really -- carries Boku's doubting mono na no? (is that the kind of thing you can find?)
 E1504.14	Boku	But can you really find something like that?
+# VOICE E1504.15: very -- translates sonna ni (not that high)
 E1504.15	Uncle	Well, the chances probably aren't very high, // but if you walk along the shore and look carefully, // with luck you can find two or three in a single day, they say. // Maybe the whales, who went back from the land to the sea as they evolved, // come to miss this land again, and come back.
 E1504.16	Boku	Hmm, I see.
 # NOTE E1504.8: tako-nyuudou, an octopus pictured as a bald, big-headed goblin.
@@ -732,6 +741,7 @@ E1605.2	(voice only)
 
 # --- E1606: C08 -- the sunflower fields (the aunt's third photograph)
 E1606.0	Aunt	I've run into you again, Boku-kun! // All right, I'll take a picture of you here!
+# VOICE E1606.1: very -- translates the dai- of daikobutsu (great favourite)
 E1606.1	Aunt	Okaaay, here I go. What's Uncle's very favorite food?
 E1606.2	(voice only)
 E1606.3	Aunt	Well, Auntie is going to take a little walk around here before she goes home.
@@ -744,6 +754,7 @@ E1650.3	Specs	You guys... it's not about winning or losing. You need more room i
 E1650.4	Guts, Fat	No waaay!
 
 # --- E1651: A18 -- the secret base
+# VOICE E1651.0: really -- carries the mimetic gatsun to (a hard wallop) and the sentence-final ze
 E1651.0	Guts	Hm-hm-hm, next time I'll really let 'em have it.
 
 # --- E1652: A18 -- the secret base
@@ -775,6 +786,7 @@ E1763.0	Narrator	A dead chicken was hanging there.
 E1706.0	Narrator	The book was written in queer characters that I could not read at all.
 E1706.1	Boku	It's kind of weird... ana-ana-bobon...
 E1706.2	Narrator	As before, the book was written in hopelessly unreadable, outlandish characters.
+# VOICE E1706.3: definitely -- translates yappari (as before, as he thought)
 E1706.3	Boku	Yep, this is definitely ana-ana-bobon...
 E1706.4	Narrator	Incidentally, this word has no meaning whatsoever.
 # NOTE E1706.1: ana-ana-bobon, Boku's own nonsense word, kept as a sound; also the item's name
@@ -893,6 +905,7 @@ E1908.0	(unlabelled)	Used the firecrackers.
 E1908.1	(voice only)
 
 # --- E1951: A18 -- the secret base
+# VOICE E1951.0: just -- translates dake (only the girls)
 E1951.0	Guts	Last month at school... // the teacher got just the girls together and did something. // While that was going on, the boys played dodgeball.
 
 # --- E1952: A18 -- the secret base
@@ -916,6 +929,7 @@ E2003.5	Uncle	Well then, itadakimasu!
 E2003.6	Shirabe, Moe, Boku, Aunt	Itadakimasu!
 
 # --- E2050: A18 -- the secret base
+# VOICE E2050.0: really -- translates nakanaka, in a second-grader's words rather than a prim quite
 E2050.0	Specs	The lady camping at Dragon God Pond is a really interesting person. // I want to be a lyrical grown-up like that too...
 E2050.1	Fat	What's that? Is lyrical tasty?
 
@@ -937,6 +951,7 @@ E6001.7	Saori	Huh?
 E6001.8	Saori	What makes you think so?
 E6001.9	Boku	Dragonflies... there are lots of dragonflies flying.
 E6001.10	Saori	Huh, when did there get to be so many...
+# VOICE E6001.11: just -- translates chodo (just like today)
 E6001.11	Saori	When I was little, I lived in the town at the foot of this mountain. // That day, too, there were lots of dragonflies flying, just like today...
 E6001.12	Saori	Back when I was still smaller than you are now, Boku-kun... // I came hiking around here with my family... // That day, before I knew it, I'd gotten lost... // Evening came, and I got scared... // I sat on a big rock on the riverbank and cried... // And then, that voice...
 E6001.13	Boku	What kind of voice?
@@ -970,6 +985,7 @@ E6100.1	Saori	......
 E6100.2	Boku	Aren't you happy?
 E6100.3	Saori	Somehow... you know.
 E6100.4	Boku	Why is that, I wonder?
+# VOICE E6100.5: just -- translates doshitemo (no matter what, I just can't)
 E6100.5	Saori	I just can't be.
 E6100.6	Boku	But now you'll be famous overnight, lady.
 E6100.7	Saori	Haha... Dummy. Ever heard of the crested ibis? // I finally found a place where wolves live, and I can't tell anybody.
@@ -989,6 +1005,7 @@ E6101.7	Saori	Huh?
 E6101.8	Saori	What makes you think so?
 E6101.9	Boku	Dragonflies... there are lots of dragonflies flying.
 E6101.10	Saori	Huh, when did there get to be so many...
+# VOICE E6101.11: just -- translates chodo (just like today); same recording as E6001.11
 E6101.11	Saori	When I was little, I lived in the town at the foot of this mountain. // That day, too, there were lots of dragonflies flying, just like today...
 E6101.12	Saori	Back when I was still smaller than you are now, Boku-kun... // I came hiking around here with my family... // That day, before I knew it, I'd gotten lost... // Evening came, and I got scared... // I sat on a big rock on the riverbank and cried... // And then, that voice...
 E6101.13	Boku	What kind of voice?
@@ -1042,6 +1059,7 @@ E6104.31	Saori	Hehe, how's that!
 E6104.32	Boku	Huh? It really worked.
 E6104.33	Saori	Ohh, is that so.
 E6104.34	Boku	...Yeah.
+# VOICE E6104.35: really -- translates sungee (Saori's rough really)
 E6104.35	Saori	It must have been a really tiny snake, huh.
 E6104.36	Boku	That's not...
 E6104.37	Saori	About 5 centimeters long.
@@ -1056,6 +1074,7 @@ E6105.2	Narrator	It was then that I thought: // was there not some way // of lur
 E6105.3	Narrator	Yes... I knew // what that weird ghost liked to eat...
 
 # --- E2251: A18 -- the secret base
+# VOICE E2251.0: just -- carries yappari, the verdict everyone already agrees on
 E2251.0	Guts	You know The Adventures of Gamba? Noroi's eyes are just too scary...
 
 # --- E2252: A18 -- the secret base
@@ -1065,9 +1084,11 @@ E2252.2	Fat	Whoa! Oh, man!
 E2252.3	Boku	We live in the same house, so obviously.
 
 # --- E2253: A18 -- the secret base
+# VOICE E2253.0: really -- carries Specs's drawn-out iyaa (no, really)
 E2253.0	Specs	Why don't cartoon heroes ever complain about their hairstyles? // No, really, I think they ought to stand up for their rights more.
 
 # --- E2306: G17 -- the veranda; I34 -- close-up (the wolf photograph)
+# VOICE E2306.0: just -- translates ima ... tokoro (have just finished)
 E2306.0	Uncle	We've just finished breakfast.
 E2306.1	Saori	There's something I want to show you... // Heeey, Boku-kun, come out here a sec!
 E2306.2	Uncle	Hm? What is it?
@@ -1077,6 +1098,7 @@ E2306.5	Saori	Oh, morning, weird kid.
 E2306.6	Boku	Morning, weird lady.
 E2306.7	Saori	Deh-heh-heh. What do you think this is?
 E2306.8	Boku	It's a Japanese wolf! You did it, lady!
+# VOICE E2306.9: really -- translates yappari
 E2306.9	Saori	So they really were here. On this mountain, all along...
 E2306.10	Boku	...Kind of, for some reason... huuuh?
 
@@ -1139,6 +1161,7 @@ E2401.17	Uncle	Well then, itadakimaasu!
 E2401.18	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E2451: A18 -- the secret base
+# VOICE E2451.0: just -- translates tada no (it's only iron ore)
 E2451.0	Guts	Last year I swiped a mineral specimen from the science room at school... // Well, it's just iron ore, but it's a treasure, heavy in your hand and glittering...
 
 # --- E2452: A18 -- the secret base
@@ -1150,6 +1173,7 @@ E2453.0	Specs	In The Eight Dog Chronicles, I can name all the jewels, // but I'm
 
 # --- E2505: D16 -- the summit of Mt. Teppen
 E2505.0	Boku	Wooow...
+# VOICE E2505.1: very -- translates the teppen pun (the very top of Mt. Teppen), glossary ruling
 E2505.1	Narrator	At the very top of Mt. Teppen, for some reason, this view, which I had won with a little effort... // carefully, carefully, gently, gently... // I resolved to take in thoroughly, from one end to the other...
 E2505.2	Narrator	Beyond, where my eye grazed the treetops of the nearer forest... // there was, first, my uncle's house and the persimmon tree in its garden, // shimmering faintly in the summer sunlight... // and farther on, where the ridge of the mountains grew somewhat gentler, // I could see the red tile roofs of the houses of Sagi-no-sato...
 E2505.3	Narrator	And to the west of the hill, as if held in the arms of the surrounding forest, // ran a single expressway, stretching straight ahead... // and far off, where that road pointed, the August sea, brimming with life, lay glittering...
@@ -1169,6 +1193,7 @@ E2504.5	Aunt	Hm? What is it?
 E2504.6	Narrator	I did not want to go home yet... // For some reason, those words were the ones I simply could not say.
 E2504.7	Boku	...I'm glad I came here, too.
 E2504.8	Aunt	Hm-hm-hm...... thank you. // I'm happy you like it here, Boku-kun.
+# VOICE E2504.9: completely -- translates sukkari (completely)
 E2504.9	Shirabe	Before anyone noticed, you've turned completely into one of our kids.
 E2504.10	Boku	Then am I Shirabe's Onii-chan too?
 E2504.11	Shirabe	No way!
@@ -1222,6 +1247,7 @@ E3172.0	Narrator	My father, whom I was seeing for the first time in a month, had
 E3173.0	Uncle	You look very well, somehow... // or rather, wh-what's happened to you?
 
 # --- E3174: H02 -- front of the house
+# VOICE E3174.0: really -- carries doon to (boldly, all-out), stretched in the voice
 E3174.0	Father	Well, how to put it, our second one's been born, see, // so I've made a big decision to really give it everything I've got, I have.
 E3174.1	Aunt	Onii-chan! Give what everything you've got?
 E3174.2	Father	Hmm, what indeed... gahahahaha!
@@ -1246,6 +1272,7 @@ E3177.1	Uncle	What's the matter?
 E3177.2	Moe	For now, at least, for the time being... // the one I love is supposed to be Dad...
 E3177.3	Uncle	For the time being, huh... hmm... // here the sorrow of a father with daughters is served up in full, with every care...
 E3177.4	Aunt	Oh? // If you want Dad for your sweetheart, don't forget there's a powerful rival right here!
+# VOICE E3177.5: really -- translates ara sou? (oh, is that so?)
 E3177.5	Moe	Oh, really? Well, I won't lose either!
 # NOTE E3177.3: itareri-tsukuseri, "every attention lavished", an idiom for perfect hospitality,
 #   which the uncle puts to his sorrow.

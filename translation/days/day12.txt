@@ -16,6 +16,7 @@ E1220.6	Aunt	Mashin means the measles.
 #   (style guide § 8 kind 3: translated literally, the Japanese word showing).
 
 # --- E1210: H26 -- the workshop
+# VOICE E1210.0: quite -- translates nakanaka
 E1210.0	Uncle	Quite a funny monk, wasn't he?
 E1210.1	Boku	Yeah.
 E1210.2	Uncle	He may not look it, but that monk is nearly sixty.
@@ -24,6 +25,7 @@ E1210.2	Uncle	He may not look it, but that monk is nearly sixty.
 E1212.0	Uncle	Ken-bo looks as happy as ever... // The mountain monkey gang didn't come this year, after all.
 E1212.1	Boku	Monkeys come here?
 E1212.2	Uncle	Of course they do. We're deep in the mountains here. // The monkeys live by making the rounds of the valleys around here, every two or three years. // But the damage to the fields is always worse from the wild boar.
+# VOICE E1212.3: just -- translates sakki (a moment ago)
 E1212.3	Uncle	I only just noticed... isn't Ken-bo going bald?
 E1212.4	Uncle	We've had Ken-bo since we lived in Tokyo. // So he's getting to be an old man by now. // You have to be kind to the elderly.
 
@@ -34,15 +36,18 @@ E1203.2	(voice only)
 E1203.3	(voice only)
 E1203.4	(voice only)
 E1203.5	Monk	Heave-ho. Now then, I think that'll about do it...
+# VOICE E1203.6: very -- the formal arigato gozaimasu the uncle says to the monk
 E1203.6	Uncle	Thank you very much.
 E1203.7	Monk	Yes, yes.
 E1203.8	Monk	Oh, a new face... // Boku-chan, how-oldo are-you? // Gahahahaha... How old are you?
 E1203.9	Boku	...Nine.
+# VOICE E1203.10: quite -- translates nakanaka
 E1203.10	Monk	I see, I see, quite a clever-looking young man. // It reminds me of when I was about the same age.
 E1203.11	Monk	Where did you kidnap him from?
 # NOTE E1203.8: the monk's English is in katakana and he translates himself (style guide § 16).
 
 # --- E1230: G15 -- the sisters' room
+# VOICE E1230.0: just -- translates sakki (the monk earlier)
 E1230.0	Moe	That monk just now was funny, wasn't he? // Every year he powers up a little more.
 E1230.1	Moe	If only I had a cheerful personality like that too...
 

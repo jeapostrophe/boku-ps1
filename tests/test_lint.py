@@ -50,6 +50,7 @@ from boku.lint import (
     lint_rows,
     load_rows,
     make_encoder,
+    parse_text,
     renderer_for,
     select_fields,
     translation_paths,
@@ -589,6 +590,86 @@ def test_a_settled_phrase_holding_an_intensifier_is_not_an_addition(store, tmp_p
     rows = [row for row in GOOD if row[0] != UNVOICED]
     findings = run(store, tmp_path, [*rows, (UNVOICED, "Fat", "Leave it to yours truly.")])
     assert "additive-word" not in checks(findings)
+
+
+def voice_note(line_id: str, words: str, why: str = "fits his voice") -> tuple[str]:
+    """A `# VOICE` note as a one-field "row", which `write_translation` writes as it is."""
+    return (f"# VOICE {line_id}: {words} -- {why}",)
+
+
+def test_a_voice_note_settles_the_words_it_names(store, tmp_path):
+    """PLAN TRN-16: a flagged word a second-pass translator kept on purpose is recorded once,
+    by id, and the heuristic stops asking. The note sits away from its row on purpose: it is
+    matched by id, not by position."""
+    added = ADDITIVE_WORDS[0]
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    line = (UNVOICED, "Boku", f"It was {added} true.")
+    assert "additive-word" in checks(run(store, tmp_path, [*rows, line]))
+    findings = run(store, tmp_path, [*rows, line, voice_note(UNVOICED, added)])
+    assert "additive-word" not in checks(findings)
+    assert "voice-note" not in checks(findings)
+
+
+def test_a_voice_note_settles_only_the_words_it_names(store, tmp_path):
+    """A note for one word does not excuse a second word added later."""
+    kept, other = ADDITIVE_WORDS[0], ADDITIVE_WORDS[1]
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    line = (UNVOICED, "Boku", f"It was {kept} {other} true.")
+    finding = only(run(store, tmp_path, [*rows, line, voice_note(UNVOICED, kept)]), "additive-word")
+    assert other in finding.message
+    assert kept not in finding.message.split("--")[0].split(":")[1]
+
+
+def test_a_voice_note_for_a_word_the_heuristic_does_not_flag_is_stale(store, tmp_path):
+    """The line was rewritten and the word is gone: the note now records nothing true."""
+    added = ADDITIVE_WORDS[0]
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    findings = run(
+        store, tmp_path, [*rows, (UNVOICED, "Boku", "It was true."), voice_note(UNVOICED, added)]
+    )
+    finding = only(findings, "voice-note")
+    assert finding.severity == WARNING
+    assert finding.line_id == UNVOICED
+    assert added in finding.message
+
+
+def test_a_voice_note_naming_no_row_of_its_file_is_reported(store, tmp_path):
+    findings = run(store, tmp_path, [*GOOD, voice_note("E9001.9", ADDITIVE_WORDS[0])])
+    finding = only(findings, "voice-note")
+    assert finding.severity == WARNING
+    assert finding.line_id == "E9001.9"
+
+
+def test_a_voice_note_naming_a_list_of_ids_settles_nothing_and_says_so(store, tmp_path):
+    """`# NOTE` takes an id list; a VOICE note is one id, so a list would otherwise be passed
+    over silently, with the line still flagged and no word why."""
+    added = ADDITIVE_WORDS[0]
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    line = (UNVOICED, "Boku", f"It was {added} true.")
+    note = (f"# VOICE {UNVOICED}, .2: {added} -- his voice",)
+    findings = run(store, tmp_path, [*rows, line, note])
+    assert "additive-word" in checks(findings)
+    assert "one id" in only(findings, "voice-note").message
+
+
+def test_the_parse_reports_only_what_a_file_cannot_hold(tmp_path):
+    """`parse_text`'s findings refuse a translator's answer (`boku.packets.check_answer`) and
+    fail the lock check (`boku.locked.committed_english`), so a VOICE note's warnings are the
+    lint's to give, not the parse's."""
+    text = f"# VOICE {UNVOICED}: just\n# VOICE E9001.9: just -- x\n{UNVOICED}\tBoku\tThree.\n"
+    rows, findings = parse_text(text, tmp_path / "day99.txt")
+    assert findings == []
+    assert [row.line_id for row in rows] == [UNVOICED]
+
+
+def test_a_voice_note_without_its_reason_does_not_settle_anything(store, tmp_path):
+    """The note is the record of a decision; a bare word list records none."""
+    added = ADDITIVE_WORDS[0]
+    rows = [row for row in GOOD if row[0] != UNVOICED]
+    line = (UNVOICED, "Boku", f"It was {added} true.")
+    findings = run(store, tmp_path, [*rows, line, (f"# VOICE {UNVOICED}: {added}",)])
+    assert "additive-word" in checks(findings)
+    assert only(findings, "voice-note").line_id == UNVOICED
 
 
 def test_the_heuristic_is_silent_when_the_source_has_an_intensifier(tmp_path):

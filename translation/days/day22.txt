@@ -19,18 +19,22 @@ E2202.7	(voice only)
 
 # --- E2220: H06 -- garden off the veranda
 E2220.0	Aunt	I see, so today was our wedding anniversary...
+# VOICE E2220.1: completely -- translates kanpeki ni (completely)
 E2220.1	Aunt	I'd completely forgotten.
 
 # --- E2212: G01 -- living room
 E2212.0	Boku	Uncle, how many years ago today did you and Auntie get married?
+# VOICE E2212.1: actually -- translates honto wa (it was really meant to be the day before)
 E2212.1	Uncle	Seventeen years ago. // Actually, it was supposed to be the day before, // but it was a Sunday, and the Suginami ward office was closed.
 E2212.2	Uncle	I see... seventeen years have gone by already...
 
 # --- E2210: H26 -- the workshop
 E2210.0	Uncle	Boku-kun, I wonder what kind of girl you'll marry someday?
 E2210.1	[SEL]	A glamorous beauty | A zaibatsu heiress | An older woman
+# VOICE E2210.2: really -- carries yappari and the sentence-final zo
 E2210.2	Uncle	I don't think you know what those words mean... but personality is what really matters in a person!
 E2210.3	Uncle	I suppose having money is better than not having it... // Uncle's never been rich, so honestly, I wouldn't know.
+# VOICE E2210.4: actually -- translates jitsu wa
 E2210.4	Uncle	Actually, Auntie is a year older than Uncle. // It was an arranged marriage, and yet right up until we registered it, I believed she was younger.
 E2210.5	Boku	Why?
 E2210.6	Uncle	It seems she was wearing a cat, as they say, and a dog, and a tanuki, all sorts of things... // Oh! What I just said is an absolute secret from Auntie, understood?

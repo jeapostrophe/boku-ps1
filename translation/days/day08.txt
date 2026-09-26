@@ -8,6 +8,7 @@ E0821.0	Aunt	Have you been to Onee-chan's room today? // Onee-chan said that fro
 
 # --- E0814: H13 -- behind the workshop, the chopping block
 E0814.0	Uncle	Phew... this axe is about at the end of its life. // I'll put it away in the shed and use a new one.
+# VOICE E0814.1: just -- just a little more translates mo sukoshi
 E0814.1	Uncle	Phew... just a little more. I'll keep at it!
 
 # --- E0820: H08 -- the yard

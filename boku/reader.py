@@ -500,17 +500,18 @@ def voice_transcript(directory: Path) -> dict[str, str]:
 
 # --- the translator's notes -----------------------------------------------------------------------
 
-_NOTE = re.compile(r"NOTE\s+(.+?):\s")
-"""`# NOTE <ids>: ...` -- a note that names the line(s) it is about, wherever it sits."""
+_NOTE = re.compile(r"(?:NOTE|VOICE)\s+(.+?):\s")
+"""`# NOTE <ids>: ...` -- a note that names the line(s) it is about, wherever it sits; and
+`# VOICE <id>: ...`, the kept additive words (`boku.lint.VOICE_NOTE`), placed the same way."""
 
 
 def notes_by_id(paths: Iterable[Path]) -> dict[str, tuple[str, ...]]:
     """Every row's notes in files of the day-file shape (`id <TAB> ...`).
 
     Two kinds. A comment run directly above a row is that row's. A `# NOTE <ids>:` block --
-    the convention, usually under the event's rows -- belongs to the first row its ids name
-    in the same file (`note_target`), or, naming none, to the row above it. A comment line
-    whose text is indented (`#   ...`) continues the one before it."""
+    the convention, usually under the event's rows -- or a `# VOICE <id>:` belongs to the
+    first row its ids name in the same file (`note_target`), or, naming none, to the row
+    above it. A comment line whose text is indented (`#   ...`) continues the one before it."""
     out: dict[str, list[str]] = {}
     for path in paths:
         lines = Path(path).read_text(encoding="utf-8").splitlines()

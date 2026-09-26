@@ -30,6 +30,7 @@ E0520.0	Aunt	Boku-kun! Shall we play the guess-the-dinner game? // If you'd like
 E0520.1	Aunt	Auntie looks forward to making everyone's meals every day...
 E0520.2	Aunt	Boku-kun, you must be missing your mom by now. // I wonder if you've gotten homesick?
 E0520.3	Boku	What's homesick?
+# VOICE E0520.4: very -- love very much translates daisuki
 E0520.4	Aunt	Well, you see, someone who's always been right by your side, // someone you love very much, isn't around you now, right? // Like your dad and your mom. // Then don't you feel sort of sad, or lonely?
 E0520.5	Boku	Why?
 E0520.6	Aunt	Oh? You're not lonely?
@@ -41,6 +42,7 @@ E0520.11	Aunt	You know, Auntie... // got homesick right away when she first came
 
 # --- E0510: H26 -- the workshop
 E0510.0	Boku	Oh, there's a model airplane in front of you, Uncle!
+# VOICE E0510.1: very -- working very hard translates isshokenmei
 E0510.1	Uncle	Yeah! // When Uncle's child was still little, that child loved airplanes. // So Auntie put it together, working very hard at it.
 E0510.2	Boku	Can't you build them, Uncle?
 E0510.3	Uncle	Ahaha, Uncle can build them, and he likes building them, // but this sort of thing is mostly Auntie's department.
@@ -63,6 +65,7 @@ E0551.3	Boku	Is it good?
 E0551.4	Boy	Not as good as the ones at my grandpa's in Okuzawa, but hmm... it's so-so. // Want some? If you do, I'll bring you some.
 E0551.5	Boku	Then I'll have some one of these days.
 E0551.6	Boy	What's your name?
+# VOICE E0551.7: just -- translates dake (only for summer vacation)
 E0551.7	Boku	...I'm called Boku. // I'm just here for summer vacation, at my uncle's place down below here.
 E0551.8	Boy	What! Ugh, that's bad... // Your uncle's place, that's the house over there that makes pottery, right?
 E0551.9	Boku	Yeah...
@@ -73,6 +76,7 @@ E0551.13	Boku	Yeah, I know.
 E0551.14	Boy	Okay, all right!
 E0551.15	Boy	My name's Guts.
 E0551.16	Guts	This is our secret secret base. // Heh, pretty cool, huh?
+# VOICE E0551.17: actually -- translates honto wa
 E0551.17	Guts	Actually, nobody but members is allowed in, but...
 E0551.18	Guts	From now on, you're granted special permission to enter!
 E0551.19	Boku	Is that because I know the watermelon secret?

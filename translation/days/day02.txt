@@ -32,6 +32,7 @@ E0202.7	Aunt	Go out into the garden from here and turn left, and right beside th
 E0202.8	Narrator	And so I was appointed morning-glory captain.
 
 # --- E0220: H06 -- garden off the veranda, the washing line
+# VOICE E0220.0: really -- really does translates yappari
 E0220.0	Aunt	Clear skies! // Doing the washing in midsummer really does feel good, doesn't it!
 E0220.1	Boku	Hmm.
 E0220.2	Aunt	Especially on a lovely day like this... // when I hang out loads and loads of washing like this, // it's as if I'm lining up the flags of the Sorano family, showing off our household's housewife power... // and as a woman, I get this strange feeling, oddly proud...
@@ -48,9 +49,11 @@ E0220.9	Aunt	Oh, and Boku-kun... if you keep on being morning-glory captain and 
 
 # --- E0210: H26 -- the workshop
 E0210.0	Uncle	Hello.
+# VOICE E0210.1: quite -- translates nakanaka
 E0210.1	Uncle	Boku-kun! This is Uncle's workshop. // What do you think? Quite an interesting space, isn't it... // The workshop takes its name from this place: it's called the Tsukiyono Kiln. // Uncle works here, kneading clay and turning the wheel.
 E0210.2	Uncle	The big kiln a little farther on toward the creek is called a climbing kiln, // and we work hard keeping a fire going in it for a day and a night to finish the pottery.
 E0210.3	Boku	Huh? So you might light the fire while I'm here?
+# VOICE E0210.4: actually, quite, really -- actually translates jitsu wa, really translates honto wa, quite a lot translates soto
 E0210.4	Uncle	Hmm, actually, in summer it's hot when you fire the kiln, so I don't really want to, // but by the end of August, I expect quite a lot of things will have piled up to be fired, // so I suppose I'll have to light it then.
 E0210.5	Boku	I'm kind of looking forward to it.
 E0210.6	Uncle	Uncle's looking forward to it too, apart from the heat.
@@ -75,6 +78,7 @@ E0205.2	Boku	All right!
 #     condition admits every day but 15 and 30, day 1 included). Not repeated here.
 
 # --- E0212: G01 -- living room
+# VOICE E0212.0: just -- just before translates chokuzen
 E0212.0	Uncle	By this time of day, Uncle has always stopped work and come home. // But the workshop stays unlocked until just before dinner, // so you're not to go in there when Uncle isn't around, all right?
 E0212.1	Uncle	It looks like you watered the morning glories properly today. Thank you for your hard work. // Please don't forget from tomorrow on, either.
 
@@ -106,6 +110,7 @@ E0213.7	Uncle	I do wish you wouldn't say things that sound so bad.
 # NOTE E0213.3: ajiuri, a small sweet melon; the next two lines explain it (glossary § 5).
 
 # --- E0241: G06 -- TV room
+# VOICE E0241.0: just -- only just translates sakki ... bakka
 E0241.0	Shirabe	Ugh, I'm hungry... // even though I only just ate...
 E0241.1	Boku	What food do you like?
 E0241.2	Shirabe	What! When a lady is enjoying an elegant moment after her meal!

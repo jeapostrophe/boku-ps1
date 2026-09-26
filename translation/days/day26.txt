@@ -3,9 +3,11 @@
 E2615.0	Uncle	Now, we're almost at the target temperature!
 E2615.1	Boku	What is it now?
 E2615.2	Uncle	Over ninety percent of the target, I'd say.
+# VOICE E2615.3: just -- translates ato mou (only a little more to go)
 E2615.3	Uncle	Phew... just a little more...
 
 # --- E2616: H15 -- the climbing kiln
+# VOICE E2616.0: just -- translates ato wa (all that is left is to hold it there)
 E2616.0	Uncle	I did it! It's finally reached the target temperature. // Now if I can just work hard and hold it there for two hours, we're okay!
 E2616.1	Uncle	All right, one last big push. Here I go!
 E2616.2	Uncle	Phew... come to think of it, that rain just now stopped in an instant, but it sure came down hard, didn't it?
@@ -21,6 +23,7 @@ E2624.0	Aunt	Go for it, Yusaku! Our first cash income in ages is almost here!
 E2624.1	Aunt	Somehow I'm getting tired too.
 
 # --- E2660: D07 -- Saori's camp
+# VOICE E2660.0: just -- just about translates mou sorosoro (any time now)
 E2660.0	Saori	This world's just about coming to an end...
 E2660.1	Boku	What! Why?
 E2660.2	Saori	Autumn's almost here, so there's no use struggling!
@@ -33,6 +36,7 @@ E2614.0	Boku	Uncle, what did you do all night?
 E2614.1	Uncle	I was here the whole time. Split the firewood, feed the firewood... over and over.
 E2614.2	Boku	How hot is it inside now?
 E2614.3	Uncle	...About seventy percent of the target, I'd say. // Right now, anyway, Uncle's working hard at feeding the wood in faster // to bring the temperature up.
+# VOICE E2614.4: really -- translates yappari (it does, as expected, make you sleepy)
 E2614.4	Uncle	Yaaawn... but when you haven't done it in a while, it really does make you sleepy.
 
 # --- E2623: H13 -- behind the workshop
@@ -45,6 +49,7 @@ E2613.0	Uncle	ZzZzz......
 # --- E2630: G15 -- the sisters' room
 E2630.0	Moe	Hey, hey, come to think of it, have you ever gone into the air-raid shelter on the edge of Dragon God Pond? // It's already half caved in, so you mustn't go in there. // It's really dangerous.
 E2630.1	Moe	Onee-chan's a scaredy-cat, so I'm too scared to go in there.
+# VOICE E2630.2: really -- translates honkakuteki ni (dozed off in earnest)
 E2630.2	Moe	Oh man, last night while I was studying for my exams... // how can I put it, I really dozed off, and my textbook's a total mess.
 E2630.3	Boku	How come?
 E2630.4	Moe	Drool.
@@ -52,6 +57,7 @@ E2630.5	Moe	If my grades aren't bad when the new term starts, // maybe I'll stud
 E2630.6	Moe	Oh, what's this?
 E2630.7	Boku	This... ana-ana-bobon.
 E2630.8	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+# VOICE E2630.9: really -- translates yappari (so it is, as he thought, an alien's book)
 E2630.9	Boku	So it really is an alien's book.
 E2630.10	Moe	Dummy, this is English. En-glish!
 E2630.11	Boku	Onee-chan, can you understand English?

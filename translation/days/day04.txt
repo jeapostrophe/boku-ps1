@@ -18,6 +18,7 @@
 # --- E0401: G02 -- breakfast
 E0401.0	Shirabe	Hey... Shirabe will show you some fun places.
 E0401.1	Boku	Huh?
+# VOICE E0401.2: very -- ever so very extra-specially carries her stacked ippai takusan tobikiri in Shirabe's prim grown-up register
 E0401.2	Shirabe	I'll show you fun places, thiiis many, a whole mountain of them. // So you must be ever so very extra-specially grateful.
 E0401.3	Shirabe	Shirabe's been here longer than you, after all. // Kyahaha!
 E0401.4	(voice only)
@@ -36,6 +37,7 @@ E0402.7	Shirabe	Ahh! You said that name!
 E0402.8	Boku	Wh-what's that?
 E0402.9	Aunt	It's Shirabe's nickname at school.
 E0402.10	Aunt	Onee-chan! That's not nice.
+# VOICE E0402.11: just -- carries anmari, Moe's exasperation that Shirabe never listens
 E0402.11	Moe	But Shirabe just won't listen...
 E0402.12	Shirabe	Well then! I'll be waiting on the veranda! // Bayoyooon!
 E0402.13	Aunt	Hm-hm...
@@ -45,6 +47,7 @@ E0471.0	Shirabe	Ken-bo!
 E0471.1	(voice only)
 E0471.2	Shirabe	So you came after all... I'm such a heartbreaker.
 E0471.3	Shirabe	Now then, follow along behind Shirabe, quick-quick. // I'll go on ahead as far as the bridge.
+# VOICE E0471.4: terribly -- translates osoroshiku
 E0471.4	Narrator	For me, it was with a terribly high-maintenance creature... // that I had the first encounter of my life.
 E0471.5	(voice only)
 
@@ -57,6 +60,7 @@ E0442.4	Shirabe	Yeah, the snow that falls from the sky.
 E0442.5	Boku	Ohh, so it snows here.
 E0442.6	Shirabe	Doesn't it snow at all where you live?
 E0442.7	Boku	No, only once in a while.
+# VOICE E0442.8: really -- translates honto wa
 E0442.8	Shirabe	Hm-hm, poor you. // ...But really, it's because it's a river where lots of fireflies are born, pop-pop-pop, // that it got the name Yukino River, they say.
 E0442.9	Boku	Huh...? Why's that?
 E0442.10	Shirabe	Huh?
@@ -73,6 +77,7 @@ E0443.0	Shirabe	This Jizo-sama, you see...
 E0443.1	(voice only)
 E0443.2	Shirabe	Oh? // Being with you, I get the worst. // This is a Jizo-sama that tells fortunes. // Do you want to try too? I'll give you special permission.
 E0443.3	Boku	I... // I can't go hitting a Jizo-sama.
+# VOICE E0443.4: rather -- would you rather carries ja ... -tai no, the alternative Shirabe offers to hitting the Jizo
 E0443.4	Shirabe	Then would you rather I socked you?
 E0443.5	Boku	Aww, come on...
 E0443.6	Boku	I'm sorry, Jizo-sama.
@@ -134,9 +139,11 @@ E0405.0	Narrator	The watermelon thief was a local child who looked every inch th
 E0405.1	Boku	Hic!
 E0405.2	Boy	Is somebody there?
 E0405.3	Boku	Hic!
+# VOICE E0405.4: just -- just as renders toki at the instant the howl cuts in
 E0405.4	Narrator	It was all over! Just as I thought that...
 E0405.5	(voice only)
 E0405.6	Boy	Tch! Some wild dog come down from the mountains, maybe...
+# VOICE E0405.7: utterly -- translates marude
 E0405.7	Narrator	That howl rang out from somewhere far away, deep in the heart of the mountains, // utterly out of keeping with the noisy summer hills, lonely and sad...
 
 # --- E0404: G02 -- after dinner

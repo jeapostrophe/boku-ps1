@@ -13,11 +13,13 @@ E1320.1	Boku	Yeah! // Except for spiders and cockroaches, I'm pretty much okay.
 E1320.2	Aunt	I see. Then you're the same as Auntie.
 E1320.3	Boku	Yeah! And any other bug... // I've never felt sick pulling off their arms and legs, or taking them apart.
 E1320.4	Aunt	...Oh, that kind of fine.
+# VOICE E1320.5: just -- translates tonikaku (boys take things apart, whatever they are)
 E1320.5	Aunt	Boys just take everything apart, don't they, whether it's bugs or dolls.
 
 # --- E1312: G01 -- living room
 E1312.0	Uncle	Boku-kun, how's the fishing going lately?
 E1312.1	[SEL]	Excellent | Not so great
+# VOICE E1312.2: just -- translates chodo in chodo ii (just about right)
 E1312.2	Uncle	With yamame especially, it's best to set the hook early, early. // That fish can tell in an instant that the bait is a fake, and it spits it out. // So they say that setting the hook before it's even taken it is just about right.
 E1312.3	Uncle	But hardly any anglers come to the rivers around here, // so the fish aren't used to people, and they're really easy to catch.
 

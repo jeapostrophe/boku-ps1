@@ -2,6 +2,7 @@
 # --- E2901: G02 -- breakfast
 E2901.0	Aunt	Boku-kun, you look all better!
 E2901.1	Boku	Yeah, I'm fine now.
+# VOICE E2901.2: really -- translates the questioning sou? (really?)
 E2901.2	Aunt	Really? I'm so glad!
 E2901.3	Uncle	When you're a kid... // catching a cold and getting over it were both somehow simple and easy to understand. That was nice.
 E2901.4	Aunt	Simple is best, in everything.
@@ -23,6 +24,7 @@ E2902.7	Shirabe	Boku-kun likes sunflowers!
 E2902.8	Aunt	Is that so...
 E2902.9	Aunt	Boku-kun, here...
 E2902.10	Aunt	Photos of the morning glories you grew... // I took them every single day they were in bloom, // and I picked out the especially pretty ones. // There happened to be one good one for each day, // so, as many photos as the days they bloomed, a present!
+# VOICE E2902.11: very -- translates doumo arigatou (thank you very much)
 E2902.11	Boku	Auntie! Thank you very much.
 E2902.12	Aunt	Not at all. Thank you for all your hard work.
 E2902.13	Boku	I'll take good care of these.
@@ -44,6 +46,7 @@ E2912.1	Uncle	Come to think of it, the year the war ended too... // maybe the su
 
 # --- E2913: G01 -- living room
 E2913.0	Uncle	Boku-kun... you must want to hurry home and see your little brother, right?
+# VOICE E2913.1: really -- not really renders sou demo nai (not so much), a hedge rather than an intensifier
 E2913.1	Boku	I wonder. Not really...
 E2913.2	Uncle	What! Why? Babies are cute, aren't they...
 E2913.3	Boku	In the world of children, there are things only children understand...
@@ -58,6 +61,7 @@ E2930.0	Moe	Come to think of it, today's your mother's due date, Boku-kun.
 E2930.1	Boku	Huh? What's a due date?
 E2930.2	Moe	Mm, it's the day the baby is scheduled to be born!
 E2930.3	Boku	Onee-chan, I found something strange in the cave.
+# VOICE E2930.4: very -- very, very carries the repeated daiji ni daiji ni
 E2930.4	Moe	Ohh, something strange? Good for you. // It might turn into your treasure for life, Boku-kun, // so keep it very, very carefully.
 E2930.5	Boku	So people already have things on their schedule before they're even born.
 
@@ -84,6 +88,7 @@ E2950.0	Guts	When you go back, don't let your friends there push you around.
 E2950.1	Boku	Haha, I went to school there to begin with, you know.
 E2950.2	Guts	That's right...
 E2950.3	Fat	You, eat properly and put on some weight...
+# VOICE E2950.4: just -- translates choudo (just the right amount)
 E2950.4	Boku	Yeah, just the right amount.
 E2950.5	Specs	Boku-kun... somehow it feels like we've been friends for a long time.
 E2950.6	Boku	...Yeah, it does.
@@ -97,6 +102,7 @@ E2951.3	Boku	......
 # --- E2952: A18 -- the secret base
 E2952.0	Fat	Beansprout! Don't you want to get fat like yours truly?
 E2952.1	Boku	...I think Moe-neechan probably likes slim people.
+# VOICE E2952.2: just -- carries douse, Fat's dismissive (it's bound to be only a whim)
 E2952.2	Fat	Gahaha! What's that... // That's just a passing whim, till she falls for yours truly.
 
 # --- E2953: A18 -- the secret base
@@ -106,6 +112,7 @@ E2953.1	Boku	Yeah, then I'll write back properly.
 # --- E2904: G02 -- dinner (the phone call)
 E2904.0	Moe	Okaaay, I'll get it!
 E2904.1	Moe	Hello, Sorano residence... Oh! Uncle Kubota!
+# VOICE E2904.2: really -- translates sou nan desu ka (oh, is that so)
 E2904.2	Moe	...No, no, it's we who should thank you for everything. // Oh, really! Then I'll put Boku-kun on. // Boku-kuuun...
 
 # --- E2906: G01, G02, G06 -- the house; G08 -- the telephone
@@ -121,6 +128,7 @@ E2907.3	Boku	Yeah!
 # NOTE E2907.2: Moe calls him by the word that was her dead brother's only name (style guide § 2).
 
 # --- E2941: G06 -- TV room
+# VOICE E2941.0: just -- just because is the English for -kara tte (only because you became)
 E2941.0	Shirabe	Just because you've become a big brother, don't go getting all full of yourself.
 E2941.1	Boku	Nyaah!
 E2941.2	Shirabe	Shirabe wants a little brother too. I wonder if anyone would give me one?

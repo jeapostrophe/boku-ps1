@@ -43,6 +43,7 @@ E0179.0	Shirabe	I'm Shirabe. It's written "poem" and read "Shirabe".
 E0179.1	Shirabe	Our dad's cool, isn't he? // He's a ce-ra-mi-cist. He makes plates and rice bowls.
 
 # --- E0180: H01 -- front of the house, gate
+# VOICE E0180.0: rather -- if anything rather renders dochira ka to iu to, the narrator's hedge, in his literary register
 E0180.0	Narrator	There, looking if anything rather unimpressive, stood my father...
 
 
@@ -69,6 +70,7 @@ E0185.0	Aunt	Well then, until dinner... // there's about an hour left, I'd say? 
 # --- E0112: G01 -- living room
 E0112.0	Uncle	Boku-kun, is this the first time you've lived in a house with a veranda?
 E0112.1	[SEL]	Yes | No
+# VOICE E0112.2: just -- just in case translates ichio
 E0112.2	Uncle	Wherever you are in this house, a cool, pleasant breeze comes in... // so we do have an electric fan, just in case, but we've hardly ever used it.
 E0112.3	Boku	Oh, I see.
 E0112.4	Uncle	Mm-hm. In the old days, houses were all like this. // When all the ground around is buried under concrete, // I suppose it doesn't work out this way...
@@ -77,6 +79,7 @@ E0112.5	Uncle	The high ceilings are nice, aren't they?
 # --- E0114: G07 -- foot of the stairs / hall
 E0114.0	Uncle	Boku-kun... // what are you planning to do for your summer research project?
 E0114.1	Uncle	There's a bug-collecting kit in this house.
+# VOICE E0114.2: really -- translates honto as an exclamation
 E0114.2	Boku	Huh! Really?
 E0114.3	Uncle	Mm-hm. Uncle will give it to you as a present.
 E0114.4	Boku	Yay! All right!
@@ -104,6 +107,7 @@ E0140.3	Shirabe	...Playing.
 E0140.4	Boku	What was your name again...?
 E0140.5	Shirabe	I won't tell you!
 E0140.6	Boku	Huh?
+# VOICE E0140.7: just -- just kidding is the set English for uso, taking back what she said
 E0140.7	Shirabe	Oh... just kidding... // It's written "poem" and read "Shirabe".
 E0140.8	Shirabe	I do most humbly beseech thy kind regard.
 E0140.9	Boku	And I, too, do most humbly beseech thy kind regard.
@@ -133,6 +137,7 @@ E0104.5	Uncle	That's right. Go and have a look.
 # --- E0107: G14 -- Boku's room; I19 -- the desk
 E0107.0	Boku	Huh...?
 E0107.1	Narrator	It was, against a backdrop of a leaden and sorrowful sunset sky, // the box of a plastic model kit with two biplanes painted on it.
+# VOICE E0107.2: just -- just as translates -dori (as promised)
 E0107.2	Narrator	And inside the box, just as my uncle had promised, was a bug-collecting kit.
 
 # --- E0113: G01 -- living room
@@ -146,6 +151,7 @@ E0113.6	Uncle	Kaoru, would you bring me a beer...?
 E0113.7	Aunt	Let's all do our own things ourselves.
 
 # --- E0122: G01 -- living room
+# VOICE E0122.0: just -- carries katte ni ... ii wa yo, the aunt's warm no-need-to-ask permission
 E0122.0	Aunt	If you get thirsty, there's barley tea or milk in the fridge, so just help yourself. // They're both homemade, so they're in the same kind of container. // And the milk sometimes has white lumps in it, // but those form when I boil it in a pan to sterilize it, so don't worry about them.
 
 # --- E0141: G06 -- TV room

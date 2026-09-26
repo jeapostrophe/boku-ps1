@@ -59,6 +59,7 @@ E1830.5	Moe	...Nngh.
 E1830.6	Moe	Leave me alone...
 
 # --- E1831: G16 -- Moe's bed
+# VOICE E1831.0: just -- carries kono mama with the resigned -chau (end up dying) of Moe's musing
 E1831.0	Moe	I don't feel like doing anything anymore... // I wonder if I'll just go on like this, not eating, and die...
 E1831.1	Moe	I'm such an idiot.
 

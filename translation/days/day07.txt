@@ -103,7 +103,7 @@ E0733.4	Boku	Huh! Why?
 E0733.5	Moe	Hahaha, that's what you call a se-cret. // ...Anyway, it's been fine weather for aaages now, hasn't it?
 
 # --- E0780: B02; B03 -- forest path with the yellow flowers
-E0780.0	Moe	Me, I... on blue-sky days like this, // I love how cool the breeze is that blows now and then from the shade of the trees... // The wind carries the lush scent of the forest... // If I could, always, here in the green of this deep forest... // I'd like to just live quietly, without thinking about anything at aaall... // And then, before I knew it... I'd have turned into an old lady. // ...That's how I'd like it.
+E0780.0	Moe	Me, I... on blue-sky days like this, // I love how cool the breeze is that blows now and then from the shade of the trees... // The wind carries the lush scent of the forest... // If I could, always, here in the green of this deep forest... // I'd like to live quietly, without thinking about anything at aaall... // And then, before I knew it... I'd have turned into an old lady. // ...That's how I'd like it.
 E0780.1	Moe	Hey, Boku-kun, help me look for flowers to press. // I'm... bad at choosing anything.
 E0780.2	Moe	These yellow globeflowers... // if you find a cute one, bring it to me.
 E0780.3	Boku	Yeah, got it, Onee-chan.
@@ -122,16 +122,19 @@ E0786.6	Moe	...Gyahahahaha. // I'll give it a try. See you.
 
 # --- E0750: A18 -- the secret base (bug sumo)
 E0750.0	Fat	Oh, here comes a nice easy mark for bug sumo.
+# VOICE E0750.1: just -- carries -te mi na, Guts's bossy go-on-and-try-it
 E0750.1	Guts	Anyway, just go sit at that table! // You'll figure out the rules naturally once you play.
 
 
 # --- E0751: A18 -- the secret base (Guts's bug-sumo tips, days 1-14)
+# VOICE E0751.0: just -- carries tonikaku (whatever it takes, win), Guts's curt advice
 E0751.0	Guts	In bug sumo... // first off, you lose if your bug falls out of the ring, or runs out of stamina and flips over. // And a bug that loses can't be used for the rest of that day, got it? // Well, everybody puts their losing bugs up for trade right away anyway. // So if a bug you want shows up, just win, and make them put it up for trade.
 E0751.1	Guts	There's chalk next to the ring, right? // Use it to write how strong a bug you want us to put out. // You're still a beginner, Boku-chan, so we'll put out whatever bug you want. // By the way, for each kind of bug, we call the biggest, strongest one the King.
 E0751.2	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
 
 # --- E0752: A18 -- the secret base (Guts's tips, days 16-22)
 E0752.0	Guts	Before a match, try tapping your bug on the back while it's on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
+# VOICE E0752.1: just -- carries tonikaku (whatever it takes, win), Guts's curt advice
 E0752.1	Guts	In bug sumo... // first off, you lose if your bug falls out of the ring, or runs out of stamina and flips over. // And a bug that loses can't be used for the rest of that day, got it? // Well, everybody puts their losing bugs up for trade right away anyway. // So if a bug you want shows up, just win, and make them put it up for trade.
 E0752.2	Guts	There's chalk next to the ring, right? // Use it to write how strong a bug you want us to put out. // You're still a beginner, Boku-chan, so we'll put out whatever bug you want. // By the way, for each kind of bug, we call the biggest, strongest one the King.
 E0752.3	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
@@ -139,6 +142,7 @@ E0752.3	Guts	But you can only request a King for one match a day. // Because no 
 # --- E0753: A18 -- the secret base (Guts's tips, from day 23)
 E0753.0	Guts	If our strong-class bugs start losing to yours one after another, Boku-chan, // we'll get serious and go find even stronger ones!
 E0753.1	Guts	Before a match, try tapping your bug on the back while it's on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
+# VOICE E0753.2: just -- carries tonikaku (whatever it takes, win), Guts's curt advice
 E0753.2	Guts	In bug sumo... // first off, you lose if your bug falls out of the ring, or runs out of stamina and flips over. // And a bug that loses can't be used for the rest of that day, got it? // Well, everybody puts their losing bugs up for trade right away anyway. // So if a bug you want shows up, just win, and make them put it up for trade.
 E0753.3	Guts	There's chalk next to the ring, right? // Use it to write how strong a bug you want us to put out. // You're still a beginner, Boku-chan, so we'll put out whatever bug you want. // By the way, for each kind of bug, we call the biggest, strongest one the King.
 E0753.4	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
@@ -146,19 +150,24 @@ E0753.4	Guts	But you can only request a King for one match a day. // Because no 
 
 # --- E0761: A18 -- the secret base (Fat's tips, days 1-14)
 E0761.0	Fat	Gahaha, bugs are amazing! // As soon as a match is over, it's like their stamina's full again.
+# VOICE E0761.1: just -- carries the -ba of miru-ba wakaru (one look is all it takes), Fat's swagger
 E0761.1	Fat	Just look at yours truly and you'll see: with bugs too, naturally, the bigger ones are stronger.
 E0761.2	Fat	But I guess the strongest of all is Rhino Beetle-chan.
 
 # --- E0762: A18 -- the secret base (Fat's tips, days 16-22)
+# VOICE E0762.0: just -- just like translates onaji
 E0762.0	Fat	Bug sumo is just like people sumo: the more you win, the stronger you get.
 E0762.1	Fat	Gahaha, bugs are amazing! // As soon as a match is over, it's like their stamina's full again.
+# VOICE E0762.2: just -- carries the -ba of miru-ba wakaru (one look is all it takes), Fat's swagger
 E0762.2	Fat	Just look at yours truly and you'll see: with bugs too, naturally, the bigger ones are stronger.
 E0762.3	Fat	But I guess the strongest of all is Rhino Beetle-chan.
 
 # --- E0763: A18 -- the secret base (Fat's tips, from day 23)
 E0763.0	Fat	Depending on the kind, some of them pull off a big comeback move right at the edge of the ring!
+# VOICE E0763.1: just -- just like translates onaji
 E0763.1	Fat	Bug sumo is just like people sumo: the more you win, the stronger you get.
 E0763.2	Fat	Gahaha, bugs are amazing! // As soon as a match is over, it's like their stamina's full again.
+# VOICE E0763.3: just -- carries the -ba of miru-ba wakaru (one look is all it takes), Fat's swagger
 E0763.3	Fat	Just look at yours truly and you'll see: with bugs too, naturally, the bigger ones are stronger.
 E0763.4	Fat	But I guess the strongest of all is Rhino Beetle-chan.
 
@@ -187,6 +196,7 @@ E0712.1	[SEL]	Yes | No
 E0712.2	Uncle	I see... // This house was originally a farmhouse from around Kanazawa, built in the middle of the Meiji era, they say. // It was the person who lived here before Uncle who bought it and relocated it here.
 E0712.3	Boku	What's ree-lo-kated?
 E0712.4	Uncle	It means moving house, building and all. // Kind of like a hermit crab, isn't it?
+# VOICE E0712.5: quite -- translates nakanaka
 E0712.5	Uncle	Mmm, there's quite a nice breeze coming in today.
 # NOTE E0712.3: ichiku (moving a building to a new site); Boku repeats a word he does not know
 #   (style guide § 8 kind 1), so the English hard word is the one he stumbles on.

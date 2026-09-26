@@ -13,6 +13,7 @@ E2760.9	Saori	But... thanks for everything. // This summer was pretty fun...
 E2760.10	Boku	Next year...
 E2760.11	Saori	Hm?
 E2760.12	Boku	Are you coming, next year too...?
+# VOICE E2760.13: definitely -- translates machigai naku (without doubt)
 E2760.13	Saori	Yeah, of course. // Wolves are definitely around here somewhere, it seems...
 E2760.14	Boku	You're coming because you want to meet the wolves?
 E2760.15	Saori	Obviously.
@@ -22,6 +23,7 @@ E2760.18	Boku	I'm not helping, you know.
 E2760.19	Saori	Rotten brat...
 
 # --- E2720: H08 -- the yard
+# VOICE E2720.0: just -- translates ima (I noticed just now)
 E2720.0	Boku	Auntie... I just noticed something. // When on earth do you do the washing?
 E2720.1	Aunt	Huh? Why, before you all wake up for radio calisthenics, Boku-kun...
 E2720.2	Aunt	Before radio calisthenics, the washing and getting breakfast ready... // I have every last bit of it done.
@@ -30,6 +32,7 @@ E2720.2	Aunt	Before radio calisthenics, the washing and getting breakfast ready.
 E2710.0	Uncle	I'm opening the kiln tonight, so come and see. // Heaps and heaps of treasure!
 E2710.1	Uncle	I wonder if that photo really is a Japanese wolf...
 E2710.2	Boku	Why?
+# VOICE E2710.3: just -- translates dake (it was only a feeling)
 E2710.3	Uncle	It's just a feeling I had, that's all... // Maybe there's something even more mysterious and sublime, something unknown, living on this mountain.
 E2710.4	Boku	Huh? Uncle, do you know something?
 E2710.5	Uncle	Well, who can say...
@@ -42,15 +45,17 @@ E2712.1	Uncle	What's on TV again?
 #   it of himself (style guide § 10). His plain adult "I", alone (§ 2).
 
 # --- E2714: H13 -- behind the workshop (the kiln opened)
+# VOICE E2714.0: rather -- translates nakanaka (quite a good result), the uncle's adult understatement
 E2714.0	Uncle	Mmm, these came out rather well.
 E2714.1	Uncle	What sort of image shall I take on next, I wonder?
 
 # --- E2730: G16 -- Moe's bed
-E2730.0	Boku	Onee-chan, maybe you just love sleeping, don't you...
+E2730.0	Boku	Onee-chan, maybe you love sleeping, don't you...
 E2730.1	Moe	Yeah. If I had the time, I'd like to sleep about fifteen hours every day...
 E2730.2	Moe	Oh, what's this?
 E2730.3	Boku	This... ana-ana-bobon.
 E2730.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+# VOICE E2730.5: really -- translates yappari (so it is, as he thought, an alien's book)
 E2730.5	Boku	So it really is an alien's book.
 E2730.6	Moe	Dummy, this is English. En-glish!
 E2730.7	Boku	Onee-chan, can you understand English?
@@ -75,6 +80,7 @@ E2732.3	Moe	Tonight is another evening for listening to the whispers of the autu
 E2732.4	Boku	......
 E2732.5	Moe	The clouds are so pretty, lit up by the moon.
 E2732.6	Moe	If the same sky and clouds as in the city could be seen here at the same time, // then even after you've gone home, Boku-kun, on the phone, you know... // we could look at the same sky, and talk about the same things, feeling the same way.
+# VOICE E2732.7: really -- translates yappari (I am, after all, a gloomy type)
 E2732.7	Moe	Ahh... I really am a gloomy type, aren't I? // What on earth am I doing outside at this hour?
 E2732.8	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
 E2732.9	Boku	But whose is it?
@@ -88,6 +94,7 @@ E2740.0	Shirabe	They put the fire out in the climbing kiln yesterday, but if you
 E2740.1	Shirabe	Come to think of it, a long time ago, when I played hide-and-seek inside the kiln, // Dad got really, really angry with me...
 
 # --- E2741: G06 -- TV room
+# VOICE E2741.0: just -- translates koko dake no hanashi (between us only)
 E2741.0	Shirabe	This is just between us... // A long time ago, Shirabe knocked down the pottery at the back of Dad's workshop... // shelf and all...
 E2741.1	Boku	Huh? What a bad kid you are.
 E2741.2	Shirabe	What I just said... is an absolute secret from everyone, okay?

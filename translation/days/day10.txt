@@ -22,6 +22,7 @@ E1013.4	Aunt	That's no trouble to anyone.
 E1013.5	Uncle	"No trouble to anyone"... but I'm the one in trouble here!
 
 # --- E1031: G15 -- the sisters' room
+# VOICE E1031.0: very -- very, very carries the repeated daiji na daiji na
 E1031.0	Moe	Ehehe... right now, Onee-chan is // passionately writing something very, very important.
 E1031.1	Moe	Tomorrow... I wonder if the weather will be clear?
 

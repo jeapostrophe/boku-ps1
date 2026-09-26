@@ -39,6 +39,10 @@ are `./make.sh mockup`'s.
   know about); `# UNSURE E0121.3: …` flags a line you are not sure of, so that the reviewer
   looks there first. A note is English too: no Japanese anywhere in the file, notes
   included — romanise a word you need to quote (*satoyama*, *daikichi*).
+  `# VOICE E0121.3: just -- translates dake` records that a word like "just" or "really",
+  which the lint flags when the Japanese has no matching intensifier, was looked at and kept:
+  it translates something, or it is how this speaker talks. It sits directly above its row.
+  If you rewrite a line, keep its note only while the word is still there and still right.
 * **The menus, books and screens** (`arrays.txt`) use the same rows. A line nobody speaks
   carries `(unlabelled)`; a menu is a `[SEL]` row; `# --- exe@8003D2E0: …` opens a list the
   way `# --- E0121` opens an event. A game glyph the English sits beside — a button, the

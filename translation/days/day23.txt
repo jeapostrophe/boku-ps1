@@ -11,6 +11,7 @@ E2360.7	Boku	the mosquitoes will eat you.
 
 # --- E2320: H10 -- the garden corner
 E2320.0	Aunt	Boku-kun... Boku's summer vacation, too, is down to its last week now. // Hurry up and do the things you want to do while you still can!
+# VOICE E2320.1: just -- translates kurai de ii kara (even only a week or so)
 E2320.1	Aunt	Auntie would like a summer vacation too, even just a week or so.
 # NOTE E2320.0: the game's title phrase in dialogue (style guide § 1).
 
@@ -26,6 +27,7 @@ E2330.1	Moe	Ahh... I want someone, anyone, to cheer me up.
 E2330.2	Moe	Oh, what's this?
 E2330.3	Boku	This... ana-ana-bobon.
 E2330.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+# VOICE E2330.5: really -- translates yappari
 E2330.5	Boku	So it really is an alien's book.
 E2330.6	Moe	Dummy, this is English. En-glish!
 E2330.7	Boku	Onee-chan, can you understand English?
@@ -64,6 +66,7 @@ E2340.3	Shirabe	This morning, while I was brushing my teeth, I realized somethin
 E2340.4	Shirabe	Because if the kite pulled you // and you flew right up high into the sky, that would be a very, very wonderful experience, wouldn't it?
 
 # --- E2341: G06 -- TV room
+# VOICE E2341.0: just -- carries domo ... nigate (Shirabe just doesn't get on with it)
 E2341.0	Shirabe	Tomorrow's dinner is spring rolls, they say... // Chinese food is just too greasy for Shirabe. I'm not fond of it.
 E2341.1	Boku	Then which of Auntie's dishes do you like?
 E2341.2	Shirabe	Umm, fried rice, and sweet-and-sour pork...

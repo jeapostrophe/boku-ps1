@@ -35,8 +35,9 @@ E2510.0	Uncle	I've finished getting the kiln ready. // I'll light it in the even
 E2510.1	Boku	Yeah, I can't wait.
 
 # --- E2514: H15 -- the climbing kiln (the firing begins)
+# VOICE E2514.0: just -- carries chanto with yakusoku-doori: he came properly, just as promised
 E2514.0	Uncle	Boku-kun, you came, just like you promised. // Now, I'll light the fire in the kiln's firebox.
-E2514.1	Uncle	This kiln... // is built, as you can see, as if it's climbing the slope, so it's called a climbing kiln. // With the kiln this shape, when you burn a fire at the bottom, the heat rises by itself toward the top of the slope, // so you can bring the temperature inside up past a thousand degrees very efficiently. // That's why it's a hooot job, and not one I'm too keen on in midsummer.
+E2514.1	Uncle	This kiln... // is built, as you can see, as if it's climbing the slope, so it's called a climbing kiln. // With the kiln this shape, when you burn a fire at the bottom, the heat rises by itself toward the top of the slope, // so you can bring the temperature inside up past a thousand degrees efficiently. // That's why it's a hooot job, and not one I'm too keen on in midsummer.
 E2514.2	Boku	What happens after this?
 E2514.3	Uncle	First, for a while, I feed in lots of firewood every thirty or forty minutes. // Then, from around dawn, I gradually speed that up, and...
 E2514.4	Boku	So you're up all night.
@@ -51,7 +52,9 @@ E2514.11	Uncle	I'm getting hungry already.
 # --- E2515: H15 -- the climbing kiln, at night (the tanka)
 E2515.0	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it.
 E2515.1	Uncle	Tomorrow, around the time the sun comes up, // I'll need even more firewood than now, // so I'd better work hard and split it tonight...
+# VOICE E2515.2: just -- translates sakki (the poem just now)
 E2515.2	Boku	Hey, what does that poem just now mean?
+# VOICE E2515.3: really -- carries yappari and sasuga ni (you do, after all, feel it)
 E2515.3	Uncle	Once night falls, you really do feel it's autumn now... // is about the size of it, I suppose.
 E2515.4	Uncle	In the crickets' song / it trembles, / my kiln's / still slender fire; / let my child be held in it.
 E2515.5	Boku	.........
@@ -60,13 +63,14 @@ E2515.5	Boku	.........
 #   off (.3); it is his dead son. Repeated at E2712.0.
 
 # --- E2530: G16 -- Moe's bed
-E2530.0	Moe	Hey, it's a strange story, but... // that story about the vice-principal hiding a treasure in the mountains around here... // Onee-chan just can't stop wondering about it...
+E2530.0	Moe	Hey, it's a strange story, but... // that story about the vice-principal hiding a treasure in the mountains around here... // Onee-chan somehow can't stop wondering about it...
 E2530.1	Moe	Where on earth could it be hidden? // There's no place in the mountains around here that looks like "treasure hidden here"...
 E2530.2	Moe	I was studying until morning...
 E2530.3	Moe	So I'd like to lie down a little longer.
 E2530.4	Moe	Oh, what's this?
 E2530.5	Boku	This... ana-ana-bobon.
 E2530.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+# VOICE E2530.7: really -- translates yappari (so it is, as he thought, an alien's book)
 E2530.7	Boku	So it really is an alien's book.
 E2530.8	Moe	Dummy, this is English. En-glish!
 E2530.9	Boku	Onee-chan, can you understand English?
@@ -88,6 +92,7 @@ E2532.0	Moe	Somehow it's been a sad summer...
 E2532.1	Boku	...?
 E2532.2	Moe	Sigh... // Maybe it's because it was fun that it feels sad when it ends.
 E2532.3	Boku	Isn't there next year?
+# VOICE E2532.4: just -- translates manma (just as I am, unchanged)
 E2532.4	Moe	Next year is next year. This summer is only this year... // Oh, I see! So tha-at's why I wanted to stay a middle-schooler forever... // to stay just the way I am this summer... // Ahh... grown-ups call this a "moratorium"...
 E2532.5	Boku	It's all chinpun-kanpun to me...
 E2532.6	Moe	Ahaha... that sounds like a panda's name.
@@ -107,7 +112,7 @@ E2532.16	Moe	From tomorrow, I've started thinking, a little, that I'll try my be
 #   (kind 3, the word showing).
 
 # --- E2540: H10 -- garden corner where Shirabe watches ants
-E2540.0	Shirabe	Dad seems to be actually working today, for once.
+E2540.0	Shirabe	Dad seems to be working today, for once.
 E2540.1	Shirabe	In winter, they bake sweet potatoes in the climbing kiln while they're at it.
 E2540.2	Shirabe	Hey, the person in the letter Onee-chan read, what happened to him after that?
 E2540.3	Boku	Nobody knows, she says.

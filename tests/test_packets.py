@@ -497,6 +497,20 @@ def test_a_note_in_japanese_is_refused(store, builder, tmp_path):
         save_event(store, "E9001", answer, tmp_path / "day01.txt")
 
 
+def test_a_voice_note_the_lint_would_warn_about_does_not_refuse_the_answer(
+    store, builder, tmp_path
+):
+    """A `# VOICE` note with no reason, or for an id outside the answer, is a lint warning
+    (`voice-note`), not something the file cannot hold; the `--for-review` packet echoes the
+    notes back to translators, so answers carry them."""
+    answer = answer_for(builder, event(store, "E9001")).replace(
+        "```text\n", f"```text\n# VOICE {VOICED}: just\n# VOICE E9001.99: just -- x\n", 1
+    )
+    into = tmp_path / "day01.txt"
+    save_event(store, "E9001", answer, into)
+    assert f"# VOICE {VOICED}: just" in into.read_text(encoding="utf-8")
+
+
 WORDS = "I'm your Uncle Yusaku."
 LOCKED = locks_by_id(parse_locks("\t".join(HEADER) + f"\n{VOICED}\tphrase\t{WORDS}\tJay\n"))
 """Jay's words for one line of the synthetic store, read as `translation/locked.tsv` is."""

@@ -15,7 +15,9 @@ E2803.0	Aunt	What's the matter?
 E2803.1	Boku	I kind of... don't want to eat.
 E2803.2	Uncle	You too, Boku-kun?
 E2803.3	Boku	Huh...?
+# VOICE E2803.4: just -- just kidding is the English for uso uso; the repetition is the source's
 E2803.4	Uncle	Just kidding, just kidding.
+# VOICE E2803.5: just -- translates ima no (that just now)
 E2803.5	Shirabe	That just now... I didn't get it.
 E2803.6	Aunt	Don't tell me... maybe you've got a fever?
 
@@ -25,6 +27,7 @@ E2830.1	Moe	I see... Then you made lots of good memories, Boku-kun.
 E2830.2	Boku	Yeah. I'm sure they'll be my treasure.
 E2830.3	Moe	I see...
 E2830.4	Boku	Onee-chan, I found something strange in the cave.
+# VOICE E2830.5: very -- very, very carries the repeated daiji ni daiji ni
 E2830.5	Moe	Ohh, something strange? Good for you. // It might turn into your treasure for life, Boku-kun, // so keep it very, very carefully.
 E2830.6	Moe	I'm going to try hard too... and find a treasure for life, for sure.
 
@@ -61,12 +64,14 @@ E2853.1	Specs	Then tomorrow's a good day. My fortune-telling book says the stars
 E2805.0	Aunt	You do have a fever, don't you? Hey, Boku-kun, do you feel bad right now?
 E2805.1	Boku	Yeah... a little... sort of hohe-hohe.
 E2805.2	Aunt	Two hohes, huh. Excuse me a moment...
+# VOICE E2805.3: quite -- translates kekkou (quite a bit)
 E2805.3	Aunt	Your fever's gone up quite a bit. I'm sorry I didn't notice sooner... // Anyway, you've already had your medicine today, so let's get you straight to sleep.
 E2805.4	Boku	Hey, Auntie.
 E2805.5	Aunt	Hm? What is it?
 E2805.6	Boku	The boy who was at your house, Auntie... I think he must have been really happy.
 E2805.7	Aunt	Hm-hm... what makes you think so?
 E2805.8	Boku	Could I... take that boy's place?
+# VOICE E2805.9: very -- very much carries the dai of daisuki; too translates mo
 E2805.9	Aunt	...Huh? Hm-hm... // Onii-chan is Onii-chan, and Boku-kun is Boku-kun. // But Auntie loves you very much too, Boku-kun.
 E2805.10	Boku	I love you too, Auntie.
 E2805.11	Aunt	Hm-hm... thank you. Well then, good night.

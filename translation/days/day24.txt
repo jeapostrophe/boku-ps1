@@ -13,6 +13,7 @@ E2420.1	Aunt	I know! I haven't made that one for a while.
 
 # --- E2412: G01 -- living room
 E2412.0	Uncle	Tomorrow I'm lighting the kiln.
+# VOICE E2412.1: really -- translates honto? as a question
 E2412.1	Boku	What! Really?
 E2412.2	Uncle	Yeah! // While you're here, I really ought to show you something amazing at least once.
 E2412.3	Uncle	I'll have to watch over the kiln all night long, // but Boku-kun, you mustn't stay up late with me.
@@ -25,6 +26,7 @@ E2430.3	Moe	But don't ask me the difference between Giant Flying Squirrel-san an
 E2430.4	Moe	Oh, what's this?
 E2430.5	Boku	This... ana-ana-bobon.
 E2430.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
+# VOICE E2430.7: really -- translates yappari; same recording as E2330.5
 E2430.7	Boku	So it really is an alien's book.
 E2430.8	Moe	Dummy, this is English. En-glish!
 E2430.9	Boku	Onee-chan, can you understand English?
@@ -45,6 +47,7 @@ E2430.21	Moe	Oh, be quiet! // When I think someone's secret is packed in here, m
 #   small flying squirrels; "momonga" is also the English name of the small one.
 
 # --- E2432: G17 -- the veranda (the stars; living alone in spring)
+# VOICE E2432.0: really -- translates honto ni
 E2432.0	Boku	It's a really pretty starry sky.
 E2432.1	Moe	Yeah.
 E2432.2	Boku	When I go back to the city, I won't be able to see it anymore.
@@ -73,12 +76,14 @@ E2432.23	Moe	From tomorrow, I've started thinking, a little, that I'll try my be
 #   the streets in the evening.
 
 # --- E2440: H04 -- garden corner where Shirabe watches ants
+# VOICE E2440.0: really -- translates the dai- of daisuki
 E2440.0	Boku	Pipsqueak, you really love little ants, don't you?
 E2440.1	Shirabe	Well, if you were born somewhere with so little entertainment, // anyone would make friends with little ants!
 E2440.2	Shirabe	Everyone in our family except Dad has 2.0 eyesight in both eyes.
 
 # --- E2441: G06 -- TV room
 E2441.0	Shirabe	What does the Wolf Girl come all the way out to the countryside for, I wonder?
+# VOICE E2441.1: really -- translates yoppodo (she must be that taken with it)
 E2441.1	Shirabe	She must really like our bath.
 E2441.2	Shirabe	Hey, a wolf is that bad guy in the fairy tales, right?
 E2441.3	Shirabe	In every age, women are drawn to wickedness, aren't they?

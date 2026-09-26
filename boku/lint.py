@@ -66,7 +66,12 @@ What it checks, and where each rule comes from
   word-list matching, it has no idea what the sentence means, and it is right often
   enough to be worth a look and wrong often enough that it may never fail a build. A
   settled rendering that holds such a word (`SETTLED_PHRASES`: Fat's "yours truly",
-  glossary § 1 and style guide § 5) is taken out first.
+  glossary § 1 and style guide § 5) is taken out first. A word a translator kept after
+  looking (PLAN `TRN-16`) is recorded in the file as `# VOICE <id>: <word>[, <word>] --
+  <why>`, anywhere in the file that holds the row, and is not flagged again in that line.
+* **`voice-note`** -- *a warning only*: a `# VOICE` note that records nothing -- not of the
+  form above (one id, a reason after ` -- `), its id not a row of its file, or naming a word
+  the heuristic does not flag in that line.
 * **`em-dash`** -- *a warning only*, on every em dash (style guide § 18): the dash is a
   habit of machine-written English and is used only where the Japanese breaks or trails
   the line with a dash-like mark. A warning is a prompt to check the source, not a ban.
@@ -285,6 +290,8 @@ class Row:
     path: Path
     number: int
     notes: tuple[str, ...] = ()
+    voice: frozenset[str] = frozenset()
+    """The words a `# VOICE` note in this row's file keeps on purpose (`VOICE_NOTE`)."""
 
     @property
     def file(self) -> str:
@@ -326,6 +333,11 @@ def parse_file(path: Path) -> tuple[list[Row], list[Finding]]:
     return parse_text(path.read_text(encoding="utf-8"), path)
 
 
+VOICE_NOTE = re.compile(r"VOICE\s+([^\s,]+):\s*(.+?)\s+--\s+\S.*$")
+"""`# VOICE <id>: <word>[, <word>] -- <why>`: the additive-word heuristic's finding on
+those words of that line was looked at and the words kept (PLAN `TRN-16`)."""
+
+
 def parse_text(text: str, path: Path) -> tuple[list[Row], list[Finding]]:
     """`parse_file` over text not yet on disk -- a translator's answer before it is saved.
     `path` is only where the rows say they come from."""
@@ -365,7 +377,33 @@ def parse_text(text: str, path: Path) -> tuple[list[Row], list[Finding]]:
             )
         )
         notes = []
+    voice: dict[str, set[str]] = {}
+    for _, line_id, words in voice_notes(text):
+        if words is not None:
+            voice.setdefault(line_id, set()).update(words)
+    rows = [
+        replace(row, voice=frozenset(voice[row.line_id])) if row.line_id in voice else row
+        for row in rows
+    ]
     return rows, findings
+
+
+def voice_notes(text: str) -> Iterator[tuple[int, str, frozenset[str] | None]]:
+    """Every `# VOICE` comment of a file: its line number, the id it names (`-` if none),
+    and the words it keeps -- `None` when it is not of `VOICE_NOTE`'s form, which settles
+    nothing and `_check_voice_notes` says so. Not a parse finding: those refuse an answer
+    and fail the lock check, and a note is only ever a warning."""
+    for number, raw in enumerate(text.splitlines(), start=1):
+        note = raw.strip().lstrip("#").strip()
+        if not raw.lstrip().startswith("#") or not note.startswith("VOICE"):
+            continue
+        found = VOICE_NOTE.match(note)
+        if found is None:
+            named = re.match(r"VOICE\s+(\S+?):", note)
+            yield number, named.group(1) if named else "-", None
+            continue
+        words = frozenset(w.strip().lower() for w in found.group(2).split(",") if w.strip())
+        yield number, found.group(1), words
 
 
 def translation_paths(sources: Sequence[Path]) -> list[Path]:
@@ -491,6 +529,7 @@ def lint_rows(store: Store, rows: Sequence[Row], options: Options) -> list[Findi
     context = _Context(store=store, options=options, table=GlyphTable.load())
     english = [row for row in rows if row.has_english]
     _check_ids(context, rows, english)
+    _check_voice_notes(context, rows)
     for row in english:
         if row.entry.voice_only:
             _check_subtitle(context, row)
@@ -824,15 +863,26 @@ _WORD = re.compile(r"[a-z']+")
 
 
 def _check_additive(context: _Context, row: Row, record: dict) -> None:
-    """The pilot's recurring defect, as far as a word list can see it. Warning only."""
+    """The pilot's recurring defect, as far as a word list can see it, less the words a
+    `# VOICE` note kept; and a note naming a word it does not flag. Warnings only."""
     source = context.store.japanese[record["id"]].plain()
-    if any(marker in source for marker in SOURCE_INTENSIFIERS):
-        return
-    text = row.text.lower()
-    for phrase in SETTLED_PHRASES:
-        text = text.replace(phrase, " ")
-    words = set(_WORD.findall(text))
-    added = [word for word in context.options.additive_words if word in words]
+    flagged: list[str] = []
+    if not any(marker in source for marker in SOURCE_INTENSIFIERS):
+        text = row.text.lower()
+        for phrase in SETTLED_PHRASES:
+            text = text.replace(phrase, " ")
+        words = set(_WORD.findall(text))
+        flagged = [word for word in context.options.additive_words if word in words]
+    stale = sorted(row.voice - set(flagged))
+    if stale:
+        context.say(
+            row,
+            "voice-note",
+            WARNING,
+            f"a VOICE note keeps {', '.join(stale)}, which the heuristic does not flag in this "
+            f"line; drop the note, or name only the words it flags",
+        )
+    added = [word for word in flagged if word not in row.voice]
     if added:
         context.say(
             row,
@@ -842,6 +892,30 @@ def _check_additive(context: _Context, row: Row, record: dict) -> None:
             f"({len(SOURCE_INTENSIFIERS)} looked for) -- check it is a translation, not an "
             f"addition",
         )
+
+
+def _check_voice_notes(context: _Context, rows: Sequence[Row]) -> None:
+    """The `# VOICE` notes of each file the rows come from that settle nothing: not of the
+    form, or naming no row of their file. Read from the file, as `parse_text` leaves them."""
+    by_path: dict[Path, set[str]] = {}
+    for row in rows:
+        by_path.setdefault(row.path, set()).add(row.line_id)
+    for path, ids in by_path.items():
+        if not path.is_file():
+            continue
+        for number, line_id, words in voice_notes(path.read_text(encoding="utf-8")):
+            if words is None:
+                problem = (
+                    "a VOICE note settles nothing unless it is "
+                    "`# VOICE <id>: <word>[, <word>] -- <why>`, one id and its reason"
+                )
+            elif line_id not in ids:
+                problem = f"a VOICE note for {line_id}, not a row of this file"
+            else:
+                continue
+            context.findings.append(
+                Finding(path.name, number, line_id, "voice-note", WARNING, problem)
+            )
 
 
 def _check_em_dash(context: _Context, row: Row) -> None:

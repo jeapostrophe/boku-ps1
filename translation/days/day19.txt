@@ -4,6 +4,7 @@ E1905.0	(voice only)
 E1905.1	(voice only)
 
 # --- E1921: G03 -- kitchen
+# VOICE E1921.0: just -- translates chodo in chodo ii
 E1921.0	Aunt	Well, maybe it's just the thing for Onee-chan's diet...
 
 # --- E1901: G02 -- breakfast, Moe absent
@@ -21,7 +22,7 @@ E1902.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 # --- E1920: H08 -- the yard
 E1920.0	Aunt	I want to see~ a wider world~ // I am~ a white cosmos~
 E1920.1	Boku	What song is that?
-E1920.2	Aunt	Huh? Oh, this? It's just a hana-uta, Auntie humming whatever comes.
+E1920.2	Aunt	Huh? Oh, this? It's a hana-uta, Auntie humming whatever comes.
 E1920.3	Boku	A hana-uta? A nose song?
 E1920.4	Aunt	A flower song!
 E1920.5	Aunt	I want to see~ a wider world~ // I am~ a white cosmos~
@@ -34,11 +35,13 @@ E1912.1	Boku	What are you talking about?
 E1912.2	Uncle	The story of a troubled father with a daughter in her adolescence...
 E1912.3	Boku	Addle-essence?
 E1912.4	Uncle	Adolescence.
+# VOICE E1912.5: terribly -- translates eraku (terribly poor)
 E1912.5	Uncle	When we were adolescents, Japan was still terribly poor, you know.
 # NOTE E1912.3-.4: shushinki for shishunki (style guide § 8 kind 1).
 
 # --- E1910: H26 -- the workshop
 E1910.0	Boku	I went and met the Wolf Girl.
+# VOICE E1910.1: quite -- translates nakanaka
 E1910.1	Uncle	Did you? Quite an interesting girl, isn't she?
 E1910.2	Boku	Interesting... or more like, a weird lady.
 E1910.3	Uncle	Hahaha, that's true.
@@ -55,8 +58,9 @@ E1930.1	Moe	...Yeah, I'm okay.
 E1930.2	Boku	Auntie said all girls get like that...
 E1930.3	Moe	......
 E1930.4	Boku	What part of you got sick?
-E1930.5	Moe	It's like my dreams, my hopes... // all that stuff about the future, I just don't care about any of it anymore.
+E1930.5	Moe	It's like my dreams, my hopes... // all that stuff about the future, I don't care about any of it anymore.
 E1930.6	Boku	......
+# VOICE E1930.7: just -- carries the exasperated mo and the insistent tte ba (I told you)
 E1930.7	Moe	I told you, just leave me alone...
 
 # --- E1931: G15 -- the sisters' room
@@ -89,5 +93,6 @@ E1904.6	Boku	Today I... saw a ghost.
 E1904.7	Shirabe	...You'd better not go around saying things like that.
 E1904.8	Aunt	Why, I believe you.
 E1904.9	Uncle	When I was little, one snowy night, I thought aliens had come, too...
+# VOICE E1904.10: really -- translates shotai (its true identity)
 E1904.10	Aunt	And what was it really?
 E1904.11	Uncle	After I grew up, I was watching an old American movie at a revival theater, // and a scene came on exactly like the one in my memory...

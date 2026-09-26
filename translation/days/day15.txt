@@ -6,6 +6,7 @@ E1505.0	(voice only)	Now, 30 years on from that day, // perhaps the time has com
 E1501.0	Aunt	Boku-kun, today everyone at Auntie's house // is going to visit the grave of the Onii-chan of this house, // so could you look after the house by yourself?
 E1501.1	Boku	Yeah, I'll be fine by myself.
 E1501.2	Shirabe	Don't you go getting up to mischief.
+# VOICE E1501.3: really -- carries the exasperated -ttara of Ma, Shirabe ttara in the aunt's voice
 E1501.3	Aunt	My, Shirabe, really.
 E1501.4	Uncle	Well then, itadakimaasu!
 E1501.5	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
@@ -17,11 +18,13 @@ E1502.2	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E1502.3	Aunt	Well then, before we go, the dinner quiz!
 E1502.4	Aunt	Boku-kun! What do you think tonight's dinner is?
 E1502.5	Aunt	Well then, look forward to tonight's dinner.
+# VOICE E1502.6: just -- carries the uncle's reassuring ma: nothing to worry about, carry on as usual
 E1502.6	Uncle	Well then, we're all off to visit the grave. // It's not the sort of place a burglar would come to, so just carry on the way you usually do.
 E1502.7	(voice only)
 
 # --- E1503: G02 -- dinner (the family back from the grave)
 E1503.0	Aunt	Phew, I'm worn out today. Thank you for minding the house, Boku-kun. // Here, a souvenir...
+# VOICE E1503.1: quite -- translates nakanaka
 E1503.1	Aunt	These rice crackers are quite tasty, you know.
 E1503.2	Boku	Huh... these don't come with a free sticker?
 E1503.3	Aunt	Ahaha, what are you expecting from a souvenir of the countryside?
@@ -48,6 +51,7 @@ E1531.0	Moe	That's strange... // the mailman didn't come today, did he?
 E1531.1	Moe	I'm starting to worry whether I put a stamp on it properly when I sent it...
 
 # --- E1541: G06 -- TV room
+# VOICE E1541.0: really -- translates yappari
 E1541.0	Shirabe	Visiting the grave in the country really is best in summer.
 E1541.1	Boku	Why?
 E1541.2	Shirabe	Our family grave is ever so deep in the mountains.

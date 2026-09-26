@@ -165,6 +165,16 @@ def test_a_note_below_its_line_is_shown_on_the_line_it_names(walked):
     assert notes_of(walkthrough, "E9101.2") == ()
 
 
+def test_a_voice_note_below_its_line_is_shown_on_the_line_it_names(walked):
+    """PLAN TRN-16's `# VOICE <id>:` record (`boku.lint.VOICE_NOTE`) is matched by id like a
+    `# NOTE`, so the reader shows it on the line the lint stopped flagging."""
+    _, days = walked
+    add_notes(days, "# VOICE E9101.0: just -- his voice\n\n")
+    walkthrough = walk(walked)
+    assert notes_of(walkthrough, "E9101.0") == ("VOICE E9101.0: just -- his voice",)
+    assert notes_of(walkthrough, "E9101.2") == ()
+
+
 def test_a_note_naming_a_range_or_a_list_is_shown_on_its_first_line(walked):
     _, days = walked
     add_notes(days, "# NOTE E9101.1-.2: a range\n# NOTE E9102.0, .1: a list\n\n")
@@ -331,20 +341,20 @@ def test_every_committed_id_is_walked_exactly_once(real_walkthrough):
     assert [i for i in expected if counts[i] != 1] == []
 
 
-_ONE_ID_NOTE = re.compile(r"^#\s*NOTE ([^\s,*:]+?):")
+_ONE_ID_NOTE = re.compile(r"^#\s*(NOTE|VOICE) ([^\s,*:]+?):")
 
 
 def test_every_committed_note_naming_one_line_is_on_that_line(real_walkthrough):
-    """Read off the committed files: a `# NOTE <id>:` that names a single id, where that id
-    is walked, shows on that item."""
+    """Read off the committed files: a `# NOTE <id>:` or `# VOICE <id>:` that names a single
+    id, where that id is walked, shows on that item."""
     items = {i.id: i for s in real_walkthrough.sections for i in s.items}
     missing = []
     for path in [*translation_paths([DAYS_DIR]), reader.CLIP_FILE]:
         for line in path.read_text(encoding="utf-8").splitlines():
             found = _ONE_ID_NOTE.match(line)
-            if found and "-" not in found.group(1) and found.group(1) in items:
-                note_id = found.group(1)
-                if not any(n.startswith(f"NOTE {note_id}:") for n in items[note_id].notes):
+            if found and "-" not in found.group(2) and found.group(2) in items:
+                kind, note_id = found.groups()
+                if not any(n.startswith(f"{kind} {note_id}:") for n in items[note_id].notes):
                     missing.append(f"{path.name}: {note_id}")
     assert missing == []
 

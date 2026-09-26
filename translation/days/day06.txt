@@ -35,6 +35,7 @@ E0620.3	Aunt	Boku-kun, aren't you hiding something from Auntie?
 E0620.4	Boku	Huh? I don't think I'm hiding anything...
 E0620.5	Aunt	Is that sooo? // You went to Firefly Creek last night, didn't you?
 E0620.6	Boku	I'm sorry. But... // but how did you know?
+# VOICE E0620.7: just -- just now translates sakki
 E0620.7	Aunt	Hm-hm...... Just now, when I went to change your sheets, // a guest came out of your futon. // Auntie got such a fright she flailed about, but she managed to catch it.
 E0620.8	Boku	A firefly? A firefly came out?
 E0620.9	Aunt	But your bug cage looked full, // so Auntie went to the creek and let it go.
@@ -42,6 +43,7 @@ E0620.10	Boku	Awww, no...
 E0620.11	Aunt	But the firefly got to be with you until morning, // so maybe it had a nice time...
 E0620.12	Aunt	Hmm? Who knows? // Look in your own bug cage and see for yourself.
 E0620.13	Boku	Whoa, thanks, Auntie!
+# VOICE E0620.14: just -- translates tada no
 E0620.14	Aunt	But seen in the daytime, a firefly's just a longhorn beetle, isn't it?
 # NOTE E0620.0: "dassō" is a jailbreak, a soldier deserting — her joke about the night the warden
 #   was away; "make a break for it" is the same joke.
@@ -50,6 +52,7 @@ E0620.14	Aunt	But seen in the daytime, a firefly's just a longhorn beetle, isn't
 E0606.0	(voice only)	At today's Peace Memorial Ceremony, a great many people have gathered in Hiroshima's Peace Park.
 
 # --- E0640: H09 -- garden corner where Shirabe watches ants
+# VOICE E0640.0: just -- just loves carries the dai- of daisuki in Shirabe's prim grown-up register
 E0640.0	Shirabe	You know, Shirabe... // just loves little ants.
 E0640.1	Boku	Why?
 E0640.2	Shirabe	I intend to learn kingship from the world of the ants.
@@ -65,6 +68,7 @@ E0640.9	Shirabe	Shirabe is absolutely going to be big.
 
 # --- E0614: A14 -- the watermelon field
 E0614.0	Uncle	Today I'm keeping watch like this, so the watermelon thieves won't come.
+# VOICE E0614.1: just -- just when carries koso (a day like this above all)
 E0614.1	Uncle	Ahh, a hot day like this is just when I want to eat cold watermelon.
 
 # --- E0650: A18 -- the secret base, the three boys
@@ -110,6 +114,7 @@ E0651.10	Specs	Yes, yes, she's horrible! Horrible! // She makes picking on me pa
 
 # --- E0652: A18 -- the secret base
 E0652.0	Fat	Where are you living right now?
+# VOICE E0652.1: just -- just below translates sugu
 E0652.1	Boku	At my uncle's... the house just below here.
 E0652.2	Fat	Huh? That's Sorano-san's place!
 E0652.3	Boku	Yeah, that's right.
@@ -119,6 +124,7 @@ E0652.6	Specs	Fat has a crush on the middle-school girl at that house.
 E0652.7	Boku	Huh? Moe-neechan?
 E0652.8	Fat	Why, you...! // Want me to stick my hand down your throat and turn you inside out?
 E0652.9	Guts	Now, now, easy, easy.
+# VOICE E0652.10: just, really -- really is translates yappa, just for one day translates dake
 E0652.10	Fat	Moe-san really is wonderful, isn't she... // Lucky you, getting to live in that house with her... // Hey, why don't we secretly swap places, just for one day?
 # NOTE E0652.2: "Sorano-san's place" is the glossary's (§ 1).
 

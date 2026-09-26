@@ -19,6 +19,7 @@ E0905.1	(voice only)	The monastery bells ring out in sorrow, as if to enfold the
 
 # --- E0930: G15 -- the sisters' room
 E0930.0	Moe	Oh, welcome, Boku-kun.
+# VOICE E0930.1: just -- just now renders ima in Boku's past-tense question
 E0930.1	Boku	Onee-chan, were you studying just now too?
 E0930.2	Moe	Huh? Umm...
 E0930.3	Moe	Hehe, right now it's a little slacking-off time.
@@ -28,7 +29,7 @@ E0930.6	Moe	An exam student, huh... what a dreary youth.
 
 # --- E0931: G15 -- the sisters' room
 E0931.0	Moe	Ahh, enough studying, quit, quit... // What a pain...
-E0931.1	Moe	Maybe a war or something will start, and next year's entrance exams will just vanish, snap?
+E0931.1	Moe	Maybe a war or something will start, and next year's entrance exams will vanish, snap?
 E0931.2	Moe	But if a war really did start, that'd be kind of a problem.
 
 # --- E0940: H10 -- garden corner where Shirabe watches ants

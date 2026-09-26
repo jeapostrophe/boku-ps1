@@ -39,6 +39,7 @@ E0307.0	(unlabelled)	Got the fishing rod.
 E0306.0	Aunt	What wonderful weather! Hello, Boku-kun.
 E0306.1	Boku	Yeah. Hello, Uncle, Auntie.
 E0306.2	Uncle	Well, well... the sky sure is high today...
+# VOICE E0306.3: just -- just like translates -dori (as promised)
 E0306.3	Uncle	Thank you for coming, Boku-kun, just like you promised.
 E0306.4	Aunt	Hm-hm-hm. Now then, Boku-kun! // Put the corn in the field into this basket, every last one you find. // Okay, time to start work!
 E0306.5	(voice only)
@@ -66,6 +67,7 @@ E0340.6	Shirabe	Huh? Whyyy would Shirabe be looking at the dirt?
 E0340.7	Boku	There's nothing here but ants.
 E0340.8	Shirabe	...Say, have you ever seen a queen ant?
 E0340.9	Boku	Huh?
+# VOICE E0340.10: just -- what I just said translates ima no hanashi
 E0340.10	Shirabe	Never mind, never mind. What I just said is nashinko.
 E0340.11	Shirabe	I told you, leave me alone!
 # NOTE E0340.0-.2: gasatsu — a grown-up word Boku does not know, and Shirabe's definition is
@@ -94,7 +96,9 @@ E0305.4	(voice only)	The Summer National High School Baseball Championship: toda
 #   results clip; the ear cannot tell it from its homophone "naval battle".
 
 # --- E0312: G01 -- living room
+# VOICE E0312.0: just -- only just enough translates chodo ... shika
 E0312.0	Uncle	Uncle's field, for what we eat at home... // we only farm just enough ground for that. // In everything, the easy way is the best way.
+# VOICE E0312.1: just -- just the right size translates chodo
 E0312.1	Uncle	Thank you for your hard work helping in the field today. // Uncle's field is small, // so it might be just the right size for you to help with, Boku-kun.
 
 # --- E0303: G02 -- dinner
@@ -103,6 +107,7 @@ E0303.1	Boku	Whoa, fireflies! I've never seen any. That sounds great, that sound
 E0303.2	Shirabe	Oh? You're surprisingly romantic.
 E0303.3	Uncle	But the path is dangerous at night, so you must never go there after the sun goes down. // That's the rule at Uncle's house.
 E0303.4	Boku	Awww! That's a shame.
+# VOICE E0303.5: just -- carries -ba ii noni, the aunt's you-need-only reproach
 E0303.5	Aunt	You could have just kept the fireflies a secret...
 E0303.6	Uncle	Hahaha... So I could.
 E0303.7	Uncle	Well then, itadakimasu!
@@ -129,6 +134,7 @@ E0332.6	Moe	No way! You put your mouth on this thing.
 E0332.7	Moe	Playing a pipe out in the night breeze feels so nice...
 
 # --- E0341: G06 -- TV room
+# VOICE E0341.0: just -- only just translates sakki ... bakka
 E0341.0	Shirabe	I only just ate, but I'm already hungry. // Aww, I want the harusame salad from school lunch...
 E0341.1	Boku	What's that?
 E0341.2	Shirabe	...Huh? You don't know it?
