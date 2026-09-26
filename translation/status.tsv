@@ -1,41 +1,41 @@
 # PLAN TRN-04's table: each unit's state. Format and states: translation/README.md § status.tsv.
 # Licence: CC BY-SA 4.0.
 unit	state	date	note
-day01	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's two edits the session replaced (E0171.1, E0175.0) restored 2026-09-25, and every edit of his now held by translation/locked.tsv (TRN-18); Jay read it in play on the earlier build
-day02	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; Jay read it in play on the earlier build
-day03	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept
-day04	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept
-day05	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept
-day06	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept
-day07	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept
-day08	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day09	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day10	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day11	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day12	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day13	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day14	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day15	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day16	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day17	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day18	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day19	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day20	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day21	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day22	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day23	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day24	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day25	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day26	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day27	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day28	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day29	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day30	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-day31	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied)
-shared	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept
-arrays	reviewed	2026-09-23	the menus, books and screens (308 lines), in the same session and review; on screen as PIPE-07 places them
-clips	reviewed	2026-09-24	translation/clips.txt (VO-04, VO-06), with Jay's ear applied (VO-05); not part of the TRN-10 session
-movies	reviewed	2026-09-24	translation/movies.txt (FMV-02), with Jay's ear applied (VO-05); not part of the TRN-10 session
-screens	reviewed	2026-09-24	the title and settings screens, the album, the credits card, signs, buttons and records (GFX-07 to GFX-10); Jay's rulings applied (TRN-11, TRN-12); not a row of TRN-04's table before 2026-09-24, so the state is the seed's, not a record
-diary	reviewed	2026-09-24	93 entries (every page but the dummy NIKKI_000): the maximal session, whole-game packet then each page with the scene that proposes it; an independent review against the page images (13 corrections); every entry fits, none cut; NIKKI_072 and NIKKI_064 seen on Beetle
-books	reviewed	2026-09-24	the insect and kite books' 17 spreads, in the same session; judged per field against GFX-06's text; both books seen on Beetle
+day01	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's two edits the session replaced (E0171.1, E0175.0) restored 2026-09-25, and every edit of his now held by translation/locked.tsv (TRN-18); Jay read it in play on the earlier build; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day02	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; Jay read it in play on the earlier build; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day03	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day04	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day05	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day06	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day07	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day08	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day09	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day10	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day11	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day12	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day13	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day14	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day15	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day16	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day17	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day18	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day19	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day20	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day21	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day22	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day23	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day24	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day25	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day26	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day27	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day28	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day29	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day30	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+day31	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+shared	reviewed	2026-09-23	the TRN-10 whole-game session, nine independent reviews against the Japanese (160 findings, all applied); takes the earlier reviewed line where it was better; Jay's comments kept; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+arrays	reviewed	2026-09-23	the menus, books and screens (308 lines), in the same session and review; on screen as PIPE-07 places them; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+clips	reviewed	2026-09-24	translation/clips.txt (VO-04, VO-06), with Jay's ear applied (VO-05); not part of the TRN-10 session; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+movies	reviewed	2026-09-24	translation/movies.txt (FMV-02), with Jay's ear applied (VO-05); not part of the TRN-10 session; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+screens	reviewed	2026-09-24	the title and settings screens, the album, the credits card, signs, buttons and records (GFX-07 to GFX-10); Jay's rulings applied (TRN-11, TRN-12); not a row of TRN-04's table before 2026-09-24, so the state is the seed's, not a record; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+diary	reviewed	2026-09-24	93 entries (every page but the dummy NIKKI_000): the maximal session, whole-game packet then each page with the scene that proposes it; an independent review against the page images (13 corrections); every entry fits, none cut; NIKKI_072 and NIKKI_064 seen on Beetle; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep
+books	reviewed	2026-09-24	the insect and kite books' 17 spreads, in the same session; judged per field against GFX-06's text; both books seen on Beetle; 2026-09-26: the TRN-16 voice pass on additive words and the TRN-17 awkward-English sweep

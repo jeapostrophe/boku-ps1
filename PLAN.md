@@ -578,11 +578,14 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       <why>` notes (boku.lint `VOICE_NOTE`, honoured by the heuristic; `voice-note` warns on one that
       settles nothing); 13 lines rewritten minimally; none touched Jay's locked words.
       lint-translation: additive-word 166 → 0. Harmed (was): the player.
-- [ ] **[TRN-17]** **An awkward-English sweep of the whole translation.** Jay, 2026-09-25: an agent
-      reads the whole game for lines that are correct but read awkwardly in English (e.g.
-      `E0175.0`), proposes rewrites, an independent judge checks them against the Japanese, and the
-      accepted ones are applied; it respects `translation/locked.tsv` (a finding against Jay's locked
-      words goes to him, not applied). Harmed: the player.
+- [x] **[TRN-17]** **An awkward-English sweep of the whole translation.** DONE 2026-09-26
+      (`f307f54`): six Opus readers over the whole game in play order (days, shared, arrays, clips,
+      movie cues, texture strings) with the maximal packet; three independent Opus judges checked
+      229 proposals against the Japanese — 183 accepted, 38 amended, 8 rejected — applied to 221
+      lines; nothing touched `locked.tsv`. `E0175.0` page 2 judged and kept ("play here to your
+      heart's content" — Jay's to overrule). Closed as no: the uneven renderings of *daisuki*
+      (`E2730.0` vs `E2440.0`, `E0640.0`) and *nakanaka* (`E2050.0`) the TRN-16 judge noted were each
+      kept for their scene; reopen if Jay's reading flags them. Harmed (was): the player.
 - [x] **[TRN-14]** **One reader for the whole translation.** DONE 2026-09-24 (`trn14-reader`):
       `./make.sh reader` writes `work/reader/index.html` from `boku/reader.py` — one linear
       walkthrough of days 1–31 in play order, shared, arrays, clips, movie cues, every typeset
