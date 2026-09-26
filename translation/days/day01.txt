@@ -11,7 +11,7 @@
 
 # --- E0171: H02 -- front of the house, gate
 E0171.0	Father	My son will be in your care over the summer vacation.
-E0171.1	Father	He's never been anywhere this rural, with so much nature still left, so... // he seems a little taken aback, but, everyone, please look after him.
+E0171.1	Father	This is his first time somewhere this rural, with so much nature still left, so... // he seems a little taken aback, but, everyone, please look after him.
 E0171.2	Father	All right. Introduce yourself.
 E0171.3	Boku	Hello. I'm Boku.
 # NOTE E0171.1: satoyama rendered "somewhere this rural" (glossary § 7).
@@ -26,7 +26,7 @@ E0174.1	Uncle	Nice to meet you, Boku-kun. That was a long trip. You did well.
 # --- E0172: close-up (I32), no text.
 
 # --- E0175: I31 -- introductions close-up
-E0175.0	Uncle	The name of this house is Sorano, and Uncle's name is Yusaku. // From today, think of this place as your own home, and play here to your heart's content.
+E0175.0	Uncle	This is the Sorano house, and I'm your Uncle Yusaku. // From today, think of this place as your own home, and play here to your heart's content.
 # --- E0176: H02 -- front of the house, gate
 E0176.0	Uncle	All right, Onee-chan first.
 

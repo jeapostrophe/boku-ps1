@@ -96,8 +96,8 @@ SETTLED BY CHARTER as a Japanese-ism that English can hold.
   text."* The game's font sheet has plain A–Z / a–z (`research/font.md`), no macron letters,
   and "ou"/"oo" spellings misread in English (*Yuusaku*, *Oo-kuwagata*). Macrons **are** used
   in this directory's documents, where they cost nothing: Yūsaku, Ryūjin, gochisōsama.
-* **Name order:** the script never gives a full name in one breath ("this house's name is
-  Sorano; Uncle's name is Yusaku", `E0175.0`), so the question barely arises in game text. In
+* **Name order:** the script never gives a full name in one breath (the uncle names the house,
+  then himself, in two clauses, `E0175.0`), so the question barely arises in game text. In
   documents: family name first with the Japanese, given name first in running English —
   "Yūsaku Sorano (空野優作)". This was not one of the eleven questions; it is the default and
   Jay may reopen it.

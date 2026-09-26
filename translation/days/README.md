@@ -58,6 +58,9 @@ are `./make.sh mockup`'s.
   side) are one row written `Yes | No`: the first answer, ` | `, the second. The build places
   the second where the Japanese one began and tells the drawer where the first ends; the two
   share the row's five letters.
+* **Words that stay.** A part may end with a list headed "Words that stay": words Jay chose
+  for some of its lines. Keep each exactly as written in that line's English and translate
+  the rest of the line around it; an answer that drops one is sent back.
 * **Nothing is shortened to fit.** Translate the whole of what is said.
 
 ## The files

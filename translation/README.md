@@ -6,7 +6,8 @@ the three sample scenes the style rulings were read from, since folded into the 
 [samples/README.md](samples/README.md); the voice and
 register are [style-guide.md](style-guide.md) and [bible.md](bible.md); names are
 [glossary.md](glossary.md); open questions for Jay are [QUESTIONS.md](QUESTIONS.md); speech
-with no text on the disc is [voice-only.md](voice-only.md).
+with no text on the disc is [voice-only.md](voice-only.md); the words Jay chose for particular
+lines, which no pass rewrites without him, are [locked.tsv](#lockedtsv).
 
 To read the whole translation in order — every day's events, the day-independent events, the
 menus and screens, the clips, the movie subtitles and every typeset texture beside its original —
@@ -51,8 +52,9 @@ The orchestrator (a script, or a parent agent that never translates) drives the 
    `./make.sh save-event KEY --answer reply.txt --into translation/days/FILE --order work/packets/game/order.txt`.
    The reply is the fenced block; prose around it is ignored.
 2. A refusal (an id missing or extra, Japanese left in a row or a note, a speaker that is not a
-   style-guide label) leaves the file untouched and says why: send the message back and ask
-   for the block again. Never edit an answer by hand to make it save.
+   style-guide label, a line that drops Jay's words from [locked.tsv](#lockedtsv)) leaves the
+   file untouched and says why: send the message back and ask for the block again. Never
+   edit an answer by hand to make it save.
 3. At the end of each day, `./make.sh lint-translation` over the day's file; fit on screen is
    the lint's, not the translator's, so a page too long is not sent back.
 4. After the last part, the revision pass: ask the session whether it wants to revise a day
@@ -63,7 +65,42 @@ Every unit already holds reviewed English ([status.tsv](#statustsv)), and a new 
 replaces each block as it reaches it: tag the tree first, as `TRN-10` did
 (`pre-trn10-2026-09-23`), and compare.
 Every answer still goes through the independent review against the Japanese
-(`./make.sh packet --like FILE --for-review`) before it counts as reviewed.
+(`./make.sh packet --like FILE --for-review`) before it counts as reviewed. A finding against
+words in [locked.tsv](#lockedtsv) is not applied: it goes to Jay.
+
+## locked.tsv
+
+The words Jay chose for particular lines: what he wrote or dictated into a line, a name he
+heard, a wording he picked from options put to him about that line (`work/review/decisions.html`).
+They are not the policy — a style-guide or glossary ruling binds every line and lives in those
+documents — but the words of one line, which a pass working from the Japanese cannot rediscover:
+held only in a day file, they are replaced by the next pass that rewrites the line. A wording
+accepted "as built", with no choice of words, is not a lock.
+
+```
+id <TAB> match <TAB> words <TAB> source
+E0175.0	phrase	This is the Sorano house, and I'm your Uncle Yusaku.	Jay, 2026-09-21 (73d7fb7); ...
+btn@MITIM.take_out	line	Take	Jay, 2026-09-24 (decisions § 21 G8-MITIM: "it should just be 'Take'")
+M27	phrase	specks of light	Jay, 2026-09-24 (decisions § 22: "specks of light" stays)
+```
+
+* **id** is a line id of the day files or `clips.txt`, a texture string id
+  (`translation/textures/`), or a movie file (`M27`), held by any one of its cues. An id may have
+  several rows, one per phrase.
+* **match** is `line` when Jay chose the line's whole English (a button, a label, a menu row):
+  it must be exactly the words. It is `phrase` when he chose part of a line: the words must
+  appear in it, not as part of a longer word ("Take" is not held by "Takeout"), and the rest of
+  the line may still be revised around them. The tanka's `phrase` is its " / ": Jay chose the
+  slashes, not the words.
+* **words** as the line's file writes them — pages joined by ` // `, options by ` | ` — held in
+  every copy if a line is translated twice.
+* **source** is whose, when and where it was recorded. English only, as the translation files.
+
+What holds it: `tests/test_locked.py` fails when a line loses its words (so `./make.sh test`
+catches a hand edit or a sweep), every packet part names the locked words of its lines under
+"Words that stay", and `./make.sh save-event` refuses an answer that drops them. Changing a
+lock is Jay's call: change the line and its row together, with his ruling as the source. Every
+new ruling of his on a line's words gets a row in the same commit that applies it.
 
 ## movies.txt
 

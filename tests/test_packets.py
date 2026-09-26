@@ -21,6 +21,9 @@ import pytest
 from boku import REPO_ROOT
 from boku.layout import Marks
 from boku.lint import load_rows, parse_file, translation_paths
+from boku.locked import HEADER, locks_by_id
+from boku.locked import parse as parse_locks
+from boku.locked import read as read_locks
 from boku.packets import (
     ARRAYS_NAME,
     CHECKLIST_NAME,
@@ -492,6 +495,44 @@ def test_a_note_in_japanese_is_refused(store, builder, tmp_path):
     )
     with pytest.raises(PacketRefused, match="a note still holds Japanese"):
         save_event(store, "E9001", answer, tmp_path / "day01.txt")
+
+
+WORDS = "I'm your Uncle Yusaku."
+LOCKED = locks_by_id(parse_locks("\t".join(HEADER) + f"\n{VOICED}\tphrase\t{WORDS}\tJay\n"))
+"""Jay's words for one line of the synthetic store, read as `translation/locked.tsv` is."""
+
+
+def test_a_part_names_jay_s_words_for_its_locked_lines_and_no_others(store, builder):
+    """A part names each locked line's words; an event with none carries no such section."""
+    builder.locked = LOCKED
+    locked_part = builder.event_part(event(store, "E9001"), 1, 2)
+    after_answer = locked_part.split("## Your answer", 1)[1]
+    assert f"`{VOICED}`: {LOCKED[VOICED][0].says} `{WORDS}`" in after_answer
+    assert "## Words that stay" not in builder.event_part(event(store, "E9002"), 2, 2)
+
+
+def test_an_answer_that_drops_jay_s_words_is_refused_and_nothing_written(store, builder, tmp_path):
+    into = tmp_path / "day01.txt"
+    answer = answer_for(builder, event(store, "E9001"))
+    with pytest.raises(PacketRefused, match=f"{VOICED} drops Jay's words") as refusal:
+        save_event(store, "E9001", answer, into, locked=LOCKED)
+    assert WORDS in str(refusal.value)
+    assert not into.exists()
+    kept = answer.replace("Words. //", f"{WORDS} //", 1)
+    save_event(store, "E9001", kept, into, locked=LOCKED)
+    assert WORDS in into.read_text(encoding="utf-8")
+
+
+def test_the_packet_and_save_event_read_translation_locked_tsv_by_default(
+    store, builder, tmp_path, monkeypatch
+):
+    """`./make.sh packet` and `./make.sh save-event` pass no locks: the defaults are what hold
+    Jay's words in a real run, so they are tested, not only the injected mapping."""
+    assert builder.locked == locks_by_id(read_locks()), "the builder's locks are not the file's"
+    assert builder.locked, "translation/locked.tsv read as empty"
+    monkeypatch.setattr("boku.packets.read_locks", lambda: list(LOCKED[VOICED]))
+    with pytest.raises(PacketRefused, match="drops Jay's words"):
+        save_event(store, "E9001", answer_for(builder, event(store, "E9001")), tmp_path / "d.txt")
 
 
 def test_answer_lines_takes_the_fenced_block():

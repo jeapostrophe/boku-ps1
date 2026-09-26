@@ -67,6 +67,9 @@ from boku.extract import SCRIPT_DIR_NAME
 from boku.glyphs import GlyphTable
 from boku.layout import Marks, menu_lines, original_marks, speaker_label
 from boku.lint import Row, load_rows, parse_file, parse_text, translation_paths
+from boku.locked import JAPANESE, Lock, locks_by_id
+from boku.locked import missing as missing_words
+from boku.locked import read as read_locks
 from boku.script_store import (
     PLACED_BY_CODE,
     Japanese,
@@ -635,6 +638,10 @@ class PacketBuilder:
     """Event -> its place in a play-order unit (`--game`); empty for any other unit."""
     table: GlyphTable = field(default_factory=GlyphTable.load)
     voice_only: Mapping[str, str] = field(default_factory=voice_only_gists)
+    locked: Mapping[str, tuple[Lock, ...]] = field(
+        default_factory=lambda: locks_by_id(read_locks())
+    )
+    """Line id -> its locks: Jay's words, which its English keeps (`translation/locked.tsv`)."""
 
     @classmethod
     def build(
@@ -749,6 +756,7 @@ class PacketBuilder:
             "```",
             "",
             *self.glyph_notes(block),
+            *self.locked_notes(surface.line_ids),
         ]
         if self.for_review:
             out += self._current(surface.line_ids)
@@ -765,6 +773,32 @@ class PacketBuilder:
             f"(`research/data/glyph-table.tsv`): punctuation becomes the English mark; a "
             f"button or a picture stays as the token."
             for n in cells
+        ]
+
+    def locked_notes(self, line_ids: Iterable[str]) -> list[str]:
+        """The words of these lines that Jay chose, which the answer keeps as written. Without
+        them a re-translation from the Japanese cannot know his edits, and replaces them."""
+        rows = [
+            f"* `{line_id}`: {lock.says} `{lock.words}`"
+            for line_id in line_ids
+            for lock in self.locked.get(line_id, ())
+        ]
+        if not rows:
+            return []
+        keep = (
+            "They stay as written: a finding against them goes to Jay, not into the English."
+            if self.for_review
+            else "Your English for each line keeps them exactly as written here, and "
+            "translates the rest of the line around them:"
+        )
+        return [
+            "",
+            "## Words that stay",
+            "",
+            f"Jay chose these words for these lines. {keep}",
+            "",
+            *rows,
+            "",
         ]
 
     @cached_property
@@ -865,6 +899,7 @@ class PacketBuilder:
             "```",
             "",
             *self.glyph_notes(template),
+            *self.locked_notes(scene_line_ids(scene)),
         ]
         if self.for_review:
             out += self._current(scene_line_ids(scene))
@@ -1356,7 +1391,7 @@ def order_keys(text: str) -> list[str]:
 def estimate_tokens(text: str) -> int:
     """A rough token count: one per Japanese character, one per 3.5 of anything else --
     the rule of thumb the packet's size is reported in, not a tokenizer."""
-    japanese = len(_JAPANESE.findall(text))
+    japanese = len(JAPANESE.findall(text))
     return round(japanese + (len(text) - japanese) / 3.5)
 
 
@@ -1382,7 +1417,6 @@ def untranslated_reachable(builder: PacketBuilder, day: int) -> list[str]:
 
 _FENCE = re.compile(r"^```[\w-]*\s*$")
 _PART_ID = re.compile(r"\bE\d{4}\b|\b[a-z]+@[\w:]+")
-_JAPANESE = re.compile("[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]")
 """Kana, kanji, CJK punctuation and the full-width forms: a row still holding any is a
 row the translator did not finish."""
 
@@ -1412,19 +1446,26 @@ def part_line_ids(store: Store, key: str) -> list[str]:
     return list(store.surfaces[key])
 
 
-def check_answer(key: str, expected: Sequence[str], lines: Sequence[str], where: Path) -> list[str]:
+def check_answer(
+    key: str,
+    expected: Sequence[str],
+    lines: Sequence[str],
+    where: Path,
+    locked: Mapping[str, Sequence[Lock]],
+) -> list[str]:
     """Why this answer cannot be saved as the part's block, or nothing.
 
     Only what the file itself cannot hold is refused here: an id missing, extra or given
-    twice, a row or note still in Japanese, a speaker that is not a label. Fit, page counts
-    and menus are `boku lint`'s, run over the file afterwards.
+    twice, a row or note still in Japanese, a speaker that is not a label, and a row that
+    drops the words `locked` fixes for it (Jay's, `translation/locked.tsv`). Fit, page
+    counts and menus are `boku lint`'s, run over the file afterwards.
     """
     rows, findings = parse_text("\n".join(lines), where)
     problems = [finding.message for finding in findings]
     problems += [
         f"a note still holds Japanese, and the day files hold none: {line!r}"
         for line in lines
-        if line.lstrip().startswith("#") and _JAPANESE.search(line)
+        if line.lstrip().startswith("#") and JAPANESE.search(line)
     ]
     given = Counter(row.line_id for row in rows)
     missing = [line_id for line_id in expected if line_id not in given]
@@ -1438,7 +1479,7 @@ def check_answer(key: str, expected: Sequence[str], lines: Sequence[str], where:
         problems.append(f"{', '.join(twice)} given more than once")
     special = {SampleScenes.SELECT, SampleScenes.VOICE_ONLY}
     for row in rows:
-        if _JAPANESE.search(row.speaker) or _JAPANESE.search(row.text):
+        if JAPANESE.search(row.speaker) or JAPANESE.search(row.text):
             problems.append(f"{row.line_id} still holds Japanese: {row.speaker!r} {row.text!r}")
             continue
         if row.speaker not in special:
@@ -1448,6 +1489,11 @@ def check_answer(key: str, expected: Sequence[str], lines: Sequence[str], where:
                     f"{row.line_id}: {', '.join(unknown)} is not a speaker label of the "
                     f"style guide § 9"
                 )
+        for lock in missing_words(row.line_id, row.text, locked):
+            problems.append(
+                f"{row.line_id} drops Jay's words {lock.words!r}, which its English keeps "
+                f"({lock.says})"
+            )
     return problems
 
 
@@ -1527,6 +1573,7 @@ def save_event(
     into: Path,
     title: str = "",
     order: Sequence[str] | None = None,
+    locked: Mapping[str, Sequence[Lock]] | None = None,
 ) -> str:
     """Write a translator's answer for an event or surface into a day file, as its block.
 
@@ -1535,7 +1582,8 @@ def save_event(
     later lands where it belongs, and blocks of parts the order does not know keep theirs.
     Nothing else in the file changes.
 
-    Refused, with the file untouched: an answer `check_answer` rejects; a block whose
+    Refused, with the file untouched: an answer `check_answer` rejects -- among them one
+    that drops Jay's words, `locked` (by default `translation/locked.tsv`); a block whose
     header names this part beside others, or that holds another part's rows (both are
     hand-merged blocks, and replacing one would delete the other's English -- split it
     first); rows of this part outside a block of its own; and rows of this part in
@@ -1544,7 +1592,9 @@ def save_event(
     expected = part_line_ids(store, event)
     into = Path(into)
     lines = answer_lines(answer)
-    problems = check_answer(event, expected, lines, into)
+    if locked is None:
+        locked = locks_by_id(read_locks())
+    problems = check_answer(event, expected, lines, into, locked)
     if problems:
         raise PacketRefused(f"{event}: not saved -- " + "; ".join(problems))
     if not lines or not lines[0].startswith(EVENT_HEADER) or event not in DayFile.events_of(lines):
