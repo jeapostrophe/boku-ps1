@@ -18,7 +18,7 @@ M27	1289	1324	were melting everything down in the heat
 M27	1325	1402	and, with a child's innocence, sketching his dreams | of the world that would come next...
 M27	1403	1460	...it was that kind of strange, dizzying heat.』
 M27	1461	1592	『That day was the first of August | in the year my little brother was born,
-M27	1593	1625	and I, who had then just turned nine,
+M27	1593	1625	and I had then just turned nine,
 M27	1626	1670	and from that day until | the end of summer vacation,
 M27	1671	1738	to ease the burden on my mother, | who was in the last month of her pregnancy,
 M27	1739	1816	I was to be left in the care of my uncle, | who lived in a country town in northern Kanto.』

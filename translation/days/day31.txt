@@ -1,7 +1,7 @@
 # day31 (translation/days/README.md)
 # --- E3101: G02 -- the last breakfast
 E3101.0	Uncle	Maybe it's because I dozed off in the living room yesterday, but my joints ache, somehow...
-E3101.1	Moe	So old-mannish.
+E3101.1	Moe	You sound like an old man.
 E3101.2	Uncle	Hey, if you keep saying that, it'll really come true.
 E3101.3	Aunt	Are you all right?
 E3101.4	Uncle	Well, more or less.

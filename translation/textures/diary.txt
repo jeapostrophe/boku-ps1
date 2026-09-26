@@ -27,7 +27,7 @@ nikki@NIKKI_005	Auntie took my picture. She took it with me making a V sign. Eve
 # --- NIKKI_006: day 5, sneaking out to the fireflies
 nikki@NIKKI_006	Uncle was out, so I snuck out of the house to catch fireflies. Even when their bottoms light up, they don't get burned.
 # --- NIKKI_007: generic, a huge fish
-nikki@NIKKI_007	I caught a really, really big fish, so I got too surprised and wet my pants a little.
+nikki@NIKKI_007	I caught a really, really big fish. I was so surprised I wet my pants a little.
 # --- NIKKI_008: knocking down the beehive
 nikki@NIKKI_008	When I poked the beehive with the rod and knocked it down, the bees were surprised. I was surprised too.
 # --- NIKKI_010: the first stag beetle
@@ -45,7 +45,7 @@ nikki@NIKKI_013	The special fly Uncle gave me. With this, the big yamame in Uncl
 nikki@NIKKI_016	The morning glory I grew bloomed. It bloomed really pretty. But when it gets to be noon, it wilts. Is it not getting enough nutrients?
 # --- NIKKI_017: the sun sinking into the sea
 # NOTE NIKKI_017: "doppun" is the sound of something heavy plunging into water. "Transformed" is henshin, the word for a TV hero's transformation.
-nikki@NIKKI_017	Kerplunk, kerplunk. The sun sank into the sea. It's a secret that it transformed into seven colors.
+nikki@NIKKI_017	Kerplunk, kerplunk. The sun sank into the sea. It transformed into seven colors. It's a secret.
 # --- NIKKI_018: naming clouds, hungry, missing Mom
 nikki@NIKKI_018	I looked at the sky and thought up names for the newest model of clouds. Sometimes I got hungry, and sometimes I wanted to see Mom.
 # --- NIKKI_020: day 15, alone in the house
@@ -62,7 +62,7 @@ nikki@NIKKI_024	My first job is morning glory captain. I hope lots and lots of p
 nikki@NIKKI_025	I secretly discovered a secret base! There was a watermelon, half eaten, too. Whooo's the culprit?
 # --- NIKKI_026: day 3, helping Uncle in the corn field
 # NOTE NIKKI_026: "What a good boy I am" is "boku tte erai", the aunt's word of praise (erai) turned on himself.
-nikki@NIKKI_026	Huff, puff, hard labor is tough. I helped Uncle in the field. What a good boy I am!
+nikki@NIKKI_026	Huff, puff, labor is tough. I helped Uncle in the field. What a good boy I am!
 # --- NIKKI_027: day 4, shaved ice
 # NOTE NIKKI_027: "gakin-gakin" is the hard, icy grind of the shaver; rendered "crunch, crunch".
 nikki@NIKKI_027	Crunch, crunch, shaved ice. If you pour on lots of strawberry and melon syrup, your tongue turns the color of a space alien.
@@ -89,7 +89,7 @@ nikki@NIKKI_037	In the pond. A big yamame gleamed, all slippery. I bet it was lo
 # --- NIKKI_038: day 11, the yukata
 nikki@NIKKI_038	The yukata smells like the clothes chest. It reminds me of Grandma's house. I wonder how the fat calico cat is doing.
 # --- NIKKI_039: day 11, sparklers
-nikki@NIKKI_039	The glow of the sparklers. Even a kid in grade school gets sad, in his own way... I gaze hard at how fleeting it is.
+nikki@NIKKI_039	The glow of the sparklers. Even a kid in grade school gets sad, in his own way... I gaze long at how fleeting it is.
 # --- NIKKI_040: bug sumo against a big rhino beetle
 nikki@NIKKI_040	A rhino beetle that breaks the rules. It's huge and it's heavy, it's a real handful. It sure does some flashy stuff!
 # --- NIKKI_041: the log bridge finished
@@ -117,7 +117,7 @@ nikki@NIKKI_049	Thump! Thump thump! A new lady. She's a beauty, so I'll brag abo
 # NOTE NIKKI_050: the page is polite (arimasen), and uses a different word for "complicated" than NIKKI_047 (yayakoshii, "tangled", after fukuzatsu); "confusing" keeps the two apart.
 nikki@NIKKI_050	Lately, Moe-neechan still has no pep. A maiden's heart is confusing.
 # --- NIKKI_051: day 19, nobody believes the ghost
-nikki@NIKKI_051	Nobody believes me at all, not one bit. I'm going to go bad, just a little. Just a little.
+nikki@NIKKI_051	Nobody believes me at all, not one bit. I'm going to be bad, just a little. Just a little.
 # --- NIKKI_052: day 20, the family meeting about Moe
 # NOTE NIKKI_052: Boku writes the word he misheard at E1912.3, "shushinki" for shishunki (adolescence); the day file renders it "Addle-essence", and so does this page.
 nikki@NIKKI_052	Uncle, Auntie and Moe-neechan are in a meeting. It's that addle-essence thing, see.
@@ -165,60 +165,60 @@ nikki@NIKKI_070	My little brother was born. I'm happy. But summer vacation is al
 # --- NIKKI_071: day 30, Shirabe found in the sunflowers
 nikki@NIKKI_071	She went missing looking for sunflowers. They were a present for me. Shirabe, thank you, thank you.
 # --- NIKKI_072: generic, a wonderful day with nothing in it
-nikki@NIKKI_072	Today was a wonderful day with nothing at all.
+nikki@NIKKI_072	Today was a wonderful day of nothing at all.
 # --- NIKKI_073: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_073	Today was a wonderful day with nothing at all.
+nikki@NIKKI_073	Today was a wonderful day of nothing at all.
 # --- NIKKI_074: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_074	Today was a wonderful day with nothing at all.
+nikki@NIKKI_074	Today was a wonderful day of nothing at all.
 # --- NIKKI_075: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_075	Today was a wonderful day with nothing at all.
+nikki@NIKKI_075	Today was a wonderful day of nothing at all.
 # --- NIKKI_076: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_076	Today was a wonderful day with nothing at all.
+nikki@NIKKI_076	Today was a wonderful day of nothing at all.
 # --- NIKKI_077: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_077	Today was a wonderful day with nothing at all.
+nikki@NIKKI_077	Today was a wonderful day of nothing at all.
 # --- NIKKI_078: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_078	Today was a wonderful day with nothing at all.
+nikki@NIKKI_078	Today was a wonderful day of nothing at all.
 # --- NIKKI_079: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_079	Today was a wonderful day with nothing at all.
+nikki@NIKKI_079	Today was a wonderful day of nothing at all.
 # --- NIKKI_080: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_080	Today was a wonderful day with nothing at all.
+nikki@NIKKI_080	Today was a wonderful day of nothing at all.
 # --- NIKKI_081: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_081	Today was a wonderful day with nothing at all.
+nikki@NIKKI_081	Today was a wonderful day of nothing at all.
 # --- NIKKI_082: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_082	Today was a wonderful day with nothing at all.
+nikki@NIKKI_082	Today was a wonderful day of nothing at all.
 # --- NIKKI_083: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_083	Today was a wonderful day with nothing at all.
+nikki@NIKKI_083	Today was a wonderful day of nothing at all.
 # --- NIKKI_084: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_084	Today was a wonderful day with nothing at all.
+nikki@NIKKI_084	Today was a wonderful day of nothing at all.
 # --- NIKKI_085: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_085	Today was a wonderful day with nothing at all.
+nikki@NIKKI_085	Today was a wonderful day of nothing at all.
 # --- NIKKI_086: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_086	Today was a wonderful day with nothing at all.
+nikki@NIKKI_086	Today was a wonderful day of nothing at all.
 # --- NIKKI_087: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_087	Today was a wonderful day with nothing at all.
+nikki@NIKKI_087	Today was a wonderful day of nothing at all.
 # --- NIKKI_088: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_088	Today was a wonderful day with nothing at all.
+nikki@NIKKI_088	Today was a wonderful day of nothing at all.
 # --- NIKKI_089: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_089	Today was a wonderful day with nothing at all.
+nikki@NIKKI_089	Today was a wonderful day of nothing at all.
 # --- NIKKI_090: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_090	Today was a wonderful day with nothing at all.
+nikki@NIKKI_090	Today was a wonderful day of nothing at all.
 # --- NIKKI_091: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_091	Today was a wonderful day with nothing at all.
+nikki@NIKKI_091	Today was a wonderful day of nothing at all.
 # --- NIKKI_092: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_092	Today was a wonderful day with nothing at all.
+nikki@NIKKI_092	Today was a wonderful day of nothing at all.
 # --- NIKKI_093: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_093	Today was a wonderful day with nothing at all.
+nikki@NIKKI_093	Today was a wonderful day of nothing at all.
 # --- NIKKI_094: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_094	Today was a wonderful day with nothing at all.
+nikki@NIKKI_094	Today was a wonderful day of nothing at all.
 # --- NIKKI_095: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_095	Today was a wonderful day with nothing at all.
+nikki@NIKKI_095	Today was a wonderful day of nothing at all.
 # --- NIKKI_096: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_096	Today was a wonderful day with nothing at all.
+nikki@NIKKI_096	Today was a wonderful day of nothing at all.
 # --- NIKKI_097: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_097	Today was a wonderful day with nothing at all.
+nikki@NIKKI_097	Today was a wonderful day of nothing at all.
 # --- NIKKI_098: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_098	Today was a wonderful day with nothing at all.
+nikki@NIKKI_098	Today was a wonderful day of nothing at all.
 # --- NIKKI_099: generic, the same words as NIKKI_072 (a different picture)
-nikki@NIKKI_099	Today was a wonderful day with nothing at all.
+nikki@NIKKI_099	Today was a wonderful day of nothing at all.
 # --- NIKKI_100: generic, kept for the last day when every earlier page was generic
-nikki@NIKKI_100	This summer vacation was a wonderful summer vacation with nothing at all.
+nikki@NIKKI_100	This summer vacation was a wonderful summer vacation of nothing at all.

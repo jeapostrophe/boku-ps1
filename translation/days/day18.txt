@@ -39,7 +39,7 @@ E1820.10	Boku	...That.
 E1820.11	Aunt	Leave Onee-chan be today, all right?
 
 # --- E1812: G01 -- living room
-E1812.0	Uncle	Something I heard at the barber's today: // our watermelons are getting a name for themselves at the foot of the mountain as pretty good.
+E1812.0	Uncle	Something I heard at the barber's today: // down at the foot of the mountain, our watermelons are getting a name for being pretty good.
 E1812.1	Uncle	Especially among the children, it seems. // They're for our own use, so they shouldn't be on sale anywhere...
 
 # --- E1803: G02 -- dinner
@@ -74,7 +74,7 @@ E1840.3	Shirabe	Some great big misfortune is coming to somebody!
 # --- E1841: G06 -- TV room
 E1841.0	Shirabe	You don't understand a maiden's heart at all, do you?
 E1841.1	Boku	...I'm a kid.
-E1841.2	Shirabe	You're the typical type who has trouble with women.
+E1841.2	Shirabe	You're the classic type who has trouble with women.
 
 # --- E1804: G02 -- after dinner
 E1804.0	Uncle	Gochisosama deshita.

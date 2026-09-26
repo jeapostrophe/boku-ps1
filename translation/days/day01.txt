@@ -11,7 +11,7 @@
 
 # --- E0171: H02 -- front of the house, gate
 E0171.0	Father	My son will be in your care over the summer vacation.
-E0171.1	Father	This is his first time somewhere this rural, with so much nature still left, so... // he seems a little taken aback, but, everyone, please look after him.
+E0171.1	Father	This is his first time somewhere this rural, with so much nature still left, so... // he seems a little taken aback, but please look after him, everyone.
 E0171.2	Father	All right. Introduce yourself.
 E0171.3	Boku	Hello. I'm Boku.
 # NOTE E0171.1: satoyama rendered "somewhere this rural" (glossary § 7).
@@ -31,7 +31,7 @@ E0175.0	Uncle	This is the Sorano house, and I'm your Uncle Yusaku. // From today
 E0176.0	Uncle	All right, Onee-chan first.
 
 # --- E0177: I31 -- introductions close-up
-E0177.0	Moe	I'm Moe. // I'm the eldest daughter of this house. Nice to meet you.
+E0177.0	Moe	I'm Moe. // I'm the oldest daughter in this family. Nice to meet you.
 E0177.1	Shirabe	I'm Shirabe. It's written "poem" and read "Shirabe".
 E0177.2	Shirabe	Our dad's cool, isn't he? // He's a ce-ra-mi-cist. He makes plates and rice bowls.
 # NOTE E0177.2: the Japanese writes toogeika (potter) in katakana: Shirabe is parroting a grown-up
@@ -73,7 +73,7 @@ E0112.1	[SEL]	Yes | No
 # VOICE E0112.2: just -- just in case translates ichio
 E0112.2	Uncle	Wherever you are in this house, a cool, pleasant breeze comes in... // so we do have an electric fan, just in case, but we've hardly ever used it.
 E0112.3	Boku	Oh, I see.
-E0112.4	Uncle	Mm-hm. In the old days, houses were all like this. // When all the ground around is buried under concrete, // I suppose it doesn't work out this way...
+E0112.4	Uncle	Mm-hm. In the old days, houses were all like this. // When all the ground around is buried under concrete, // I suppose it wouldn't be like this...
 E0112.5	Uncle	The high ceilings are nice, aren't they?
 
 # --- E0114: G07 -- foot of the stairs / hall
@@ -144,11 +144,11 @@ E0107.2	Narrator	And inside the box, just as my uncle had promised, was a bug-co
 E0113.0	Uncle	Hurry on up to your room upstairs // and go see the present on the desk.
 E0113.1	Uncle	Do you like the bug-collecting kit? // I think that was everything that came in the set... // The box seems to have gone missing, so... // Come to think of it, that plastic model was one Kaoru made a while back.
 E0113.2	Boku	Auntie, you build plastic models even though you're a girl?
-E0113.3	Aunt	Oh, is that strange? // Auntie loves making things, any kind of thing.
+E0113.3	Aunt	Oh, is that strange? // Auntie loves making things, all kinds of things.
 E0113.4	Boku	Hey, where's the finished one?
 E0113.5	Uncle	It's on display by the window of Uncle's workshop. // Come and see it tomorrow, Boku-kun.
 E0113.6	Uncle	Kaoru, would you bring me a beer...?
-E0113.7	Aunt	Let's all do our own things ourselves.
+E0113.7	Aunt	Let's all do things for ourselves.
 
 # --- E0122: G01 -- living room
 # VOICE E0122.0: just -- carries katte ni ... ii wa yo, the aunt's warm no-need-to-ask permission
@@ -158,4 +158,4 @@ E0122.0	Aunt	If you get thirsty, there's barley tea or milk in the fridge, so ju
 E0141.0	Boku	...What do you like on TV?
 E0141.1	Shirabe	Huh? Umm...
 E0141.2	Shirabe	The kind of thing girls like...
-E0141.3	Shirabe	The comedy sketches on TV are cruel sometimes, and funny, aren't they...
+E0141.3	Shirabe	Comedy sketches on TV are sometimes cruel and funny, aren't they...

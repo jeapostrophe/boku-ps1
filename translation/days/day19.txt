@@ -10,7 +10,7 @@ E1921.0	Aunt	Well, maybe it's just the thing for Onee-chan's diet...
 # --- E1901: G02 -- breakfast, Moe absent
 E1901.0	Shirabe	Onee-chan's not here.
 E1901.1	Aunt	No, she isn't.
-E1901.2	Uncle	Well, a person won't die from not eating for two or three days, but... // if it drags on too long, we'll have to properly... // be her dad and mom about it.
+E1901.2	Uncle	Well, a person won't die from not eating for two or three days, but... // if it drags on too long, we'll have to properly... // do our job as her dad and mom.
 E1901.3	Aunt	That's right.
 E1901.4	Uncle	Well then, itadakimaasu!
 E1901.5	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
@@ -65,7 +65,7 @@ E1930.7	Moe	I told you, just leave me alone...
 
 # --- E1931: G15 -- the sisters' room
 E1931.0	Moe	Onee-chan has made up her mind. Sorry for causing you all sorts of trouble too, Boku-kun...
-E1931.1	Moe	I'm going to make the most of this chance... and go on a diet, all the way!
+E1931.1	Moe	I'm going to make the most of this chance... and go all out on a diet!
 
 # --- E1940: H04 -- garden corner where Shirabe watches ants
 E1940.0	Shirabe	What kind of things do they sell at the penny-candy shop in your town?
@@ -92,7 +92,7 @@ E1904.5	Aunt	Hm-hm... there is, there is. // ...For instance, sometimes Yusaku l
 E1904.6	Boku	Today I... saw a ghost.
 E1904.7	Shirabe	...You'd better not go around saying things like that.
 E1904.8	Aunt	Why, I believe you.
-E1904.9	Uncle	When I was little, one snowy night, I thought aliens had come, too...
+E1904.9	Uncle	When I was little, I too thought aliens had come, one snowy night...
 # VOICE E1904.10: really -- translates shotai (its true identity)
 E1904.10	Aunt	And what was it really?
 E1904.11	Uncle	After I grew up, I was watching an old American movie at a revival theater, // and a scene came on exactly like the one in my memory...

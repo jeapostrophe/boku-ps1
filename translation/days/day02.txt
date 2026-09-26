@@ -35,7 +35,7 @@ E0202.8	Narrator	And so I was appointed morning-glory captain.
 # VOICE E0220.0: really -- really does translates yappari
 E0220.0	Aunt	Clear skies! // Doing the washing in midsummer really does feel good, doesn't it!
 E0220.1	Boku	Hmm.
-E0220.2	Aunt	Especially on a lovely day like this... // when I hang out loads and loads of washing like this, // it's as if I'm lining up the flags of the Sorano family, showing off our household's housewife power... // and as a woman, I get this strange feeling, oddly proud...
+E0220.2	Aunt	Especially on a lovely day like this... // when I hang out loads and loads of washing like this, // it's as if I'm lining up the flags of the Sorano family, showing off our household's housewife power... // and as a woman, I get this strange, oddly proud feeling...
 E0220.3	Boku	What's that supposed to mean...
 E0220.4	Aunt	Hm-hm. But when you get married too, Boku-kun... // and you get the chance to hang out lots of washing, // you might understand, just a little.
 E0220.5	Boku	You think so?
@@ -102,7 +102,7 @@ E0204.4	Narrator	At that time, what had happened at the secret base... // for so
 E0213.0	Boku	Uncle... // if you catch the watermelon thieves, what will you do?
 E0213.1	Uncle	Hmm, what should I do? Uncle stole a few himself when he was little...
 E0213.2	Boku	Whaaat! // You've been a thief too, Uncle?
-E0213.3	Uncle	Hey, hey, don't make it sound so bad... // What we stole wasn't anything big like a watermelon. // That's right, one person could polish off a whole one alone. // Cute little things we used to call ajiuri back then.
+E0213.3	Uncle	Hey, hey, don't make it sound so bad... // What we stole wasn't anything big like a watermelon. // Oh yes, you could polish off a whole one by yourself. // Cute little things we used to call ajiuri back then.
 E0213.4	Aunt	Isn't that...
 E0213.5	Aunt	what we'd call a melon nowadays?
 E0213.6	Boku	That's a crime.

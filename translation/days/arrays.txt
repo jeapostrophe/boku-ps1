@@ -120,10 +120,10 @@ exe@8003D5F0.1	(unlabelled)	No MEMORY CARD is inserted.
 exe@8003D5F0.2	(unlabelled)	Could not access the MEMORY CARD.
 exe@8003D5F0.3	(unlabelled)	The MEMORY CARD has no free blocks.
 exe@8003D5F0.4	(unlabelled)	There is no file for this game.
-exe@8003D5F0.5	(unlabelled)	There is no file that has finished this game.
+exe@8003D5F0.5	(unlabelled)	There is no completed game file.
 exe@8003D5F0.6	(unlabelled)	Which file do you want to load?
 exe@8003D5F0.7	(unlabelled)	Which file do you want to save to?
-exe@8003D5F0.8	(unlabelled)	Start the game as it is?
+exe@8003D5F0.8	(unlabelled)	Start the game anyway?
 exe@8003D5F0.9	(unlabelled)	Is this file OK?
 exe@8003D5F0.10	(unlabelled)	Overwrite this file?
 exe@8003D5F0.11	(unlabelled)	Loading data...
@@ -140,7 +140,7 @@ exe@8003D5F0.21	(unlabelled)	Record the events up to today
 exe@8003D5F0.22	(unlabelled)	on the MEMORY CARD?
 exe@8003D5F0.23	(unlabelled)	(Uses 1 block)
 exe@8003D5F0.24	(unlabelled)	The MEMORY CARD is not formatted.
-exe@8003D5F0.25	(unlabelled)	Continue the game as it is?
+exe@8003D5F0.25	(unlabelled)	Continue the game anyway?
 exe@8003D5F0.26	(unlabelled)	Format it?
 exe@8003D5F0.27	(unlabelled)	Formatting...
 exe@8003D5F0.28	(unlabelled)	Format and save complete.
@@ -277,14 +277,14 @@ exe@80046614.13	(unlabelled)	Morning glory in bloom, day 4. Still blooming, full
 exe@80046614.14	(unlabelled)	Morning glory in bloom, day 5. Which one is the prettiest, I wonder?
 exe@80046614.15	(unlabelled)	Morning glory in bloom, day 6. They're all singing a song together.
 exe@80046614.16	(unlabelled)	Morning glory in bloom, day 7. Big umbrellas, opened toward the big sky.
-exe@80046614.17	(unlabelled)	Morning glory in bloom, day 8. Whispering in little voices, in the middle of a chat!
+exe@80046614.17	(unlabelled)	Morning glory in bloom, day 8. Whispering in little voices, having a chat!
 exe@80046614.18	(unlabelled)	Morning glory in bloom, day 9. Do your best next year too, and bloom lots, okay?
 
 # --- hhon@5328: insect book entries (60 = empty slot)
 hhon@5328.0	(unlabelled)	Swallowtail. It lives all over Japan, and I see it in my town too. It's a little weak in the cold, they say.
 # VOICE hhon@5328.1: really -- really, really carries the doubled dai-dai-suki; the elongation is the source's
 hhon@5328.1	(unlabelled)	Yellow Swallowtail. Its caterpillar's a weird one. They say it really, really looooves carrots and parsley, the things I can't stand.
-hhon@5328.2	(unlabelled)	Long-tailed Swallowtail. Birthdays: for some reason the summer-born ones grow bigger than the spring ones, it seems. Strange, isn't it, Long-tail-kun?
+hhon@5328.2	(unlabelled)	Long-tailed Swallowtail. For some reason the ones born in summer grow bigger than the spring ones, it seems. Strange, isn't it, Long-tail-kun?
 hhon@5328.3	(unlabelled)	Chinese Peacock (Karasu-ageha, "crow swallowtail"). Such pretty blue and green wings, and they call it a crow? Poor thing! Look closely: it's a snappy dresser.
 hhon@5328.4	(unlabelled)	Musk Swallowtail. It's the male, but it's snazzier than the female, and it even wears perfume. I'll try hard too.
 hhon@5328.5	(unlabelled)	Bluebottle. Just born, its stripes are yellow-green, and right before your eyes they turn blue... A big makeover by the power of the sun!
@@ -323,7 +323,7 @@ hhon@5328.32	(unlabelled)	River Damselfly. It lives by the rivers in the mountai
 hhon@5328.33	(unlabelled)	Ancient Dragonfly. It's been around since long, long ago, since the days of fossils, they say. It's amazing.
 hhon@5328.34	(unlabelled)	Mountain Clubtail. It's born where big rivers flow slowly, far downstream, and in summer it climbs all the way to the mountaintops.
 hhon@5328.35	(unlabelled)	Oniyanma. The biggest dragonfly in Japan. A scary one that even eats bees. It hurts if it bites you!
-hhon@5328.36	(unlabelled)	Silver Emperor. The pond and around it is its territory. Pretty cheeky, for a dragonfly.
+hhon@5328.36	(unlabelled)	Silver Emperor. Its territory is all around the pond. Pretty cheeky, for a dragonfly.
 hhon@5328.37	(unlabelled)	Salt Skimmer. Its body starts out straw-colored, but as it grows it gets covered in white powder, as if it's been dusted with salt.
 hhon@5328.38	(unlabelled)	Summer Red Dragonfly. When it's all grown up, it turns bright red from head to tail. The red dragonfly, the color of sunset.
 hhon@5328.39	(unlabelled)	Eyebrow Red Dragonfly. It's a dragonfly, but look closely and it really has eyebrows. It surprised me.

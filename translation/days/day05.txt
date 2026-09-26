@@ -43,7 +43,7 @@ E0520.11	Aunt	You know, Auntie... // got homesick right away when she first came
 # --- E0510: H26 -- the workshop
 E0510.0	Boku	Oh, there's a model airplane in front of you, Uncle!
 # VOICE E0510.1: very -- working very hard translates isshokenmei
-E0510.1	Uncle	Yeah! // When Uncle's child was still little, that child loved airplanes. // So Auntie put it together, working very hard at it.
+E0510.1	Uncle	Yeah! // Uncle's child loved airplanes when they were still little. // So Auntie put it together, working very hard at it.
 E0510.2	Boku	Can't you build them, Uncle?
 E0510.3	Uncle	Ahaha, Uncle can build them, and he likes building them, // but this sort of thing is mostly Auntie's department.
 E0510.4	Boku	Uncle, have you ever seen fireflies?
@@ -66,10 +66,10 @@ E0551.4	Boy	Not as good as the ones at my grandpa's in Okuzawa, but hmm... it's 
 E0551.5	Boku	Then I'll have some one of these days.
 E0551.6	Boy	What's your name?
 # VOICE E0551.7: just -- translates dake (only for summer vacation)
-E0551.7	Boku	...I'm called Boku. // I'm just here for summer vacation, at my uncle's place down below here.
+E0551.7	Boku	...I'm called Boku. // I'm just here for summer vacation, at my uncle's place down below.
 E0551.8	Boy	What! Ugh, that's bad... // Your uncle's place, that's the house over there that makes pottery, right?
 E0551.9	Boku	Yeah...
-E0551.10	Boku	This watermelon too, you know.
+E0551.10	Boku	This watermelon's from there too, you know.
 E0551.11	Boy	I see...
 E0551.12	Boy	Don't you rat me out. // Got it? This is a promise between men. Break it and it's a hundred wrist-slaps. // Absolutely, positively!
 E0551.13	Boku	Yeah, I know.
@@ -95,7 +95,7 @@ E0570.0	Guts	Here, everybody makes their rhino beetles and stag beetles fight, /
 # --- E0512: G01 -- living room
 E0512.0	Uncle	Going to the village meeting is such a pain... // Boku-kun, want to go instead of Uncle?
 E0512.1	Aunt	Don't you dare! If you say things like that and Boku-kun catches your lazy habits, // I'm the one who'll get the blame...
-E0512.2	Uncle	How many days has it been since I last went out of this valley...
+E0512.2	Uncle	How many days has it been since I last left this valley...
 
 # --- E0504: G02 -- dinner, the uncle out
 E0504.0	(voice only)

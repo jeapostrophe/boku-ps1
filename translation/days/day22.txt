@@ -18,7 +18,7 @@ E2202.6	Moe	Honestly, I can't help envying you two...
 E2202.7	(voice only)
 
 # --- E2220: H06 -- garden off the veranda
-E2220.0	Aunt	I see, so today was our wedding anniversary...
+E2220.0	Aunt	I see, so today's our wedding anniversary...
 # VOICE E2220.1: completely -- translates kanpeki ni (completely)
 E2220.1	Aunt	I'd completely forgotten.
 
@@ -37,7 +37,7 @@ E2210.3	Uncle	I suppose having money is better than not having it... // Uncle's 
 # VOICE E2210.4: actually -- translates jitsu wa
 E2210.4	Uncle	Actually, Auntie is a year older than Uncle. // It was an arranged marriage, and yet right up until we registered it, I believed she was younger.
 E2210.5	Boku	Why?
-E2210.6	Uncle	It seems she was wearing a cat, as they say, and a dog, and a tanuki, all sorts of things... // Oh! What I just said is an absolute secret from Auntie, understood?
+E2210.6	Uncle	It seems she was wearing a cat, as they say, and a dog, and a tanuki, all sorts of things... // Oh! Keep what I just said an absolute secret from Auntie, understood?
 # NOTE E2210.6: neko o kaburu, "to wear a cat", is to put on an innocent front; the uncle extends
 #   the idiom to a dog and a tanuki (style guide § 8 kind 3, translated literally).
 
@@ -81,7 +81,7 @@ E2205.5	Moe	Cho as in butterfly. A bow tie!
 E2231.0	Moe	Hey, do you think I'll be able to find a treasure for life too?
 E2231.1	Boku	......?
 E2231.2	(unlabelled)	Hey, Onee-chan, in your whole life so far, what's the most important thing?
-E2231.3	Moe	What, I wonder? // Well, my parents and my siblings, my best friends, all the other people close to me... // I think they're all really important, but apart from them... // for me, about the only thing is happy memories from when I was a kid... // that I can think of as precious.
+E2231.3	Moe	What would it be? // Well, my parents and my siblings, my best friends, all the other people close to me... // I think they're all really important, but apart from them... // for me, it's pretty much just happy memories from when I was a kid... // that's all I can think of as precious.
 E2231.4	Boku	Hmm, so memories are your precious treasure.
 E2231.5	Moe	Yeah, and then maybe that music box.
 E2231.6	Moe	That music box makes such a cute sound, you know.
@@ -89,7 +89,7 @@ E2231.6	Moe	That music box makes such a cute sound, you know.
 #   (style guide § 9).
 
 # --- E2241: G06 -- TV room
-E2241.0	Shirabe	Oof... I ate too much. // A tuna feels like it's going to come flopping out of my mouth.
+E2241.0	Shirabe	Oof... I ate too much. // I feel like a tuna's going to come flopping out of my mouth.
 E2241.1	Shirabe	My waist has disappeared again.
 
 # --- E2204: G02 -- after dinner (the vice-principal's treasure)
@@ -101,7 +101,7 @@ E2204.4	Uncle	You're only fifteen, Moe. // Surely you'll be able to find as many
 E2204.5	Moe	Hmm, that's how life ought to be, isn't it...
 E2204.6	Moe	That reminds me. At our school, that vice-principal who tries too hard... // they say that during the war, he hid some precious treasure of his own in the hills behind here.
 E2204.7	Shirabe	Huh? What, what, whaaat...
-E2204.8	Uncle	But a wartime treasure, if you and Moe saw it now, Shirabe, // would probably be surprisingly shabby, I think.
+E2204.8	Uncle	But a wartime treasure... if kids like Shirabe and Moe saw it today, // it would probably look surprisingly shabby, I think.
 E2204.9	Moe	What could it be?
 E2204.10	Shirabe	A loincloth!
 E2204.11	(voice only)

@@ -18,17 +18,17 @@ E2902.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E2902.2	Aunt	Boku-kun, when you go home at the end of the month... // would you like to take your mother some vegetables or flowers from here?
 E2902.3	Uncle	But she's due any day... // Even if he takes them, won't cooking be hard for her?
 E2902.4	Aunt	That's true... Boku-kun, let's take your mother flowers, at least. // What kind of flowers does your mother like?
-E2902.5	Boku	Hmm, I don't know that.
+E2902.5	Boku	Hmm, I don't know that kind of thing.
 E2902.6	Aunt	I see......
 E2902.7	Shirabe	Boku-kun likes sunflowers!
 E2902.8	Aunt	Is that so...
 E2902.9	Aunt	Boku-kun, here...
-E2902.10	Aunt	Photos of the morning glories you grew... // I took them every single day they were in bloom, // and I picked out the especially pretty ones. // There happened to be one good one for each day, // so, as many photos as the days they bloomed, a present!
+E2902.10	Aunt	Photos of the morning glories you grew... // I took them every single day they were in bloom, // and I picked out the especially pretty ones. // There happened to be one good one for each day, // so here's a present: one photo for each day they bloomed!
 # VOICE E2902.11: very -- translates doumo arigatou (thank you very much)
 E2902.11	Boku	Auntie! Thank you very much.
 E2902.12	Aunt	Not at all. Thank you for all your hard work.
 E2902.13	Boku	I'll take good care of these.
-E2902.14	Shirabe	But the flower you like is sunflowers, all right?
+E2902.14	Shirabe	But the flower you like is the sunflower, all right?
 E2902.15	Boku	Huh?
 E2902.16	Aunt	Hm-hm... Shirabe, you funny girl.
 # NOTE E2902.7: Shirabe calls him "Boku-kun" here, for once, not "you".
@@ -87,7 +87,7 @@ E2940.9	Shirabe	But why... why does everyone, every single one, go away before y
 E2950.0	Guts	When you go back, don't let your friends there push you around.
 E2950.1	Boku	Haha, I went to school there to begin with, you know.
 E2950.2	Guts	That's right...
-E2950.3	Fat	You, eat properly and put on some weight...
+E2950.3	Fat	Hey, you, eat properly and put on a bit more weight...
 # VOICE E2950.4: just -- translates choudo (just the right amount)
 E2950.4	Boku	Yeah, just the right amount.
 E2950.5	Specs	Boku-kun... somehow it feels like we've been friends for a long time.

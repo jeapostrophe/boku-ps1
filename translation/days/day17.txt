@@ -18,7 +18,7 @@ E1701.11	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E1720: H09 -- the garden corner
 E1720.0	Boku	What kind of person is the Wolf Girl?
-E1720.1	Aunt	Hmm, that girl, of all people, is hard to put in a word.
+E1720.1	Aunt	Hmm, that girl is one person I can't sum up in a word.
 E1720.2	Boku	Why?
 E1720.3	Aunt	Well... // she's a beautiful young woman who's like a well-brought-up young man.
 E1720.4	Boku	...A drag queen?
@@ -30,7 +30,7 @@ E1712.0	Uncle	Maybe Uncle will take a walk over by the Wolf Girl's tent too.
 E1712.1	Uncle	I think I'll go to the barber's tomorrow.
 
 # --- E1710: H26 -- the workshop
-E1710.0	Uncle	This year the Wolf Girl is near Dragon God Pond, left at the Jizo-sama... // she seems to have pitched her tent there, so you should go and meet her.
+E1710.0	Uncle	This year, near Dragon God Pond, left at the Jizo-sama, the Wolf Girl... // seems to have pitched her tent, so you should go and meet her.
 E1710.1	Boku	Hey, there's a kind of strange machine in the forest.
 E1710.2	Uncle	...A strange machine? // What sort of machine is it?
 E1710.3	Boku	It goes "Flash!" and lights up.

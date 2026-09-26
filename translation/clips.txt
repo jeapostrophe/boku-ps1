@@ -12,7 +12,7 @@ XCH.34	Narrator	And so the first day of that summer vacation came to an end.
 XCH.41	Narrator	In the end, both sisters later moved to the city, // made picture-perfect marriages and built happy homes. // Now Moe's eldest daughter is in her third year of middle school... // yes, she is already the same age her mother was back then.
 # NOTE XCH.41: 'kanojo' (her) 'at that time' is Moe, who was in her third year of middle school
 #   that summer; rendered 'her mother' so the English 'she' is not read as the daughter.
-XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, just short of 30, // I had set foot on the same path as my uncle, the path of pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.
+XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, just short of 30, // I set foot on the same path as my uncle, the path of pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.
 # NOTE XCH.42: '30 o mae ni shite' is his age, nearing thirty (university, then seven years at
 #   the publisher). '... no michi e ashi o fumiirete ita' is the idiom for taking up a craft;
 #   it says the same path as his uncle, not whose apprentice he is ('makasete moraeru', trusted
@@ -72,6 +72,6 @@ XCH.33	(unlabelled)	Yay! I did it!
 XCH.35	Guts	Okay, my turn next.
 XCH.36	Guts	Then how about this guy?
 XCH.37	Fat	Okay, yours truly is next.
-XCH.38	Fat	Can't be helped. Then how about this one?
+XCH.38	Fat	Oh, fine. Then how about this one?
 XCH.39	Specs	My turn next, huh.
 XCH.40	Specs	Then will this one do?

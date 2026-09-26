@@ -3,7 +3,7 @@
 E1505.0	(voice only)	Now, 30 years on from that day, // perhaps the time has come to think about the true meaning of the peace we enjoy.
 
 # --- E1501: G02 -- breakfast
-E1501.0	Aunt	Boku-kun, today everyone at Auntie's house // is going to visit the grave of the Onii-chan of this house, // so could you look after the house by yourself?
+E1501.0	Aunt	Boku-kun, today everyone at Auntie's house // is going to visit the grave of this family's Onii-chan, // so could you look after the house by yourself?
 E1501.1	Boku	Yeah, I'll be fine by myself.
 E1501.2	Shirabe	Don't you go getting up to mischief.
 # VOICE E1501.3: really -- carries the exasperated -ttara of Ma, Shirabe ttara in the aunt's voice
@@ -40,11 +40,11 @@ E1503.10	Shirabe, Moe, Boku, Aunt	Itadakimasu!
 #   (bible § 6). Translated literally.
 
 # --- E1513: G01 -- living room
-E1513.0	Uncle	Somehow I'm worn out today from the drive. It's been a while.
+E1513.0	Uncle	Somehow today's drive wore me out. It's been a while since I've driven.
 E1513.1	Uncle	I see... so it's been three years.
 
 # --- E1522: G01 -- living room
-E1522.0	Aunt	I slept so much in the car, there and back today, // that all my everyday tiredness has been blown away.
+E1522.0	Aunt	I slept so much in the car, there and back today, // that all the tiredness I'd built up has been blown away.
 
 # --- E1531: G15 -- the sisters' room
 E1531.0	Moe	That's strange... // the mailman didn't come today, did he?

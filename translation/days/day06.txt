@@ -131,7 +131,7 @@ E0652.10	Fat	Moe-san really is wonderful, isn't she... // Lucky you, getting to 
 # --- E0653: A18 -- the secret base
 E0653.0	Specs	Boku-kun, are you someone who reads lots of books?
 E0653.1	Boku	Yeah, I love them.
-E0653.2	Specs	Thank goodness... I've had trouble, because the kids around me and I don't have the same things to talk about.
+E0653.2	Specs	Thank goodness... I've been having a hard time, because the kids around me don't like talking about the same things I do.
 E0653.3	Guts, Fat	That makes us sound like idiots!
 # NOTE E0653.2: "you see" renders the explanatory "-n da" in Specs's register (style guide § 5);
 #   nothing else is added — "awanakute" is "don't match", not "never".
@@ -152,7 +152,7 @@ E0609.0	Boku	Is this cracked, gata-pon tree a sawtooth oak?
 # --- E0612: G01 -- living room
 E0612.0	Uncle	Ahh, that was exhausting. // Today Uncle spent the whole day keeping watch over the watermelon field. // But I'm pleased to report that today's losses came to zero.
 E0612.1	Uncle	Keeping watch today really wore me out... // But of course, on a day like this, the watermelon thieves don't show up...
-E0612.2	Uncle	Well, well... but I'm quiiitting watch duty in the field after just today. // Because it's such hard work. No, really...
+E0612.2	Uncle	Well, well... but after just this one day, I'm quiiitting watch duty in the field. // Because it's such hard work. No, really...
 
 # --- E0604: G02 -- after dinner
 E0604.0	Uncle	Gochisosama deshita.

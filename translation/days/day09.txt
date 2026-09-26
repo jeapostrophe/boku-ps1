@@ -1,7 +1,7 @@
 # day09 (translation/days/README.md)
 # --- E0920: H06 -- garden off the veranda, the washing line
 E0920.0	Aunt	There was a fireworks festival in Sagi-no-sato yesterday. // I think you could have seen it from your room, Boku-kun. // Didn't you notice?
-E0920.1	Aunt	Yesterday's fireworks were really pretty, weren't they? // The Onii-chan of this house loved the Sagi-no-sato fireworks festival too.
+E0920.1	Aunt	Yesterday's fireworks were really pretty, weren't they? // This family's Onii-chan loved the Sagi-no-sato fireworks festival too.
 E0920.2	Aunt	When Auntie was a child, at the fireworks festivals, // I was such a little shrimp that all I remember is the pattern on the yukata of whoever was standing in front of me.
 
 # --- E0910: H26 -- the workshop
@@ -22,14 +22,15 @@ E0930.0	Moe	Oh, welcome, Boku-kun.
 # VOICE E0930.1: just -- just now renders ima in Boku's past-tense question
 E0930.1	Boku	Onee-chan, were you studying just now too?
 E0930.2	Moe	Huh? Umm...
-E0930.3	Moe	Hehe, right now it's a little slacking-off time.
+E0930.3	Moe	Hehe, right now it's a little bit of slacking-off time.
 E0930.4	Boku	Why are you always studying so much?
 E0930.5	Moe	That's because your big sister here is a sorrowful exam student.
 E0930.6	Moe	An exam student, huh... what a dreary youth.
 
 # --- E0931: G15 -- the sisters' room
 E0931.0	Moe	Ahh, enough studying, quit, quit... // What a pain...
-E0931.1	Moe	Maybe a war or something will start, and next year's entrance exams will vanish, snap?
+# VOICE E0931.1: just -- "just like that" renders the mimetic supatto (gone in one clean stroke)
+E0931.1	Moe	I wonder if a war or something will start, and next year's entrance exams will vanish, just like that?
 E0931.2	Moe	But if a war really did start, that'd be kind of a problem.
 
 # --- E0940: H10 -- garden corner where Shirabe watches ants

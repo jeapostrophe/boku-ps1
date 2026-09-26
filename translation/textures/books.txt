@@ -22,7 +22,7 @@ mzkan@0.name	Musk Swallowtail
 mzkan@0.family	Swallowtail family
 mzkan@0.size	Wingspan 100 to 120 mm
 mzkan@0.food	Likes the nectar of flowers such as silverberry, Japanese thistle and azalea
-mzkan@0.body	It does not like cold places and its food is limited, so in some regions it is a rare butterfly. It flies low and slowly over roadsides and grassy fields. The male's wings have a silky sheen, and it gives off a scent when caught, which is how it got the name Musk Swallowtail. The caterpillars eat birthwort, and they also have a strong habit of eating each other.
+mzkan@0.body	It does not like cold places and its food is limited, so in some regions it is a rare butterfly. It flies low and slowly over roadsides and grassy fields. The male's wings have a silky sheen, and it gives off a scent when caught, which is how it got the name Musk Swallowtail. The caterpillars eat birthwort, and they are also prone to eating each other.
 
 # --- Insect page 1: Mikado Swallowtail. Plants: tobera is Japanese pittosporum (Pittosporum tobira) and yabugarashi bushkiller (Cayratia japonica); ogatama no ki (Michelia compressa) has no common English name, so it is the ogatama tree. Ise Jingu is the Ise Grand Shrine, its usual English name.
 mzkan@1.name	Mikado Swallowtail
@@ -43,21 +43,21 @@ mzkan@3.name	Great Purple Emperor
 mzkan@3.family	Brushfoot family
 mzkan@3.size	Wingspan 100 to 120 mm
 mzkan@3.food	Likes the treetops of mixed woods and the sap of trees such as the sawtooth oak
-mzkan@3.body	A very beautiful butterfly that stands for the nation of Japan. As its name says, the male wears wings that shine bluish purple on its back. It flies high over the trees, so catching one in the air is very hard. Because it loves sap, the few chances to catch one come when it has landed on a tree and is feeding.
+mzkan@3.body	A very beautiful butterfly that stands for the nation of Japan. As its name says, the male wears shining bluish-purple wings on its back. It flies high over the trees, so catching one in the air is very hard. Because it loves sap, the few chances to catch one come when it has landed on a tree and is feeding.
 
 # --- Insect page 4: Loomis's Blue. The family, shijimi-cho, is the gossamer-winged butterflies (Lycaenidae), their English name. The food plant is ichiigashi (Quercus gilva), an evergreen oak with no common English name, kept as the ichii oak (gashi is oak); buna-ka is the beech family. Kasugayama in Nara Prefecture is Mount Kasuga.
 mzkan@4.name	Loomis's Blue
 mzkan@4.family	Gossamer-wing family
 mzkan@4.size	Wingspan 30 mm
 mzkan@4.food	The caterpillars feed on the ichii oak, of the beech family
-mzkan@4.body	Butterflies that have lived through the winter lay eggs in spring, and in early summer these emerge as new butterflies. It likes to perch on leaves, and on hot midsummer days it comes along the streams to drink water. Pesticides and typhoons have made it scarce, and it is a rare butterfly, named a Natural Monument on Mount Kasuga in Nara Prefecture.
+mzkan@4.body	Butterflies that have lived through the winter lay eggs in spring, and in early summer these emerge as new butterflies. It likes to perch on leaves, and on hot midsummer days it comes to the creeks to drink water. Pesticides and typhoons have made it scarce, and it is a rare butterfly, named a Natural Monument on Mount Kasuga in Nara Prefecture.
 
 # --- Insect page 5: Tengu Butterfly. Family named after it, as the Japanese is (English books say snout butterflies). Food plants: enoki is Chinese hackberry (Celtis sinensis); the second reads "ezonoki" on the page (checked against the image), taken to be ezo-enoki, the Ezo hackberry (Celtis jessoensis), which the caterpillars eat. The adults rest on the earth of roads, cliffs and the like: the ground. Susuki is Japanese silver grass.
 mzkan@5.name	Tengu Butterfly
 mzkan@5.family	Tengu Butterfly family
 mzkan@5.size	Wingspan 40 to 50 mm
 mzkan@5.food	The caterpillars eat Chinese hackberry and Ezo hackberry
-mzkan@5.body	Its name comes from the small bump on its head, like a tengu's nose. Adults rest on the ground, such as on roads or cliffs. They also have the interesting habit of liking thin twigs and silver grass leaves. It goes dormant in midsummer and lives through the winter as an adult. In the cool of spring and autumn, you can see it flying to flowers to drink nectar.
+mzkan@5.body	Its name comes from the small bump on its head, like a tengu's nose. Adults rest on the ground, such as on roads or cliffs. They also have an interesting fondness for thin twigs and silver grass leaves. It goes dormant in midsummer and lives through the winter as an adult. In the cool of spring and autumn, you can see it flying to flowers to drink nectar.
 
 # --- Insect page 6: Green Skipper. The last sentence addresses the reader (tsukamaeyo, "let's catch it"), as the Japanese does.
 mzkan@6.name	Green Skipper
@@ -88,7 +88,7 @@ tzkan@0.body	The second crosspiece from the top is given an especially strong bo
 # --- Kite page 1: Nina Kite. The page does not say what nina means; it says only that the kite is a small children's kite from the island of Iki, off Nagasaki.
 tzkan@1.name	Nina Kite
 tzkan@1.level	Intermediate
-tzkan@1.body	A small kite for children, made on the island of Iki. Its spars are very thin, so fly it when the wind is light. Once it is up, its long red and white striped tails streaming in the wind stand out clearly, and it is beautiful.
+tzkan@1.body	A small kite for children, made on the island of Iki. Its spars are very thin, so fly it when the wind is light. Once it is up, its long red and white striped tails stream in the wind, clear and beautiful to see.
 
 # --- Kite page 2: Cicada Kite.
 tzkan@2.name	Cicada Kite

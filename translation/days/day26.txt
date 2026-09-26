@@ -61,8 +61,8 @@ E2630.8	Moe	What's that? // Huh, there's an English dictionary and... a tattered
 E2630.9	Boku	So it really is an alien's book.
 E2630.10	Moe	Dummy, this is English. En-glish!
 E2630.11	Boku	Onee-chan, can you understand English?
-E2630.12	Moe	Of course I can't. It's the class of the teacher I hate most.
-E2630.13	Moe	I'll try reading the letter a little.
+E2630.12	Moe	Of course I can't. It's taught by the teacher I hate most.
+E2630.13	Moe	Let me try reading a bit of the letter.
 E2630.14	Boku	Yeah, let me hear it, let me hear it!
 E2630.15	(voice only)
 E2630.16	Moe	...The letter was in English too, I'm afraid.
@@ -85,12 +85,12 @@ E2632.6	Boku	I wonder what summer vacation will be like twenty years from now...
 E2632.7	Moe	Hmm...
 E2632.8	Boku	Hey, I picked up something strange, deep in the cave.
 E2632.9	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
-E2632.10	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
+E2632.10	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...is what I'm thinking, and my head's all mixed up, spinning round and round...
 E2632.11	Boku	But whose is it?
 E2632.12	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2632.13	Moe	From tomorrow...
 E2632.14	Boku	What?
-E2632.15	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+E2632.15	Moe	From tomorrow, I'll try my best... that's what I thought. A little.
 
 # --- E2640: H17 -- the woodshed
 E2640.0	Shirabe	When they fire the climbing kiln, the firewood they spent days splitting // gets used up in no time...

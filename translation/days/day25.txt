@@ -13,20 +13,20 @@ E2560.7	Saori	I... forgot my brush.
 E2502.0	Uncle	Gochisosama deshita.
 E2502.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
 E2502.2	Aunt	Come to think of it, it's been one sunny day after another lately...
-E2502.3	Uncle	That's right... how many days has it been since it last rained, I wonder?
+E2502.3	Uncle	Yeah... I wonder how many days it's been since it last rained.
 
 # --- E2507: G02 -- dining room; I13 -- close-up (no rain all month)
 E2507.0	Uncle	Huh? Boku-kun, has it rained since you came here?
 E2507.1	Boku	...I don't think it has.
 E2507.2	Uncle	I see... // This summer, somehow, it's been one clear day after another, with thunderheads that burn themselves into your eyes...
-E2507.3	Aunt	That's right.
-E2507.4	Uncle	When I'm a bit older and I've turned into an old man, // it's the kind of summer I'll suddenly remember, at some little trigger... // a summer that stays with you, more than words can say...
+E2507.3	Aunt	Yes, it has.
+E2507.4	Uncle	When I'm a bit older and I've turned into an old man, // it's the kind of summer I'll suddenly remember, when some little thing sets it off... // a summer that stays with you, more than words can say...
 E2507.5	Moe	But now that it's ending, it went by in a flash, didn't it?
 E2507.6	Aunt	...Yes, it did.
 E2507.7	Uncle	Well then, I suppose I'll go and get the kiln ready...
 
 # --- E2520: H17 -- the woodshed
-E2520.0	Aunt	Uncle says he's going to work hard and fire the kiln starting today. // Apparently if you don't go and watch at the right times, // you might miss the interesting parts, // so you do your best and go and watch lots of times too, Boku-kun...
+E2520.0	Aunt	Uncle says he's going to work hard and fire the kiln starting today. // Apparently if you don't go and watch at the right times, // you might miss the interesting parts, // so make an effort to go and watch lots of times too, Boku-kun...
 E2520.1	Aunt	Still, there really has been so little rain this summer.
 E2520.2	Aunt	I hope Grandma's house in Shikoku isn't suffering from a water shortage.
 
@@ -63,7 +63,7 @@ E2515.5	Boku	.........
 #   off (.3); it is his dead son. Repeated at E2712.0.
 
 # --- E2530: G16 -- Moe's bed
-E2530.0	Moe	Hey, it's a strange story, but... // that story about the vice-principal hiding a treasure in the mountains around here... // Onee-chan somehow can't stop wondering about it...
+E2530.0	Moe	Hey, it's a funny thing, but... // that story about the vice-principal hiding a treasure in the mountains around here... // Onee-chan somehow can't stop wondering about it...
 E2530.1	Moe	Where on earth could it be hidden? // There's no place in the mountains around here that looks like "treasure hidden here"...
 E2530.2	Moe	I was studying until morning...
 E2530.3	Moe	So I'd like to lie down a little longer.
@@ -74,8 +74,8 @@ E2530.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered
 E2530.7	Boku	So it really is an alien's book.
 E2530.8	Moe	Dummy, this is English. En-glish!
 E2530.9	Boku	Onee-chan, can you understand English?
-E2530.10	Moe	Of course I can't. It's the class of the teacher I hate most.
-E2530.11	Moe	I'll try reading the letter a little.
+E2530.10	Moe	Of course I can't. It's taught by the teacher I hate most.
+E2530.11	Moe	Let me try reading a bit of the letter.
 E2530.12	Boku	Yeah, let me hear it, let me hear it!
 E2530.13	(voice only)
 E2530.14	Moe	...The letter was in English too, I'm afraid.
@@ -100,12 +100,12 @@ E2532.7	Moe	Wow... a moratorium, huh...
 E2532.8	Boku	Sounds like a planetarium.
 E2532.9	Boku	Hey, I picked up something strange, deep in the cave.
 E2532.10	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
-E2532.11	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
+E2532.11	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...is what I'm thinking, and my head's all mixed up, spinning round and round...
 E2532.12	Boku	But whose is it?
 E2532.13	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2532.14	Moe	From tomorrow...
 E2532.15	Boku	What?
-E2532.16	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+E2532.16	Moe	From tomorrow, I'll try my best... that's what I thought. A little.
 # NOTE E2532.4-.8: "moratorium" was the 1970s word for postponed adulthood; moratorium and
 #   planetarium are both loanwords in the Japanese (style guide § 8 kind 2). Chinpun-kanpun,
 #   gibberish, sounds like the names of the pandas Kang Kang and Lan Lan, at Ueno Zoo from 1972

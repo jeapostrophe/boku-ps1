@@ -2,7 +2,7 @@
 # --- E2820: H06 -- garden off the veranda
 E2820.0	Aunt	Oh! A contrail!
 E2820.1	Boku	Huh? Where, where?
-E2820.2	Aunt	If Auntie is ever born again, // I'd like to try being a jumbo jet pilot, too.
+E2820.2	Aunt	If Auntie is ever born again, // she'd like to try being a jumbo jet pilot, too.
 E2820.3	Boku	Huh? But... // don't women usually want to be stewardesses?
 E2820.4	Aunt	No... if I'm going to be anything, it's a pilot, hands down.
 
@@ -39,7 +39,7 @@ E2840.3	Shirabe	Everyone in our family seems to like high places, somehow. I won
 E2840.4	Boku	......
 
 # --- E2850: A18 -- the secret base ("when do you go home?")
-E2850.0	Specs	Hey, summer vacation's almost over... // when are you going back to your house, Boku-kun?
+E2850.0	Specs	Hey, summer vacation's almost over... // when are you going back home, Boku-kun?
 E2850.1	Boku	Probably on the thirty-first, I think.
 E2850.2	Fat	Hehe, hurry on home and suck on your mom's boobies.
 E2850.3	Guts	I see, that's right... // you've got to go back sometime, huh.
@@ -57,7 +57,7 @@ E2852.0	Fat	Hey, Boku-chan, before you go back to the city, let me meet Moe-san,
 E2852.1	Boku	I won't.
 
 # --- E2853: A18 -- the secret base
-E2853.0	Specs	Has the baby at your house been born yet, Boku-kun?
+E2853.0	Specs	Has your family's baby been born yet, Boku-kun?
 E2853.1	Specs	Then tomorrow's a good day. My fortune-telling book says the stars are in the best position tomorrow.
 
 # --- E2805: G14 -- Boku's room; I30 -- close-up (the fever night)
@@ -68,7 +68,7 @@ E2805.2	Aunt	Two hohes, huh. Excuse me a moment...
 E2805.3	Aunt	Your fever's gone up quite a bit. I'm sorry I didn't notice sooner... // Anyway, you've already had your medicine today, so let's get you straight to sleep.
 E2805.4	Boku	Hey, Auntie.
 E2805.5	Aunt	Hm? What is it?
-E2805.6	Boku	The boy who was at your house, Auntie... I think he must have been really happy.
+E2805.6	Boku	The boy who used to live at your house, Auntie... I think he must have been really happy.
 E2805.7	Aunt	Hm-hm... what makes you think so?
 E2805.8	Boku	Could I... take that boy's place?
 # VOICE E2805.9: very -- very much carries the dai of daisuki; too translates mo

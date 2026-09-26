@@ -10,7 +10,7 @@ E2360.6	Saori	What?
 E2360.7	Boku	the mosquitoes will eat you.
 
 # --- E2320: H10 -- the garden corner
-E2320.0	Aunt	Boku-kun... Boku's summer vacation, too, is down to its last week now. // Hurry up and do the things you want to do while you still can!
+E2320.0	Aunt	Boku-kun... Boku's summer vacation is down to its last week now, too. // Hurry up and do the things you want to do while you still can!
 # VOICE E2320.1: just -- translates kurai de ii kara (even only a week or so)
 E2320.1	Aunt	Auntie would like a summer vacation too, even just a week or so.
 # NOTE E2320.0: the game's title phrase in dialogue (style guide § 1).
@@ -31,8 +31,8 @@ E2330.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered
 E2330.5	Boku	So it really is an alien's book.
 E2330.6	Moe	Dummy, this is English. En-glish!
 E2330.7	Boku	Onee-chan, can you understand English?
-E2330.8	Moe	Of course I can't. It's the class of the teacher I hate most.
-E2330.9	Moe	I'll try reading the letter a little.
+E2330.8	Moe	Of course I can't. It's taught by the teacher I hate most.
+E2330.9	Moe	Let me try reading a bit of the letter.
 E2330.10	Boku	Yeah, let me hear it, let me hear it!
 E2330.11	(voice only)
 E2330.12	Moe	...The letter was in English too, I'm afraid.
@@ -47,16 +47,16 @@ E2330.19	Moe	Oh, be quiet! // When I think someone's secret is packed in here, m
 
 # --- E2331: G15 -- the sisters' room
 E2331.0	Moe	Come to think of it, that vice-principal's treasure... // what on earth could it really be?
-E2331.1	Moe	How come, I wonder? I'm just a little bit interested.
+E2331.1	Moe	I wonder why... I'm just a little bit curious.
 E2331.2	Boku	Hey, I found something strange, deep in the cave.
 E2331.3	Moe	Huh, whaaat? // Mmm, I'm in lazybones mode right now, so bring it tomorrow afternoon.
 E2331.4	Moe	Onee-chan's all sleepy already...
-E2331.5	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
+E2331.5	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...is what I'm thinking, and my head's all mixed up, spinning round and round...
 E2331.6	Boku	But whose is it?
 E2331.7	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2331.8	Moe	From tomorrow...
 E2331.9	Boku	What?
-E2331.10	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+E2331.10	Moe	From tomorrow, I'll try my best... that's what I thought. A little.
 
 # --- E2340: H10 -- garden corner where Shirabe watches ants
 E2340.0	Shirabe	This morning, while I was washing my face, I realized something... // isn't fishing scary?

@@ -6,7 +6,7 @@ E2160.1	Saori	Better than your brain going bad!
 # --- E2101: G02 -- breakfast
 E2101.0	Shirabe	Hey, you know what?
 E2101.1	Aunt	Hm? What is it?
-E2101.2	Shirabe	Yesterday you were all bothered that the Bath Lady was in the bath, weren't you... // ...Pervert!
+E2101.2	Shirabe	Yesterday you kept thinking about the Bath Lady being in the bath, didn't you... // ...Pervert!
 E2101.3	Boku	Huh? No, I wasn't.
 E2101.4	Aunt	Shirabe-chan, what makes you think so?
 E2101.5	Shirabe	A woman's intuition!
@@ -18,7 +18,7 @@ E2101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 E2120.0	Aunt	Auntie's got 4.0, you know.
 E2120.1	Boku	Got what?
 E2120.2	Aunt	Eyesight, in both eyes...
-E2120.3	Aunt	Huh? Are those migrating birds, I wonder...
+E2120.3	Aunt	Huh? Could those be migrating birds...
 # NOTE E2120.0: eyesight on the Japanese decimal scale, where 1.0 is normal; 4.0 is impossible,
 #   which is the joke (style guide § 11).
 
@@ -27,7 +27,7 @@ E2112.0	Uncle	Kaoru, beer... ah, never mind. I don't want one after all.
 E2112.1	Uncle	Somehow I haven't been getting enough sleep lately...
 
 # --- E2105: G13 -- Boku's room, after the bath
-E2105.0	Moe	Are you okay? // That was kind of the episode called "Moe-neechan's Big Blunder"... // Is your head still spinning?
+E2105.0	Moe	Are you okay? // That felt kind of like an episode called "Moe-neechan's Big Blunder"... // Is your head still spinning?
 E2105.1	Boku	...Mm-hm.
 E2105.2	Moe	Dad got angry at me. He said I'm being reckless right now.
 E2105.3	Boku	...Onee-chan, are you really not going to high school?
@@ -40,7 +40,7 @@ E2105.9	Boku	Huh?
 E2105.10	Moe	Mm, no, it's nothing.
 
 # --- E2109: G15 -- the sisters' room
-E2109.0	Moe	This isn't fair on you, Boku-kun, but somehow, thanks to the shock in the bath... // the fog in my heart cleared a little, and I feel easier.
+E2109.0	Moe	This isn't fair on you, Boku-kun, but somehow, thanks to the shock in the bath... // the fog in my heart cleared a little, and I feel lighter.
 E2109.1	Boku	......
 E2109.2	Moe	But studying and youth and all that... // the troublesome stuff, I still don't feel like doing any of it...
 E2109.3	Moe	Ahh, I really don't feel like doing anything at aaall.
@@ -48,7 +48,7 @@ E2109.3	Moe	Ahh, I really don't feel like doing anything at aaall.
 # --- E2113: G01 -- living room
 E2113.0	Uncle	Boku-kun, are you all right?
 E2113.1	Boku	Yeah, I'm fine.
-E2113.2	Uncle	Is that so? That's a relief.
+E2113.2	Uncle	I see. That's a relief.
 E2113.3	Uncle	Girls are better at long soaks, after all.
 
 # --- E2122: G01 -- living room
@@ -58,8 +58,8 @@ E2122.2	Boku	When?
 E2122.3	Aunt	Ahaha... that's a secret.
 
 # --- E2130: G16 -- Moe's bed
-E2130.0	Moe	In my past life, I was probably a slug. // Or maybe an earthworm or something... // Oh! A jellyfish drifting quietly on the waves... // that'd suit me nicely, hopeless enough...
-E2130.1	Moe	What on earth is it that I'm missing right now?
+E2130.0	Moe	In my past life, I was probably a slug. // Or maybe an earthworm or something... // Oh! A jellyfish drifting quietly on the waves... // that'd be pretty hopeless too... it'd suit me nicely...
+E2130.1	Moe	What on earth am I missing right now?
 E2130.2	Boku	...Nutrition.
 
 # --- E2140: H09 -- garden corner where Shirabe watches ants
@@ -91,10 +91,10 @@ E2104.7	(voice only)
 E2106.0	Aunt	Boku-kun, getting in the bath with Moe made your heart pound, didn't it?
 E2106.1	Boku	......
 E2106.2	Aunt	Hm-hm... you're more grown-up than you look.
-E2106.3	Boku	But you know, Auntie, // when I saw a pretty sunset going down behind the mountains, // or when I caught a butterfly with a strange pattern, too... // my heart pounded a little bit, kind of... // Deep inside my chest, it went squeeze...
+E2106.3	Boku	But you know, Auntie, // when I saw a pretty sunset going down behind the mountains, // or when I caught a butterfly with a strange pattern, too... // my heart pounded a little bit, kind of... // Deep inside my chest, it went all tight...
 E2106.4	Boku	...Am I sick?
 E2106.5	Aunt	Ahaha... Boku-kun, that's...
-E2106.6	Aunt	...people are terribly clumsy creatures, // so sometimes they lose track of where in their bodies their hearts are... // So when you see a beautiful sunset going down behind the faraway mountains, // or catch a butterfly of a very strange color, // your heart quietly trembles, shiver-shiver...
+E2106.6	Aunt	...people are terribly clumsy creatures, // so sometimes they lose track of where in their bodies their hearts are... // So when you see a beautiful sunset going down behind the faraway mountains, // or catch a butterfly of a very strange color, // your heart quietly trembles and shivers...
 E2106.7	Aunt	and tells you, "I'm right here, inside you!"
 E2106.8	Boku	Then it's something really, really important.
 E2106.9	Aunt	Hm-hm-hm... if you lost it, you might even die.

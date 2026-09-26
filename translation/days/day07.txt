@@ -21,7 +21,7 @@
 E0701.0	Boku	Yesterday I climbed all the way to the top of the hill. // The view was really nice.
 E0701.1	Moe	A nice view... then maybe that hill over there?
 E0701.2	Uncle	Yeah, that's right.
-E0701.3	Uncle	When these kids were much, much smaller, // we'd all climb up that hill and fly kites. // ...That's right, on the bookshelf in the living room there's a kite book we bought back then... // Shall Uncle make you a kite?
+E0701.3	Uncle	When these kids were much, much smaller, // we'd all climb up that hill and fly kites. // ...I know! On the bookshelf in the living room there's a kite book we bought back then... // Shall Uncle make you a kite?
 E0701.4	Boku	Yay! Thanks, Uncle!
 E0701.5	Uncle	Then you are to look at the book and choose the kite you want made! // And in the daytime, when Uncle's in the workshop, come and tell me which one you chose.
 E0701.6	Boku	Yeah, I'll do that.
@@ -31,9 +31,9 @@ E0701.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 # --- E0720: H06 -- garden off the veranda, the washing line
 E0720.0	Boku	Auntie, you hang out the washing outside almost every day, // so how come your skin's so fair?
 E0720.1	Aunt	Hmm, I wonder why? // Maybe because I eat lots of fruit with vitamin C in it. // And sometimes, so my skin will get fairer, I wash my face with nightingale droppings.
-E0720.2	Boku	Nightingale droppings? // There's really such a thing in the world... // Poop?
+E0720.2	Boku	Nightingale droppings? // So there really is such a thing in the world... // Poop?
 E0720.3	Aunt	That's right.
-E0720.4	Boku	Nightingale droppings... there's really such a thing?
+E0720.4	Boku	Nightingale droppings... is there really such a thing?
 E0720.5	Aunt	That's right. All women know about it.
 # NOTE E0720.1: uguisu no fun, the droppings of the bush warbler, a traditional face wash; its
 #   English name as a cosmetic is "nightingale droppings" (glossary § 4a).
@@ -59,11 +59,11 @@ E0710.6	Uncle	The first person who thought of turning a wheel to make rice bowls
 E0710.7	Boku	Huh? So you didn't invent it, Uncle?
 E0710.8	Uncle	Congratulations, Boku-kun! // I could see your kite flying high, high up, even from this garden. // Now, as a reward, I'll make you the next kite, so go and choose one.
 E0710.9	Uncle	When you want me to make you a kite, go and choose the one you want from the kite book in the living room.
-E0710.10	Uncle	You flew every one of them high, high up, right to the last hard one. // Boku-kun, you seem to be several steps better at flying kites than Uncle now. // Somehow Uncle's starting to feel he can rely on you.
+E0710.10	Uncle	You flew every one of them high, high up, right to the last hard one. // Boku-kun, you seem to be several notches better at flying kites than Uncle now. // Somehow Uncle's starting to feel he can rely on you.
 E0710.11	Uncle	It seems you'd like me to make you a kite, but I'm sorry. // Even if I started now, it wouldn't be finished while you're still here.
 E0710.12	Uncle	Do your best to fly Uncle's kite up high.
 E0710.13	Uncle	Uncle's kite ought to fly a bit higher than that... // If you fly it high enough to see from here, I'll make you the next one.
-E0710.14	Uncle	Is kite-flying hard? Anyway, fly it higher, much higher. // Then I should surely be able to see it even from this workshop's window.
+E0710.14	Uncle	Is kite-flying hard? Anyway, fly it higher, much higher. // Then I'm sure I'll be able to see it even from the workshop window.
 E0710.15	Uncle	The kite I gave you the other day is the last one, so do your best to fly it up high.
 E0710.16	Uncle	Oh? Let's see, let's see... So it's the Square Kite you want, is it? // Right, right... Then please give me about two days.
 E0710.17	Uncle	Oh? Let's see, let's see... So it's the Nina Kite you want, is it? // Right, right... Then please give me about two days.
@@ -103,7 +103,7 @@ E0733.4	Boku	Huh! Why?
 E0733.5	Moe	Hahaha, that's what you call a se-cret. // ...Anyway, it's been fine weather for aaages now, hasn't it?
 
 # --- E0780: B02; B03 -- forest path with the yellow flowers
-E0780.0	Moe	Me, I... on blue-sky days like this, // I love how cool the breeze is that blows now and then from the shade of the trees... // The wind carries the lush scent of the forest... // If I could, always, here in the green of this deep forest... // I'd like to live quietly, without thinking about anything at aaall... // And then, before I knew it... I'd have turned into an old lady. // ...That's how I'd like it.
+E0780.0	Moe	Me, I... on blue-sky days like this, // I love the cool of the breeze that blows now and then from the shade of the trees... // The wind carries the lush scent of the forest... // If I could, I'd stay forever here in the green of this deep forest... // living quietly, without thinking about anything at aaall... // And then, before I knew it... I'd have turned into an old lady. // ...That's how I'd like it.
 E0780.1	Moe	Hey, Boku-kun, help me look for flowers to press. // I'm... bad at choosing anything.
 E0780.2	Moe	These yellow globeflowers... // if you find a cute one, bring it to me.
 E0780.3	Boku	Yeah, got it, Onee-chan.

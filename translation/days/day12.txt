@@ -5,7 +5,7 @@ E1202.1	Uncle	Thank you for coming all the way out into the mountains like this 
 E1202.2	Monk	Not at all, not at all. This is how I earn my rice.
 
 # --- E1220: H08 -- the yard
-E1220.0	Boku	Hey, when did the Onii-chan of this house die?
+E1220.0	Boku	Hey, when did this family's Onii-chan die?
 E1220.1	Aunt	......Three years ago.
 E1220.2	Boku	Hmm.
 E1220.3	Aunt	Boku-kun, you had the mashin then, so you couldn't come to the funeral.
@@ -22,9 +22,9 @@ E1210.1	Boku	Yeah.
 E1210.2	Uncle	He may not look it, but that monk is nearly sixty.
 
 # --- E1212: G01 -- living room
-E1212.0	Uncle	Ken-bo looks as happy as ever... // The mountain monkey gang didn't come this year, after all.
+E1212.0	Uncle	Ken-bo looks as happy as ever... // After all, the mountain monkey gang didn't come this year.
 E1212.1	Boku	Monkeys come here?
-E1212.2	Uncle	Of course they do. We're deep in the mountains here. // The monkeys live by making the rounds of the valleys around here, every two or three years. // But the damage to the fields is always worse from the wild boar.
+E1212.2	Uncle	Of course they do. We're deep in the mountains here. // The monkeys live by circling the valleys around here, on a cycle of about two or three years. // But the wild boar always do more damage to the fields.
 # VOICE E1212.3: just -- translates sakki (a moment ago)
 E1212.3	Uncle	I only just noticed... isn't Ken-bo going bald?
 E1212.4	Uncle	We've had Ken-bo since we lived in Tokyo. // So he's getting to be an old man by now. // You have to be kind to the elderly.

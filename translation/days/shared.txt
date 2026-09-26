@@ -237,8 +237,8 @@ E4047.0	(voice only)
 # --- E4052: G06 -- TV room
 E4052.0	(voice only)
 E4052.1	(voice only)
-E4052.2	(voice only)	Today, at a nursery school in Toyohashi, Aichi Prefecture, // the huge stock of toilet paper the school had been hoarding was all eaten by the goat it keeps.
-E4052.3	(voice only)	Since the year began, with the explosive vinyl-kite craze, // accidents with kite strings tangled in power lines have surged nationwide.
+E4052.2	(voice only)	Today, at a nursery school in Toyohashi, Aichi Prefecture, // the goat kept at the school ate all of the huge stock of toilet paper that had been hoarded there.
+E4052.3	(voice only)	Since the start of this year, with vinyl kites becoming explosively popular, // accidents in which kite strings tangle in power lines have surged nationwide.
 E4052.4	(voice only)	Today, in Koto Ward, Tokyo, Japan's first convenience store opened its doors.
 E4052.5	(voice only)	What will fate bring?
 E4052.6	(voice only)
@@ -268,7 +268,7 @@ E6000.6	Boku	But now you'll be famous overnight, lady.
 E6000.7	Saori	Haha... Dummy. Ever heard of the crested ibis? // I finally found a place where wolves live, and I can't tell anybody.
 E6000.8	Boku	...Huh?
 E6000.9	Saori	But why would it come to sugar water, of all things? // There are records of them liking salt...
-E6000.10	Saori	Did you do something at the camera?
+E6000.10	Saori	Did you do something over by the camera?
 E6000.11	Boku	......
 # NOTE E6000.0, .6: Boku calls Saori "onee-chan", the ordinary word a child uses to a young woman;
 #   used descriptively, so "lady" (style guide § 2), which keeps her apart from Moe, who is
@@ -277,7 +277,7 @@ E6000.11	Boku	......
 
 # --- E6002: D07 -- Saori's camp
 E6002.0	Boku	Hey, didn't a weird photo come out?
-E6002.1	Saori	What a big sky it is...
+E6002.1	Saori	What a big sky...
 
 # --- E6003: D07 -- Saori's camp
 E6003.0	Saori	There's lots of interesting stuff in the tent, so go and have a look...
@@ -302,7 +302,7 @@ E6004.15	Saori	Smooch!
 E6004.16	Saori	...is what you'd call attractive.
 E6004.17	Boku	Then don't laugh at me.
 E6004.18	Boku	Hic!
-E6004.19	Saori	It's exactly the ones who feel no fear at all toward nature // who go and build new towns with no human warmth in them, as if they'd been washed in detergent... // The point is, it's a question of balance...
+E6004.19	Saori	It's precisely the ones who have no fear of nature at all // who go and build new towns with no human warmth in them, as if they'd been washed in detergent... // The point is, it's a question of balance...
 E6004.20	Boku	Now it's a story about foreign countries?
 E6004.21	Boku	Hic!
 E6004.22	Saori	No.
@@ -483,14 +483,14 @@ E4028.5	Aunt	Ta-daaa, wrong! // By the way, the fridge has the ingredients for b
 E4028.6	Aunt	Wrong, I'm afraid. // Summer vacation will be over soon, so do your best to get it right, Boku-kun.
 E4028.7	Aunt	Tonight's dinner was... // Hamburg steak, simmered vegetables, and deep-fried river shrimp, Auntie-style.
 E4028.8	Aunt	Tonight's dinner was... // tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
-E4028.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I pulled it all together as Chinese.
+E4028.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I tried making it all Chinese.
 E4028.10	Aunt	Tonight's dinner was... // sashimi, simmered hijiki and tempura. I put together a purely Japanese spread.
 E4028.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu, aaall of them Auntie's favorites.
-E4028.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried combining things.
-E4028.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I pulled it all together to Shirabe's taste.
+E4028.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried mixing and matching.
+E4028.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I tried making it all to Shirabe's taste.
 E4028.14	Aunt	Tonight's dinner was... // cabbage rolls and grilled eggplant, with an open omelette thrown in, put together to Moe's taste.
 E4028.15	Aunt	Tonight's dinner was... // curry rice, marinated horse mackerel, salad and edamame, and so on and so on. I worked hard on it.
-E4028.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad, forced into being Italian-style.
+E4028.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad. Italian-style, at a stretch.
 E4028.17	Aunt	Tonight's dinner was... // I went and had the top-grade nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
 # NOTE E4028.17: Osho ("king") Sushi's Hisha ("rook") Set is a shogi joke (glossary § 1, shop names).
 
@@ -580,7 +580,7 @@ E0923.1	Aunt	Hm-hm, hello, Boku-kun!
 E0923.2	Boku	Auntie, were you taking pictures?
 E0923.3	Aunt	Yes, I was taking pictures of you flying your kite.
 E0923.4	Boku	Oh, is that all.
-E0923.5	Aunt	Well then, a souvenir photo.
+E0923.5	Aunt	Well then, a photo to remember it by.
 E0923.6	Aunt	What does Uncle like best?
 E0923.7	Boku	Huh?
 E0923.8	(voice only)
@@ -613,7 +613,7 @@ E1008.1	Narrator	I gazed at its cold, metallic gleam, never once blinking...
 #   translation/movies.txt, M120).
 
 # --- E1050: A17 -- approach to the secret base
-E1050.0	Fat	Anyway, they say it's a yamame as ridiculously huge as a monster...
+E1050.0	Fat	Anyway, they say it's a ridiculously huge yamame, like some kind of monster...
 E1050.1	Guts	Hmph, that's got to be a lie.
 E1050.2	Specs	Somebody was dreaming. I bet that's it!
 
@@ -629,7 +629,7 @@ E1010.1	Uncle	Let's see.
 E1010.2	Uncle	Huh? This is... what was it again? // Oh well. It's a bit too soft, but I'll do my best to make one. // I think it'll be done in about two days, // so come back and get it then, please.
 
 # --- E1007: G15 -- the sisters' room; I20 -- close-up
-E1007.0	Narrator	It was a half-finished pressed-flower piece, a very lovely thing, made with dainty yellow flowers.
+E1007.0	Narrator	It was a very lovely pressed-flower piece, still half-finished, made with dainty yellow flowers.
 
 # --- E1051: A18 -- the secret base
 # VOICE E1051.0: just -- carries -rya ii noni, Guts's you-need-only scorn for swimming schools
@@ -652,7 +652,7 @@ E1150.1	Fat	Geh-heh-heh, 'cause if I got any smarter than this, // I couldn't ta
 
 # --- E1205: C11 -- the Great Oak; I22 -- close-up
 E1205.0	Narrator	How old could it have been... // That giant sawtooth oak towered between me and the blue sky, // its crown swaying quietly and pleasantly in the sunlight...
-E1205.1	Narrator	At that moment... // my tiny, tiny self came to want to know the great heart of this great oak...
+E1205.1	Narrator	At that moment... // tiny, tiny as I was, I found myself wanting to know the great heart of this great oak...
 E1205.2	Narrator	and I stood on tiptoe, just a little...
 
 # --- E1214: H26 -- the workshop
@@ -718,9 +718,9 @@ E1504.2	Boku	Oh yeah, I found something strange near the sea.
 E1504.3	Aunt	Something strange? Why, what on earth did you find?
 E1504.4	Shirabe	Tell me, tell me.
 E1504.5	Boku	It's a stone shaped like a thunderhead, like nothing I've ever seen, // and it suddenly came rolling up to my feet.
-E1504.6	Uncle	Ahh, is it that? Is it that?
+E1504.6	Uncle	Ahh, maybe it's that one... maybe it's that one.
 E1504.7	Shirabe	Tell me, tell me.
-E1504.8	Uncle	Yes! When Uncle was still smaller than you are now, // it's a story his grandpa told him... // Once in a long while, on the rocks along the shore, you find // a stone with a strange shape, like a big bald octopus.
+E1504.8	Uncle	Yes! When Uncle was still smaller than you are now, // his grandpa told him a story... // Once in a long while, on the rocks along the shore, you find // a stone with a strange shape, like a big bald octopus.
 E1504.9	Boku	Yeah, yeah, that's it.
 E1504.10	Uncle	And that, you see...
 # VOICE E1504.11: actually -- carries nanto, the uncle's would-you-believe-it reveal
@@ -842,7 +842,7 @@ E1861.21	Woman	Huh?
 E1861.22	Boku	And they said the Bath Lady, too...
 E1861.23	Woman	Gahaha... Who on earth are you?
 E1861.24	Boku	A human.
-E1861.25	Woman	Ahh, a brat's life-size jokes kind of throw me off.
+E1861.25	Woman	Ahh, brat-sized jokes kind of throw me off.
 E1861.26	Woman	I'm Saori. I'm a student at a university in Sendai. My major is natural science...
 E1861.27	Boku	I'm Boku! I'm a grade-schooler at a school in the city, and my teacher is Nakajima-sensei!
 E1861.28	Saori	What's that supposed to be?
@@ -870,7 +870,7 @@ E1960.1	Boku	You told me to come to your tent, lady.
 E1960.2	Saori	There are all kinds of books and interesting stuff in the tent, so help yourself and have a look.
 E1960.3	Saori	But don't look inside the backpack. // Those are a lady's belongings.
 E1960.4	Boku	Who's the lady?
-E1960.5	Boku	What kind of stories are the books in the tent?
+E1960.5	Boku	What kind of stories are in the books in the tent?
 E1960.6	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
 E1960.7	Boku	There was a painting of pretty flowers. Who painted it?
 E1960.8	Saori	I did.
@@ -882,7 +882,7 @@ E1960.11	Saori	Then come again.
 E1961.0	Narrator	Inside the tent there were a great many books and photographs, // and pictures of dainty flowers, grasses and trees...
 
 # --- E1962: D07 -- Saori's camp
-E1962.0	Boku	What kind of stories are the books in the tent?
+E1962.0	Boku	What kind of stories are in the books in the tent?
 E1962.1	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
 E1962.2	Boku	There was a painting of pretty flowers. Who painted it?
 E1962.3	Saori	I did.
@@ -956,9 +956,9 @@ E6001.11	Saori	When I was little, I lived in the town at the foot of this mounta
 E6001.12	Saori	Back when I was still smaller than you are now, Boku-kun... // I came hiking around here with my family... // That day, before I knew it, I'd gotten lost... // Evening came, and I got scared... // I sat on a big rock on the riverbank and cried... // And then, that voice...
 E6001.13	Boku	What kind of voice?
 E6001.14	(voice only)
-E6001.15	Saori	I got scared, and I ran flat out down the mountain path in the evening glow... // and the next thing I knew, I'd been found by the youth association men who'd come up the mountain looking for me.
+E6001.15	Saori	I got scared, and I ran flat out down the mountain path in the evening glow... // and the next thing I knew, I'd been found by men of the youth association who'd come up the mountain looking for me.
 E6001.16	Boku	So that voice saved you?
-E6001.17	Saori	Yeah, somehow I've come to think so.
+E6001.17	Saori	Yeah, that's kind of how I've come to see it.
 E6001.18	Boku	What was it that howled?
 E6001.19	Saori	A Japanese wolf... // the voice of a Japanese wolf, which should have died out long, long ago...
 
@@ -973,7 +973,7 @@ E2206.6	Boku	No, I wasn't.
 E2206.7	Uncle	Hahaha, a boy mustn't get scared over a little thing like this.
 
 # --- E2207: A10 -- the big tree (the shed skin)
-E2207.0	Narrator	What lay there was the cast-off skin of a snake, dried out to an almost sorrowful degree.
+E2207.0	Narrator	What lay there was a snake's cast-off skin, so dried out that it was somehow almost sad.
 E2207.1	(unlabelled)	Got the shed snakeskin.
 
 # --- E2261: B13 -- Saori's camera trap
@@ -991,7 +991,7 @@ E6100.6	Boku	But now you'll be famous overnight, lady.
 E6100.7	Saori	Haha... Dummy. Ever heard of the crested ibis? // I finally found a place where wolves live, and I can't tell anybody.
 E6100.8	Boku	...Huh?
 E6100.9	Saori	But why would it come to sugar water, of all things? // There are records of them liking salt...
-E6100.10	Saori	Did you do something at the camera?
+E6100.10	Saori	Did you do something over by the camera?
 
 # --- E6101: D07 -- Saori's camp (the howl that saved her)
 E6101.0	Boku	I'm here.
@@ -1010,15 +1010,15 @@ E6101.11	Saori	When I was little, I lived in the town at the foot of this mounta
 E6101.12	Saori	Back when I was still smaller than you are now, Boku-kun... // I came hiking around here with my family... // That day, before I knew it, I'd gotten lost... // Evening came, and I got scared... // I sat on a big rock on the riverbank and cried... // And then, that voice...
 E6101.13	Boku	What kind of voice?
 E6101.14	(voice only)
-E6101.15	Saori	I got scared, and I ran flat out down the mountain path in the evening glow... // and the next thing I knew, I'd been found by the youth association men who'd come up the mountain looking for me.
+E6101.15	Saori	I got scared, and I ran flat out down the mountain path in the evening glow... // and the next thing I knew, I'd been found by men of the youth association who'd come up the mountain looking for me.
 E6101.16	Boku	So that voice saved you?
-E6101.17	Saori	Yeah, somehow I've come to think so.
+E6101.17	Saori	Yeah, that's kind of how I've come to see it.
 E6101.18	Boku	What was it that howled?
 E6101.19	Saori	A Japanese wolf... // the voice of a Japanese wolf, which should have died out long, long ago...
 
 # --- E6102: D07 -- Saori's camp
 E6102.0	Boku	Hey, didn't a weird photo come out?
-E6102.1	Saori	What a big sky it is...
+E6102.1	Saori	What a big sky...
 
 # --- E6103: D07 -- Saori's camp
 E6103.0	Saori	There's lots of interesting stuff in the tent, so go and have a look...
@@ -1043,7 +1043,7 @@ E6104.15	Saori	Smooch!
 E6104.16	Saori	...is what you'd call attractive.
 E6104.17	Boku	Then don't laugh at me.
 E6104.18	Boku	Hic!
-E6104.19	Saori	It's exactly the ones who feel no fear at all toward nature // who go and build new towns with no human warmth in them, as if they'd been washed in detergent... // The point is, it's a question of balance...
+E6104.19	Saori	It's precisely the ones who have no fear of nature at all // who go and build new towns with no human warmth in them, as if they'd been washed in detergent... // The point is, it's a question of balance...
 E6104.20	Boku	Now it's a story about foreign countries?
 E6104.21	Boku	Hic!
 E6104.22	Saori	No.
@@ -1117,8 +1117,8 @@ E2303.4	(unlabelled)	Anyway, I'll read it.
 E2303.5	Shirabe	What's that?
 E2303.6	Moe	Shirabe, be quiet! // I'm going to read it...
 E2303.7	Moe	Spring: the flow of the great river, the fragrance of the flowers in full bloom... // Now America, the land of dreams I read of in the adventure novels of Mark Twain, and // the country of my birth... this beloved homeland of mine, Japan, are at war. // Tom Sawyer. Huckleberry Finn. // The wind and the sunlight that blow across the fields and hills where they played... // I wished that one day I might feel them on my own skin... // Until today, I have studied their language, in secret and with all my heart, but... // that too, it seems, has nearly reached its end. // I have had to hide my English dictionary here as well. // If this war should end, and I am still alive, // then this innocent resolve of mine, pure as spring water... // and this elation, like the south wind that heralds the coming of spring... // these I wish to convey to my future self.    Spring, Showa 17...
-E2303.8	Uncle	The name?
-E2303.9	Moe	It isn't written.
+E2303.8	Uncle	What about a name?
+E2303.9	Moe	It doesn't say.
 E2303.10	Uncle	I see...
 E2303.11	Aunt	This person... I hope they're still alive.
 # NOTE E2303.3-.4: one utterance across two messages (style guide § 9).
@@ -1128,7 +1128,7 @@ E2303.11	Aunt	This person... I hope they're still alive.
 # --- E2305: D06 -- the air-raid shelter (the book)
 E2305.0	(voice only)	That reminds me. At our school, that vice-principal who tries too hard... // they say that during the war, he hid some precious treasure of his own in the hills behind here.
 # NOTE E2305.0: Moe's E2204.6, remembered in a new take of the same words; same English.
-E2305.1	Narrator	This might be something that mattered to someone... // Thinking so, I decided to take the book home with me.
+E2305.1	Narrator	This might be something that mattered to someone... // With that thought, I decided to take the book home with me.
 
 # --- E2304: G02 -- after dinner (the photo)
 E2304.0	Uncle	Gochisosama deshita.
@@ -1153,7 +1153,7 @@ E2401.9	Moe	...Nothing.
 E2401.10	Uncle	You mean that to go to high school, // you'll have to leave this house and live on your own?
 E2401.11	Moe	Yeah... it's kind of lonely, isn't it?
 E2401.12	Shirabe	Shirabe's going to be an idol singer!
-E2401.13	Moe	Is that so? That's amazing.
+E2401.13	Moe	Oh yeah? That's amazing.
 E2401.14	Shirabe	And I'll make it go vroom-vroom.
 E2401.15	Boku	Make what?
 E2401.16	Shirabe	My Benz!
@@ -1190,11 +1190,11 @@ E2504.2	Boku	Yeah.
 E2504.3	Aunt	We climbed up there too, soon after we came here. // When I saw the view from that summit... // ah... I thought, from the bottom of my heart, that I was glad we'd moved here.
 E2504.4	Boku	I...
 E2504.5	Aunt	Hm? What is it?
-E2504.6	Narrator	I did not want to go home yet... // For some reason, those words were the ones I simply could not say.
+E2504.6	Narrator	I did not want to go home yet... // For some reason, I simply could not say those few words.
 E2504.7	Boku	...I'm glad I came here, too.
 E2504.8	Aunt	Hm-hm-hm...... thank you. // I'm happy you like it here, Boku-kun.
 # VOICE E2504.9: completely -- translates sukkari (completely)
-E2504.9	Shirabe	Before anyone noticed, you've turned completely into one of our kids.
+E2504.9	Shirabe	Somewhere along the way, you've completely become one of our kids.
 E2504.10	Boku	Then am I Shirabe's Onii-chan too?
 E2504.11	Shirabe	No way!
 E2504.12	Aunt	Come on, let's hurry up and say gochisosama.
@@ -1226,14 +1226,14 @@ E4064.5	Aunt	Ta-daaa, wrong! // By the way, the fridge has the ingredients for b
 E4064.6	Aunt	Wrong, I'm afraid. // Summer vacation will be over soon, so do your best to get it right, Boku-kun.
 E4064.7	Aunt	Tonight's dinner was... // Hamburg steak, simmered vegetables, and deep-fried river shrimp, Auntie-style.
 E4064.8	Aunt	Tonight's dinner was... // tonkatsu, egg tofu, sake-steamed clams, and fresh-picked broad beans.
-E4064.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I pulled it all together as Chinese.
+E4064.9	Aunt	Tonight's dinner was... // spring rolls, happosai, soup and a tofu salad. I tried making it all Chinese.
 E4064.10	Aunt	Tonight's dinner was... // sashimi, simmered hijiki and tempura. I put together a purely Japanese spread.
 E4064.11	Aunt	Tonight's dinner was... // sea bass meuniere, bang bang chicken, kinchaku pouches and cold tofu, aaall of them Auntie's favorites.
-E4064.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried combining things.
-E4064.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I pulled it all together to Shirabe's taste.
+E4064.12	Aunt	Tonight's dinner was... // omurice, cheese en papillote, thick fried tofu braised with greens, and so on. I tried mixing and matching.
+E4064.13	Aunt	Tonight's dinner was... // fried rice, Chinese soup, sweet-and-sour pork, shumai and so on. I tried making it all to Shirabe's taste.
 E4064.14	Aunt	Tonight's dinner was... // cabbage rolls and grilled eggplant, with an open omelette thrown in, put together to Moe's taste.
 E4064.15	Aunt	Tonight's dinner was... // curry rice, marinated horse mackerel, salad and edamame, and so on and so on. I worked hard on it.
-E4064.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad, forced into being Italian-style.
+E4064.16	Aunt	Tonight's dinner was... // spaghetti, chilled eggplant, grilled fried tofu, soup and salad. Italian-style, at a stretch.
 E4064.17	Aunt	Tonight's dinner was... // I went and had the top-grade nigiri, the Rook Set, delivered from Osho Sushi in Sagi-no-sato.
 
 # --- E3171: H02 -- front of the house (Father arrives)
@@ -1249,7 +1249,7 @@ E3173.0	Uncle	You look very well, somehow... // or rather, wh-what's happened to
 # --- E3174: H02 -- front of the house
 # VOICE E3174.0: really -- carries doon to (boldly, all-out), stretched in the voice
 E3174.0	Father	Well, how to put it, our second one's been born, see, // so I've made a big decision to really give it everything I've got, I have.
-E3174.1	Aunt	Onii-chan! Give what everything you've got?
+E3174.1	Aunt	Onii-chan! Give everything you've got to what, exactly?
 E3174.2	Father	Hmm, what indeed... gahahahaha!
 E3174.3	(voice only)
 E3174.4	Aunt	Somehow I'm so glad to see you looking happy, Onii-chan!
@@ -1270,7 +1270,7 @@ E3176.2	Aunt	Yeah!
 E3177.0	Moe	Wah! Mom! No fair!
 E3177.1	Uncle	What's the matter?
 E3177.2	Moe	For now, at least, for the time being... // the one I love is supposed to be Dad...
-E3177.3	Uncle	For the time being, huh... hmm... // here the sorrow of a father with daughters is served up in full, with every care...
+E3177.3	Uncle	For the time being, huh... hmm... // here the sorrow of a father with daughters reaches its peak, complete with all the trimmings...
 E3177.4	Aunt	Oh? // If you want Dad for your sweetheart, don't forget there's a powerful rival right here!
 # VOICE E3177.5: really -- translates ara sou? (oh, is that so?)
 E3177.5	Moe	Oh, really? Well, I won't lose either!

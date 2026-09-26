@@ -30,7 +30,7 @@ E0302.3	Boku	Yeah, I love it! It's yummy!
 E0302.4	Aunt	Well then...
 E0302.5	Uncle	Boku-kun, you are hereby appointed field-helper captain!
 E0302.6	(voice only)
-E0302.7	Uncle	It's only for today, but... // on the way to the forest, there's a corn field of ours. // You are to come there in the morning and help with the harvest! I'm counting on you.
+E0302.7	Uncle	It's only for today, but... // on the way to the forest, there's our corn field. // You are to come there in the morning and help with the harvest! I'm counting on you.
 
 # --- E0307: H18 -- the shed
 E0307.0	(unlabelled)	Got the fishing rod.
@@ -41,13 +41,13 @@ E0306.1	Boku	Yeah. Hello, Uncle, Auntie.
 E0306.2	Uncle	Well, well... the sky sure is high today...
 # VOICE E0306.3: just -- just like translates -dori (as promised)
 E0306.3	Uncle	Thank you for coming, Boku-kun, just like you promised.
-E0306.4	Aunt	Hm-hm-hm. Now then, Boku-kun! // Put the corn in the field into this basket, every last one you find. // Okay, time to start work!
+E0306.4	Aunt	Hm-hm-hm. Now then, Boku-kun! // Put every last ear of corn in the field into this basket. // Okay, time to start work!
 E0306.5	(voice only)
 
 # --- E0371-E0383: the thirteen ears of corn (A09, examine). No text.
 # --- E0391: A09 -- the corn field
 E0391.0	Uncle	Go on, Boku-kun, do your best.
-E0391.1	Uncle	We'll take care of the cleaning up. // Go on, kids go and play, go and play.
+E0391.1	Uncle	We'll take care of the cleaning up. // Go on, kids, go and play, go and play.
 # --- E0392: A09 -- the corn field
 E0392.0	Aunt	Phew... But what lovely weather! It makes me so happy!
 E0392.1	Aunt	Tomorrow at lunch, I'll boil up a whole lot for you in a great big pot, // so look forward to it.
@@ -97,7 +97,7 @@ E0305.4	(voice only)	The Summer National High School Baseball Championship: toda
 
 # --- E0312: G01 -- living room
 # VOICE E0312.0: just -- only just enough translates chodo ... shika
-E0312.0	Uncle	Uncle's field, for what we eat at home... // we only farm just enough ground for that. // In everything, the easy way is the best way.
+E0312.0	Uncle	Uncle's field is for what we eat at home... // and we only farm just enough ground for that. // In everything, the easy way is the best way.
 # VOICE E0312.1: just -- just the right size translates chodo
 E0312.1	Uncle	Thank you for your hard work helping in the field today. // Uncle's field is small, // so it might be just the right size for you to help with, Boku-kun.
 

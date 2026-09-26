@@ -20,7 +20,7 @@ E1320.5	Aunt	Boys just take everything apart, don't they, whether it's bugs or d
 E1312.0	Uncle	Boku-kun, how's the fishing going lately?
 E1312.1	[SEL]	Excellent | Not so great
 # VOICE E1312.2: just -- translates chodo in chodo ii (just about right)
-E1312.2	Uncle	With yamame especially, it's best to set the hook early, early. // That fish can tell in an instant that the bait is a fake, and it spits it out. // So they say that setting the hook before it's even taken it is just about right.
+E1312.2	Uncle	With yamame especially, it's best to set the hook early, early. // That fish can tell in an instant that the bait is a fake, and it spits it out. // So they say setting the hook before it's even bitten is just about right.
 E1312.3	Uncle	But hardly any anglers come to the rivers around here, // so the fish aren't used to people, and they're really easy to catch.
 
 # --- E1331: G15 -- the sisters' room
@@ -39,7 +39,7 @@ E1341.1	Shirabe	But this is Japan, so it doesn't count.
 # --- E1304: G02 -- after dinner (clouds)
 E1304.0	Uncle	Gochisosama deshita.
 E1304.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
-E1304.2	Uncle	There were some fine summery-shaped clouds again today.
+E1304.2	Uncle	There were some fine clouds out again today, nice summery shapes.
 E1304.3	Shirabe	...You know, I happened to overhear something... // are sardine clouds... shaped like sardines?
 E1304.4	Uncle	Huh? ...Well, you see...
 E1304.5	Shirabe	Then are there doughnut clouds and soft-serve clouds too?

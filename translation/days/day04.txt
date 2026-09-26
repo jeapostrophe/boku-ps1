@@ -48,7 +48,7 @@ E0471.1	(voice only)
 E0471.2	Shirabe	So you came after all... I'm such a heartbreaker.
 E0471.3	Shirabe	Now then, follow along behind Shirabe, quick-quick. // I'll go on ahead as far as the bridge.
 # VOICE E0471.4: terribly -- translates osoroshiku
-E0471.4	Narrator	For me, it was with a terribly high-maintenance creature... // that I had the first encounter of my life.
+E0471.4	Narrator	For me, it was an encounter with a terribly high-maintenance creature... // the first of my life.
 E0471.5	(voice only)
 
 # --- E0442: A06 -- the bridge over the Yukino River
@@ -61,13 +61,13 @@ E0442.5	Boku	Ohh, so it snows here.
 E0442.6	Shirabe	Doesn't it snow at all where you live?
 E0442.7	Boku	No, only once in a while.
 # VOICE E0442.8: really -- translates honto wa
-E0442.8	Shirabe	Hm-hm, poor you. // ...But really, it's because it's a river where lots of fireflies are born, pop-pop-pop, // that it got the name Yukino River, they say.
+E0442.8	Shirabe	Hm-hm, poor you. // ...But really, it's a river where lots of fireflies are born, pop-pop-pop, // and that's why it got the name Yukino River, they say.
 E0442.9	Boku	Huh...? Why's that?
 E0442.10	Shirabe	Huh?
 E0442.11	Boku	Why would fireflies popping out mean it gets named for snow?
 E0442.12	Shirabe	...W-well, that's...
 E0442.13	Boku	Ohh, you don't know.
-E0442.14	Shirabe	That's not it! // That you're the one person I must never tell, whatever happens... // Dad told me so, absolutely, absolutely, absolutely!
+E0442.14	Shirabe	That's not it! // You're the one person I must never tell, whatever happens... // Dad said so, absolutely, absolutely, absolutely!
 E0442.15	Shirabe	It's an absolute secret!
 # NOTE E0442.3-.11: Yukino kept as heard so that the explanation has something to explain
 #   (glossary § 2): "yuki" is snow.
@@ -75,7 +75,7 @@ E0442.15	Shirabe	It's an absolute secret!
 # --- E0443: A11 -- the fortune-telling Jizo
 E0443.0	Shirabe	This Jizo-sama, you see...
 E0443.1	(voice only)
-E0443.2	Shirabe	Oh? // Being with you, I get the worst. // This is a Jizo-sama that tells fortunes. // Do you want to try too? I'll give you special permission.
+E0443.2	Shirabe	Oh? // With you along, I get the worst. // This is a Jizo-sama that tells fortunes. // Do you want to try too? I'll give you special permission.
 E0443.3	Boku	I... // I can't go hitting a Jizo-sama.
 # VOICE E0443.4: rather -- would you rather carries ja ... -tai no, the alternative Shirabe offers to hitting the Jizo
 E0443.4	Shirabe	Then would you rather I socked you?
@@ -87,7 +87,7 @@ E0443.8	Shirabe	Kyahaha, how pathetic. // Well, I'll go on ahead.
 # --- E0444: A15 -- the nectar flowers
 E0444.0	Shirabe	You're so slooow. // Keeping a lady waiting... you really are hopeless.
 E0444.1	Boku	Sorry...
-E0444.2	Shirabe	Well, Shirabe is a very kind girl, so she'll forgive you, specially.
+E0444.2	Shirabe	Well, Shirabe is a very kind girl, so she'll make a special exception and forgive you.
 E0444.3	Shirabe	This flower, you see...
 E0444.4	(voice only)
 E0444.5	Shirabe	The nectar inside is ever so sweet and delicious.
@@ -140,9 +140,9 @@ E0405.1	Boku	Hic!
 E0405.2	Boy	Is somebody there?
 E0405.3	Boku	Hic!
 # VOICE E0405.4: just -- just as renders toki at the instant the howl cuts in
-E0405.4	Narrator	It was all over! Just as I thought that...
+E0405.4	Narrator	It was all over! Just as the thought came to me...
 E0405.5	(voice only)
-E0405.6	Boy	Tch! Some wild dog come down from the mountains, maybe...
+E0405.6	Boy	Tch! Maybe some wild dog came down from the mountains...
 # VOICE E0405.7: utterly -- translates marude
 E0405.7	Narrator	That howl rang out from somewhere far away, deep in the heart of the mountains, // utterly out of keeping with the noisy summer hills, lonely and sad...
 

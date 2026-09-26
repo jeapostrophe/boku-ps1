@@ -60,6 +60,6 @@ E1641.0	Shirabe	Aren't we going to talk about school lunch anymore?
 E1641.1	Shirabe	Don't the jam packets get squashed in your school backpack?
 
 # --- E1642: H08 -- the yard with the swing tree
-E1642.0	Shirabe	You, go on and ride it. I'll watch you.
+E1642.0	Shirabe	You go on and try riding it. I'll watch you for a bit.
 E1642.1	Shirabe	You're not bad on the swing, are you?
 E1642.2	Shirabe	But Shirabe is definitely better.

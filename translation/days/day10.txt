@@ -34,7 +34,7 @@ E1040.2	Shirabe	Whale is tough, you know. // Sometimes I'm still chewing it afte
 # --- E1041: G06 -- TV room
 E1041.0	Boku	What kinds of bread do you get at school lunch?
 E1041.1	Shirabe	Umm, there's koppe-chan, sometimes there's sliced bread...
-E1041.2	Boku	Only with the sliced bread do you get margarine or jam?
+E1041.2	Boku	You only get margarine or jam with the sliced bread?
 E1041.3	Shirabe	That's right... // And sometimes... once or twice a month, there's fried bread!
 E1041.4	Shirabe	When there's fried bread, I'm sooo happy!
 # NOTE E1041.1: the koppe roll, the plain school-lunch bun, with Shirabe's affectionate -chan.

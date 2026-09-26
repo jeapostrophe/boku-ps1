@@ -30,8 +30,8 @@ E2430.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered
 E2430.7	Boku	So it really is an alien's book.
 E2430.8	Moe	Dummy, this is English. En-glish!
 E2430.9	Boku	Onee-chan, can you understand English?
-E2430.10	Moe	Of course I can't. It's the class of the teacher I hate most.
-E2430.11	Moe	I'll try reading the letter a little.
+E2430.10	Moe	Of course I can't. It's taught by the teacher I hate most.
+E2430.11	Moe	Let me try reading a bit of the letter.
 E2430.12	Boku	Yeah, let me hear it, let me hear it!
 E2430.13	(voice only)
 E2430.14	Moe	...The letter was in English too, I'm afraid.
@@ -60,18 +60,18 @@ E2432.8	Boku	......
 E2432.9	Moe	But...
 E2432.10	(voice only)
 E2432.11	Moe	When I graduate, I'll come back for sure.
-E2432.12	Boku	Absolutely?
+E2432.12	Boku	For sure?
 E2432.13	Moe	Yeah!
 E2432.14	(voice only)
 E2432.15	Moe	Onee-chan's the tofu man tonight.
 E2432.16	Boku	Hey, I picked up something strange, deep in the cave.
 E2432.17	Moe	Huh? What could it be? // Then bring it to Onee-chan's room tomorrow afternoon.
-E2432.18	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...I'm thinking, and my head's all mixed up, spinning round and round...
+E2432.18	Moe	Somehow, after reading that old letter... // maybe my worries are, like, pretty tiny? // ...is what I'm thinking, and my head's all mixed up, spinning round and round...
 E2432.19	Boku	But whose is it?
 E2432.20	Moe	I don't know whose, but, hmm, how to put it... // it must have been left behind by someone with a very warm heart...
 E2432.21	Moe	From tomorrow...
 E2432.22	Boku	What?
-E2432.23	Moe	From tomorrow, I've started thinking, a little, that I'll try my best.
+E2432.23	Moe	From tomorrow, I'll try my best... that's what I thought. A little.
 # NOTE E2432.15: the clarinet squawk (.14) sounds like the horn of the tofu seller who comes round
 #   the streets in the evening.
 

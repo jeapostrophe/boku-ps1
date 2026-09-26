@@ -8,14 +8,14 @@ E1405.4	Boku	Aww, you say first.
 E1405.5	Shirabe	No, you!
 E1405.6	Boku	......Could it be that neither of us can swim?
 E1405.7	Shirabe	......
-E1405.8	Shirabe	Now, the Cape of Winds is almost here. // Full of pep, doing our best, let's go!
+E1405.8	Shirabe	Now, we're almost at the Cape of Winds. // Full of pep, doing our best, let's go!
 # NOTE E1405.1-.2: one utterance across two messages: a silent beat, then Boku's question
 #   (style guide § 9).
 
 # --- E1406: C18 -- the Cape of Winds
-E1406.0	Shirabe	We've arrived, arrived... You're second, and Shirabe's first place!
+E1406.0	Shirabe	Here we are, here we are... You came second, and Shirabe wins first prize!
 E1406.1	Boku	Phew... so it was this far away.
-E1406.2	Shirabe	We used to come here for picnics all together, a long time ago.
+E1406.2	Shirabe	We all used to come here for picnics a lot, a long time ago.
 E1406.3	Boku	Hmm, I see.
 E1406.4	Shirabe	Yaaawn... // The sun's blazing, and it feels so nice I'm getting kind of sleepy...
 E1406.5	Boku	Yaaawn, me too...
@@ -41,8 +41,8 @@ E1402.7	Shirabe	Well then, follow Shirabe properly. // For now, Shirabe will go 
 
 # --- E1420: H06 -- garden off the veranda; H08 -- the yard (the aunt's war story)
 E1420.0	Aunt	Tomorrow's the grave visit already... // Boku's summer vacation is already half over, isn't it?
-E1420.1	Boku	Hey, the war that ended on tomorrow's date, which war was it?
-E1420.2	Aunt	Well, tomorrow's anniversary of the end of the war... // it's the day the Pacific War ended, when Auntie was just about as old as you are now. // Auntie grew up in a port town in Hokkaido called Otaru, // and one morning, when she climbed the hill near our house, // all of a sudden, there were lots and lots of big American warships floating in the harbor. // Auntie got such a fright that she hurried back and hid in the house.
+E1420.1	Boku	Hey, what war ended on tomorrow's date?
+E1420.2	Aunt	Well, tomorrow's anniversary of the end of the war... // it's the day the Pacific War ended, when Auntie was just about as old as you are now. // Auntie grew up in a port town in Hokkaido called Otaru, // and one morning, when she climbed the hill near her house, // all of a sudden, there were lots and lots of big American warships floating in the harbor. // Auntie got such a fright that she hurried back and hid in the house.
 E1420.3	Boku	Were you scared of meeting Americans?
 E1420.4	Aunt	Yes, because if the American soldiers caught us, // they'd sprinkle us with salt and crunch us up, head first, we'd been taught. // But, you know, one of the American soldiers who came ashore // picked up a little stray kitten in the alley in front of our house, // and when I secretly watched him through a crack in the window, going "Meow... meow..." to it, // Auntie thought, "Why, he's a human being, the same as us."
 E1420.5	Aunt	It's already been thirty whole years since that day...
@@ -55,7 +55,7 @@ E1412.1	Uncle	Maybe it's time I got the electric fan out, at least.
 # --- E1403: C04 -- far end of the log bridge
 E1403.0	Shirabe	Ah, here he comes, here he comes.
 E1403.1	Shirabe	Well, well, good work, good work.
-E1403.2	Shirabe	Hey, it feels like being deep in the mountains around here, a bit scary, doesn't it?
+E1403.2	Shirabe	Hey, it feels like we're deep in the mountains around here. A bit scary, isn't it?
 E1403.3	Boku	Huh? Why? Not at aaall. I'm fine.
 E1403.4	Shirabe	Oh, is that so. Honestly, after all my trouble...
 E1403.5	Shirabe	Well, I'll go on ahead again. // Next stop, the sunflower field!
@@ -85,8 +85,8 @@ E1441.0	Shirabe	Summer vacation's already half over. // There are still so many 
 E1441.1	Boku	What do you want to do?
 E1441.2	Shirabe	Things you can only do in summer...
 E1441.3	Shirabe	Like picking the fuzz balls off my thick winter socks...
-E1441.4	Shirabe	Shirabe waited for you properly, so where on earth did you go?
-E1441.5	Boku	But it turned into evening before I knew it.
+E1441.4	Shirabe	Shirabe waited for you faithfully, so where on earth did you go?
+E1441.5	Boku	But before I knew it, it was evening.
 E1441.6	Boku	Hey, did you find any latest-model clouds?
 E1441.7	Shirabe	Nuh-uh.
 E1441.8	Shirabe	Because, you see, Shirabe... was asleep, drooling.
