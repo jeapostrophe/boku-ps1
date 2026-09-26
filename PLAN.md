@@ -110,6 +110,11 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       `shortcut-open` (`boku-bug-sumo.mcd` slots 1–3); `./make.sh sumo-bout --mantis`,
       measured through `E1754` to `E02`; the shortcut's well is `E08`, and its second
       examination plays `E2405.0` — a voiced line with text, found by `./make.sh examine`.
+- [ ] **[ENV-09]** **The emulator verbs find Beetle without an environment variable.** Jay,
+      2026-09-25: `./make.sh duckstation-cards` stops at "run_core: no core: pass --core or set
+      BOKU_LIBRETRO_CORE". Default the core, its system folder and the BIOS the way the lane
+      brief sets them (retro-trainer's `config/`) when present, and say plainly what to install
+      when not. Harmed: Jay and every contributor making saves.
 
 ## Recon — where every piece of Japanese lives
 
@@ -553,10 +558,28 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
 
       Each unit's state is `translation/status.tsv` (format: `translation/README.md` §
       status.tsv); `./make.sh reader` shows it on every section. All units are "reviewed" as of
-      2026-09-24; days 1–2 were read by Jay in play on an earlier build.
+      2026-09-24; days 1–2 were read by Jay in play on an earlier build. Jay began reading
+      (checked) 2026-09-25.
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
-      committed scene by scene. Harmed: the player.
+     
+- [ ] **[TRN-18]** **Jay's own edits restored where the whole-game run overwrote them.** Jay,
+      2026-09-25: `E0175.0` — "I actually already correct this in an earlier comment, but it is back
+      in". Measured: his 2026-09-21 edit (`73d7fb7`, "This is the Sorano house, and I'm your Uncle
+      Yusaku.") was overwritten by `24031db` (`TRN-10`); the post-run restore brought back voice-only
+      subtitles and reviewed lines but not his direct edits. Find every translation edit Jay made
+      himself or dictated, compare with HEAD, restore each lost one (unless a later ruling of his
+      supersedes it), and make the next whole-game pass unable to lose them. Harmed: the player, and
+      Jay, whose corrections silently vanish.
+- [ ] **[TRN-16]** **A second-pass translator on the `additive-word` lines.** Jay, 2026-09-25, reading
+      in the reader: "many many examples of the 'additive-word' heuristic" (166) — a second-pass
+      translator decides, per line, whether the added word fits the voice of the character speaking,
+      keeps or rewrites it, and the heuristic's findings are then settled. Harmed: the player,
+      reading words the Japanese doesn't say in a voice that isn't the speaker's.
+- [ ] **[TRN-17]** **An awkward-English sweep of the whole translation.** Jay, 2026-09-25: an agent
+      reads the whole game for lines that are correct but read awkwardly in English (e.g.
+      `E0175.0`), proposes rewrites, an independent judge checks them against the Japanese, and the
+      accepted ones are applied. Harmed: the player. committed scene by scene. Harmed: the player.
 - [x] **[TRN-14]** **One reader for the whole translation.** DONE 2026-09-24 (`trn14-reader`):
       `./make.sh reader` writes `work/reader/index.html` from `boku/reader.py` — one linear
       walkthrough of days 1–31 in play order, shared, arrays, clips, movie cues, every typeset
@@ -924,10 +947,11 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
 
 ## Release
 
-- [ ] **[REL-01]** **Confirm on the targets.** Beetle PSX (Mode One's core) and DuckStation are
-      the play targets; Jay has **no way to test on real hardware** (2026-09-21), so the
-      accuracy check is XEBRA and the release says plainly that hardware was not tested.
-      Harmed: players on whatever was not tested.
+- [x] **[REL-01]** **Confirm on the targets.** DONE 2026-09-25: Jay confirmed the release's
+      statement as written (`boku/release-notes.md`): developed and played on Beetle PSX (Mode One's
+      core) and DuckStation, with XEBRA as the accuracy check, never tested on real hardware (Jay
+      has none, 2026-09-21). Reopen if a hardware report arrives. Harmed (was): players on whatever
+      was not tested.
 - [x] **[REL-02]** **Mode One integration**, in `~/Dev/retro-trainer`. DONE 2026-09-25 (boku-ps1
       `a14f43d`; retro-trainer `7d6b50c` and the pin commit after it): RULED by Jay — Mode One
       does not apply the patch. `./make.sh export-to-mode-one` (`boku.mode_one`) packs `build/days`
