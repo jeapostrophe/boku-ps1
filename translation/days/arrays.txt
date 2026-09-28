@@ -192,7 +192,7 @@ exe@800461CC.3	(unlabelled)	Bird Kite
 exe@800461CC.4	(unlabelled)	Carp-streamer Kite
 exe@800461CC.5	(unlabelled)	Airplane Kite
 exe@800461CC.6	(unlabelled)	Kite Train
-exe@800461CC.7	(unlabelled)	Portrait Kite
+exe@800461CC.7	(unlabelled)	Boku Kite
 
 # --- exe@80046214: item names
 exe@80046214.0	(unlabelled)	Calisthenics Card

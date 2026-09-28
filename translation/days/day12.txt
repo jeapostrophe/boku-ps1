@@ -62,7 +62,7 @@ E1240.2	Shirabe	Rice at school lunch? We've never had anything like that.
 
 # --- E1241: G06 -- TV room
 E1241.0	Shirabe	When you put powder in your milk, you have to drink just a little first, // or it spills over when you stir it, doesn't it?
-E1241.1	Boku	Yeah, and since they went to Tetra Paks, it's even worse. // When you put the powder in, you have to cut the top off with scissors.
+E1241.1	Boku	Yeah, and since they went to those pyramid cartons, it's even worse. // When you put the powder in, you have to cut the top off with scissors.
 E1241.2	Shirabe	The milk at our school still comes in bottles...
 
 # --- E1204: G06 -- TV room

@@ -72,7 +72,7 @@ E0710.19	Uncle	Oh? Let's see, let's see... So it's the Bird Kite you want, is it
 E0710.20	Uncle	Oh? Let's see, let's see... So it's the Carp-streamer Kite you want, is it? // Right, right... Then please give me about two days.
 E0710.21	Uncle	Oh? Let's see, let's see... So it's the Airplane Kite you want, is it? // Right, right... Then please give me about two days.
 E0710.22	Uncle	Oh? Let's see, let's see... So it's the Kite Train you want, is it? // Right, right... Then please give me about two days.
-E0710.23	Uncle	Oh? Let's see, let's see... So it's the Portrait Kite you want, is it? // Right, right... Then please give me about two days.
+E0710.23	Uncle	Oh? Let's see, let's see... So it's the Boku Kite you want, is it? // Right, right... Then please give me about two days.
 E0710.24	Uncle	It seems you'd like me to make you a kite, but I'm sorry. // Even if I started now, it wouldn't be finished while you're still here.
 E0710.25	Uncle	The kite isn't ready yeeet. // Please wait just a little longer.
 E0710.26	Uncle	Boku-kun, your kite's finished.
@@ -87,7 +87,7 @@ E0710.34	(unlabelled)	Got the Bird Kite.
 E0710.35	(unlabelled)	Got the Carp-streamer Kite.
 E0710.36	(unlabelled)	Got the Airplane Kite.
 E0710.37	(unlabelled)	Got the Kite Train.
-E0710.38	(unlabelled)	Got the Portrait Kite.
+E0710.38	(unlabelled)	Got the Boku Kite.
 # NOTE E0710.2-.3: "me ga mawaru" is to get dizzy, literally "the eyes go round": Boku asks whether
 #   the wheel itself gets dizzy, and the uncle answers that he has never been the one spinning.
 # NOTE E0710.4: children catch dragonflies by circling a finger in front of their eyes to make
@@ -140,7 +140,7 @@ E0752.2	Guts	There's chalk next to the ring, right? // Use it to write how stron
 E0752.3	Guts	But you can only request a King for one match a day. // Because no matter how big and strong a bug is, // if you keep taking shots at it, sooner or later it's bound to lose, right?
 
 # --- E0753: A18 -- the secret base (Guts's tips, from day 23)
-E0753.0	Guts	If our strong-class bugs start losing to yours one after another, Boku-chan, // we'll get serious and go find even stronger ones!
+E0753.0	Guts	If our strong bugs start losing to yours one after another, Boku-chan, // we'll get serious and go find even stronger ones!
 E0753.1	Guts	Before a match, try tapping your bug on the back while it's on the ring. // That makes the bug angry, and it gets stronger. // But if you tap it too much, its stamina drops too far and it backfires.
 # VOICE E0753.2: just -- carries tonikaku (whatever it takes, win), Guts's curt advice
 E0753.2	Guts	In bug sumo... // first off, you lose if your bug falls out of the ring, or runs out of stamina and flips over. // And a bug that loses can't be used for the rest of that day, got it? // Well, everybody puts their losing bugs up for trade right away anyway. // So if a bug you want shows up, just win, and make them put it up for trade.
@@ -204,7 +204,7 @@ E0712.5	Uncle	Mmm, there's quite a nice breeze coming in today.
 # --- E0705: G02 -- after dinner
 E0705.0	Uncle	Gochisosama deshita.
 E0705.1	Shirabe, Moe, Boku, Aunt	Gochisosama deshita.
-E0705.2	Uncle	I heard it today at the B-Co-op in Sagi-no-sato... // it seems there's a child around here who's been going down the old well to play.
+E0705.2	Uncle	I heard it today at the B-Co-op store in Sagi-no-sato... // it seems there's a child around here who's been going down the old well to play.
 E0705.3	Aunt	My, that's dangerous.
 E0705.4	Uncle	No child's been reported missing, so I don't suppose there's been an accident, but...
 E0705.5	Aunt	Boku-kun, don't go copying the local children // and playing anything too dangerous.

@@ -45,11 +45,11 @@ E1306.0	E1306.0@5C		VOICE	255	3	14	89486	91198	108	11.5	2	E1905.0,E2005.2	wordle
 E1306.1	E1306.1@B0		VOICE	255	2	5	60277	61221	60	6.4	2	E1905.1,E6001.14,E6101.14	wordless	the howl (E6001.14: Boku has just asked 'what kind of voice?')
 E1502.7	E1502.7@1C0	15	VOICE	255	2	8	89160	90584	90	9.6	2	E0504.0	wordless	a car -- the father's car coming and going
 E1505.0	E1505.0@14	15	VOICE	255	3	15	44927	46607	106	11.3	4	-	TV/radio broadcast: thirty years on from that day, perhaps the time has come to think about what the peace we enjoy really means	an announcer (day 15, August 15)
-E1605.0	E1605.0@38		VOICE	255	2	12	45996	46444	29	3.1	3	-	wordless	Nora the cat
-E1605.1	E1605.1@54		VOICE	255	3	4	45108	46068	61	6.5	3	E1612.0	wordless	Nora the cat mewing (E1612.1: the uncle hears Nora crying)
-E1605.2	E1605.2@62		VOICE	255	3	1	45265	46225	61	6.5	3	-	wordless	Nora the cat mewing
+E1605.0	E1605.0@38		VOICE	255	2	12	45996	46444	29	3.1	3	-	wordless	Nora the cow
+E1605.1	E1605.1@54		VOICE	255	3	4	45108	46068	61	6.5	3	E1612.0	wordless	Nora the cow lowing (E1612.1: the uncle hears Nora crying)
+E1605.2	E1605.2@62		VOICE	255	3	1	45265	46225	61	6.5	3	-	wordless	Nora the cow lowing
 E1606.2	E1606.2@CA		VOICE	255	2	5	87637	87685	4	0.4	2	E0445.7,E0923.8	wordless	camera shutter (after 'Cheese!')
-E1612.0	E1612.0@26	16	VOICE	255	3	4	45108	46068	61	6.5	1	E1605.1	wordless	Nora the cat mewing (E1612.1: the uncle hears Nora crying)
+E1612.0	E1612.0@26	16	VOICE	255	3	4	45108	46068	61	6.5	1	E1605.1	wordless	Nora the cow lowing (E1612.1: the uncle hears Nora crying)
 E1761.0	E1761.0@86		VOICE	255	3	15	88495	88623	9	1.0	6	E1861.15,E1909.0,E1970.0,E1970.1,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
 E1861.15	E1861.15@280		VOICE	255	3	15	88495	88623	9	1.0	2	E1761.0,E1909.0,E1970.0,E1970.1,E1970.2,E1970.3,E1970.4	wordless	the camera trap's flash going off
 E1861.30	E1861.30@472		VOICE	255	2	2	51282	51442	11	1.2	2	-	'Hey -- good work.'	a voice on Saori's recorder, played back as she demonstrates it

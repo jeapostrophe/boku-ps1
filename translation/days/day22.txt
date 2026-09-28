@@ -70,8 +70,8 @@ E2203.21	Shirabe, Moe, Boku, Aunt	Itadakimaaasu!
 E2205.0	Boku	So it's patchin-work.
 E2205.1	Moe	That's right.
 E2205.2	Shirabe	We're giving it to Dad and Mom for their anniversary today.
-E2205.3	Shirabe	For Mom, a pot holder, and for Dad, a cho-necktie!
-E2205.4	Boku	A cho-necktie? A trillion neckties?
+E2205.3	Shirabe	For Mom, a pot holder, and for Dad, a cho-tie!
+E2205.4	Boku	A cho-tie? A trillion ties?
 E2205.5	Moe	Cho as in butterfly. A bow tie!
 # NOTE E2205.3-.5: cho written three ways: "super", "trillion" and "butterfly" (a bow tie is a
 #   "butterfly necktie"); the three are the same sound, the joke is in the writing (style guide

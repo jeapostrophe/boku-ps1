@@ -45,7 +45,7 @@ E2514.5	Uncle	Ahaha, well, of course. // And after that, around early tomorrow a
 E2514.6	Boku	Uh-huh, uh-huh.
 E2514.7	Uncle	and around evening I seal up this firebox and put the fire out.
 E2514.8	Boku	And then it's done?
-E2514.9	Uncle	Yeah! // But I have to wait for it to cool down on its own before opening the kiln, // so you'll have to wait till the evening of the day after tomorrow to meet what's been fired.
+E2514.9	Uncle	Yeah! // But I have to wait for it to cool down on its own before opening the kiln, // so you'll have to wait till the evening of the day after tomorrow to see what's been fired.
 E2514.10	Boku	Whew... that's a long wait.
 E2514.11	Uncle	I'm getting hungry already.
 

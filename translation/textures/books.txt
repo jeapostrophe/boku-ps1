@@ -31,11 +31,11 @@ mzkan@1.size	Wingspan 70 mm
 mzkan@1.food	Likes the nectar of flowers such as Japanese pittosporum and bushkiller
 mzkan@1.body	It is a common butterfly in places like Southeast Asia, but in Japan, the northern edge of its range, there are few of them, and it has been named a natural monument in many places. The area around the Ise Grand Shrine is especially famous as a place to find it. The caterpillars' food plant is the ogatama tree. This is a tree often planted in the grounds of shrines and such places.
 
-# --- Insect page 2: Peacock. The family, tateha-cho, is the brushfoots (Nymphalidae), their English name; tateha is not one species, and "Admiral family" would name a group English books do not have. Plants: matsumushisou is scabious, azami thistle; the likes line is read as the nectar of both, then filth, then rotting fruit. The wing sound is spelled shasha in quotation marks in the source, a mimetic word, so translated (style guide 7); the sheet has no double quote.
+# --- Insect page 2: Peacock. The family, tateha-cho, is the brushfoots (Nymphalidae), their English name; tateha is not one species, and "Admiral family" would name a group English books do not have. Plants: matsumushisou is a scabious, called pincushion flower in English gardens; azami thistle; the likes line is read as the nectar of both, then the source's word for filth -- on a butterfly's menu, dung -- then rotting fruit. The wing sound is spelled shasha in quotation marks in the source, a mimetic word, so translated (style guide 7); the sheet has no double quote.
 mzkan@2.name	Peacock
 mzkan@2.family	Brushfoot family
 mzkan@2.size	Wingspan 55 to 65 mm
-mzkan@2.food	Likes the nectar of highland scabious and thistles, filth, and rotting fruit
+mzkan@2.food	Likes the nectar of highland pincushion flowers and thistles, dung, and rotting fruit
 mzkan@2.body	A butterfly with an unusual skill: when it takes off, for instance, it rubs its wings together and makes a swish, swish sound. It carries eyespots like a peacock's on its wings, which is how it got its name. It likes mountains and cold places, and is often found where it is fairly easy to see, such as on roads and on top of rocks.
 
 # --- Insect page 3: Great Purple Emperor. Family as page 2. "As its name says" refers to murasaki, purple, which the English name also has. The likes line is the treetops of mixed woods (zokibayashi), where it lives, and the sap of trees such as the sawtooth oak (kunugi, glossary 7).
@@ -80,7 +80,7 @@ mzkan@8.size	Body length 50 to 55 mm, hind wing 31 to 33 mm
 mzkan@8.food	Likes ridgelines and places near mountaintops
 mzkan@8.body	Its body has yellow and black stripes much like the Oniyanma family's, but it stands out for its long hind legs with needle-like spines. It is born in places such as the lower reaches of big rivers and riverbed puddles, but leaves the water's edge right after it emerges, to live on mountain ridges and near summits. In autumn it returns to the lowlands to lay its eggs, and ends its life.
 
-# --- Kite page 0: Square Kite. Levels across the book: shokyu Beginner, chukyu Intermediate, jokyu Advanced, tatsujin Expert, and the portrait kite's "?-kyu" Level ?. The body explains the fuller name, naka-bari kaku-dako (the second crosspiece bowed tight, "stretched in the middle"), so it is translated there as a name, Center-bow Square Kite; the dialogue (E0710.16) says only Square Kite.
+# --- Kite page 0: Square Kite. Levels across the book: shokyu Beginner, chukyu Intermediate, jokyu Advanced, tatsujin Expert, and the Boku Kite's "?-kyu" Level ?. The body explains the fuller name, naka-bari kaku-dako (the second crosspiece bowed tight, "stretched in the middle"), so it is translated there as a name, Center-bow Square Kite; the dialogue (E0710.16) says only Square Kite.
 tzkan@0.name	Square Kite
 tzkan@0.level	Beginner
 tzkan@0.body	The second crosspiece from the top is given an especially strong bow, so it is called the Center-bow Square Kite. It is a kite that rises easily in a light wind. When it climbs unsteadily, put paper tails on its left and right corners.
@@ -115,7 +115,7 @@ tzkan@6.name	Kite Train
 tzkan@6.level	Expert
 tzkan@6.body	A kite made from light, colorful plastic bags. It goes from about 5 kites up to long ones of about 100, and it can stand anything from a light wind to a fairly strong one. Take care not to let the line break or let it get away.
 
-# --- Kite page 7: Portrait Kite. The bracket is a question mark plus kyu, grade: the grade is a mystery, as the kite is Boku's own face. "A certain someone" (dareka-san) is the page's coy way of pointing at him.
-tzkan@7.name	Portrait Kite
+# --- Kite page 7: Boku Kite (niigao-dako, the likeness kite; named for whose face it is -- Jay, 2026-09-27). The bracket is a question mark plus kyu, grade: the grade is a mystery, as the kite is Boku's own face. "A certain someone" (dareka-san) is the page's coy way of pointing at him.
+tzkan@7.name	Boku Kite
 tzkan@7.level	Level ?
 tzkan@7.body	A kite the exact size and likeness of a certain someone. There are no spars below the knees, so when it flies it looks as if it is walking across the sky. Try floating your double up into the sky for a walk through the air.

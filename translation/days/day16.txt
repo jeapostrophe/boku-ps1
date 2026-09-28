@@ -17,7 +17,7 @@ E1612.1	Uncle	Huh, our Nora is mooing at this hour... // I wonder what's the mat
 E1612.2	Boku	Nora, that's the cow's name?
 E1612.3	Uncle	That's right.
 E1612.4	Boku	Why Nora?
-E1612.5	Uncle	She was a stray cow, a "nora", so we call her Nora. // Still, it's strange... did a wolf come by, maybe?
+E1612.5	Uncle	She was a stray, a "nora", so we call her Nora. // Still, it's strange... did a wolf come by, maybe?
 # VOICE E1612.6: just -- translates sono mama (she just became our family's Nora)
 E1612.6	Uncle	One day, Nora was suddenly there, in front of our gate. // And in the end, we never found out who owned her, // so she just became our family's Nora.
 # NOTE E1612.5: nora, "stray"; the uncle explains the name, so the word shows (glossary § 1).

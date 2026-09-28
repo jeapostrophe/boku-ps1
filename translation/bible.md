@@ -148,7 +148,7 @@ Boku finds in the air-raid shelter and she translates with the English she hates
 period slang she does not use.
 
 ### Sorano Shirabe (空野詩) — slot 4, label 詩, 310 lines
-Second daughter, second-grader, 8 [walkthrough]; "written *poem*, read Shirabe" (`E0177.1`).
+Second daughter, second-grader, 8 [walkthrough]; "written *poem*, pronounced Shirabe" (`E0177.1`).
 Smallest in her class — first in line (`E0541.4`) — hence the banned nickname. Few friends
 because she takes other children's lunch (`E0940.4`); studies ants "to learn how to rule"
 (`E0640.2`); will be an idol singer and drive a Benz. Was in kindergarten when her brother

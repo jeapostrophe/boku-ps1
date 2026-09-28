@@ -25,7 +25,7 @@ are `./make.sh mockup`'s.
   `(unlabelled)`; narration carries `Narrator`.
 * **No quotation marks around speech.** The marks the Japanese draws around a line are put back
   by the renderer. Quotation marks around a word named inside a line are fine: `It's written
-  "poem" and read "Shirabe".`
+  "poem" and pronounced "Shirabe".`
 * **`[SEL]` rows are choice menus**: the options separated by ` | `, as many as the Japanese
   has and in its order. When the menu opens with a question, the question is the first field.
 * **`(voice only)` rows** have no text on the disc and are listed so the ids line up. Return

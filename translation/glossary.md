@@ -39,7 +39,7 @@ Button; [web] see `reference/SOURCES.md`; [inference].
 | 萌 | Moe | Moe | — | two syllables, "mo-eh". Introduces herself in hiragana | `E0177.0` |
 | 萌ねえちゃん / おねえちゃん | Moe-nēchan / onē-chan | Moe-neechan / Onee-chan | Moe; Big Sis | Q1. Also what her parents call her | `E0652.7`, `E0402.10` |
 | 萌さん | Moe-san | Moe-san | Miss Moe | Fat only, lovesick | `E0652.10` |
-| 詩 | Shirabe | Shirabe | — | the character normally reads *shi/uta* "poem"; she explains "written 'poem', read Shirabe" every time she introduces herself — translate the explanation literally | `E0140.7`, `E0177.1` |
+| 詩 | Shirabe | Shirabe | — | the character normally reads *shi/uta* "poem"; she explains "written 'poem', pronounced Shirabe" every time she introduces herself — translate the explanation literally, with "pronounced" for the kanji sense of "read" (Jay, 2026-09-27) | `E0140.7`, `E0177.1` |
 | 詩ちゃん | Shirabe-chan | Shirabe-chan | — | her mother, Saori | `E2101.4` |
 | チビ娘 | chibi-musume | Pipsqueak | Shorty; Chibi-musume | her hated school nickname; Moe, then Boku, use it. Must be one word she can ban | `E0402.6`, `E0541.1`, `E3042.3` |
 | お兄ちゃん | onii-chan | Onii-chan (as a name) / big brother (descriptive) | Big Brother | the Soranos' dead son, never otherwise named; and what Boku becomes on day 29 | `E0121.5`, `E1101.2`, `E2805.9`, `E2907.2` |
@@ -67,7 +67,7 @@ Button; [web] see `reference/SOURCES.md`; [inference].
 | 中島先生 | Nakajima-sensei | Nakajima-sensei | Mr./Ms. Nakajima | Boku's teacher; sex unstated | `E1861.27` |
 | 教頭せんせ | kyōtō-sense | the vice-principal | | Moe's English teacher, the 1942 letter's likely author [inference] | `E0830.8`, `E2204.6` |
 | 山下さん | Yamashita-san | Yamashita's | | a shop in Sagi-no-sato | `E1102.3` |
-| 八幅屋 / 王将寿司 / フジヤマ燃料店 / Ｂコープ | | Yahaba-ya† / Osho Sushi / Fujiyama Fuel / the B-Co-op | | shop names; 八幅屋's reading is a guess. 王将 (king) + 飛車セット (rook set) is a shogi joke: "the Rook Set from Osho Sushi" | `E1331.1`, `E4028.17`, `E8019.0`, `E0705.2` |
+| 八幅屋 / 王将寿司 / フジヤマ燃料店 / Ｂコープ | | Yahaba-ya† / Osho Sushi / Fujiyama Fuel / the B-Co-op | | shop names; 八幅屋's reading is a guess. 王将 (king) + 飛車セット (rook set) is a shogi joke: "the Rook Set from Osho Sushi". Ｂコープ plays on A-Coop, the farmers' co-op's village supermarket, so the dialogue says "the B-Co-op store" | `E1331.1`, `E4028.17`, `E8019.0`, `E0705.2` |
 
 ## 2. Places — Q5, ruled 2026-09-20
 
@@ -260,7 +260,7 @@ the pond. Iwana and yamame are what English-speaking tenkara anglers call them.
 | こいのぼり凧 | Carp-streamer Kite | alt. Koinobori Kite |
 | ひこうき凧 | Airplane Kite | |
 | 連凧 | Kite Train | many kites on one line |
-| 似顔絵凧 | Portrait Kite | it is Boku's face |
+| 似顔絵凧 | Boku Kite | literally "likeness kite"; it is Boku's face, so named for him (Jay, 2026-09-27) |
 | 凧上げ / 楽しい凧百科 / 墜落！ | kite-flying / *The Fun Encyclopedia of Kites* / Crashed! | `tako@440` is 4 fixed cells, vertical |
 | 希少昆虫図鑑 | *Field Guide to Rare Insects* | the bookshelf menu `E0022.0` |
 
@@ -309,7 +309,7 @@ Japanese sense — ハンバーグ is a **Hamburg steak**, never a hamburger.
 | かき氷; メロン / イチゴ / レモン / みぞれ / 虹色スペシャル | shaved ice; Melon / Strawberry / Lemon / Mizore (alt. Plain; Q10.7, ruled) / Rainbow Special | `E0404.3`–`.7` |
 | 麦茶 / 自家製 / 味瓜 / トウモロコシ / スイカ | barley tea / homemade / *ajiuri* (a small sweet melon — the line explains it) / corn / watermelon | `E0122.0`, `E0213.3` |
 | おせんべい / サビ抜き / カッパ巻き / ハマチ / マグロ | rice crackers / without wasabi / kappa-maki / hamachi / tuna | `E1503.1`, `E2203.4`–`.13` |
-| 春雨サラダ / ソフト麺 / 揚げパン / コッペ（ちゃん） / 鯨の竜田揚げ / 先割れスプーン / テトラパック / 減量パン | harusame salad (stays Japanese — Jay, 2026-09-21; "school-lunch center" → cafeteria) / soft noodles / fried bread / koppe roll / deep-fried whale / spork / Tetra Pak / "diet bread" | the school-lunch conversations, `E0341`, `E0940`–`E1341` |
+| 春雨サラダ / ソフト麺 / 揚げパン / コッペ（ちゃん） / 鯨の竜田揚げ / 先割れスプーン / テトラパック / 減量パン | harusame salad (stays Japanese — Jay, 2026-09-21; "school-lunch center" → cafeteria) / soft noodles / fried bread / koppe roll / deep-fried whale / spork / pyramid carton (the tetrahedral school-milk pack; "Tetra Pak" read as a brand — Jay, 2026-09-27) / "diet bread" | the school-lunch conversations, `E0341`, `E0940`–`E1341` |
 | 駄菓子屋 / メンコ（パッチ） / かんしゃく玉 / 爆竹 | penny-candy shop (*dagashiya*) / menko cards ("we call them *patchi* here") / snap caps / firecrackers | `E1740.0`, `E1940.1`, `E2452.0`, `E1907.0` |
 
 The after-dinner menu announcements (`E4028.7`–`.17`) are full menus in the aunt's voice; they

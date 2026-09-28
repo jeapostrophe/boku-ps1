@@ -201,7 +201,7 @@ bible § Wordplay). Three kinds, three treatments:
    `E2205.3`–`.5`; *ame* = rain / candy, `E1840.0`–`.1`; *hana* = nose / flower, `E1920.2`–`.4`;
    *mashin* = measles / machine, `E1220.3`–`.6`; *chinpun-kanpun* "sounds like a panda's name",
    `E2532.5`–`.6`). **Translate literally and let the Japanese word show in the line** —
-   "A *chō*-necktie!" / "A trillion neckties?" / "Chō as in butterfly. A bow tie." Jay: *"Yes,
+   "A *chō*-tie!" / "A trillion ties?" / "Chō as in butterfly. A bow tie." Jay: *"Yes,
    (a) is right."* The player can hear the word being repeated, and the charter's reader would
    rather see the joke than be handed a different one. The rejected alternatives: a new
    English pun (localisation), or translating straight and losing the joke (what Google
@@ -231,7 +231,7 @@ bible § Wordplay). Three kinds, three treatments:
   `『 』` in the English, one pair per sentence however many cues it spans (Jay, 2026-09-24,
   FMV-09; `translation/README.md` § movies.txt).
 * **Quotation marks around a word named inside a line are allowed** — SETTLED (Q7, Jay,
-  2026-09-23): *It's written "poem" and read "Shirabe"* (`E0177.1`), a word written on a
+  2026-09-23): *It's written "poem" and pronounced "Shirabe"* (`E0177.1`), a word written on a
   sign, a word someone asks the meaning of. Straight double quotes; the font has them. What
   stays unquoted is the utterance itself, above.
 * **One utterance is sometimes split across two messages** with the closing bracket in the
