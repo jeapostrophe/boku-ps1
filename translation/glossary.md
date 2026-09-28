@@ -132,9 +132,9 @@ on in dialogue. Rejected: all as heard (*Hotaru-zawa*, *Kaze no Misaki*).
 | 居候 | isōrō | freeloader (said of Boku, teasing) / staying at (Boku of himself) | lodger | "freeloader" is Moe teasing him; Boku's own day-1 diary page says "I'm staying at Uncle's house" — "freeloader" is too aggressive for a 9-year-old (Jay, 2026-09-24) | `E0832.2`, `nikki@NIKKI_001` |
 | なぜでしょう？ / なんでしょう？ | | Why is that, I wonder? / What could it be, I wonder? | | **Boku's tic**, quiz-show deadpan; Moe echoes it | `E0832.8`, `E1506.0`, `E1632.13`, `E6000.4` |
 | ヒック！ | hikku | Hic! | | he hiccups when afraid; the narrator calls it "my usual habit" | `E0405.1`, `E6004.18` |
-| バヨヨ〜ン！ | bayoyōn | Bayoyooon! | | Shirabe's exit line | `E0402.12`, `E1404.16` |
+| バヨヨ〜ン！ | bayoyōn | Bye-yoyooon! | | Shirabe's exit line: bye-bye crossed with a springy boing, so the English folds "bye" into the boing (Jay, 2026-09-27) | `E0402.12`, `E1404.16` |
 | ブイブイ言わせるの…ベンツ！ | | "I'll make it go vroom-vroom." "Make what?" "My Benz!" | | Shirabe's ambition, twice | `E0640.6`–`.8`, `E2401.14`–`.16` |
-| あなあなぼぼん | ana-ana-bobon | Ana-ana-bobon | | Boku's meaningless word for the unreadable book; item 6 | `E1706.1`, `exe@80046214.6` |
+| あなあなぼぼん | ana-ana-bobon | Oobly-boobly-bon | | Boku's meaningless word for the unreadable book; item 6. An English nonsense word, since the romanised one read as untranslated (Jay, 2026-09-27) | `E1706.1`, `exe@80046214.6` |
 | ヘンテコお化け | | the weird ghost | the funny-looking ghost | what Boku calls the thing in the woods | `E2161.0`, `E6005.2` |
 | ひび割れガタポンの木 | | the cracked, gata-pon tree | | Boku's description of a *kunugi*; *gata-pon* is his own sound | `E0608.0`, `E8063.0` |
 | ムラサキチューチュー | | purple suck-suck | Murasaki Chū-chū | Shirabe's made-up flower name (you suck the nectar) | `E0444.8`, `E2940.4` |
@@ -267,7 +267,7 @@ the pond. Iwana and yamame are what English-speaking tenkara anglers call them.
 ### 4e. Items (`exe@80046214.*`) and menus
 
 Radio-Calisthenics Card · Souvenir Rice Crackers · Axe · Bundle of Firecrackers · Sugar Water ·
-Mystery Object (later known as 鯨の耳骨 Whale's Ear Bone) · Ana-ana-bobon · Shirabe's Ribbon ·
+Mystery Object (later known as 鯨の耳骨 Whale's Ear Bone) · Oobly-boobly-bon · Shirabe's Ribbon ·
 Sunflower Bouquet · Ken-bo's Fur · Shed Snakeskin · Yellow Flower (キンバイソウ globeflower) ·
 Corn · Photo. Status screen: 捕虫網 net · 虫かご bug cage · 持ち物 / 持ちもの Stuff (menus; Jay, 2026-09-24) · 釣り道具 fishing
 tackle · 昆虫標本 specimens · 逃がしますか？ Let it go? · 飼う / やめる Keep / Never mind ·

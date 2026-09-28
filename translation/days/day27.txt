@@ -53,7 +53,7 @@ E2714.1	Uncle	What sort of design shall I try next, I wonder?
 E2730.0	Boku	Onee-chan, could it be that you love sleeping...
 E2730.1	Moe	Yeah. If I had the time, I'd like to sleep about fifteen hours every day...
 E2730.2	Moe	Oh, what's this?
-E2730.3	Boku	This... ana-ana-bobon.
+E2730.3	Boku	This... oobly-boobly-bon.
 E2730.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
 # VOICE E2730.5: really -- translates yappari (so it is, as he thought, an alien's book)
 E2730.5	Boku	So it really is an alien's book.

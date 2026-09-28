@@ -25,7 +25,7 @@ E2312.3	Uncle	The climbing kiln... it's hot in summer, you know.
 E2330.0	Moe	Ahh, I really don't feel like doing anything... // I wish I could do everything just lying here like thiiis...
 E2330.1	Moe	Ahh... I want someone, anyone, to cheer me up.
 E2330.2	Moe	Oh, what's this?
-E2330.3	Boku	This... ana-ana-bobon.
+E2330.3	Boku	This... oobly-boobly-bon.
 E2330.4	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
 # VOICE E2330.5: really -- translates yappari
 E2330.5	Boku	So it really is an alien's book.

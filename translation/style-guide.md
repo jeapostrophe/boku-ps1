@@ -146,7 +146,7 @@ Full portraits are in the bible. The rules:
   (§ 7).
 * **Verbal tics are glossary entries**, rendered identically every time: Boku's quiz-show
   deadpan *naze deshō? / nan deshō?* (8 uses, and Moe throws it back at him, `E1632.13`–`.14`);
-  the hiccup when he is frightened (*hikku!*, 8); Shirabe's *bayoyōn!*; the house-rule frame.
+  the hiccup when he is frightened (*hikku!*, 8); Shirabe's *bayoyōn!* ("Bye-yoyooon!"); the house-rule frame.
 
 ## 6. The narrator — SETTLED (Q8, 2026-09-20)
 
@@ -167,9 +167,11 @@ monologue and the five epilogues, which have no text on the disc ([voice-only.md
 * **Real mimetic words are translated** into English description or an English sound word:
   *doki-doki* → "my heart was pounding"; *kira-kira* → "glittering"; *pika!* → "Flash!".
 * **Invented sounds stay as sounds**, romanised: Boku's *hohe-hohe* (`E2805.1`), Shirabe's
-  *bayoyōn*, *bironcho*, *nashinko*, Boku's word for the unreadable book, *ana-ana-bobon* —
-  which the narrator says has no meaning (`E1706.4`) and which is also an item name
-  (`exe@80046214.6`). SETTLED BY CHARTER: there is nothing to translate.
+  *bironcho*, *nashinko*. SETTLED BY CHARTER: there is nothing to translate. Two are spelled as
+  English instead (Jay, 2026-09-27), because romanised they read as untranslated: Shirabe's
+  *bayoyōn*, which carries "bye", is "Bye-yoyooon!"; Boku's word for the unreadable book,
+  *ana-ana-bobon* — which the narrator says has no meaning (`E1706.4`) and which is also an
+  item name (`exe@80046214.6`) — is "oobly-boobly-bon".
 * **Insect and animal calls in the insect book** stay as the Japanese hears them
   (*kana-kana-kana*, *min-min-min*, *gii-chon*) — the entry is telling you how to recognise a
   sound the game then plays.
@@ -184,7 +186,8 @@ monologue and the five epilogues, which have no text on the disc ([voice-only.md
   ("Nooo", "Hmmm", "smaaart"), or use a dash for a trailing call ("Boku-kuun!"). The wave dash
   is kept only on **sung** lines (§ 10).
 * **Syllable-by-syllable spelling** (`E1701.7`, `E3042.3`) → the English words said slowly:
-  "Wolf... Girl."
+  the uncle's mysterious "Wolf... Girl."; Boku's emphatic taunt a full stop a word, "You. Pip.
+  Squeak." (Jay, 2026-09-27).
 
 ## 8. Wordplay and words a child gets wrong — SETTLED (Q3, 2026-09-20)
 
@@ -259,11 +262,12 @@ bible § Wordplay). Three kinds, three treatments:
 * **The 1942 letter** (`E2303.7`) is a schoolboy's formal written Japanese, read aloud by Moe
   over thirteen pages. Earnest, slightly stiff, period English; "Spring, Showa 17" (§ 11).
 
-## 11. Numbers, dates, units — SETTLED BY CHARTER except the era year
+## 11. Numbers, dates, units — SETTLED BY CHARTER except the era year and eyesight
 
 * Metric stays: 120 m, 5 cm, 1,200 degrees (Celsius is implied). School years stay Japanese:
-  "third grade". Eyesight stays on the Japanese scale ("4.0 in both eyes", `E2120.0` — the
-  impossible number is the joke).
+  "third grade". Eyesight is converted exactly to the Snellen scale English readers know
+  (decimal 4.0 = 20/5, 2.0 = 20/10; `E2120.0`, `E2440.2` — the impossible number is the joke, and
+  only a reader who knows the scale gets it; Jay, 2026-09-27).
 * Dates: "August 1". The save title and diary date are digits + month + day composed by code
   (`research/text-outside-events.md` § "Text made at run time") — word order there is an
   engineering question, flagged in the bible § Engineering notes.
@@ -327,7 +331,7 @@ by their Japanese names, while butterflies, beetles and dragonflies are English 
 (Q10.9); *mizore* syrup (Q10.7); dishes that English-language Japanese cooking already calls
 by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi, omurice,
 nikujaga, korokke*); *tanuki, tengu, oni, kappa* (as in *kappa-maki*), *jizō*, *yukata, futon,
-kotatsu, tanabata, tenkara*; invented words. Everything else is English — including
+kotatsu, tanabata, tenkara*; invented words (but § 7's two spelled as English). Everything else is English — including
 *satoyama*, rendered by sense (Q10.8; Jay, 2026-09-21: "somewhere this rural" where the father
 says it, glossary § 7). All SETTLED 2026-09-20.
 In-line glosses are allowed only for § 8 kind 3; there are no translator's footnotes on screen.

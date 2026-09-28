@@ -108,6 +108,6 @@ E1404.12	Shirabe	What?
 E1404.13	Boku	But I love sunflowers too!
 E1404.14	Shirabe	Huh, you do... // Hehe, I knew it, I knew it.
 E1404.15	Boku	So what? Got a problem with that?
-E1404.16	Shirabe	None! Well then, next we meet at the beach! // Oh! Partway along, the road splits, // but go straight on to the right, toward the Great Oak, and that's the beach. // Bye, Bayoyooon!
+E1404.16	Shirabe	None! Well then, next we meet at the beach! // Oh! Partway along, the road splits, // but go straight on to the right, toward the Great Oak, and that's the beach. // Bye-yoyooon!
 # NOTE E1404.1: bironcho, Shirabe's coinage for something that stretches on and on; kept as a
 #   sound (style guide § 7).

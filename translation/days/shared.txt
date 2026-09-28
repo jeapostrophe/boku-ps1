@@ -784,12 +784,12 @@ E1763.0	Narrator	A dead chicken was hanging there.
 
 # --- E1706: D06 -- the air-raid shelter (the book)
 E1706.0	Narrator	The book was written in queer characters that I could not read at all.
-E1706.1	Boku	It's kind of weird... ana-ana-bobon...
+E1706.1	Boku	It's kind of weird... oobly-boobly-bon...
 E1706.2	Narrator	As before, the book was written in hopelessly unreadable, outlandish characters.
 # VOICE E1706.3: definitely -- translates yappari (as before, as he thought)
-E1706.3	Boku	Yep, this is definitely ana-ana-bobon...
+E1706.3	Boku	Yep, this is definitely oobly-boobly-bon...
 E1706.4	Narrator	Incidentally, this word has no meaning whatsoever.
-# NOTE E1706.1: ana-ana-bobon, Boku's own nonsense word, kept as a sound; also the item's name
+# NOTE E1706.1: oobly-boobly-bon, an English nonsense word for Boku's (ana-ana-bobon); also the item's name
 #   (glossary § 3).
 
 # --- E1750: A18 -- the secret base (the secret weapon)
@@ -871,7 +871,9 @@ E1960.2	Saori	There are all kinds of books and interesting stuff in the tent, so
 E1960.3	Saori	But don't look inside the backpack. // Those are a lady's belongings.
 E1960.4	Boku	Who's the lady?
 E1960.5	Boku	What kind of stories are in the books in the tent?
-E1960.6	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
+E1960.6	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-life-on-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
+# NOTE E1960.6: kasei is only the planet in Japanese; a bare "Mars" read as the war god in English,
+#   so "life-on-Mars" (Jay, 2026-09-27). E1962.1 is the same line.
 E1960.7	Boku	There was a painting of pretty flowers. Who painted it?
 E1960.8	Saori	I did.
 E1960.9	Saori	Boku-kun! Do you like it here?
@@ -883,7 +885,7 @@ E1961.0	Narrator	Inside the tent there were a great many books and photographs, 
 
 # --- E1962: D07 -- Saori's camp
 E1962.0	Boku	What kind of stories are in the books in the tent?
-E1962.1	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
+E1962.1	Saori	Umm, lofty, difficult, disquieting books of natural science... // love-and-peace-and-life-on-Mars ideology books... // and books about my beloved Wolf-kun, and so on...
 E1962.2	Boku	There was a painting of pretty flowers. Who painted it?
 E1962.3	Saori	I did.
 E1962.4	Saori	Boku-kun! Do you like it here?

@@ -201,7 +201,7 @@ exe@80046214.2	(unlabelled)	Axe
 exe@80046214.3	(unlabelled)	Firecracker Bundle
 exe@80046214.4	(unlabelled)	Sugar Water
 exe@80046214.5	(unlabelled)	Mystery Object
-exe@80046214.6	(unlabelled)	Ana-ana-bobon
+exe@80046214.6	(unlabelled)	Oobly-boobly-bon
 exe@80046214.7	(unlabelled)	Shirabe's Ribbon
 exe@80046214.8	(unlabelled)	Sunflower Bouquet
 exe@80046214.9	(unlabelled)	Ken-bo's Fur

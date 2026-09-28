@@ -104,7 +104,7 @@ E3030.2	Moe	...Oh, so that's why you wore the same clothes every day.
 E3042.0	Shirabe	Even when you're gone, nobody's going to miss you, you know! // Absolutely, absolutely nobody!
 E3042.1	Boku	...Everyone thinks you've disappeared, and they're all out looking.
 E3042.2	Shirabe	Huh! Who's disappeared?
-E3042.3	Boku	You, Pip... squeak...
+E3042.3	Boku	You. Pip. Squeak.
 E3042.4	Shirabe	What's that supposed to mean?
 E3042.5	Boku	Anyway, why don't you go home?
 E3042.6	Shirabe	No! I've got something to do here. // More importantly, did you see my ribbon lying near the house? // I lost it this morning... I tie it on with a rubber band.

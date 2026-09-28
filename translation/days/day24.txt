@@ -24,7 +24,7 @@ E2430.1	Boku	A nock-turtle type?
 E2430.2	Moe	It means active at night. // Like Owl-san, or Bat-kun... // Giant Flying Squirrel-san and Momonga-chan, too.
 E2430.3	Moe	But don't ask me the difference between Giant Flying Squirrel-san and Momonga-chan.
 E2430.4	Moe	Oh, what's this?
-E2430.5	Boku	This... ana-ana-bobon.
+E2430.5	Boku	This... oobly-boobly-bon.
 E2430.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
 # VOICE E2430.7: really -- translates yappari; same recording as E2330.5
 E2430.7	Boku	So it really is an alien's book.
@@ -79,7 +79,7 @@ E2432.23	Moe	From tomorrow, I'll try my best... that's what I thought. A little.
 # VOICE E2440.0: really -- translates the dai- of daisuki
 E2440.0	Boku	Pipsqueak, you really love little ants, don't you?
 E2440.1	Shirabe	Well, if you were born somewhere with so little entertainment, // anyone would make friends with little ants!
-E2440.2	Shirabe	Everyone in our family except Dad has 2.0 eyesight in both eyes.
+E2440.2	Shirabe	Everyone in our family except Dad has 20/10 eyesight in both eyes.
 
 # --- E2441: G06 -- TV room
 E2441.0	Shirabe	What does the Wolf Girl come all the way out to the countryside for, I wonder?

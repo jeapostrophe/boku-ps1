@@ -39,7 +39,7 @@ E0402.9	Aunt	It's Shirabe's nickname at school.
 E0402.10	Aunt	Onee-chan! That's not nice.
 # VOICE E0402.11: just -- carries anmari, Moe's exasperation that Shirabe never listens
 E0402.11	Moe	But Shirabe just won't listen...
-E0402.12	Shirabe	Well then! I'll be waiting on the veranda! // Bayoyooon!
+E0402.12	Shirabe	Well then! I'll be waiting on the veranda! // Bye-yoyooon!
 E0402.13	Aunt	Hm-hm...
 
 # --- E0471: G17 -- the veranda

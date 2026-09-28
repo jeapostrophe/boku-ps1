@@ -68,7 +68,7 @@ E2530.1	Moe	Where on earth could it be hidden? // There's no place in the mounta
 E2530.2	Moe	I was studying until morning...
 E2530.3	Moe	So I'd like to lie down a little longer.
 E2530.4	Moe	Oh, what's this?
-E2530.5	Boku	This... ana-ana-bobon.
+E2530.5	Boku	This... oobly-boobly-bon.
 E2530.6	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
 # VOICE E2530.7: really -- translates yappari (so it is, as he thought, an alien's book)
 E2530.7	Boku	So it really is an alien's book.

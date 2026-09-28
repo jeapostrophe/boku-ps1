@@ -15,12 +15,12 @@ E2101.7	Uncle	Well then, itadakimaasu!
 E2101.8	Shirabe, Moe, Boku, Aunt	Itadakimaasu!
 
 # --- E2120: H11 -- outside the workshop
-E2120.0	Aunt	Auntie's got 4.0, you know.
+E2120.0	Aunt	Auntie's got 20/5, you know.
 E2120.1	Boku	Got what?
 E2120.2	Aunt	Eyesight, in both eyes...
 E2120.3	Aunt	Huh? Could those be migrating birds...
-# NOTE E2120.0: eyesight on the Japanese decimal scale, where 1.0 is normal; 4.0 is impossible,
-#   which is the joke (style guide § 11).
+# NOTE E2120.0: the Japanese says 4.0 on its decimal scale, where 1.0 is normal; 20/5 is the
+#   same acuity on the scale English readers know, and as impossible, which is the joke (style guide § 11).
 
 # --- E2112: G01 -- living room
 E2112.0	Uncle	Kaoru, beer... ah, never mind. I don't want one after all.

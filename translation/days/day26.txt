@@ -55,7 +55,7 @@ E2630.3	Boku	How come?
 E2630.4	Moe	Drool.
 E2630.5	Moe	If my grades aren't bad when the new term starts, // maybe I'll study a bit more at my own pace.
 E2630.6	Moe	Oh, what's this?
-E2630.7	Boku	This... ana-ana-bobon.
+E2630.7	Boku	This... oobly-boobly-bon.
 E2630.8	Moe	What's that? // Huh, there's an English dictionary and... a tattered letter inside.
 # VOICE E2630.9: really -- translates yappari (so it is, as he thought, an alien's book)
 E2630.9	Boku	So it really is an alien's book.
