@@ -982,6 +982,7 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (Jay, 2026-09-25: "if Millennium Kitchen wants we'll remove it") — `release --no-ppf` /
       `publish-release --withdraw-ppf` remove it in one step. Left: create the GitHub repository
       and set `origin`; pick the first version, tag and push it; `./make.sh release`, then
+      `./make.sh release-row release/v<version>`, commit and push README.md, then
       `./make.sh publish-release release/v<version> --yes` (`--draft` first if wanted). `REL-01`'s
       sentence on where it has been played is in `boku/release-notes.md`. Listing on romhack.ing /
       romhacking.net is optional and not worth bending anything for (romhack.ing withholds
@@ -997,11 +998,12 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       the `gh release create --verify-tag` line and runs it only with `--yes`. Measured: stock
       xdelta3 reproduces the build; the build is deterministic across two runs; PPF 76.7 MB,
       xdelta 8.1 MB. Harmed (was): everyone who is not Jay.
-- [ ] **[REL-06]** **"Which version do I have?"** Jay, 2026-09-27: a player holding a patched
-      image cannot tell v1 from v2 from v3. The release notes state the patched image's
-      checksum, and README carries a table — per version, the expected input checksum and the
-      checksum after patching — kept true by the release machinery, not by hand. Harmed: every
-      player of a second release.
+- [x] **[REL-06]** **"Which version do I have?"** DONE 2026-09-27 (`0b06861`): Jay, 2026-09-27 —
+      a player holding a patched image cannot tell v1 from v2. RELEASE-NOTES.md and README.txt name
+      the patched `.bin`'s SHA-1 as the version's identity; README § "Which version do I have?" is
+      the table (input and patched SHA-1 per version), written by `./make.sh release-row` from the
+      posted zip's `PATCH.json`, never by hand; `publish-release --yes` refuses unless the README on
+      GitHub's default branch holds that row. Harmed (was): every player of a second release.
 - [x] **[REL-05]** **Boku's controller in Mode One, with a Run toggle.** DONE 2026-09-25
       (retro-trainer `7d6b50c`): FF7's layout with only D-pad, ○, ✕, △ and Run — plus Start, kept
       because the title screen advances only on Start (measured on Beetle with Mode One's BIOS; ○
