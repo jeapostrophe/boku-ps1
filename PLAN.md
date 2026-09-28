@@ -557,9 +557,9 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       translator → reviewer → applier → `boku lint` → Jay.
 
       Each unit's state is `translation/status.tsv` (format: `translation/README.md` §
-      status.tsv); `./make.sh reader` shows it on every section. All units are "reviewed" as of
-      2026-09-24; days 1–2 were read by Jay in play on an earlier build. Jay began reading
-      (checked) 2026-09-25.
+      status.tsv); `./make.sh reader` shows it on every section. All units are "checked" as of
+      2026-09-27: Jay read the whole translation and his comments are applied (3bfc535; his open
+      questions are `TRN-19`); days 1–2 were read by Jay in play on an earlier build.
 
       Original row: everything `REC-03` and `REC-06` found, through the piloted workflow,
       committed scene by scene. Harmed: the player.
@@ -596,6 +596,15 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       build-days` rewrites the reader after every build; its header names the commit and days
       build it was made from, and says in red when that build lacks what the page shows.
       Harmed (was): the translation's reviewer.
+- [ ] **[TRN-19]** **Jay's 2026-09-27 reading: the questions still open.** Jay read the whole
+      translation (every unit `checked`, `TRN-04`) and sent 22 comments; the clear ones are
+      applied. Open, each his to rule `[MINE: product]`: *ana-ana-bobon* (`E1706.1`, item
+      `exe@80046214.6`) reads as untranslated — keep, or an English nonsense word; the eyesight
+      jokes (`E2120.0` "4.0", `E2440.2` "2.0") — keep the Japanese scale (style guide § 11) or
+      convert exactly to 20/5 and 20/10; slow speech (`E3042.3`, `E1701.7`) — "..." or another
+      mark; *bayoyōn* (`E1404.16`) — keep, or "Bye-yoyooon!"; *Mars* in Saori's
+      "love-and-peace-and-Mars" (`E1960.6`, `E1962.1`) reads as war in English — keep, or make
+      it the planet. Harmed: the player, at each line.
 - [x] **[TRN-08]** **The packet, redone to Jay's spec, and the comparison.** DONE 2026-09-22
       (`~/.claude/session-notes/boku-ps1/2026-09-22-trn08-comparison.md`): `boku packet`
       writes `system.md` once — the day-file format, the whole style guide, the whole
@@ -988,6 +997,11 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       the `gh release create --verify-tag` line and runs it only with `--yes`. Measured: stock
       xdelta3 reproduces the build; the build is deterministic across two runs; PPF 76.7 MB,
       xdelta 8.1 MB. Harmed (was): everyone who is not Jay.
+- [ ] **[REL-06]** **"Which version do I have?"** Jay, 2026-09-27: a player holding a patched
+      image cannot tell v1 from v2 from v3. The release notes state the patched image's
+      checksum, and README carries a table — per version, the expected input checksum and the
+      checksum after patching — kept true by the release machinery, not by hand. Harmed: every
+      player of a second release.
 - [x] **[REL-05]** **Boku's controller in Mode One, with a Run toggle.** DONE 2026-09-25
       (retro-trainer `7d6b50c`): FF7's layout with only D-pad, ○, ✕, △ and Run — plus Start, kept
       because the title screen advances only on Start (measured on Beetle with Mode One's BIOS; ○
