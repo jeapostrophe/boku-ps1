@@ -78,6 +78,11 @@ usage: ./make.sh <verb> [arguments]
                                 describe) -- the xdelta in one zip, the PPF in its own
                                 (--no-ppf: no PPF) -- and apply each patch back
                                 (uv run boku release --help)
+  release-row DIR               write the tagged release DIR's two SHA-1s into README.md's
+                                "Which version do I have?" table, from the zip it posts;
+                                commit and push README.md before publish-release --yes,
+                                which refuses a release the README on GitHub's default
+                                branch does not list
   publish-release DIR [--yes]   print the gh release create line that posts DIR's zips and
                                 notes under its (already pushed) tag; post only with --yes
                                 (--draft, --prerelease, --repo OWNER/REPO; --withdraw-ppf
@@ -350,6 +355,9 @@ case "$verb" in
         ;;
     release)
         cmd_release "$@"
+        ;;
+    release-row)
+        exec uv run boku release-row "$@"
         ;;
     publish-release)
         exec uv run boku publish-release "$@"

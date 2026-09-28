@@ -30,6 +30,15 @@ tag again with `--no-ppf` and run `./make.sh publish-release release/v<version>
 PPF-less ones. The main zip on GitHub is left as posted; its copy of the notes offers the
 PPF only "while the release page lists it", which stays true.
 
+A player tells versions apart by the patched image's SHA-1 (Jay, 2026-09-27), so README §
+"Which version do I have?" (`VERSIONS_HEADING`) lists every posted version's two SHA-1s.
+`release` works from a clean tagged commit and writes only under `release/`; the row is
+committed after the tag, so `./make.sh release-row DIR` writes it, from the `PATCH.json` in
+the main zip -- the file players get. `publish-release` refuses, under `--yes`, a release
+whose row is missing from, or differs in, README.md on GitHub's default branch (pushed, as
+GitHub shows it -- not HEAD's, since a release is cut again from its tag's own checkout,
+which predates its row); `--withdraw-ppf` does not check, since a withdrawal changes no hash.
+
 The version is git's. A commit carrying one `v<version>` tag releases as that version; any
 other commit is a snapshot named by `git describe` (`0.2.0-3-gabcdef12`, or `0-g<sha>`
 before the first version tag), which can be built and tried but not published. The
@@ -117,6 +126,10 @@ REDUMP_URL = "http://redump.org/disc/4890/"
 #: `./make.sh build-days` writes the arguments it passed through to `boku build` here, one
 #: a line; a release is only of a build that was given none.
 BUILD_ARGS_NAME = "BUILD-ARGS.txt"
+README_PATH = Path("README.md")
+#: README's table of every posted version's two SHA-1s (the module docstring).
+VERSIONS_HEADING = "Which version do I have?"
+VERSIONS_HEADER = "| version | your dump's SHA-1, before patching | the patched image's SHA-1 |"
 
 _VERSION = re.compile(r"[0-9A-Za-z][0-9A-Za-z.+-]*")
 _GITHUB = re.compile(r"github\.com[:/](?P<repo>[^/\s]+/[^/\s]+?)(?:\.git)?/?$")
@@ -293,6 +306,8 @@ def render_notes(
         "base_sha1": patch["original"]["sha1"],
         "original_table": _hash_table(patch["original"]),
         "result_table": _hash_table(patch["result"]),
+        "result_sha1": patch["result"]["sha1"],
+        "versions_heading": VERSIONS_HEADING,
         "redump": REDUMP_URL,
         "coverage": _coverage(build_manifest, status),
         "how_made": readme_section(readme, HOW_MADE_HEADING),
@@ -422,7 +437,7 @@ def assemble_release(
         raise ReleaseRefused(str(error)) from error
     template = (repo / NOTES_TEMPLATE).read_text(encoding="utf-8")
     ppf_template = (repo / PPF_NOTES_TEMPLATE).read_text(encoding="utf-8")
-    readme = (repo / "README.md").read_text(encoding="utf-8")
+    readme = (repo / README_PATH).read_text(encoding="utf-8")
 
     out_dir = out_root / f"{TAG_PREFIX}{made.version}"
     try:
@@ -508,7 +523,10 @@ def main_release(
         if path.is_file():
             print(f"  {path.relative_to(out)}  {path.stat().st_size:,} bytes")
     if manifest["tag"]:
-        print(f"post it with: ./make.sh publish-release {out}")
+        print(
+            f"then: ./make.sh release-row {out}, commit README.md and push it, and ./make.sh "
+            f"publish-release {out}"
+        )
     else:
         print("a snapshot: tag the commit v<version> and run ./make.sh release again to publish")
     return 0
@@ -586,7 +604,8 @@ def main_publish(
     """Say what would be posted; post it only with `--yes`.
 
     `withdraw_ppf` instead takes the PPF off the posted release (the module docstring).
-    `remote` is where the tag is looked up (default: the GitHub repository over https).
+    `remote` is where the tag and the default branch's README are looked up (default: the
+    GitHub repository over https).
     """
     try:
         manifest = _publishable(release_dir, git_repo)
@@ -606,7 +625,8 @@ def main_publish(
         if gh is None:
             raise ReleaseRefused("gh is not on PATH (brew install gh, then gh auth login)")
         tag, commit = manifest["tag"], manifest["commit"]
-        pushed = remote_tag_commit(git_repo, remote or f"https://github.com/{github}.git", tag)
+        remote = remote or f"https://github.com/{github}.git"
+        pushed = remote_tag_commit(git_repo, remote, tag)
         if pushed is not None and pushed != commit:
             raise ReleaseRefused(
                 f"tag {tag} on {github} names {pushed[:8]}, and this release was built from "
@@ -615,6 +635,10 @@ def main_publish(
             )
         if pushed is None and yes:
             raise ReleaseRefused(f"tag {tag} is not on {github}: git push origin {tag} first")
+        # A withdrawal changes no hash the table lists, and must never wait on it.
+        unlisted = None if withdraw_ppf else _unlisted(release_dir, manifest, git_repo, remote)
+        if unlisted and yes:
+            raise ReleaseRefused(unlisted)
     except ReleaseRefused as error:
         print(f"boku publish-release: {error}")
         return 1
@@ -632,6 +656,8 @@ def main_publish(
     print(f"  notes: {release_dir / NOTES_PATH}")
     if pushed is None:
         print(f"tag {tag} is not on {github} yet: git push origin {tag} before --yes")
+    if unlisted:
+        print(f"before --yes: {unlisted}")
     for command in commands:
         print(shlex.join(command))
     if not yes:
@@ -664,3 +690,123 @@ def remote_tag_commit(git_repo: Path, remote: str, tag: str) -> str | None:
     pairs = (line.split("\t", 1) for line in listed.splitlines() if "\t" in line)
     refs = {name: sha for sha, name in pairs}
     return refs.get(f"{ref}^{{}}") or refs.get(ref)
+
+
+# ---------------------------------------------------------------------------
+# README's table of versions
+
+
+def version_row(version: str, patch: dict) -> str:
+    """A version's row in README's `VERSIONS_HEADING` table, from its `PATCH.json`."""
+    original, result = patch["original"]["sha1"], patch["result"]["sha1"]
+    return f"| {TAG_PREFIX}{version} | `{original}` | `{result}` |"
+
+
+def _row_version(row: str) -> str:
+    return row.split("|")[1].strip()
+
+
+def _find_row(lines: list[str], version: str) -> tuple[int, int | None]:
+    """In README's `VERSIONS_HEADING` table: the index after its last row, and the index of
+    `version`'s row (`v<version>`), `None` when it is not listed."""
+    heading = f"## {VERSIONS_HEADING}"
+    if heading not in lines:
+        raise ReleaseRefused(f"README.md has no section '{heading}'")
+    for index in range(lines.index(heading) + 1, len(lines)):
+        if lines[index].startswith("## "):
+            break
+        if lines[index] == VERSIONS_HEADER:
+            start = end = index + 2  # past the header's rule
+            while end < len(lines) and lines[end].startswith("|"):
+                end += 1
+            listed = [i for i in range(start, end) if _row_version(lines[i]) == version]
+            if len(listed) > 1:
+                raise ReleaseRefused(
+                    f"README.md's table '{VERSIONS_HEADING}' lists {version} twice"
+                )
+            return end, (listed[0] if listed else None)
+    raise ReleaseRefused(
+        f"README.md's section '{VERSIONS_HEADING}' has no table headed\n  {VERSIONS_HEADER}"
+    )
+
+
+def listed_row(readme: str, version: str) -> str | None:
+    """`version`'s row as README lists it, or `None`."""
+    lines = readme.splitlines()
+    _, at = _find_row(lines, version)
+    return None if at is None else lines[at]
+
+
+def with_version_row(readme: str, row: str) -> str:
+    """`readme` with `row` in the table: in place of its version's row, else after the last."""
+    lines = readme.splitlines()
+    end, at = _find_row(lines, _row_version(row))
+    if at is None:
+        lines.insert(end, row)
+    else:
+        lines[at] = row
+    return "\n".join(lines) + "\n"
+
+
+def release_row(release_dir: Path, manifest: dict) -> str:
+    """The release's row, from the main download's `PATCH.json` as its zip carries it: what
+    is posted, and what `_publishable` checked against `RELEASE.json`, where the loose copy
+    beside it is not."""
+    bundle = release_dir / MAIN.asset(manifest["version"])
+    try:
+        with zipfile.ZipFile(bundle) as archive:
+            (name,) = [name for name in archive.namelist() if Path(name).name == MANIFEST_NAME]
+            return version_row(manifest["version"], json.loads(archive.read(name)))
+    except (OSError, ValueError, KeyError, zipfile.BadZipFile) as error:
+        raise ReleaseRefused(f"no readable {MANIFEST_NAME} in {bundle}: {error!r}") from error
+
+
+def _default_branch_readme(git_repo: Path, remote: str) -> str:
+    """README.md on `remote`'s default branch: what GitHub's front page shows. Not HEAD's --
+    the row is committed after the tag, and a release is cut again from the tag itself."""
+    listed = _git(git_repo, "ls-remote", remote, "HEAD").split("\t", 1)[0]
+    if not listed:
+        raise ReleaseRefused(f"{remote} has no default branch")
+    try:
+        return _git(git_repo, "show", f"{listed}:{README_PATH}")
+    except ReleaseRefused as error:
+        raise ReleaseRefused(
+            f"{remote}'s default branch is {listed[:8]}, which is not here (git fetch)"
+        ) from error
+
+
+def _unlisted(release_dir: Path, manifest: dict, git_repo: Path, remote: str) -> str | None:
+    """Why README.md on `remote`'s default branch does not list this release's row; `None`
+    when it does."""
+    row = release_row(release_dir, manifest)
+    version = _row_version(row)
+    fix = f"./make.sh release-row {release_dir}, commit README.md and push it"
+    try:
+        listed = listed_row(_default_branch_readme(git_repo, remote), version)
+    except ReleaseRefused as error:
+        return f"{error}: {fix}"
+    if listed == row:
+        return None
+    if listed is None:
+        return f"README.md on {remote} has no row for {version}: {fix}"
+    return f"README.md on {remote} lists\n  {listed}\nand this release is\n  {row}\n{fix}"
+
+
+def main_release_row(release_dir: Path, git_repo: Path) -> int:
+    """Write a tagged release's row into README.md's table, from the zip it posts."""
+    path = git_repo / README_PATH
+    try:
+        manifest = _publishable(release_dir, git_repo)
+        row = release_row(release_dir, manifest)
+        readme = path.read_text(encoding="utf-8")
+        updated = with_version_row(readme, row)
+    except (ReleaseRefused, OSError) as error:
+        print(f"boku release-row: {error}")
+        return 1
+    if updated == readme:
+        print(f"README.md already lists\n  {row}")
+        return 0
+    path.write_text(updated, encoding="utf-8")
+    print(f"README.md's table '{VERSIONS_HEADING}' now lists\n  {row}")
+    print(f"commit README.md and push it, then ./make.sh publish-release {release_dir}")
+    return 0

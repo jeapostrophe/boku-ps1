@@ -266,6 +266,15 @@ def test_build_writes_both_patches_and_a_manifest_naming_both_sides(tmp_path, pa
     for side in (original, modified):
         digest = hashlib.sha1(side.read_bytes()).hexdigest()
         assert digest in readme, "a README that omits a side's SHA-1 cannot be checked against"
+    # A player holding a patched image asks which version it is: the result block says so in
+    # words, not only through the file name, which a player renames.
+    should_get = readme.split("WHAT YOU SHOULD GET", 1)[1].split("THE PATCHES THEMSELVES", 1)[0]
+    said = [
+        line
+        for line in should_get.splitlines()
+        if manifest["tool"] in line and not line.strip().startswith("file")
+    ]
+    assert said, "the result block does not name the version its SHA-1 identifies"
 
 
 @needs_xdelta3

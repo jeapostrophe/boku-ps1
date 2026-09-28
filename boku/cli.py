@@ -24,7 +24,13 @@ from boku.patchfile import DEFAULT_OUT_DIR as PATCH_OUT_DIR
 from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
 from boku.reader import DEFAULT_BUILD_DIR
 from boku.reader import add_arguments as add_reader_arguments
-from boku.release import RELEASE_ROOT, main_publish, main_release
+from boku.release import (
+    RELEASE_ROOT,
+    VERSIONS_HEADING,
+    main_publish,
+    main_release,
+    main_release_row,
+)
 from boku.save import add_arguments as add_save_arguments
 from boku.texture_text import TEXTURE_TEXT_DIR
 from boku.texture_text import main_check as main_texture_check
@@ -428,13 +434,28 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    release_row = subcommands.add_parser(
+        "release-row",
+        help="write a tagged release's two SHA-1s into README.md's table of versions",
+        description=(
+            f"Write release/v<version>/'s row -- the SHA-1 of the dump it patches and of the "
+            f"image it makes, read from the zip it posts -- into README.md's table "
+            f"'{VERSIONS_HEADING}', replacing a row for that version that disagrees. Commit "
+            f"and push README.md before publish-release --yes, which refuses a release the "
+            f"README on GitHub's default branch does not list."
+        ),
+    )
+    release_row.add_argument("release_dir", type=Path, metavar="DIR", help="release/v<version>")
+    release_row.set_defaults(run=lambda args: main_release_row(args.release_dir, REPO_ROOT))
+
     publish = subcommands.add_parser(
         "publish-release",
         help="post a release/v<version>/ directory as a GitHub Release with gh",
         description=(
             "PLAN REL-04: print the gh release create line that posts the directory's zips "
             "with its RELEASE-NOTES.md, under its version tag (which must already be pushed); "
-            "run it only with --yes. A snapshot, a moved tag or a changed file is refused."
+            "run it only with --yes. A snapshot, a moved tag, a changed file, or a release "
+            "the README.md on GitHub's default branch does not list (release-row) is refused."
         ),
     )
     publish.add_argument(

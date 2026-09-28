@@ -61,6 +61,9 @@ $original_table
 $ppf_section
 ## What you should get
 
+**A patched image whose SHA-1 is `$result_sha1` is v$version**, whatever the file is called.
+The README on the project's GitHub page lists every version's, under "$versions_heading".
+
 $result_table
 
 `README.txt` in the download says all of this again, including what the patch does and does

@@ -27,6 +27,18 @@ Jay's read of the script, and the release.** The open work is [PLAN.md](PLAN.md)
   play can reach it, most on PCSX-Redux too, and Jay plays the builds on DuckStation. Not yet done: a full
   playthrough, confirmation on the release targets, and the release itself.
 
+## Which version do I have?
+
+Take the SHA-1 of your patched image — the `.bin` the patch wrote, not the `.cue` or a `.chd`
+made from it (`shasum -a 1`, `sha1sum`, or `certutil -hashfile <file> SHA1`) — and find it in
+the right-hand column. The xdelta and the PPF of a version make the same image. The middle
+column is the dump that version patches.
+
+| version | your dump's SHA-1, before patching | the patched image's SHA-1 |
+|---|---|---|
+
+A version is listed here as it is published (§ Delivery says how).
+
 ## Why the PS1 version
 
 A PSP port exists, has a finished Spanish patch, and re-targeting that patch to English would
@@ -179,7 +191,7 @@ that reads the game needs them, and nothing they write is ever committed.
 | drive an emulator | `./make.sh smoke` (boot on both headless emulators), `boot-save`, `examine`, `sumo-bout` (Beetle from a generated save) |
 | test | `./make.sh test`, `./make.sh lint`; `./make.sh emu-test` for the tests that boot an emulator |
 | make a patch | `./make.sh patch --modified build/days/image.img` (PPF + xdelta + both sides' hashes into `build/patch/`); `./make.sh apply-patch DUMP PATCH --out FILE` applies one, checking both hashes. |
-| cut a release | tag `v<version>` and push it, then `./make.sh release` (the xdelta download and the optional PPF one, each a zip, into `release/v<version>/`; `--no-ppf` for none) and `./make.sh publish-release release/v<version> --yes` |
+| cut a release | tag `v<version>` and push it, then `./make.sh release` (the xdelta download and the optional PPF one, each a zip, into `release/v<version>/`; `--no-ppf` for none), `./make.sh release-row release/v<version>` (its row in § "Which version do I have?"; commit and push README.md) and `./make.sh publish-release release/v<version> --yes` |
 | play on Mode One | `./make.sh export-to-mode-one` (packs `build/days` as Mode One's `boku.chd` and pins its SHA-1; then rebuild Mode One) |
 
 ## Layout
@@ -216,8 +228,10 @@ release/    (ignored)  cut releases, one release/v<version>/ each (./make.sh rel
 
 * **Public release:** a patch against the Redump-verified image, via GitHub Releases, with the
   base and result checksums stated. Never an image. Tag the commit `v<version>`, push the
-  tag, then `./make.sh release` (writes `release/v<version>/`) and `./make.sh publish-release
-  release/v<version> --yes`. The PPF is a separate, optional download. The release page
+  tag, then `./make.sh release` (writes `release/v<version>/`), `./make.sh release-row
+  release/v<version>` (adds the version to § "Which version do I have?"; commit and push
+  README.md) and `./make.sh publish-release release/v<version> --yes`. The PPF is a
+  separate, optional download. The release page
   quotes this README's § "How the translation is made" and § "Related work and credit"
   whole; what a release holds and checks, and how to withdraw the PPF, is
   `boku/release.py`'s docstring.

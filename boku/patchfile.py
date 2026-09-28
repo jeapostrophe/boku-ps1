@@ -513,6 +513,8 @@ HOW TO APPLY IT
 
 {"\n".join(how)}
 WHAT YOU SHOULD GET
+  An image with this sha1 is {manifest["tool"]}, whatever the file is called.
+
 {block(result)}
 THE PATCHES THEMSELVES
 {listed}

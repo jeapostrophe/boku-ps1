@@ -29,6 +29,7 @@ from boku.coverage import (
     SOURCE_SHA1_FIELD,
     WRITTEN_FIELD,
 )
+from boku.packets import markdown_sections
 from boku.patchfile import (
     _CONVERT,
     _CONVERT_PPF,
@@ -50,14 +51,18 @@ from boku.release import (
     RELEASE_FORMAT,
     RELEASE_MANIFEST,
     STATUS_PATH,
+    VERSIONS_HEADING,
     ReleaseRefused,
     assemble_release,
     github_repo,
     main_publish,
+    main_release_row,
     publish_command,
     readme_section,
     require_clean_tree,
     revision,
+    version_row,
+    with_version_row,
 )
 from tests.test_patchfile import IMAGE_SIZE, needs_xdelta3
 
@@ -385,6 +390,22 @@ def test_no_ppf_releases_the_main_download_alone_and_never_builds_a_ppf(repo, im
 
 
 @needs_xdelta3
+def test_the_notes_say_which_patched_sha1_is_this_version(repo, images):
+    """Not only in the result's hash table: in a sentence naming the version, pointing at
+    README's table of every version."""
+    base, built = images
+    git(repo, "tag", "v0.2.0")
+    out = assemble(repo, base, make_build(repo, base, built))
+    result_sha1 = contract(out / MAIN.directory)["result"]["sha1"]
+    notes = (out / NOTES_PATH).read_text()
+    # Not the hash table: its File row already holds both, through the file's name.
+    prose = [p for p in notes.split("\n\n") if not p.lstrip().startswith("|")]
+    said = [p for p in prose if result_sha1 in p and "v0.2.0" in p]
+    assert said, "no paragraph ties the patched image's SHA-1 to the version"
+    assert VERSIONS_HEADING in said[0]
+
+
+@needs_xdelta3
 def test_the_notes_offer_the_ppf_when_it_ships(repo, images):
     base, built = images
     git(repo, "tag", "v0.2.0")
@@ -519,19 +540,37 @@ def gh_stub(tmp_path, monkeypatch) -> Path:
 def github_remote(tmp_path) -> Path:
     """A bare repository standing in for GitHub, where `publish-release` looks up the tag."""
     remote = tmp_path / REMOTE_NAME
-    git(tmp_path, "init", "-q", "--bare", str(remote))
+    git(tmp_path, "init", "-q", "--bare", "-b", "master", str(remote))
     return remote
 
 
 @pytest.fixture
-def tagged_release(repo, images, github_remote) -> Path:
-    """A release of tag v0.2.0, the tag pushed (annotated, so the lookup must peel it)."""
+def cut_release(repo, images, github_remote) -> Path:
+    """A release of tag v0.2.0, the tag pushed (annotated, so the lookup must peel it), that
+    README.md does not list yet."""
     if needs_xdelta3.args[0]:  # a mark on a fixture does nothing
         pytest.skip(needs_xdelta3.kwargs["reason"])
     base, built = images
     git(repo, "tag", "-a", "-m", "v0.2.0", "v0.2.0")
     git(repo, "push", "-q", str(github_remote), "v0.2.0")
     return assemble(repo, base, make_build(repo, base, built))
+
+
+def commit_readme(repo: Path, *, push: bool = True) -> None:
+    """Commit README.md on master and, unless `push` is false, push master to the stand-in
+    GitHub, whose default branch it is."""
+    git(repo, "commit", "-q", "-m", "README: a version's row", "README.md")
+    if push:
+        git(repo, "push", "-q", str(repo.parent / REMOTE_NAME), "master")
+
+
+@pytest.fixture
+def tagged_release(cut_release, repo) -> Path:
+    """`cut_release` with its row in README.md, committed after the tag and pushed: ready to
+    post."""
+    assert main_release_row(cut_release, repo) == 0
+    commit_readme(repo)
+    return cut_release
 
 
 def publish(release: Path, repo: Path, **kwargs) -> int:
@@ -737,3 +776,120 @@ def test_a_release_of_the_one_zip_layout_is_refused_as_an_older_format(
     assert publish(tagged_release, repo, yes=True) == 1
     assert f"format-{RELEASE_FORMAT}" in capsys.readouterr().out
     assert not gh_stub.exists()
+
+
+# ---------------------------------------------------------------------------
+# README's table of versions
+
+
+def version_lines(readme: str, version: str) -> list[str]:
+    """The rows of README's `VERSIONS_HEADING` table whose first cell is `version`."""
+    (body,) = [lines for title, lines in markdown_sections(readme, 2) if title == VERSIONS_HEADING]
+    return [line for line in body if line.startswith("|") and line.split("|")[1].strip() == version]
+
+
+def test_the_readme_holds_the_table_release_row_writes():
+    """The real README: release-row must find its table, or the first release cannot post."""
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    patch = {"original": {"sha1": "a" * 40}, "result": {"sha1": "b" * 40}}
+    assert version_lines(with_version_row(readme, version_row("9.9.9", patch)), "v9.9.9")
+
+
+def test_release_row_writes_both_sha1s_from_the_posted_zip(cut_release, repo):
+    patch = contract(cut_release / MAIN.directory)
+    assert main_release_row(cut_release, repo) == 0
+    readme = (repo / "README.md").read_text()
+    (row,) = version_lines(readme, "v0.2.0")
+    cells = [cell.strip(" `") for cell in row.split("|")[1:-1]]
+    assert cells == ["v0.2.0", patch["original"]["sha1"], patch["result"]["sha1"]]
+    assert main_release_row(cut_release, repo) == 0
+    assert (repo / "README.md").read_text() == readme, "a second run is not a no-op"
+
+
+def test_release_row_reads_the_zip_not_the_directory_beside_it(cut_release, repo):
+    """The zip is what is posted and what RELEASE.json's SHA-1 pins; the loose copy is not."""
+    path = cut_release / MAIN.directory / MANIFEST_NAME
+    posted = json.loads(path.read_text())
+    edited = {**posted, "result": {**posted["result"], "sha1": "0" * 40}}
+    path.write_text(json.dumps(edited))
+    assert main_release_row(cut_release, repo) == 0
+    (row,) = version_lines((repo / "README.md").read_text(), "v0.2.0")
+    assert posted["result"]["sha1"] in row and "0" * 40 not in row
+
+
+def test_release_row_replaces_a_row_that_disagrees_in_place(cut_release, repo):
+    assert main_release_row(cut_release, repo) == 0
+    readme_path = repo / "README.md"
+    right = readme_path.read_text()
+    (row,) = version_lines(right, "v0.2.0")
+    older = "| v0.1.0 | `" + "1" * 40 + "` | `" + "2" * 40 + "` |"
+    readme_path.write_text(right.replace(row, f"{older}\n| v0.2.0 | `x` | `y` |"))
+    assert main_release_row(cut_release, repo) == 0
+    assert readme_path.read_text() == right.replace(row, f"{older}\n{row}")
+
+
+@needs_xdelta3
+def test_release_row_refuses_a_snapshot(repo, images, capsys):
+    base, built = images
+    out = assemble(repo, base, make_build(repo, base, built))
+    before = (repo / "README.md").read_text()
+    assert main_release_row(out, repo) == 1
+    assert "snapshot" in capsys.readouterr().out
+    assert (repo / "README.md").read_text() == before
+
+
+def test_a_release_readme_does_not_list_is_not_posted(cut_release, repo, gh_stub, capsys):
+    assert publish(cut_release, repo) == 0
+    assert "release-row" in capsys.readouterr().out, "the dry run does not warn"
+    assert publish(cut_release, repo, yes=True) == 1
+    assert "release-row" in capsys.readouterr().out
+    assert not gh_stub.exists()
+
+
+def test_a_row_written_but_not_committed_does_not_count(cut_release, repo, gh_stub):
+    """GitHub shows the pushed README; the working copy is nobody's but ours."""
+    assert main_release_row(cut_release, repo) == 0
+    assert publish(cut_release, repo, yes=True) == 1
+    assert not gh_stub.exists()
+
+
+def test_a_row_committed_but_not_pushed_does_not_count(cut_release, repo, gh_stub, capsys):
+    assert main_release_row(cut_release, repo) == 0
+    commit_readme(repo, push=False)
+    assert publish(cut_release, repo, yes=True) == 1
+    assert "push" in capsys.readouterr().out
+    assert not gh_stub.exists()
+
+
+def test_a_release_is_posted_from_the_tag_s_own_checkout(tagged_release, repo, gh_stub):
+    """A rebuild is cut from the tag, whose README cannot hold the row committed after it;
+    publishing from there must read the row where GitHub shows it, not at HEAD."""
+    git(repo, "checkout", "-q", "v0.2.0")
+    assert publish(tagged_release, repo, yes=True) == 0
+    assert gh_stub.exists()
+
+
+def test_a_committed_row_that_disagrees_is_not_posted(cut_release, repo, gh_stub, capsys):
+    assert main_release_row(cut_release, repo) == 0
+    readme_path = repo / "README.md"
+    (row,) = version_lines(readme_path.read_text(), "v0.2.0")
+    result_sha1 = contract(cut_release / MAIN.directory)["result"]["sha1"]
+    wrong = row.replace(result_sha1, "0" * 40)
+    readme_path.write_text(readme_path.read_text().replace(row, wrong))
+    commit_readme(repo)
+    assert publish(cut_release, repo, yes=True) == 1
+    assert result_sha1 in capsys.readouterr().out, "the refusal does not say what is right"
+    assert not gh_stub.exists()
+
+
+def test_release_row_through_make_sh_runs_boku_release_row(tmp_path, monkeypatch):
+    log = tmp_path / "uv-called.txt"
+    stub_on_path(tmp_path, monkeypatch, "uv", log)
+    done = subprocess.run(
+        [str(REPO_ROOT / "make.sh"), "release-row", "release/v0.2.0"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    assert log.read_text().splitlines() == ["run", "boku", "release-row", "release/v0.2.0"]
