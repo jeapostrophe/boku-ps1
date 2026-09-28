@@ -545,7 +545,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       per-character pages — plus `--check` (unknown ids, ids translated twice, SELECT shape,
       voiced page counts). Read-only over the translation files; reviewed and the findings
       applied (`~/.claude/session-notes/boku-ps1/2026-09-20-reader-review.md`). Superseded by `TRN-14`; `tools/reader/` removed 2026-09-24.
-- [ ] **[TRN-04]** **The full translation run** — a status table, not a churning row (Jay,
+- [x] **[TRN-04]** **The full translation run** — DONE 2026-09-27 (Jay: done once his
+      reading questions, `TRN-19`, were applied). A status table, not a churning row (Jay,
       2026-09-21: Fable translation is expensive; he spawns "do the next N days" himself when
       the engineering is ready; this row only records where each unit stands). The whole game
       was translated in one session on 2026-09-23 (`TRN-10`); the earlier draft is tag
@@ -596,15 +597,13 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       build-days` rewrites the reader after every build; its header names the commit and days
       build it was made from, and says in red when that build lacks what the page shows.
       Harmed (was): the translation's reviewer.
-- [ ] **[TRN-19]** **Jay's 2026-09-27 reading: the questions still open.** Jay read the whole
-      translation (every unit `checked`, `TRN-04`) and sent 22 comments; the clear ones are
-      applied. Open, each his to rule `[MINE: product]`: *ana-ana-bobon* (`E1706.1`, item
-      `exe@80046214.6`) reads as untranslated — keep, or an English nonsense word; the eyesight
-      jokes (`E2120.0` "4.0", `E2440.2` "2.0") — keep the Japanese scale (style guide § 11) or
-      convert exactly to 20/5 and 20/10; slow speech (`E3042.3`, `E1701.7`) — "..." or another
-      mark; *bayoyōn* (`E1404.16`) — keep, or "Bye-yoyooon!"; *Mars* in Saori's
-      "love-and-peace-and-Mars" (`E1960.6`, `E1962.1`) reads as war in English — keep, or make
-      it the planet. Harmed: the player, at each line.
+- [x] **[TRN-19]** **Jay's 2026-09-27 reading: his rulings on the open questions.** DONE
+      2026-09-27 (bb8275c): *ana-ana-bobon* is "oobly-boobly-bon" (item and all seven lines);
+      eyesight converted exactly, 4.0 → 20/5 (`E2120.0`), 2.0 → 20/10 (`E2440.2`); Boku's slow
+      taunt "You. Pip. Squeak." (`E3042.3`; the uncle's "Wolf... Girl." kept); *bayoyōn* is
+      "Bye-yoyooon!"; Saori's books are "love-and-peace-and-life-on-Mars" (`E1960.6`, `E1962.1`).
+      Style guide §§ 7 and 11 and the glossary say so; his picks from the whole reading are in
+      `translation/locked.tsv`. Harmed (was): the player, at each line.
 - [x] **[TRN-08]** **The packet, redone to Jay's spec, and the comparison.** DONE 2026-09-22
       (`~/.claude/session-notes/boku-ps1/2026-09-22-trn08-comparison.md`): `boku packet`
       writes `system.md` once — the day-file format, the whole style guide, the whole
