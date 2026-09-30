@@ -629,7 +629,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       its own (`boku.row_split`): the help screen's bottom sentence on three rows (`boku.help_screen`, `asm/help_resident.asm`).
       The insect box is written twice into `HHON.OVL` (`boku.insect_box`). Dialogue may draw
       the sheet's symbol cells (`boku.layout.WithSheetSymbols`). Bug sumo's move names and the
-      specimen label are left retail, never drawn (`boku.arrays.UNREACHABLE`; reopen if a retail
+      specimen label are left retail, the arrays never drawn — retail shows the move as a banner
+      texture, `GFX-12` — (`boku.arrays.UNREACHABLE`; reopen if a retail
       path shows them). `boku lint --encoder cellmap`: 0 errors. `build-days`: 2,971 laid out,
       0 refused. Seen on Beetle. Harmed (was): the player, who saw Japanese menus around English dialogue.
 - [x] **[TRN-10]** **The maximal translation run.** DONE 2026-09-23: `./make.sh packet --game`
@@ -775,12 +776,20 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       Copyright / Sony Computer Entertainment Inc." in the game's glyphs; `M28`'s scrolling
       credits are video and stay Japanese. Proven on Beetle on the ending route
       (`tests/test_real_credits_card.py`, `research/texture-recipes.md` § `OTI0n`).
-- [ ] **[GFX-12]** **Bug sumo's match textures are still Japanese.** Jay, 2026-09-30, from a bout on
-      `boku-bug-sumo.mcd` slot 3: the stamina plate between the bars, the chalked ring mark on the
-      desk, and the winning-move banner shown at the result (vertical brush lettering on a grey
-      band) — none in `research/textures-plan.md`, the decisions page or the reader's textures.
-      Find every such texture the bout draws (each winning move's banner, a loss's), plan and
-      translate them, and say why the census missed them. Harmed: the player, in every bout.
+- [x] **[GFX-12]** **Bug sumo's match textures.** DONE 2026-09-30 (`7497cbd`): Jay, from a bout on
+      `boku-bug-sumo.mcd` slot 3. The winning-move banner (a heading and 22 ways a bout ends, set
+      on their sides: 16 words of `MUSI.OVL` and the veil), the stamina plate (widened to 56 px for
+      the game's glyphs, the bars parted 8 px) and the three rank marks are `sumo@` in
+      `translation/textures/sumo.txt` (`boku/texture_sumo.py`, `research/texture-recipes.md` §
+      "Bug sumo's bout"). Missed because they are 4bpp sprites in 8bpp TIMs and marks in atlases
+      with one census note; a sweep of all 278 non-map TIMs at every CLUT and as 4bpp found one
+      more, the kite HUD (`GFX-13`). On Beetle: `tests/test_real_texture_sumo.py`. Jay's look and
+      wording choices, each built as its default: decisions §§ 25–27. Harmed (was): the player,
+      in every bout.
+- [ ] **[GFX-13]** **The kite-flying HUD's three labels are still Japanese** — wind direction, wind
+      speed, altitude (`TBG00`/`TBG01` `0x1c`, 4bpp sprites; found by `GFX-12`'s sweep,
+      `research/textures-plan.md` § "What the census could not see"). Reach kite flying on Beetle,
+      measure the HUD, translate, prove. Harmed: the player flying a kite.
 
 ## Movies
 
