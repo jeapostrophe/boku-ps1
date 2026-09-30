@@ -996,7 +996,8 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (Jay, 2026-09-25: "if Millennium Kitchen wants we'll remove it") — `release --no-ppf` /
       `publish-release --withdraw-ppf` remove it in one step. Left: create the GitHub repository
       and set `origin`; pick the first version, tag and push it; `./make.sh release`, then
-      `./make.sh release-row release/v<version>`, commit and push README.md, then
+      `./make.sh release-row release/v<version>`, delete the README's UNRELEASED note and put
+      the video link at its VIDEO comment, commit and push README.md, then
       `./make.sh publish-release release/v<version> --yes` (`--draft` first if wanted). `REL-01`'s
       sentence on where it has been played is in `boku/release-notes.md`. Listing on romhack.ing /
       romhacking.net is optional and not worth bending anything for (romhack.ing withholds
@@ -1025,13 +1026,14 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (and Up-diagonals) also holds ✕, folded in Rust (`ControlLayout::apply_throttle`), the toggle
       state held in Swift; unit-tested. On-device checks are retro-trainer PLAN § Next session.
       Harmed (was): Jay, playing on Mode One's controller.
-- [ ] **[DOC-02]** **README for the player.** Jay, 2026-09-30: the README is the project's public
-      face (linked from his site and X) and is "extremely technical". Revise it to be
-      user-focused — what it is, screenshots of each kind of translated screen (title menu, a
-      subtitled movie, a conversation, a book page, bug or kite screen), how to get and apply
-      it, which version you have, why Jay made it (his words), a video link (TBA) — and move the
-      technical content into its own document(s), every citation following it. Harmed: a player
-      arriving from the link.
+- [x] **[DOC-02]** **README for the player.** DONE 2026-09-30 (`4ce415c`): Jay — the README is the
+      project's public face and was "extremely technical". Rewritten for a player: what it is, six
+      Beetle screenshots (`./make.sh screenshots` → `docs/screenshots/`; Jay, 2026-09-30: a few are
+      fair use — the exception is in `CLAUDE.md`), a video placeholder, getting it, the versions
+      table, where it is played (now quoted into the release notes), the charter, how it was made,
+      why Jay made it. Contributor content is `TECHNICAL.md`; `tests/test_make_verbs.py` checks
+      section and principle citations against the document named; `tests/test_docs.py` checks
+      links, images and the unreleased note. Harmed (was): a player arriving from the link.
 - [x] **[DOC-01]** **README audited against what was built.** DONE 2026-09-25 (`19f2665`): Status
       describes the state, not 2026-09-20 counts; § "Using it" gives the prerequisites, the import
       step and the verbs by task (build-days, reader, lint-translation, mockup, coverage, textures
