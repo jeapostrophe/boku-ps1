@@ -540,15 +540,21 @@ def lay_out_subtitle(
     ticks: int,
     encoder: Encoder,
     box: BoxSpec = DIALOGUE_BAND,
+    waits: Sequence[int] = (),
 ) -> LaidOut:
     """A voice-only clip's subtitle (`VO-02`): the translator's pages, timed to the clip.
 
     There is no original to follow — the entry had no text — so the page count is the
     translator's and each page's operand is its share of the clip's `ticks`
-    (`boku.voice.subtitle_waits`). Drawn undressed: the clip has no label or marks on the
-    disc to put back (`original_marks` reads them off Japanese text that does not exist).
+    (`boku.voice.subtitle_waits`) -- or, for a row that times its own pages, `waits`
+    (`boku.voice.timed_waits`): one a page, the last written after the last page, so that it
+    gives way to an empty one and `asm/voice.asm` takes the subtitle down before the clip
+    ends. Drawn undressed: the clip has no label or marks on the disc to put back
+    (`original_marks` reads them off Japanese text that does not exist).
     """
-    return _paginate(line_id, pages, subtitle_waits(pages, ticks), encoder, box, [])
+    if not waits:
+        return _paginate(line_id, pages, subtitle_waits(pages, ticks), encoder, box, [])
+    return _paginate(line_id, pages, waits[:-1], encoder, box, [], last_wait=waits[-1])
 
 
 def _paginate(
@@ -562,8 +568,10 @@ def _paginate(
     indent_continuations: bool = False,
     opening: str = "",
     closing: str = "",
+    last_wait: int = 0,
 ) -> LaidOut:
-    """Wrap each page into the box, lint it, and encode it with `waits` after each break."""
+    """Wrap each page into the box, lint it, and encode it with `waits` after each break;
+    `last_wait`, if any, after a break that follows the last page."""
     encoder = WithSheetSymbols(encoder)
     dressed = list(pages)
     if dressed:
@@ -597,6 +605,8 @@ def _paginate(
             if index and indent_continuations:
                 words.append(PAD_WORD)
             words += [_cell(encoder, c) for c in line]
+    if last_wait:
+        words += [PAGE_WORD, last_wait]
     words.append(END_WORD)
     return LaidOut(
         line_id=line_id,

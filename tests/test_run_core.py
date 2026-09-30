@@ -385,3 +385,16 @@ def test_memcard_beside_state_in_is_refused_before_anything_loads(tmp_path, caps
     status = run_core.main([str(tmp_path / "x.cue"), "--memcard", "c.mcd", "--state-in", "s.state"])
     assert status == run_core.EXIT_USAGE
     assert "--state-in" in capsys.readouterr().err
+
+
+def test_the_captured_audio_is_a_wav_an_independent_reader_opens(tmp_path):
+    """`--audio-out`: stereo 16-bit frames as the core hands them over, at its rate."""
+    import wave
+
+    pcm = struct.pack("<8h", 1, -1, 2, -2, 3, -3, 32767, -32768)
+    path = tmp_path / "audio.wav"
+    path.write_bytes(run_core.wav(44100, pcm))
+    with wave.open(str(path)) as audio:
+        assert (audio.getnchannels(), audio.getsampwidth(), audio.getframerate()) == (2, 2, 44100)
+        assert audio.getnframes() == 4
+        assert audio.readframes(4) == pcm

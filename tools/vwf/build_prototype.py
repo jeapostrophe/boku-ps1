@@ -61,7 +61,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from boku import clip_subs, edc  # noqa: E402
+from boku import clip_subs, edc, epilogue  # noqa: E402
 from boku.archive import ARCHIVE_NAME, EXE_NAME, Archive, dir_arrays, parse_pack  # noqa: E402
 from boku.array_relocate import DEAD_REGIONS  # noqa: E402
 from boku.boxes import box_for  # noqa: E402
@@ -1045,7 +1045,11 @@ def clip_words_for(
         {c: (cells[c], font[c].advance) for c in cells}, name="the dialogue font"
     )
     entries, unread = clip_subs.read(clip_file)
-    words, problems = clip_subs.lay_out_clips(entries, xch_nodes(archive), encoder)
+    try:
+        pictures = epilogue.pictures(archive)
+    except epilogue.EpilogueError as error:
+        raise BuildRefused(f"the clip subtitles cannot be timed: {error}") from error
+    words, problems = clip_subs.lay_out_clips(entries, xch_nodes(archive), encoder, pictures)
     listed = unread + [f"{p.origin} {p.line_id}: {p.message}" for p in problems]
     if listed:
         raise BuildRefused(

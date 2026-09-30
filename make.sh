@@ -148,6 +148,11 @@ usage: ./make.sh <verb> [arguments]
   screenshots [arguments]       the README's screenshots, one screen of each kind the patch
                                 translates, from build/days on Beetle -> docs/screenshots/
                                 (tools/libretro/screenshots.py --help)
+  epilogue-review [N...]        the five epilogues on Beetle from build/days: when each
+                                subtitle page was up against the stills and the production
+                                card, beside what clips.txt's times predict, with a shot of
+                                each page -> work/epilogue-review/index.html; exits 1 if a
+                                page was up with the card (tools/libretro/epilogue_review.py)
   test [pytest arguments]       run the test suite
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
                                 `test`): the movie, voice-only and native-clip subtitle
@@ -409,6 +414,9 @@ case "$verb" in
         ;;
     screenshots)
         exec uv run python tools/libretro/screenshots.py "$@"
+        ;;
+    epilogue-review)
+        exec uv run python tools/libretro/epilogue_review.py "$@"
         ;;
     test)
         emulator_env

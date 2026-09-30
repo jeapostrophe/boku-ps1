@@ -174,9 +174,27 @@ XCH.34	Narrator	And so the first day of that summer vacation came to an end.
   pages split by ` // ` wherever you put them; each page stays up for its share of the clip,
   shared by length, and the last until the clip ends. An epilogue is half a minute to fifty
   seconds of narration, so give it as many pages as it needs.
+* **times**, after a third tab, are optional: one number per page, the second of the clip's
+  audio at which that page gives way — to the next page, or the last to nothing.
+
+  ```
+  XCH.45	Narrator	Within some 15 years ... // a huge dam ... // Nothing is left ...	5.3 12.2 24.2
+  ```
+
+  A row with times is not shared by length. **Every epilogue has them**: its clip ends in
+  seconds of silence, so pages shared by length run late, and its picture changes to the
+  production card before the clip ends (`research/event-scripts.md` § The epilogue's clock).
+  Time a page to the pause before its sentence in `work/voice/xch/xch4n-*.wav` (`./make.sh
+  voice-only` decodes them; second 0 is the clip's first sample), and the last page to a
+  little before the card.
 
 `./make.sh lint-translation` checks every row — a clip the table has, every page inside the
-band — and `./make.sh build-days` refuses a file it would fail.
+band, times that fit the pages and rise, and, of a row with several pages or with times, no
+page up for less than 1.5 s or asking more than 17 characters a second; an epilogue's page
+still up when the production card comes is an error — and `./make.sh build-days` refuses a
+file it would fail. The reader draws each epilogue page over the still it meets, with a
+timeline of pages against pictures, from the same layout; `./make.sh epilogue-review` plays
+all five on Beetle and compares.
 
 ## status.tsv
 

@@ -388,6 +388,94 @@ def test_the_english_images_are_the_edits_the_build_writes(real_walkthrough, tex
     assert sorted(real_walkthrough.texture_edits, key=key) == sorted(texture_edits.edits, key=key)
 
 
+# --- the epilogues as the screen shows them (PLAN VO-09) ------------------------------------------
+
+
+def previews(clips: Path, disc_dir, archive) -> tuple[dict[str, reader.Item], reader.Walkthrough]:
+    from boku.lint import DEFAULT_CELLS
+
+    if not DEFAULT_CELLS.is_file():
+        pytest.skip(f"{DEFAULT_CELLS} is not built; run ./make.sh build-days")
+    walkthrough = reader.Walkthrough([])
+    found = reader.epilogue_previews(clips, reader.Sources(disc_dir=disc_dir), walkthrough, archive)
+    assert walkthrough.notices == []
+    return found, walkthrough
+
+
+def test_each_epilogue_shows_every_page_over_its_picture_and_none_with_the_card(disc_dir, archive):
+    from boku import clip_subs, epilogue
+
+    found, walkthrough = previews(reader.CLIP_FILE, disc_dir, archive)
+    entries, _ = clip_subs.read()
+    pages = {e.line_id: len(e.pages) for e in entries}
+    assert sorted(found) == [f"XCH.{clip}" for clip in epilogue.pictures(archive)]
+    for line_id, item in found.items():
+        timeline = item.timeline
+        assert len(timeline.pages) == pages[line_id]
+        assert [name for name, _, _ in timeline.phases][-1] == epilogue.CARD
+        card = timeline.phases[-1][1]
+        assert all(start < end < card and not late for start, end, late in timeline.pages), line_id
+        assert timeline.pages[0][0] == 0 and timeline.total > card
+        assert len(item.images) == pages[line_id] + 1, "a picture a page, and the card"
+        assert all(name in walkthrough.files for _, name in item.images)
+        assert all(epilogue.CARD not in caption for caption, _ in item.images[:-1]), line_id
+
+
+def test_an_epilogue_page_up_with_the_card_is_shown_so(tmp_path, disc_dir, archive):
+    """The committed rows without their times -- PLAN VO-09 as Jay met it: the reader marks
+    each epilogue's last page late and says which picture it is over."""
+    from boku import epilogue
+    from tests.test_clip_subs import without_times
+
+    found, _ = previews(without_times(tmp_path), disc_dir, archive)
+    assert len(found) == epilogue.ENDINGS
+    for line_id, item in found.items():
+        assert item.timeline.pages[-1][2], f"{line_id}'s last page is not marked late"
+        caption, _ = item.images[-2]
+        assert caption.startswith(f"page {len(item.timeline.pages)}:") and epilogue.CARD in caption
+
+
+def test_the_page_carries_an_items_timeline_and_shows_a_whole_screen_at_its_own_size(tmp_path):
+    from boku.clip_preview import HEIGHT, WIDTH, png
+
+    walkthrough = reader.Walkthrough(
+        [
+            reader.Section(
+                "clips",
+                "Clips",
+                "Voices",
+                (
+                    reader.Block(
+                        "clips",
+                        "",
+                        (
+                            reader.Item(
+                                id="XCH.41",
+                                kind=reader.CLIP,
+                                images=(("page 1", "img/XCH.41.page01.en.png"),),
+                                timeline=reader.Timeline(
+                                    28.4, (("the first still", 0.0, 10.3),), ((0.0, 5.4, False),)
+                                ),
+                                whole_screens=True,
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        ],
+        files={"img/XCH.41.page01.en.png": png(bytes(WIDTH * HEIGHT * 3))},
+    )
+    (item,) = page_data(reader.write_site(walkthrough, tmp_path))["sections"][0]["blocks"][0][
+        "items"
+    ]
+    assert item["timeline"] == {
+        "total": 28.4,
+        "phases": [["the first still", 0.0, 10.3]],
+        "pages": [[0.0, 5.4, False]],
+    }
+    assert item["images"] == [["page 1", "img/XCH.41.page01.en.png", WIDTH, HEIGHT]]
+
+
 # --- never stale (Jay, 2026-09-25) ----------------------------------------------------------------
 
 

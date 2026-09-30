@@ -20,7 +20,9 @@ the same boot (`research/tooling-setup.md`).
 Memory card 1 is the core's SAVE_RAM: `--memcard CARD` copies a raw 128 KB card in before the
 first frame and `--memcard-out` writes it back out after the last; the card file itself is
 never written. `--ram-out` dumps main RAM, `--peek` samples a few words of it into `peek.tsv`
-frame by frame, and `--poke` writes it (`research/save-format.md`).
+frame by frame, and `--poke` writes it (`research/save-format.md`). `--audio-out` writes what
+the core played from a frame on as a WAV, for finding when a clip is heard against what the
+game counts (`research/event-scripts.md` § The epilogue's clock).
 
 Exit codes: 0 ran to the end, 2 usage (including a --memcard the core's card does not fit),
 3 core did not load, 4 the core could not read the disc, 5 a save state, RAM dump or card
@@ -311,6 +313,17 @@ def png(width: int, height: int, rows: list[bytes]) -> bytes:
     )
 
 
+AUDIO_FRAME_BYTES = 4
+"""One libretro audio frame: a left and a right s16."""
+
+
+def wav(rate: int, pcm: bytes) -> bytes:
+    """A stereo 16-bit WAV file of `pcm`, libretro's interleaved audio frames."""
+    fmt = struct.pack("<HHIIHH", 1, 2, rate, rate * AUDIO_FRAME_BYTES, AUDIO_FRAME_BYTES, 16)
+    body = b"WAVEfmt " + struct.pack("<I", len(fmt)) + fmt + b"data" + struct.pack("<I", len(pcm))
+    return b"RIFF" + struct.pack("<I", len(body) + len(pcm)) + body + pcm
+
+
 def to_rgb_rows(pixels: bytes, fmt: int, width: int, height: int, pitch: int) -> list[bytes]:
     """One `bytes` of RGB triples per row, from the core's framebuffer in its chosen format."""
     rows = []
@@ -375,6 +388,8 @@ class Frontend:
         self.frames_drawn = 0
         self.frames_duped = 0
         self.polls = 0
+        self.audio: bytearray | None = None
+        """Interleaved stereo s16 the core has played since this was set to a buffer."""
 
         # Buffers the core is handed pointers into; they must outlive every call.
         self._keepalive: dict[str, object] = {
@@ -555,9 +570,12 @@ class Frontend:
         self.frames_drawn += 1
 
     def _audio_sample(self, left: int, right: int) -> None:
-        pass
+        if self.audio is not None:
+            self.audio += struct.pack("<hh", left, right)
 
     def _audio_batch(self, data, frames: int) -> int:
+        if self.audio is not None:
+            self.audio += ctypes.string_at(data, frames * AUDIO_FRAME_BYTES)
         return frames
 
     def _input_poll(self) -> None:
@@ -843,6 +861,13 @@ def build_parser() -> argparse.ArgumentParser:
         "(default the last frame), one line per frame -- the frame, then one hex column per "
         "--peek; repeatable",
     )
+    p.add_argument(
+        "--audio-out",
+        metavar="FRAME[:NAME]",
+        help="write what the core plays from FRAME to the last frame to work-dir/NAME.wav "
+        "(stereo s16 at the core's rate). Beetle plays 59.826 frames to a second of it, not "
+        "the 59.94 it reports (boku.voice.VSYNC_HZ)",
+    )
     p.add_argument("--peek-every", type=int, default=1, metavar="N")
     p.add_argument("--peek-from", type=int, default=1)
     p.add_argument("--peek-to", type=int)
@@ -931,6 +956,9 @@ def main(argv: list[str]) -> int:
         shots = shot_frames(args)
         states = dict(parse_at(spec, "--state-out") for spec in args.state_out)
         rams = dict(parse_at(spec, "--ram-out") for spec in args.ram_out)
+        audio_from, audio_name = (
+            parse_at(args.audio_out, "--audio-out") if args.audio_out else (0, "")
+        )
         peeks = [parse_peek(spec) for spec in args.peek]
         peek_to = args.frames if args.peek_to is None else args.peek_to
         if args.peek_every < 1:
@@ -1050,6 +1078,8 @@ def main(argv: list[str]) -> int:
     frame = 0
     for frame in range(1, args.frames + 1):
         fe.buttons = presses.get(frame, frozenset())
+        if frame == audio_from:
+            fe.audio = bytearray()
         for addr, value in pokes.get(frame, ()):
             at = ram_offset(addr, len(value))
             ram[at : at + len(value)] = value
@@ -1107,7 +1137,15 @@ def main(argv: list[str]) -> int:
     # A frame that was asked for and never happened is a failure, not a note: the core can ask
     # to shut down early, and a gate whose --assert-drawn frame never arrived would otherwise
     # report success for a run that never tested anything.
+    if fe.audio is not None:
+        out = work / f"{audio_name}.wav"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(wav(round(av.timing.sample_rate), bytes(fe.audio)))
+        say(f"audio: frames {audio_from}..{frame} -> {out}")
+
     wanted = set(shots) | set(states) | set(asserts) | set(rams) | set(pokes)
+    if audio_from:
+        wanted.add(audio_from)
     if peeks:
         wanted.add(peek_to)
     missed = sorted(f for f in wanted if f > frame)

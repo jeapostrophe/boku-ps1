@@ -128,7 +128,8 @@ class GameFace(Face):
         cells.pop(" ", None)  # a space is an advance, not a cell
         return cls(sheet, cells)
 
-    def _bits(self, glyph_id: int) -> list[list[int]]:
+    def cell_bits(self, glyph_id: int) -> list[list[int]]:
+        """Cell `glyph_id` of the sheet: `CELL` rows of `CELL` bits."""
         col, plane, row = glyph_id % 21, (glyph_id // 21) % 4, glyph_id // 84
         x0, y0 = col * CELL, row * CELL
         idx, w = self._indices, self._width
@@ -181,7 +182,7 @@ class GameFace(Face):
         glyph_id = self.cells.get(ch)
         if glyph_id is None:
             return None
-        bits = self._bits(glyph_id)
+        bits = self.cell_bits(glyph_id)
         inked = [c for r in range(CELL) for c in range(CELL) if bits[r][c]]
         if not inked:
             return None

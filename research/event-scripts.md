@@ -300,13 +300,10 @@ so the hooks above never see one. The two `VO-03` owns, measured:
   `0x0F` (the save screen).
 * **The epilogues — `XCH.41 + n`.** After `MOVIE 24`, `ending_prepare` puts the ending in
   `0x80035F42` ([save-format.md](save-format.md) § Which ending plays) and mode `0x10` loads
-  `ENDOTI`, whose start (`0x80079AF8`) loads `OTI0n`, waits for the drive to go idle and plays
-  `41 + n` (`0x80079BE4`). Its update runs at **60 Hz** (its counter advanced 349 in 349
-  vsyncs), steps five states on the per-ending thresholds at `0x8007A0C4` (e.g. ending 0:
-  600, 690, 1290, 1590 frames), draws the still in two parts and then the credits strip
-  (`OTI0n` child 2, the 276×33 production and copyright line — set in English,
-  [texture-recipes.md](texture-recipes.md) § `OTI0n`), and hands over to mode `0x0F` at the
-  last threshold + 120, often while the clip is still playing. The font sheet and its CLUT in VRAM are unchanged throughout (hashed in
+  `ENDOTI`, whose start (`0x80079AF8`) loads `OTI0n`, sends the drive to the clip, waits for
+  it and plays `41 + n` (`0x80079BE4`). Its update shows two stills and then the production
+  card on a counter of its own (§ The epilogue's clock, below) and hands over to mode `0x0F`
+  as the clip ends. The font sheet and its CLUT in VRAM are unchanged throughout (hashed in
   three states), so the dialogue renderer can draw there.
 
 How `asm/voice.asm` subtitles them (its header is the design): the English is a clip section
@@ -316,8 +313,9 @@ of the movie-subtitle block (`boku.movie_block`), which `movie_sub_load` reads t
 * **The block survives movie mode but not `ENDOTI`.** Its first word stayed the magic from
   the sleep movie to `XCH.34`; `ENDOTI` wrote `6B6B6B6B` over it 21 frames after it started,
   then zeros, and nothing after. So in mode `0x10`, and only there, `clip_sub_play` reads the
-  block again before `xa_play` (a read after it would break the stream); the voice and the
-  subtitle then start together 16 vsyncs later than stock. A build whose `clips.txt` has no
+  block again before `xa_play` (a read after it would break the stream) and sends the drive
+  back to the clip (§ The epilogue's clock); the epilogue then starts 102 vsyncs later than
+  stock, over black (Beetle). A build whose `clips.txt` has no
   English assembles without the read (`MOVIE_SUB_CLIPS` = 0) and keeps stock timing. Every
   byte of the block, not only its first word, then stays unchanged while the subtitle is up
   in both modes (compared each frame by the gate below).
@@ -325,7 +323,9 @@ of the movie-subtitle block (`boku.movie_block`), which `movie_sub_load` reads t
   band into OT slot 0, in front of `ENDOTI`'s stills (slot 2) and of whatever else a mode
   draws in slot 1 (bug sumo's HUD text: [sumo.md](sumo.md) § Subtitles), and counts its page
   timers at 30 Hz. When the game mode changes — `ENDOTI` handing over to the save prompt, which reuses
-  the block's memory — the subtitle comes down.
+  the block's memory — the subtitle comes down; so it does when its page is an empty one,
+  which is how a last page with a time of its own goes before the clip ends (§ The
+  epilogue's clock).
 * **The bedtime loop draws nothing**, so while a subtitle is up `clip_sub_wait` builds and
   flips its own frame in place of the loop's `VSync(0)`, and its closing `xa_stop` flips one
   empty frame, or the last page stays on the screen while the save screen loads (a second).
@@ -366,6 +366,79 @@ therefore reads the block to level C's base as it starts, and draws the subtitle
 HUD: [sumo.md](sumo.md) § Subtitles is the measurement and the design. The runner's bit is
 set all through a bout too (`E4025` is suspended, not ticked), which `VO-07`'s
 `clip_sub_owned` already leaves to the native clip.
+
+## The epilogue's clock (`VO-09`)
+
+`ENDOTI`'s update (`0x80079DAC`) runs once a vsync and adds one to a counter (`0x8007A124`).
+Its state (`0x8007A120`) steps when the counter reaches the ending's next threshold: four
+`u32` per ending at `0x8007A0C4`, indexed `0x80035F42 << 4` (`boku.epilogue` reads them; the
+values below are what the disc holds, in vsyncs):
+
+| state | what is on the screen | until |
+|---|---|---|
+| 0 | the first still (`OTI0n` child 0), faded in over 16 vsyncs | threshold 0: a 16-vsync fade out, then the second still is uploaded |
+| 1 | black | threshold 1: a 16-vsync fade in |
+| 2 | the second still (child 1) | threshold 2: **at once**, no fade |
+| 4 | the production card on black (child 2, two sprites at (23, 94): `0x80079C64`) | threshold 3: fade out; 120 vsyncs later the mode changes |
+
+State 3's handler exists and nothing enters it. With the title as the mode before
+(`0x800237E5` = 2: **Summer Memories**) START ends the epilogue early and it returns to the
+title instead of the save prompt; the timing is otherwise the same.
+
+| ending | clip | clip (s) | thresholds | the card (s) | last word ends (s) |
+|---|---|---:|---|---:|---:|
+| `OTI00` | `XCH.41` | 28.4 | 600, 690, 1290, 1590 | 21.5 | 20.6 |
+| `OTI01` | `XCH.42` | 33.5 | 792, 882, 1596, 1896 | 26.6 | 26.6 |
+| `OTI02` | `XCH.43` | 48.7 | 960, 1050, 2508, 2802 | 41.8 | 40.6 |
+| `OTI03` | `XCH.44` | 45.7 | 372, 462, 2334, 2634 | 38.9 | 37.7 |
+| `OTI04` | `XCH.45` | 30.8 | 552, 642, 1464, 1758 | 24.4 | 22.0 |
+
+"The card" is threshold 2 as a second of the clip's audio; "last word ends" is the Silero
+voice-activity gate over the decoded clip (`work/voice/xch/`). The narration ends before the
+card in every ending — on it in `OTI01` — and **seven to nine seconds before the clip
+does**: the tail is silence, and in `OTI01` a chime over the card.
+
+**The voice against the counter.** The start pre-seeks the clip (`0x8002B150`) and waits for
+the drive (`0x8002B2CC` in a `VSync` loop) before `xa_play_indexed`, so the first sample is
+heard **5 vsyncs** after the first update (stock, Beetle: `run_core.py --audio-out`, the
+capture cross-correlated with the decoded clip). The subtitle block is re-read between that
+wait and `xa_play` (§ Native clips), which leaves the head at the block: a seek back that
+runs while the counter counts costs 42 vsyncs, every picture then changing 0.7 s early
+against the voice, `OTI01`'s last words over the card. So `clip_sub_block` repeats the
+start's seek and wait after the read (`0x8002B200`, the `XSEEK` routine, which takes the
+key; `0x8002B294`), and the patched lead is the stock 5. Both constants are
+`boku.epilogue`'s: the subtitle opens with the counter at 1 (`OPENS_AT`), the voice `LEAD`
+vsyncs later.
+
+**Why an epilogue's pages carry times.** Pages without times share the clip by their length
+in characters over the clip's whole length (`boku.voice.subtitle_waits`), the last staying
+until the clip stops. That suits a clip that is speech from end to end (the event clips,
+bug sumo). Over an epilogue's silent tail every page runs later than its sentence, the more
+the further in, and the last is up with the card: shared that way, `OTI02`'s last page came
+up 46.8 s after the subtitle opened and `OTI03`'s at 43.8 s, the card at 41.9 s and 39.0 s
+(Beetle; Jay saw it, 2026-09-30). An epilogue's row therefore gives each page its own time
+(`translation/README.md` § clips.txt), taken from the voice-activity gate's segments.
+
+**A last page with a time.** A timed row's words end `page, wait, END`: the last page's
+timer turns to an empty page, and `voice_sub_service` takes a subtitle whose page begins
+with `END` down (measured first: the stock renderer leaves the band up, empty, until the
+clip stops). The band is drawn without text for the one frame between (Beetle).
+
+**What is checked.** `boku.clip_subs.lay_out_lines` is the one layout — the build's words,
+the lint's findings, the reader's pictures — and it refuses an epilogue page that is up when
+the card comes, and any page of several that breaks the movie cues' rules of time and
+reading rate (`translation/README.md` § clips.txt). `./make.sh epilogue-review` measures all five on Beetle
+against it; `tests/test_real_clip_subtitle_beetle.py` holds a fixture row timed 0.2 s before
+the card to the vsync the layout predicts, with the second still up and the band down.
+
+**The stills** are map-pack backgrounds, and `boku.clip_preview` composes them for the
+reader: child 6 of a still is an 8-bit TIM atlas with one CLUT per layer; child 2 is
+`u16 count`, pad, then per piece `{u16 u, v, w, h, brightness (128), clut × 64}` with `u` and
+`w` in VRAM words (two pixels); child 0 holds the same count at `+24` and from `+28` per
+piece `{s16 x, y, depth (8000), 0}`, where it goes on the screen. A clear texel (colour word
+0) draws nothing. Drawn that way, with the band (`+168` a channel, to white) and the text
+(ink over a shadow one pixel right and one down), a page is the frame Beetle draws, pixel
+for pixel (the same gate).
 
 ## Speakers
 

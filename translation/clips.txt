@@ -1,26 +1,29 @@
 # The clips the game plays from its own code rather than from an event: the table
 # BOKU_XA.XCH, clips XCH.00-XCH.47 (research/data/voice-only.tsv lists what each says).
-# Format: translation/README.md § clips.txt -- a day file's row keyed by the clip.
+# Format: translation/README.md § clips.txt -- a day file's row keyed by the clip, and
+# optionally, after a third tab, the times of its pages.
 # English after the second tab is drawn in the dialogue band while the clip plays; a row
 # without English is listed so the ids line up and draws nothing. Licence: CC BY-SA 4.0.
 
 # --- XCH.34: going to sleep on the first night (movie mode, over black, day 1 only).
 XCH.34	Narrator	And so the first day of that summer vacation came to an end.
 
-# --- XCH.41-XCH.45: the five epilogues (ENDOTI, over the ending's still; 28-49 s each).
-#     Which plays is the star count (research/save-format.md § Which ending plays).
-XCH.41	Narrator	In the end, both sisters later moved to the city, // made picture-perfect marriages and built happy homes. // Now Moe's eldest daughter is in her third year of middle school... // yes, she is already the same age her mother was back then.
+# --- XCH.41-XCH.45: the five epilogues (ENDOTI, over the ending's stills; 28-49 s each).
+#     Which plays is the star count (research/save-format.md § Which ending plays). Each row
+#     ends with its pages' times: the second of the clip at which each page gives way, the
+#     last before the stills give way to the production card (PLAN VO-09).
+XCH.41	Narrator	In the end, both sisters later moved to the city, // made picture-perfect marriages and built happy homes. // Now Moe's eldest daughter is in her third year of middle school... // yes, she is already the same age her mother was back then.	5.3 12.4 17.0 21.3
 # NOTE XCH.41: 'kanojo' (her) 'at that time' is Moe, who was in her third year of middle school
 #   that summer; rendered 'her mother' so the English 'she' is not read as the daughter.
-XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, just short of 30, // I set foot on the same path as my uncle, the path of pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.
+XCH.42	Narrator	After I left university and worked for some seven years at an art publisher, // by some twist of fate, just short of 30, // I set foot on the same path as my uncle, the path of pottery. // These days I am trusted with all of the clay-kneading too, // yet for some reason I still get dizzy at the wheel now and then.	7.0 10.1 16.2 20.7 26.4
 # NOTE XCH.42: '30 o mae ni shite' is his age, nearing thirty (university, then seven years at
 #   the publisher). '... no michi e ashi o fumiirete ita' is the idiom for taking up a craft;
 #   it says the same path as his uncle, not whose apprentice he is ('makasete moraeru', trusted
 #   with, puts him under someone). ASR heard 'tōge' and 'hotte' / 'notte' / 'futte ita'; read as 'tōgei' and
 #   'fumiirete ita', the potter ending.
-XCH.43	Narrator	A full twenty-five years have already slipped away since that summer. // Today I work at a certain major electronics manufacturer, // mostly writing control programs for communications equipment and drawing up designs. // White partitions and gray carpet; // the cold glow of fluorescent lights that never sleep, 24 hours a day. // In a dull, dry office, under a tight schedule, // I sometimes picture them: // how, bathed in strong sunlight, feeling the sweat run down my neck, // I ran all over the hills and fields... // those days of that summer.
-XCH.44	Narrator	That was everything I remembered of that summer. // Afterwards I became a successful novelist, // and now I live in a hotel in New York with a view of the Brooklyn Bridge, // searching for the words of the epilogue that will adorn the end of this story of my childhood. // Come to think of it, for the countdown to 2001, // it seems Shirabe and Moe will be coming over from Japan too, for the first time in a long while. // Goodbye, 20th century.
-XCH.45	Narrator	Within some 15 years of that summer vacation, // a huge multipurpose dam was completed in the Tsukiyono valley. // Around where my uncle's house once stood, // the water is 200 meters deep in the rainy season. // Nothing is left anymore to remember those days by.
+XCH.43	Narrator	A full twenty-five years have already slipped away since that summer. // Today I work at a certain major electronics manufacturer, // mostly writing control programs for communications equipment and drawing up designs. // White partitions and gray carpet; // the cold glow of fluorescent lights that never sleep, 24 hours a day. // In a dull, dry office, under a tight schedule, // I sometimes picture them: // how, bathed in strong sunlight, feeling the sweat run down my neck, // I ran all over the hills and fields... // those days of that summer.	8.3 12.0 18.2 21.5 25.9 29.4 31.6 35.9 38.2 41.7
+XCH.44	Narrator	That was everything I remembered of that summer. // Afterwards I became a successful novelist, // and now I live in a hotel in New York with a view of the Brooklyn Bridge, // searching for the words of the epilogue that will adorn the end of this story of my childhood. // Come to think of it, for the countdown to 2001, // it seems Shirabe and Moe will be coming over from Japan too, for the first time in a long while. // Goodbye, 20th century.	9.5 12.8 17.5 25.0 29.1 35.1 38.8
+XCH.45	Narrator	Within some 15 years of that summer vacation, // a huge multipurpose dam was completed in the Tsukiyono valley. // Around where my uncle's house once stood, // the water is 200 meters deep in the rainy season. // Nothing is left anymore to remember those days by.	5.3 12.2 15.0 18.1 24.2
 # NOTE XCH.45: the valley is Tsukiyono (glossary § 2; Jay's ear, VO-05). 'Multipurpose dam' is
 #   'tamokuteki damu'.
 

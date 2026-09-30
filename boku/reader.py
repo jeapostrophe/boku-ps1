@@ -6,8 +6,10 @@ One page to click through the whole translation in order, for reading it for iss
 days' events in play order (each with its setting, every line with its speaker, the
 Japanese and the English, voice-only lines with their subtitle), then the day-independent
 events of `shared.txt`, the menus, books and screens of `arrays.txt`, the clips native code
-plays (`clips.txt`), the movie subtitles (`movies.txt`, with their timing, the transcript
-they translate and stills from `./make.sh movie-review` where there are any), and every
+plays (`clips.txt`; each epilogue with every page drawn over the picture it meets and a
+timeline of pages against pictures, `epilogue_previews`), the movie subtitles (`movies.txt`,
+with their timing, the transcript they translate and stills from `./make.sh movie-review`
+where there are any), and every
 texture the build typesets (`translation/textures/`), the rebuilt image beside the original
 -- the screens and signs, the picture diary and the two encyclopedias. Each item's id is
 one click (or `c`) to copy, for a comment. The lint's findings (`boku.lint`, every check
@@ -37,16 +39,18 @@ import html
 import json
 import os
 import re
+import struct
 import subprocess
 import sys
 from bisect import bisect_right
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
-from boku import REPO_ROOT, exchange_notebook, movie_cues
+from boku import REPO_ROOT, clip_preview, clip_subs, epilogue, exchange_notebook, movie_cues
 from boku.archive import ARCHIVE_NAME, DEFAULT_DISC_DIR, Archive, ArchiveError
+from boku.build import BuildRefused, load_edit_set
 from boku.clip_subs import CLIP_FILE
 from boku.extract import SCRIPT_DIR_NAME
 from boku.layout import UNLABELLED_SPEAKERS, LayoutError
@@ -92,6 +96,7 @@ from boku.textures import Texture, TextureError, inventory, to_png
 from boku.tim import TimError, parse_exact
 from boku.translation import SampleScenes
 from boku.typeset import FONT_SHEET_ID, GameFace, TypesetError
+from boku.voice import VSYNC_HZ, xch_nodes
 
 DEFAULT_OUT_DIR = REPO_ROOT / "work" / "reader"
 DEFAULT_BUILD_DIR = REPO_ROOT / "build" / "days"
@@ -235,6 +240,18 @@ class Mark:
 
 
 @dataclass(frozen=True)
+class Timeline:
+    """When an item's pages are on the screen against what the screen shows, in seconds
+    after the subtitle opens; the page draws both as bars of one length."""
+
+    total: float
+    phases: tuple[tuple[str, float, float], ...]
+    """`(what is on screen, from, to)`."""
+    pages: tuple[tuple[float, float, bool], ...]
+    """`(from, to, whether it is up with a picture it should not meet)`."""
+
+
+@dataclass(frozen=True)
 class Item:
     """One stop of the walkthrough: a line, a clip, a cue, or a texture group."""
 
@@ -258,6 +275,10 @@ class Item:
     """`(caption, source)`: a key of `Walkthrough.files`, or an absolute path (a still)."""
     strings: tuple[tuple[str, str], ...] = ()
     """A texture group's `(string id, English)`, each with its own copy button."""
+    timeline: Timeline | None = None
+    whole_screens: bool = False
+    """Its images are pictures of the whole screen, shown at their own size so that several
+    sit in a row; a texture narrower than `SMALL_TEXTURE` is shown doubled."""
 
     @property
     def ids(self) -> tuple[str, ...]:
@@ -354,12 +375,16 @@ def build_walkthrough(
     )
 
     sections = [*event_sections(walk), surface_section(walk)]
+    # The textures first: an epilogue's production card is drawn as they typeset it.
+    textures = []
+    if sources.textures is not None and Path(sources.textures).is_dir():
+        textures = texture_sections(sources, walkthrough, archive, inv)
     if clips is not None:
-        sections.append(clip_section(clips, walk))
+        previews = epilogue_previews(clips, sources, walkthrough, archive)
+        sections.append(clip_section(clips, walk, previews))
     if movies is not None:
         sections.append(movie_section(movies, walk, Path(sources.voice), sources.movie_review))
-    if sources.textures is not None and Path(sources.textures).is_dir():
-        sections += texture_sections(sources, walkthrough, archive, inv)
+    sections += textures
     walked = {i for section in sections for item in section.items for i in item.ids}
     unplaced = [row for row in rows if row.line_id not in walked]
     if unplaced:
@@ -759,23 +784,129 @@ def unplaced_section(rows: Sequence[Row], walk: _Walk) -> Section:
 # --- the voices -----------------------------------------------------------------------------------
 
 
-def clip_section(path: Path, walk: _Walk) -> Section:
-    """`clips.txt`, in the file's order: every clip row, worded or not."""
+def clip_section(path: Path, walk: _Walk, previews: Mapping[str, Item] | None = None) -> Section:
+    """`clips.txt`, in the file's order: every clip row, worded or not; an epilogue with
+    `epilogue_previews`' facts, pictures and timeline."""
     rows, _ = parse_file(path)
     items = []
     for row in rows:
         item = row_item(row, walk, CLIP)
         heard = walk.heard.get(row.line_id)
         gist = walk.builder.voice_only.get(row.line_id)
+        drawn = (previews or {}).get(row.line_id)
         items.append(
             replace(
                 item,
                 japanese=(heard,) if heard else (),
                 notes=(*item.notes, *((f"Heard: {gist}",) if gist else ())),
+                facts=(*item.facts, *(drawn.facts if drawn else ())),
+                images=drawn.images if drawn else item.images,
+                timeline=drawn.timeline if drawn else None,
+                whole_screens=drawn.whole_screens if drawn else False,
             )
         )
     block = Block("clips", "The clips BOKU_XA.XCH holds", tuple(items))
     return unit_section(CLIPS_UNIT, "Voices", (block,))
+
+
+def _seconds(vsyncs: int) -> float:
+    return round(float(vsyncs / VSYNC_HZ), 2)
+
+
+PREVIEW_ERRORS = (
+    ArchiveError,
+    BuildRefused,
+    clip_preview.PreviewError,
+    epilogue.EpilogueError,
+    LayoutError,
+    TimError,
+    OSError,
+    struct.error,
+)
+"""What an import or an edit set that is not the expected one raises under
+`epilogue_previews`: a notice, not the end of the reader."""
+
+
+def epilogue_previews(
+    path: Path, sources: Sources, walkthrough: Walkthrough, archive: Archive | None = None
+) -> dict[str, Item]:
+    """Per epilogue row of `clips.txt`, what the reader adds to its item: every page drawn
+    over the picture `ENDOTI` shows at its middle (`boku.clip_preview`: the stills from the
+    import, the production card as the textures typeset it, the band and glyphs of the
+    days build), captioned with when it is up and over what, and the timeline of pages
+    against pictures -- from `boku.clip_subs.lay_out_lines`, the layout the build writes
+    and the lint judges. The images go to `walkthrough.files`. Nothing, said once, without
+    the import or the build's edit set."""
+    files: dict[str, bytes] = {}
+    try:
+        archive = archive if archive is not None else Archive(Path(sources.disc_dir))
+        out = _epilogue_previews(path, sources, walkthrough.texture_edits, archive, files)
+    except PREVIEW_ERRORS as error:
+        walkthrough.notices.append(f"The epilogues' pages are not drawn: {error}")
+        return {}
+    walkthrough.files.update(files)
+    return out
+
+
+def _epilogue_previews(
+    path: Path, sources: Sources, texture_edits: Sequence[ByteEdit], archive: Archive, files
+) -> dict[str, Item]:
+    edit_set = load_edit_set(Path(sources.cells))
+    font = clip_preview.built_font(archive, edit_set)
+    band = clip_preview.Band.of(edit_set)
+    entries, _ = clip_subs.read(path)
+    lines, _ = clip_subs.lay_out_lines(
+        entries, xch_nodes(archive), edit_set.encoder, epilogue.pictures(archive)
+    )
+    try:
+        english = patched_archive(archive, texture_edits)
+    except TextureTextError:
+        english = None
+    out = {}
+    for line in lines:
+        picture = line.picture
+        if picture is None:
+            continue
+        line_id = line.entry.line_id
+        backdrops = {
+            what: clip_preview.backdrop(archive, picture, start, english)
+            for what, start, _ in picture.phases
+        }
+        images, pages = [], []
+        for number, page in enumerate(line.pages, start=1):
+            pages.append((_seconds(page.start), _seconds(page.end), page.meets_card(picture)))
+            if page.end <= page.start:
+                continue
+            canvas = bytearray(backdrops[picture.showing((page.start + page.end) // 2)])
+            clip_preview.draw_subtitle(canvas, page.lines, edit_set.encoder, font, band)
+            name = f"img/{line_id}.page{number:02d}.en.png"
+            files[name] = clip_preview.png(canvas)
+            over = [
+                what for what, start, end in picture.phases if start < page.end and page.start < end
+            ]
+            images.append(
+                (
+                    f"page {number}: {_seconds(page.start)}-{_seconds(page.end)} s "
+                    f"({float(page.seconds):.1f} s) over {', then '.join(over)}",
+                    name,
+                )
+            )
+        name = f"img/{line_id}.card.en.png"
+        files[name] = clip_preview.png(backdrops[epilogue.CARD])
+        images.append((f"{_seconds(picture.card)} s: {epilogue.CARD}", name))
+        out[line_id] = Item(
+            id=line_id,
+            kind=CLIP,
+            facts=(f"OTI0{picture.ending}", f"{epilogue.CARD} at {_seconds(picture.card)} s"),
+            images=tuple(images),
+            timeline=Timeline(
+                total=_seconds(picture.end),
+                phases=tuple((n, _seconds(a), _seconds(b)) for n, a, b in picture.phases),
+                pages=tuple(pages),
+            ),
+            whole_screens=True,
+        )
+    return out
 
 
 def movie_notes(path: Path) -> tuple[dict[int, tuple[str, ...]], dict[int, str]]:
@@ -1102,6 +1233,7 @@ def item_json(item: Item, images: list[list]) -> dict:
         "marks": [[m.severity, m.check, m.message] for m in item.marks],
         "images": images,
         "strings": [{"id": i, "en": text} for i, text in item.strings],
+        "timeline": item.timeline and asdict(item.timeline),
     }
     return {key: value for key, value in data.items() if value or key in ("id", "kind", "en")}
 
@@ -1118,7 +1250,7 @@ SMALL_TEXTURE = 400
 
 
 def walkthrough_json(walkthrough: Walkthrough, out_dir: Path) -> dict:
-    def image(caption: str, path: str) -> list:
+    def image(caption: str, path: str, whole_screen: bool) -> list:
         """`[caption, src, width, height]` at the size the page shows it, so the layout does
         not move as images load. A still is linked where `movie-review` left it."""
         if Path(path).is_absolute():
@@ -1126,7 +1258,7 @@ def walkthrough_json(walkthrough: Walkthrough, out_dir: Path) -> dict:
                 width, height = png_size(handle.read(24))
             return [caption, os.path.relpath(path, out_dir), width, height]
         width, height = png_size(walkthrough.files[path][:24])
-        scale = 2 if width < SMALL_TEXTURE else 1
+        scale = 2 if width < SMALL_TEXTURE and not whole_screen else 1
         return [caption, path, width * scale, height * scale]
 
     sections = []
@@ -1135,7 +1267,8 @@ def walkthrough_json(walkthrough: Walkthrough, out_dir: Path) -> dict:
         blocks = []
         for block in section.blocks:
             items = [
-                item_json(item, [image(*pair) for pair in item.images]) for item in block.items
+                item_json(item, [image(*pair, item.whole_screens) for pair in item.images])
+                for item in block.items
             ]
             blocks.append(
                 {

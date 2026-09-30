@@ -44,8 +44,9 @@ sys.path.insert(0, str(HERE))
 
 import build_prototype as vwf  # noqa: E402
 
-from boku.archive import ARCHIVE_NAME, DEFAULT_DISC_DIR, Archive, ArchiveError  # noqa: E402
+from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError  # noqa: E402
 from boku.build import BuildRefused, EditSet, LineResult, lay_out, load_edit_set  # noqa: E402
+from boku.clip_preview import PreviewError, font_sheet_bytes  # noqa: E402
 from boku.layout import DIALOGUE_BAND, BoxSpec, Encoder  # noqa: E402
 from boku.lint import DEFAULT_CELLS, translation_paths  # noqa: E402
 from boku.movie_block import CELL, SCREEN_WIDTH  # noqa: E402
@@ -83,23 +84,10 @@ def font_sheet(archive: Archive, edit_set: EditSet) -> vwf.Sheet:
     build checks them: a sheet drawn from a different dump would draw the wrong pixels in
     silence.
     """
-    offset, size = vwf.font_child_range(archive)
-    tim = bytearray(archive.boku[offset : offset + size])
-    applied = 0
-    for edit in edit_set.edits:
-        if edit.file != ARCHIVE_NAME or not offset <= edit.offset < offset + size:
-            continue
-        start = edit.offset - offset
-        if bytes(tim[start : start + len(edit.old)]) != edit.old:
-            raise MockupRefused(
-                f"{edit.reason}: the import does not hold the bytes this edit expects at "
-                f"BOKU.BIN+{edit.offset:#x}; the edit set was built from another dump"
-            )
-        tim[start : start + len(edit.new)] = edit.new
-        applied += 1
-    if not applied:
-        raise MockupRefused("the edit set carries no font-sheet edit; there is no English font")
-    return vwf.Sheet(bytes(tim))
+    try:
+        return vwf.Sheet(font_sheet_bytes(archive, edit_set))
+    except PreviewError as error:
+        raise MockupRefused(str(error)) from error
 
 
 # --- drawing --------------------------------------------------------------------------------------

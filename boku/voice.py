@@ -161,6 +161,24 @@ def subtitle_waits(pages: Sequence[str], ticks: int) -> list[int]:
     return [max(1, wait) for wait in waits]
 
 
+VSYNC_HZ = Fraction(59_826, 1000)
+"""Frames a second the console draws, which is what a clip's seconds are converted by when a
+row gives its pages times of their own (measured on Beetle: 3,200 frames played 2,358,839
+samples at 44.1 kHz). `TICK_HZ` above is the nominal half of it, 0.3% off: a tick in 11 s."""
+
+VSYNCS_PER_TICK = 2
+
+
+def timed_waits(ends: Sequence[Fraction], lead: int) -> list[int]:
+    """The `0x8002` operand after every page of a row that times its own pages, the last
+    included (`translation/README.md` § clips.txt): `ends[k]` is the second of the clip's
+    audio at which page k gives way -- to the next page, or the last to nothing -- and `lead`
+    the vsyncs from the subtitle's opening to the audio's first sample. A wait below 1 is
+    returned as it falls: the row's times are wrong and the caller says so."""
+    ticks = [round((lead + end * VSYNC_HZ) / VSYNCS_PER_TICK) for end in ends]
+    return [after - before for before, after in pairwise([0, *ticks])]
+
+
 # --- the inventory ------------------------------------------------------------------------------
 
 

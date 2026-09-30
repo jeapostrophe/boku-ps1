@@ -106,7 +106,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from boku import REPO_ROOT, clip_subs, exchange_notebook, movie_cues
+from boku import REPO_ROOT, clip_subs, epilogue, exchange_notebook, movie_cues
 from boku.archive import DEFAULT_DISC_DIR, Archive, ArchiveError
 from boku.arrays import byte_limit, unreachable
 from boku.boxes import TextBox, box_for, box_spec_for
@@ -1031,15 +1031,22 @@ def lint_movie_file(movies: Path | None, options: Options, cells: Path | None) -
 
 def lint_clip_file(clips: Path | None, options: Options, disc_dir: Path) -> list[Finding]:
     """`translation/clips.txt` (`boku.clip_subs`): each row laid out against its own clip in
-    the band, as the build lays it out, every problem an error. No file, no findings."""
+    the band, and an epilogue's against its picture, as the build lays it out, every problem
+    an error. No file, no findings."""
     if clips is None:
         return []
     entries, unread = clip_subs.read(Path(clips))
     if not entries and not unread:
         return []
-    clip_nodes = xch_nodes(Archive(Path(disc_dir)))
-    _words, problems = clip_subs.lay_out_clips(entries, clip_nodes, options.encoder, options.box)
+    archive = Archive(Path(disc_dir))
     name = Path(clips).name
+    try:
+        pictures = epilogue.pictures(archive)
+    except epilogue.EpilogueError as error:
+        return [Finding(name, 0, "-", "clip-format", ERROR, str(error))]
+    _words, problems = clip_subs.lay_out_clips(
+        entries, xch_nodes(archive), options.encoder, pictures, options.box
+    )
     out = [Finding(name, 0, "-", "clip-format", ERROR, problem) for problem in unread]
     for problem in problems:
         number = int(problem.origin.rsplit(":", 1)[1])

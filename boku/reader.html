@@ -103,6 +103,15 @@ details.setting td, details.setting th { border: 1px solid var(--rule); padding:
 .images img { max-width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--rule);
   background: repeating-conic-gradient(#8883 0 25%, transparent 0 50%) 0 0 / 16px 16px; }
 .images figcaption { font-size: .75rem; color: var(--dim); }
+.timeline { margin-top: .6rem; font-size: .72rem; }
+.timeline .bar { position: relative; height: 1.5rem; background: var(--chip); margin-top: 2px; }
+.timeline .bar span { position: absolute; top: 0; bottom: 0; box-sizing: border-box; overflow: hidden;
+  border-left: 1px solid var(--card); text-align: center; line-height: 1.5rem; color: #fff;
+  white-space: nowrap; }
+.timeline .still { background: #4f6d8a; } .timeline .black { background: #111; }
+.timeline .card { background: #7a5a2e; } .timeline .page { background: #3f7d4e; }
+.timeline .late { background: var(--err); }
+.timeline .scale { display: flex; justify-content: space-between; color: var(--dim); }
 p.notes { margin: .4rem 0 0; font-size: .83rem; color: var(--dim); }
 #toast { position: fixed; left: 50%; transform: translateX(-50%);
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg);
@@ -219,6 +228,19 @@ function english(item) {
   if (item.kind === "cue") return "<p>" + item.en.map(esc).join("<br>") + "</p>";
   return who + pages(item.en);
 }
+function bar(spans, total) {
+  return '<div class="bar">' + spans.map(([kind, label, from, to]) =>
+    `<span class="${kind}" style="left:${100 * from / total}%;width:${100 * (to - from) / total}%" title="${esc(label)}: ${from}-${to} s (${(to - from).toFixed(1)} s)">${esc(label)}</span>`
+  ).join("") + "</div>";
+}
+function timeline(t) {
+  if (!t) return "";
+  const kinds = (name) => name.includes("still") ? "still" : name.includes("card") ? "card" : "black";
+  return '<div class="timeline">'
+    + bar(t.phases.map(([name, from, to]) => [kinds(name), name, from, to]), t.total)
+    + bar(t.pages.map(([from, to, late], i) => [late ? "late" : "page", `page ${i + 1}`, from, to]), t.total)
+    + `<div class="scale"><span>0 s</span><span>what the screen shows, and each page, to scale; red: a page up with the production card</span><span>${t.total} s</span></div></div>`;
+}
 function itemHTML(item, n) {
   const facts = (item.facts || []).map((f) => `<span class="chip">${esc(f)}</span>`).join("");
   const marks = (item.marks || []).map(([severity, check, message]) =>
@@ -232,7 +254,7 @@ function itemHTML(item, n) {
     : `<div class="pair"><div class="ja" lang="ja">${japanese(item)}</div><div class="en">${english(item)}</div></div>`;
   return `<article class="item" id="n${n}" data-n="${n}">
 <div class="head"><button class="id" data-copy="${esc(item.id)}" title="copy the id (c)">${esc(item.id)}</button><button class="dash" data-copy="${esc(item.id)} &mdash; " title="copy the id and a dash (d)">id &mdash;</button><span class="chip">${esc(item.kind)}</span>${facts}<span class="origin">${esc(item.origin || "")}</span></div>
-${marks}${pair}${images}${notes}</article>`;
+${marks}${pair}${timeline(item.timeline)}${images}${notes}</article>`;
 }
 
 function render(s) {

@@ -15,21 +15,30 @@ from __future__ import annotations
 
 import functools
 import json
+import math
 import os
 import re
 import shutil
 import struct
 import subprocess
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
 
-from boku import REPO_ROOT
+from boku import REPO_ROOT, epilogue
+from boku.archive import Archive
 from boku.build import main_build
 from boku.movie_block import BLOCK_RAM, MAGIC
 from boku.translation import SampleScenes
-from boku.voice import TICK_HZ, sector_ticks, subtitle_waits, xch_nodes
+from boku.voice import (
+    VSYNC_HZ,
+    VSYNCS_PER_TICK,
+    sector_ticks,
+    subtitle_waits,
+    xch_nodes,
+)
 from tests.test_real_movie_subtitle import ARMIPS, BIOS, PROTOTYPE, REDUX, REDUX_TIMEOUT, RUNNER
 from tests.test_vwf_prototype import vwf_layout
 
@@ -40,15 +49,32 @@ SCRIPT = REPO_ROOT / "tools" / "redux" / "clip-sub.lua"
 BEDTIME = 34
 EPILOGUES = range(41, 46)
 PAGES = {
-    BEDTIME: ("VO-03 fixture: bedtime, page one of the first night.", "Page two, over black."),
+    BEDTIME: ("VO-03 fixture: bedtime, one.", "VO-03 fixture: bedtime, two."),
     **{n: (f"VO-03 fixture: epilogue XCH.{n}, page one.", "Page two.") for n in EPILOGUES},
 }
+"""Bedtime's two pages are of a length, so each has a readable share of its 4 s clip."""
+FIRST_PAGE = 4
+"""Seconds into its clip at which an epilogue's first page gives way."""
+CARD_MARGIN = Fraction(2, 10)
+"""How long before the production card an epilogue's second page comes down."""
+
+
+def epilogue_times(picture: epilogue.Picture) -> str:
+    """An epilogue row's page times (`translation/README.md` § clips.txt): its last page
+    goes as close to the production card as a translator would put it, so that a gate on
+    the card is a gate on the prediction."""
+    card = (picture.card - epilogue.LEAD) / VSYNC_HZ
+    return f"{FIRST_PAGE} {float(math.floor((card - CARD_MARGIN) * 10) / 10)}"
+
+
 ENDING = 0
-VSYNCS_PER_TICK = 60 // TICK_HZ
 SLACK = 4
 """Vsyncs a transition may land either side of its prediction."""
-READ_BUDGET = 30
-"""Vsyncs the block's re-read may hold the epilogue back: half a second (measured: 16)."""
+READ_BUDGET = 150
+"""Vsyncs the block's re-read and the seek back to the clip may hold the epilogue back, over
+black (research/event-scripts.md § Native clips has the measurement)."""
+PLAYING = 1
+"""The XA status bit `xa_play` sets; bit 4 is a seek on its way (`XA_SEEK_KEY`)."""
 _LAYOUT = vwf_layout()
 BAND_ROWS = range(_LAYOUT.band_y, _LAYOUT.band_y + _LAYOUT.band_h)
 """The band's rows, from the geometry the build assembles the renderer with."""
@@ -69,9 +95,12 @@ def build_fixture_image(real_image: Path, disc_dir: Path) -> Path:
     shutil.rmtree(work, ignore_errors=True)
     work.mkdir(parents=True)
     clips = work / "clips.txt"
+    pictures = epilogue.pictures(Archive(disc_dir))
     clips.write_text(
         "".join(
-            f"XCH.{n:02d}\tNarrator\t{SampleScenes.PAGE_BREAK.join(p)}\n" for n, p in PAGES.items()
+            f"XCH.{n:02d}\tNarrator\t{SampleScenes.PAGE_BREAK.join(p)}"
+            f"\t{epilogue_times(pictures[n]) if n in pictures else ''}\n"
+            for n, p in PAGES.items()
         ),
         encoding="utf-8",
     )
@@ -233,9 +262,9 @@ def test_endoti_writes_over_the_block_and_the_clip_reads_it_again(ending):
     started, clip, magic, states = ending
     assert clip == EPILOGUES[0] + ENDING
     assert magic != MAGIC, "ENDOTI did not write over the block: the re-read is untested"
-    # The read comes before xa_play, so the voice waits for it too: text and voice start on
-    # the same frame, a fraction of a second after ENDOTI asked for the clip.
-    at, first = next((f, s) for f, s in states if s["busy"] & 5)
+    # The read, and the seek back to the clip, come before xa_play, so the voice waits for
+    # them too: text and voice start on the same frame, after ENDOTI asked for the clip.
+    at, first = next((f, s) for f, s in states if s["busy"] & PLAYING)
     assert first["page"] and first["panel"] == 1, "the voice started without its subtitle"
     assert at - started <= READ_BUDGET
 
@@ -243,7 +272,7 @@ def test_endoti_writes_over_the_block_and_the_clip_reads_it_again(ending):
 def test_the_epilogue_subtitle_comes_down_when_endoti_hands_over(ending):
     """The save prompt reuses the block's memory: a subtitle left up would draw garbage."""
     _, _, _, states = ending
-    assert any(s["flags"] & 3 == 2 and s["page"] for _, s in states), "page 2 never came"
+    assert len({s["page"] for _, s in states if s["page"]}) >= 2, "page 2 never came"
     handed = next(s for _, s in states if s["mode"] != 0x10)
     assert handed["page"] == 0 and handed["panel"] == 0
     assert handed["level"] == 0, "the next panel draw would fade a band out of nothing"

@@ -28,10 +28,11 @@
 ;
 ; Both kinds share one state and one server (voice_sub_service): the subtitle comes down when
 ; the XA status word clears (no script closes text after a clip), when the game mode changes
-; (the next mode may reuse the words' memory) or when the page on screen is no longer the
-; subtitle's; its page timers are counted here unless dialog_draw is counting
-; them (only an event's, with auto-advance on). Coming down (voice_sub_drop) depends on what
-; g_text_page shows:
+; (the next mode may reuse the words' memory), when the page on screen is no longer the
+; subtitle's, or when that page is empty -- the words end `page, wait, END` when the last page
+; has a time of its own (translation/README.md § clips.txt); its page timers are counted
+; here unless dialog_draw is counting them (only an event's, with auto-advance on). Coming
+; down (voice_sub_drop) depends on what g_text_page shows:
 ;   inside the subtitle's words     text_reset, and the band and its linger countdown go
 ;                                   back to how they were when it opened
 ;   NULL (text_reset, WIN 0, END)   the band and countdown go back; the text is gone already
@@ -53,6 +54,8 @@ OT_LENGTH         equ 0x2000        ; what the main loop clears and draws (0x800
 CD_INT_TO_POS     equ 0x8004CAEC    ; DsIntToPos, DsRead, DsReadSync: the calls
 CD_READ           equ 0x800506CC    ; movie_sub_load reads the block with (asm/movie.asm)
 CD_READ_SYNC      equ 0x80050A7C
+XA_SEEK_KEY       equ 0x8002B200    ; send the drive to the clip a0 -> the key of (XSEEK's routine)
+XA_SEEK_WAIT      equ 0x8002B294    ; VSync until that seek has ended
 SUMO_MODE         equ 7             ; bug sumo, MUSI.OVL
 MUSI_INIT         equ 0x8007BE60    ; MUSI.OVL's init, called by g_modes[7]'s after the load
 LEVEL_C_BASE      equ 0x800258FC    ; g_arena_lvl_c: -> level C's base
@@ -184,8 +187,8 @@ voice_sub_open:
     jr      ra
     addiu   sp, sp, 24
 
-; Take a live subtitle down (the table in the header). Leaf but for text_reset; clobbers
-; t0-t4, v0, v1, at and the argument registers, keeps the s registers.
+; Take a live subtitle down (the table in the header); v0 = 0. Leaf but for text_reset;
+; clobbers t0-t4, v0, v1, at and the argument registers, keeps the s registers.
 voice_sub_drop:
     lui     t4, hi(voice_sub_live)
     lbu     v0, lo(voice_sub_live)(t4)
@@ -218,16 +221,17 @@ voice_sub_drop:
     sb      zero, 0x6541(t0)        ; and g_dlgbox_level, or the next panel draw fades a band out
 @@out:
     jr      ra
-    nop
+    move    v0, zero                ; voice_sub_service's answer when it drops
 
 ; v0 -> the block holding the clips' words, or 0: when there is no block, and in any mode but
 ; three. Movie mode's movie has just read it to MOVIE_SUB_BLOCK. ENDOTI (mode 0x10) writes
 ; over it there while it starts (research/event-scripts.md § Native clips) and plays its clip
-; once the drive is idle, so there it is read again first -- before xa_play, since a read
-; after it would break the stream. Bug sumo (mode 7) uses MOVIE_SUB_BLOCK's memory as its
-; own, so sumo_sub_init has read the block to level C's base as the mode started
-; (research/sumo.md § Subtitles). No event runs in any of the three, whatever the event
-; runner's bit says (research/event-scripts.md § Native clips).
+; once the drive is idle at the clip, so there it is read again first -- before xa_play, since
+; a read after it would break the stream -- and the drive is sent back to the clip. Bug sumo
+; (mode 7) uses MOVIE_SUB_BLOCK's memory as its own, so sumo_sub_init has read the block to
+; level C's base as the mode started (research/sumo.md § Subtitles). No event runs in any of
+; the three, whatever the event runner's bit says (research/event-scripts.md § Native clips).
+; Called by clip_sub_play only, with s1 -> the clip's key.
 clip_sub_block:
     addiu   sp, sp, -24
     sw      ra, 16(sp)
@@ -249,6 +253,10 @@ clip_sub_block:
     nop
     jal     clip_sub_read           ; ENDOTI
     move    a0, t0
+    jal     XA_SEEK_KEY             ; the read left the head at the block: back to the clip,
+    move    a0, s1                  ; whose key clip_sub_play holds in s1, and wait, as ENDOTI's
+    jal     XA_SEEK_WAIT            ; start had before its call (research/event-scripts.md
+    nop                             ; § The epilogue's clock)
     lui     t0, hi(MOVIE_SUB_BLOCK)
     addiu   t0, t0, lo(MOVIE_SUB_BLOCK)
 @@check:
@@ -264,9 +272,6 @@ clip_sub_block:
     nop
     jr      ra
     addiu   sp, sp, 24
-
-clip_sub_loc:                       ; DslLOC of the block's first sector (clip_sub_read)
-    .dw     0
 
 voice_sub_open_end:
 .endarea
@@ -363,8 +368,10 @@ voice_sub_service:
     bnez    at, @@drop              ; the page on screen is not the subtitle's
     sltu    at, t1, t3
     beqz    at, @@drop
-    nop
-    lui     v1, 0x8002
+    lhu     t5, 0(t1)               ; the page's first word (t1 is inside the words here)
+    lui     v1, 0x8002              ; (load delay of t5)
+    xori    t5, t5, 0x8000
+    beqz    t5, @@drop              ; END: a timed last page has run out (boku.voice.timed_waits)
     lbu     v1, 0x37E0(v1)          ; the game mode: a new one reuses the words' memory
     lbu     at, lo(voice_sub_mode)(t4)
     lw      v0, 0x59D8(t0)          ; the XA status word; XAMSG waits on these two bits
@@ -402,14 +409,8 @@ voice_sub_service:
     jr      ra
     nop
 @@drop:
-    addiu   sp, sp, -24
-    sw      ra, 16(sp)
-    jal     voice_sub_drop
+    j       voice_sub_drop          ; which returns v0 = 0 to our caller
     nop
-    lw      ra, 16(sp)
-    move    v0, zero
-    jr      ra
-    addiu   sp, sp, 24
 
 voice_sub_tick:
     addiu   sp, sp, -24
@@ -432,6 +433,9 @@ clip_sub_owned:
     andi    v0, v0, 1
     jr      ra
     sltu    v0, v1, v0              ; the bit, and not native
+
+clip_sub_loc:                       ; DslLOC of the block's first sector (clip_sub_read)
+    .dw     0
 
 voice_sub_tick_end:
 .endarea
