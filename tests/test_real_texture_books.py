@@ -30,6 +30,7 @@ from boku.texture_text import read_entries
 from boku.textures import Texture
 from boku.tim import luminance, parse_exact
 from boku.typeset import FONT_SHEET_ID, GameFace, pixel_face, wrap
+from tests.test_real_texture_text_beetle import FIELD, mode_set_pokes
 
 ENTRIES = read_entries()
 
@@ -173,18 +174,13 @@ def test_the_grey_curl_under_the_name_and_header_stays(
         assert moved == [], f"the page's paper was changed in {area.box}: {moved[:3]}"
 
 
-BOOK_PAGE = [
-    "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
-    "--poke", "6500:0x800237E5=05", "--poke", "6500:0x80024728=01000000",
-    "--poke", "6500:0x800258E0=f4791180",
-]  # fmt: skip
-"""`mode_set(n)` by hand after the first dialogue (`test_real_texture_text_beetle.DIARY_MODE`):
-mode 12 opens the kite book and mode 13 the insect book at their first page (before 19:00, so the
-insect book is `MZKAN1`, the day pack). Shot at 7290."""
+BOOK_SHOT = FIELD.MODE_SET_AT + FIELD.BOOK_OPEN
+"""`mode_set(n)` by hand after the first dialogue (`mode_set_pokes`) opens a book at its first
+page (before 19:00, so the insect book is `MZKAN1`, the day pack)."""
 BOOKS_ON_SCREEN = {
     # mode: (texture of page 0, where the texture's (0, 0) lands, the text areas)
-    0x0C: (books.KITE_PACK, (38, 23), [books.KITE_TEXT.box]),
-    0x0D: (books.INSECT_PACKS[0], (45, 23),
+    FIELD.KITE_MODE: (books.KITE_PACK, (38, 23), [books.KITE_TEXT.box]),
+    FIELD.INSECT_MODE: (books.INSECT_PACKS[0], (45, 23),
            [books.INSECT_NAME.box, books.INSECT_HEADER.box, *(a.box for a in books.INSECT_BODY)]),
 }  # fmt: skip
 """Measured on the English image by matching the page's texels (`research/texture-recipes.md`
@@ -200,8 +196,9 @@ def test_a_book_on_beetle_shows_its_english(
     command = [
         sys.executable, str(REPO_ROOT / "tools/libretro/run_core.py"), str(texture_image),
         "--core", os.environ["BOKU_LIBRETRO_CORE"], "--system", os.environ["BOKU_LIBRETRO_SYSTEM"],
-        "--work", str(tmp_path), "--frames", "7300", "--shot", "7290:book", *BOOK_PAGE,
-        "--poke", f"6500:0x800237E0={mode:02x}", "--poke", f"6500:0x800237E4={mode:02x}",
+        "--work", str(tmp_path), "--frames", str(BOOK_SHOT + 10), "--shot", f"{BOOK_SHOT}:book",
+        "--press-file", str(REPO_ROOT / "tools/libretro/boot-to-dialogue.press"),
+        *[arg for poke in mode_set_pokes(mode) for arg in ("--poke", poke)],
     ]  # fmt: skip
     subprocess.run(command, check=True, capture_output=True, timeout=600, cwd=REPO_ROOT)
     shot = read_png((tmp_path / "book.png").read_bytes())

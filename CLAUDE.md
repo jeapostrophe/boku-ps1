@@ -2,8 +2,9 @@
 
 An English translation patch for the PS1 original of *Boku no Natsuyasumi* (SCPS-10088), built
 in the open. Your instructions in `~/.claude/CLAUDE.md` apply and are not repeated here; this
-file states only what is true of *this* repo. Start at **`PLAN.md`**; `README.md` is the
-specification of what the project is and how it is laid out.
+file states only what is true of *this* repo. Start at **`PLAN.md`**; `README.md` is what
+the project is, written for the player; `TECHNICAL.md` is the specification of how it is built
+and how it is laid out.
 
 ## This repo is public and contains none of the original game
 
@@ -14,13 +15,16 @@ specification of what the project is and how it is laid out.
   'import step' where a contributor points a Python script at the .chd"*).
 * What IS committed: tools, the English translation keyed by line id, context notes we wrote,
   format documentation, addresses and symbol names, assembly patches we wrote, and **textures
-  redrawn in English** (README principle 2 — Jay accepts that risk; a texture that is the
+  redrawn in English** (TECHNICAL principle 2 — Jay accepts that risk; a texture that is the
   original pixels plus a subtitle is NOT committed, only its subtitle text and placement). A
   short quoted Japanese line as an example in a research note is fine; a table of them is not.
 * Before `git add`, ask of each file: *does this contain the original's bytes, pixels or text,
   or could someone rebuild them from it without owning the disc?* If yes it does not go in. An
-  English redraw of a texture is the one sanctioned exception, and it is a redraw — new pixels
+  English redraw of a texture is the one sanctioned exception for a texture, and it is a redraw — new pixels
   throughout — or it is not the exception.
+* The only other exception is the README's screenshots (Jay, 2026-09-30, asking for them): a
+  handful of shots of the patched game under `docs/screenshots/`, written by `./make.sh
+  screenshots`, and no picture of the game anywhere else in the repo.
 * Third-party code: **no licence** (all rights reserved) — every HilltopWorks repo,
   psyouloveme/boku1-reversing, snake7594's Korean patch; **GPL-3.0** — pleonex's tools,
   GriffithVIII/TIMVisor; Apache-2.0 — GriffithVIII's Spanish patch repo (no code in it); MIT —
@@ -67,4 +71,7 @@ not an input to any decision here (Jay, 2026-09-20).
 ## Keep the docs true, in the same unit
 
 Format knowledge goes in `research/` (one file per subject, one home per fact — `DOC-3`).
-`README.md` § Layout and § Status change in the same commit as the thing they describe.
+`TECHNICAL.md` § Layout and `TECHNICAL.md` § Status change in the same commit as the thing they
+describe; `README.md` is for a player arriving from a link, so what is for a contributor goes in
+`TECHNICAL.md`, and the README's screenshots are retaken (`./make.sh screenshots`) when what
+they show changes.

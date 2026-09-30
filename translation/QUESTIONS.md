@@ -92,8 +92,9 @@ occasional romanised word in dialogue with its meaning given by the next line.
 The adult narrator's **opening monologue**, the **five epilogues** (which are the payoff of the
 whole game), the whale and sunflower **dreams**, radio calisthenics, the television programmes
 including the August 15 broadcast, and the monk's sutra are FMV audio or voice-only clips:
-there is no text layer to translate (108 voice-only nodes; every STR). README § "What gets
-translated" rules FMV text out of scope and says nothing about FMV *speech*.
+there is no text layer to translate (108 voice-only nodes; every STR). TECHNICAL § "What gets
+translated" (then in the README) ruled FMV text out of scope and said nothing about FMV
+*speech*.
 
 * **a. Out of scope.** The player gets no English for the ending.
 * **b. Translate them now into tracked files** (`translation/fmv/…`, keyed by movie number and

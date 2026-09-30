@@ -5,13 +5,13 @@ TODO.md
 # Everything the import step produces from YOUR disc: the raw image, the files pulled
 # off it, and the Japanese script decoded from them. All of it is Sony's copyrighted
 # content. This repo is public and ships none of it — a contributor regenerates it
-# from their own dump (README § "The import step"). Never commit from here, and never
+# from their own dump (TECHNICAL § "The import step"). Never commit from here, and never
 # copy text out of it into a tracked file beyond a short quoted example.
 # (No trailing slash: a worktree links these to the main checkout, and a link is not a
 # directory to git.)
 /disc
 # Third-party reference material kept locally for context (the GameFAQs walkthrough,
-# cloned upstream repos). Copyrighted by its authors; README § "Reference material"
+# cloned upstream repos). Copyrighted by its authors; TECHNICAL § "Reference material"
 # says where to get each piece.
 /reference
 # Scratch: dumps, contact sheets, emulator traces, Ghidra projects (a Ghidra database

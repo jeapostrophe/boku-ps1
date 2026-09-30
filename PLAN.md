@@ -1,8 +1,9 @@
 # boku-ps1 — Plan
 
-The **live task list only** — open work, nothing else. What the project is and how it is laid
-out: [README.md](README.md). What has been learned: [research/](research/). Rules for agents:
-[CLAUDE.md](CLAUDE.md). History of completed work: git.
+The **live task list only** — open work, nothing else. What the project is:
+[README.md](README.md). How it is built and laid out: [TECHNICAL.md](TECHNICAL.md). What has
+been learned: [research/](research/). Rules for agents: [CLAUDE.md](CLAUDE.md). History of
+completed work: git.
 
 **Conventions.** Every item carries a stable id, assigned once, never renumbered, never reused;
 cite items as `PLAN TXT-01`, never by line. An item names **who is harmed** if it is not done —
@@ -31,7 +32,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       length-preserving patching (`PIPE-04`), xdelta + PPF (`PIPE-05`), PCSX-Redux + Ghidra
       (`ENV-03`, `ENV-04`), one renderer hack per text surface (`TXT-05`), AI disclosure
       (`REL-03`, README § "How the translation is made"). Where it recommends `.po` + Weblate
-      keyed on Japanese `msgid`s it is superseded by README principles 2 and 3. Its unanswered
+      keyed on Japanese `msgid`s it is superseded by TECHNICAL principles 2 and 3. Its unanswered
       sub-questions (DMCA history of translation patches, no$psx under CrossOver) are closed
       as *no*: nothing in the plan depends on either.
 - [x] **[RSH-02]** **Primary sources read before `TXT-01`.** DONE 2026-09-20:
@@ -101,7 +102,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       more (`0x8007B65C`) — which opens Summer Memories; a New Game from such a card is a
       second playthrough (`0x80025914`, `E0404`/`E1503`). August 31 has no evening: from its
       morning the day chains into the ending movie (~9,500 frames of ○). The DuckStation
-      per-game shared-card route is in `research/save-format.md` and README (from source, not
+      per-game shared-card route is in `research/save-format.md` and TECHNICAL.md (from source, not
       run). Proven on Beetle.
 - [x] **[ENV-08]** **Bug sumo, the mantis, the shortcut and its well.** DONE 2026-09-23: the
       cage record and fighter formula (`research/sumo.md`, `boku/sumo.py`, `boku save --bug`)
@@ -205,7 +206,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       Difficulty: 129 easy, 20 medium, 41 hard (signage painted into backgrounds, stylised
       covers), 6 unknown.
 
-## Text renderer — the central risk (README § "The central risk")
+## Text renderer — the central risk (TECHNICAL § "The central risk")
 
 - [x] **[TXT-01]** **Trace one dialogue line from its id to pixels.** CLOSED as *no*, 2026-09-21
       (Jay: "I can't tell how valuable this is now that we've actually rendered scenes and I've
@@ -425,7 +426,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       is fine for now"): the format `translation/days/README.md` documents — one file per day plus
       `shared.txt`; tab-separated line id, speaker, English; `//` page break; `[SEL]` rows with
       `|`-separated fields, the question first; `(voice only)` rows; `#` notes. `boku/translation.py`
-      is its loader. Hand-writable, as the README's aspiration asks.
+      is its loader. Hand-writable, as TECHNICAL § "The translation pipeline" hopes.
 - [x] **[PIPE-03]** **Reinsertion.** DONE for what a row can be (2026-09-21). Every physical copy of
       a changed line is rebuilt bottom-up with the original pad bytes carried back (null round
       trip exact); the measured limits refuse with numbers at the boundary (`0x4000` EV block,
@@ -801,7 +802,7 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       one measured frame, ~16 KB of patch per touched frame (80–135 MB). Cues for E1/E2 live
       in the relocation arena, keyed by frame. Original row: find the per-frame path
       or the burn cost (Jay, 2026-09-20: the opening "definitely needs subtitles", reversing
-      README row 3; split into three rows 2026-09-21).
+      TECHNICAL § "What gets translated" row 3; split into three rows 2026-09-21).
 - [x] **[FMV-04]** **Subtitles in the movie player (E2).** `research/movies.md` § 3 E2: hook
       `movie_dctout_cb` before its `LoadImage` and blit the current cue's glyph pixels into
       the 24-bit slice buffer (white on the glyph mask, dark on the outline mask); 1-bit

@@ -158,7 +158,7 @@ def load_store(script_dir: Path) -> Store:
     if not index_path.is_file():
         raise StoreMissing(
             f"{index_path} is missing -- run `./make.sh import` then `./make.sh extract` "
-            f"against your own dump (README § 'The import step'). This repo ships none of "
+            f"against your own dump (TECHNICAL § 'The import step'). This repo ships none of "
             f"the game."
         )
     index = json.loads(index_path.read_text(encoding="utf-8"))

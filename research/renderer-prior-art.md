@@ -135,7 +135,7 @@ primitive cannot cross a page boundary — *"the GPU can only really work on one
 time"*. He hit this on a real translation: *"I kept trying to load you know different text images from
 different texture pages and it just didn't work at all and I couldn't really figure out why."*
 
-`[INF]` Directly binding on us. If the English sheet is bigger than the Japanese one (README fallback
+`[INF]` Directly binding on us. If the English sheet is bigger than the Japanese one (TECHNICAL § "The central risk", fallback
 2, a replacement OFL glyph sheet), the first constraint is not disc space, it is that **every glyph a
 single draw call reaches must sit inside one texture page**. Check the existing sheet's page
 placement in the VRAM viewer before designing the replacement, and treat "how many glyphs fit in a
@@ -551,7 +551,7 @@ count plus `0x0C`-byte `(offset, size, name_offset)` entries, unnamed packs `0x0
 entries and original table positions must be preserved on rebuild** — the spec says so explicitly.
 
 **Dialogue identity.** Not a RAM address: the tuple *(script, named-pack member, dialog/block id, text
-element, segment/run)*. `[INF]` This is exactly the shape our README principle 3 wants for line ids,
+element, segment/run)*. `[INF]` This is exactly the shape our TECHNICAL principle 3 wants for line ids,
 and it is worth adopting rather than inventing — it survives a rebuild and it is derivable from the
 extractor alone.
 

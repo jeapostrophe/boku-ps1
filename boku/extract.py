@@ -1,7 +1,7 @@
 """`boku extract` — the whole Japanese script, decoded out of your own import.
 
 It reads only `disc/` and writes only `disc/script/`, both gitignored: the repo ships none
-of the game (README principle 2), and a translation is keyed by **line id**, never by the
+of the game (TECHNICAL principle 2), and a translation is keyed by **line id**, never by the
 Japanese (principle 3). This is the step that makes those ids exist.
 
 What comes out, designed for two readers — the agents that translate (`TRN-02`) and the

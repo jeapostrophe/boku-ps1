@@ -338,6 +338,19 @@ def _decode_png(data: bytes) -> tuple[int, int, list[bytes]]:
     return width, height, rows
 
 
+def test_scale_rows_repeats_every_pixel_across_and_down():
+    red, green, blue = b"\xff\x00\x00", b"\x00\xff\x00", b"\x00\x00\xff"
+    rows = [red + green, blue + red]
+    assert run_core.scale_rows(rows, 1) == rows
+    assert run_core.scale_rows(rows, 2) == [
+        red + red + green + green,
+        red + red + green + green,
+        blue + blue + red + red,
+        blue + blue + red + red,
+    ]
+    assert run_core.scale_rows([red + green], 3) == [red * 3 + green * 3] * 3
+
+
 def test_png_round_trips_through_an_independent_decoder():
     width, height = 3, 2
     rows = [

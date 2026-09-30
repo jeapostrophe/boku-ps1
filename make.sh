@@ -145,6 +145,9 @@ usage: ./make.sh <verb> [arguments]
   movie-review [MOVIE...]       every cue at its first, middle and last frame on Beetle, and an
                                 MP4 with the narration, from build/days -> work/movie-review/
                                 index.html (tools/libretro/movie_review.py --help)
+  screenshots [arguments]       the README's screenshots, one screen of each kind the patch
+                                translates, from build/days on Beetle -> docs/screenshots/
+                                (tools/libretro/screenshots.py --help)
   test [pytest arguments]       run the test suite
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
                                 `test`): the movie, voice-only and native-clip subtitle
@@ -403,6 +406,9 @@ case "$verb" in
         ;;
     movie-review)
         exec uv run python tools/libretro/movie_review.py "$@"
+        ;;
+    screenshots)
+        exec uv run python tools/libretro/screenshots.py "$@"
         ;;
     test)
         emulator_env

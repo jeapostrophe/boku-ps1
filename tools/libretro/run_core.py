@@ -341,6 +341,14 @@ def to_rgb_rows(pixels: bytes, fmt: int, width: int, height: int, pitch: int) ->
     return rows
 
 
+def scale_rows(rows: list[bytes], scale: int) -> list[bytes]:
+    """RGB rows with every pixel `scale` x `scale`: no smoothing, so pixel art stays pixels."""
+    if scale == 1:
+        return rows
+    wide = (b"".join(row[i : i + 3] * scale for i in range(0, len(row), 3)) for row in rows)
+    return [row for row in wide for _ in range(scale)]
+
+
 class Frontend:
     """One loaded core. Every ctypes callback object is an attribute so that nothing the core
     holds a pointer to is collected while it runs -- the classic way to crash a ctypes
@@ -627,15 +635,16 @@ class Frontend:
             )
         return len(seen)
 
-    def screenshot(self, path: Path) -> tuple[int, int] | None:
-        """Write the last frame as a PNG; None if the core has drawn nothing yet."""
+    def screenshot(self, path: Path, scale: int = 1) -> tuple[int, int] | None:
+        """Write the last frame as a PNG, each pixel `scale` x `scale`, and return the PNG's
+        size; None if the core has drawn nothing yet."""
         if self.frame is None:
             return None
         width, height, pitch = self.frame_size
         rows = to_rgb_rows(self.frame, self.pixel_format, width, height, pitch)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(png(width, height, rows))
-        return width, height
+        path.write_bytes(png(width * scale, height * scale, scale_rows(rows, scale)))
+        return width * scale, height * scale
 
     def close(self) -> None:
         self.lib.retro_unload_game()

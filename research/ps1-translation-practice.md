@@ -1,5 +1,5 @@
 > Raw sub-agent survey, 2026-09-19, saved as delivered. **[V]** = verified with a URL, **[M]** = measured on the disc, **[I]** = inference.
-> Where it recommends `.po` + Weblate with Japanese `msgid`s it predates two project decisions (README principles 2 and 3) and is superseded by them.
+> Where it recommends `.po` + Weblate with Japanese `msgid`s it predates two project decisions (TECHNICAL principles 2 and 3) and is superseded by them.
 > §8.3's evidence on LLM translation is from weak models working line by line; §7/§8's "the script does not fit → editorial rewrite" and "decide translate vs localize", and §10's recommendation to shape the release around the scene's view of AI, are all answered by README § "Who this is for" and § "How the translation is made" — Jay's rulings, 2026-09-20. (romhack.ing's written rule in §10.6 remains a fact; PLAN `REL-03` records it.)
 > Scratchpad paths are session-local and gone.
 

@@ -71,8 +71,7 @@ not check for you.
 
 ## Where it is played
 
-The project is developed and played on Beetle PSX (the mednafen core, as in RetroArch) and
-DuckStation. It has never been tested on a real PlayStation.
+$played
 
 ## How the translation was made
 

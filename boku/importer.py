@@ -1,7 +1,7 @@
 """The import step: a contributor's own dump in, `disc/` out.
 
 Nothing in this repo works without it and nothing it writes is ever committed
-(README § "The import step", CLAUDE.md § "This repo is public...").
+(TECHNICAL § "The import step", CLAUDE.md § "This repo is public...").
 
 What it produces under `--out` (default `disc/`)::
 
@@ -70,7 +70,7 @@ def resolve_source(argument: str | None) -> Path:
     if not raw:
         raise ImportRefused(
             "no source dump given: pass the path to your own .chd, .cue or .bin/.img, "
-            f"or set {SOURCE_ENV_VAR}. This repo ships none of the game (README principle 2)."
+            f"or set {SOURCE_ENV_VAR}. This repo ships none of the game (TECHNICAL principle 2)."
         )
     source = Path(raw).expanduser()
     if not source.exists():

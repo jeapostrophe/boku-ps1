@@ -28,7 +28,7 @@ the local export under `work/rec08/png/` (regenerate with `work/rec08/extract.py
 | | path | what it means | what is tracked |
 |---|---|---|---|
 | **P** | programmatic | a flat panel: blank it back to its own background in palette indices, re-rule if it was ruled, typeset the English with the game's own glyphs — the diary recipe of [diary-redraw.md](diary-redraw.md) | the English text + the geometry; the rebuilt image is emitted at build time |
-| **R** | redraw | stylised lettering, or lettering over artwork: needs an artist or an image model, then a quantise back to the original CLUT | the redrawn image (README principle 2) |
+| **R** | redraw | stylised lettering, or lettering over artwork: needs an artist or an image model, then a quantise back to the original CLUT | the redrawn image (TECHNICAL principle 2) |
 | **S** | subtitle | painted into a background where a redraw means repainting the object; an English caption composited beside or below it is the honest option | the caption text + its placement only — never the original |
 | **N** | none | stays Japanese by the charter: a shop sign is a shop sign | nothing |
 

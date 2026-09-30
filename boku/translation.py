@@ -4,7 +4,7 @@
 (`[MINE: contract]`). Nothing here designs one or documents one. What this module defines
 is the *interface* the build reads English through, so that settling the format later is
 one new `TranslationSource` and no change to the reinserter, the layout or the image
-build — which is also what README § "How the translation is made" promises anyone who
+build — which is also what TECHNICAL § "The translation pipeline" hopes for anyone who
 wants to drop in a hand translation or another language.
 
 A source yields `TranslationEntry` values. An entry carries either text to lay out (pages

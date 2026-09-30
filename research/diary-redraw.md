@@ -23,7 +23,7 @@ uv run --no-project --with pillow python tools/diary/redraw.py build   --page 00
 ```
 
 Its outputs are the game's own pixels, so they land under the gitignored `work/diary/` and
-`build/diary/` (README principle 2). `measure` writes `work/diary/geometry.json`, one record
+`build/diary/` (TECHNICAL principle 2). `measure` writes `work/diary/geometry.json`, one record
 per page, which is where the numbers below come from; a full sweep of all 94 pages takes about
 five seconds.
 

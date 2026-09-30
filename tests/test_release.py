@@ -41,13 +41,12 @@ from boku.patchfile import (
 from boku.release import (
     BASE_NAME,
     BUILD_ARGS_NAME,
-    CREDITS_HEADING,
-    HOW_MADE_HEADING,
     MAIN,
     NOTES_PATH,
     NOTES_TEMPLATE,
     PPF,
     PPF_NOTES_TEMPLATE,
+    QUOTED_SECTIONS,
     RELEASE_FORMAT,
     RELEASE_MANIFEST,
     STATUS_PATH,
@@ -245,7 +244,7 @@ def test_ignored_outputs_do_not_make_the_tree_dirty(repo):
 def test_the_notes_quote_the_readme_sections_they_name():
     """The real README, so a renamed heading fails here and not on release day."""
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-    for heading in (HOW_MADE_HEADING, CREDITS_HEADING):
+    for heading in QUOTED_SECTIONS.values():
         body = readme_section(readme, heading)
         assert body.strip()
 
@@ -306,7 +305,7 @@ def test_the_main_download_holds_the_xdelta_the_cue_and_the_notes(repo, images):
             assert patch[side][key] in notes
         assert f"{patch[side]['size']:,}" in notes
     readme = (repo / "README.md").read_text()
-    for heading in (HOW_MADE_HEADING, CREDITS_HEADING):
+    for heading in QUOTED_SECTIONS.values():
         first_line = readme_section(readme, heading).strip().splitlines()[0]
         assert first_line in notes
     assert git(repo, "rev-parse", "HEAD") in notes

@@ -7,8 +7,8 @@ then `assemble_release` turns that build into `release/v<version>/`:
   (`boku.patchfile.write_contract`, `PIPE-05`; the base named as the file the
   instructions tell a player to extract, `BASE_NAME`), a `.cue` for the patched image,
   and `RELEASE-NOTES.md` -- the GitHub release page: the template `boku/release-notes.md`
-  filled from `PATCH.json`, the build's manifest, `translation/status.tsv` and two
-  sections of `README.md` quoted whole (`HOW_MADE_HEADING`, `CREDITS_HEADING`);
+  filled from `PATCH.json`, the build's manifest, `translation/status.tsv` and the
+  sections of `README.md` it quotes whole (`QUOTED_SECTIONS`);
 * `ppf/`, the optional download: the PPF, its own `PATCH.json` and `README.txt` (the
   DuckStation route) and the `.cue`, so it applies correctly on its own;
 * one zip of each, `boku-ps1-v<version>.zip` and `boku-ps1-v<version>-ppf.zip`, the files
@@ -115,8 +115,15 @@ PPF = Download("ppf", FORMAT_PPF, "-ppf")
 NOTES_PATH = Path(MAIN.directory) / NOTES_NAME
 STATUS_PATH = STATUS_FILE.relative_to(REPO_ROOT)
 TAG_PREFIX = "v"
+PLAYED_HEADING = "Where it is played"
 HOW_MADE_HEADING = "How the translation is made"
 CREDITS_HEADING = "Related work and credit"
+#: The README sections the notes quote whole, by the template's name for each.
+QUOTED_SECTIONS = {
+    "played": PLAYED_HEADING,
+    "how_made": HOW_MADE_HEADING,
+    "credits": CREDITS_HEADING,
+}
 #: What the instructions have `chdman extractcd -ob` write, so every command in the notes
 #: and in `PATCH.json` names a file the player has. The name is ours to choose; the
 #: Redump-style one is the one a player's dump is most likely already called.
@@ -310,8 +317,7 @@ def render_notes(
         "versions_heading": VERSIONS_HEADING,
         "redump": REDUMP_URL,
         "coverage": _coverage(build_manifest, status),
-        "how_made": readme_section(readme, HOW_MADE_HEADING),
-        "credits": readme_section(readme, CREDITS_HEADING),
+        **{key: readme_section(readme, heading) for key, heading in QUOTED_SECTIONS.items()},
     }
     ppf = by_format.get(PPF.format)
     try:

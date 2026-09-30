@@ -32,6 +32,21 @@ placement table (`u32 n; n x 20`), as `ev_scan_triggers` (`0x800204E0`) is hande
 BOKU = 0x80026C58
 """Boku: `s32 x, y, z` at +0, the facing angle `s16` at +0x12 (4096 to a turn)."""
 EXAMINE = 0x20
+G_MODE, G_MODE_NEXT, G_MODE_PREV = 0x800237E0, 0x800237E4, 0x800237E5
+G_CHANGE, G_ARENA, G_MODES = 0x80024728, 0x800258E0, 0x800236BC
+"""What `mode_set` (`0x80011A98`) writes, and `g_modes`: 18 x {update, init, vsync, a pointer
+to the mode's arena base} (`tools/redux/book-pokes.lua`)."""
+DIARY_MODE, KITE_MODE, INSECT_MODE = 11, 12, 13
+"""The desk with the diary, and the two encyclopedias at their first page."""
+MODE_SET_AT = 6500
+"""A new game's first conversation is up (`boot-to-dialogue.press`): the frame before which the
+Beetle tests and `screenshots.py` do `mode_set` by hand. The three below count from it,
+measured on Beetle."""
+BOOK_OPEN = 790
+"""An encyclopedia is open at its first page."""
+DIARY_PRESSES = (520, 820)
+"""○ on the desk's good-night, then on "write the diary and sleep?": tonight's page opens."""
+DIARY_OPEN = 1090
 SETTLE = 1200
 """Frames after arriving before ○ examines (600 was too soon at the secret base, measured)."""
 
@@ -41,7 +56,8 @@ class StepError(Exception):
 
 
 class Game:
-    def __init__(self, image: Path, card: bytes, work: Path) -> None:
+    def __init__(self, image: Path, card: bytes | None, work: Path) -> None:
+        """`card` goes in slot 1; `None` leaves the core's own (empty) card there."""
         (work / "saves").mkdir(parents=True, exist_ok=True)
         try:
             core, system = emulator_paths.core(), emulator_paths.system()
@@ -55,10 +71,11 @@ class Game:
             raise StepError("no BIOS in the system directory: an HLE boot confirms nothing")
         self.fe.lib.retro_set_controller_port_device(0, run_core.DEVICE_JOYPAD)
         self.fe.av_info()
-        slot = self.fe.memory(run_core.MEMORY_SAVE_RAM)
-        if slot is None or len(slot) != len(card):
-            raise StepError("the core's memory card 1 does not take a raw 128 KB card")
-        slot[:] = card
+        if card is not None:
+            slot = self.fe.memory(run_core.MEMORY_SAVE_RAM)
+            if slot is None or len(slot) != len(card):
+                raise StepError("the core's memory card 1 does not take a raw 128 KB card")
+            slot[:] = card
         self.ram = self.fe.memory(run_core.MEMORY_SYSTEM_RAM)
         self.frame = 0
 
@@ -80,6 +97,15 @@ class Game:
             self.fe.lib.retro_run()
         self.fe.buttons = frozenset()
 
+    def play(self, presses: dict[int, frozenset[int]], to: int) -> None:
+        """Run to frame `to`, holding on each frame what `presses` schedules for it
+        (`press_file`)."""
+        while self.frame < to:
+            self.frame += 1
+            self.fe.buttons = presses.get(self.frame, frozenset())
+            self.fe.lib.retro_run()
+        self.fe.buttons = frozenset()
+
     def press(self, button: str, then: int) -> None:
         self.run(4, button)
         self.run(then)
@@ -90,6 +116,21 @@ class Game:
                 return
             self.run(1)
         raise StepError(f"{what}: not by frame {self.frame}")
+
+
+def press_file(path: Path) -> dict[int, frozenset[int]]:
+    """A `.press` schedule: frame -> the buttons held on it."""
+    return run_core.schedule_presses(argparse.Namespace(press=[], press_file=path))
+
+
+def mode_set(game: Game, mode: int) -> None:
+    """The game's `mode_set(mode)`, done from outside between frames: the dispatcher runs the
+    mode's own init on the next one."""
+    game.write(G_MODE_PREV, game.read(G_MODE_NEXT, 1))
+    game.write(G_MODE, bytes([mode]))
+    game.write(G_MODE_NEXT, bytes([mode]))
+    game.write(G_CHANGE, struct.pack("<I", 1))
+    game.write(G_ARENA, game.read(game.u32(G_MODES + 16 * mode + 12), 4))
 
 
 def facing(x: int, z: int, px: int, pz: int) -> int:
@@ -124,13 +165,7 @@ def examine_zones(game: Game, event: int) -> list[tuple[int, int, int]]:
 def land_in(game: Game, map_base: str) -> None:
     """Load the card's slot-1 save (`boot-to-save.press`) and, during the dawn movie, point the
     field's return at `map_base` (three characters): the morning starts there."""
-    presses = run_core.schedule_presses(
-        argparse.Namespace(press=[], press_file=HERE / "boot-to-save.press")
-    )
-    for f in range(1, RETURN_AT + 1):
-        game.fe.buttons = presses.get(f, frozenset())
-        game.frame += 1
-        game.fe.lib.retro_run()
+    game.play(press_file(HERE / "boot-to-save.press"), RETURN_AT)
     name = map_base.encode()
     game.write(MOVIE_RETURN_MAP, name + b"\0")
     game.until(

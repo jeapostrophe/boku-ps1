@@ -178,7 +178,7 @@ that decision, image by image; where the two disagree about a path, it wins.
    weathering and perspective, and several are plot-bearing rather than scenery. A clean redraw
    means repainting the object. The audit's answer for the 27 images in this class is **22 N, 4
    R, 1 S**: most are scenery the charter leaves in Japanese, the four close-up screens the
-   player chose to examine are redrawn, and the composited-subtitle fallback (README principle
+   player chose to examine are redrawn, and the composited-subtitle fallback (TECHNICAL principle
    2) is used for exactly one image, the beach notice board.
 
 Two things that look like text and are not: `NUMBER.TIM`, which is the game's general-purpose
@@ -237,4 +237,4 @@ one correct for the wooden desk and one correct for the photograph printed on th
 * Text drawn by the renderer over a texture (the diary's day number is the proven case) is not
   visible to this census at all. A texture that looks blank here may carry text in game.
 * FMV frames (`__STR/*.IKI`) are not TIMs and nothing here covers them; their subtitles are
-  [movies.md](movies.md) (README § "What gets translated", row 3).
+  [movies.md](movies.md) (TECHNICAL § "What gets translated", row 3).

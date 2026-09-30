@@ -33,6 +33,7 @@ from boku import texture_paint as paint
 from boku import texture_text as tt
 from boku.png import read as read_png
 from boku.tim import parse_exact
+from tests.libretro_tools import libretro_tool
 
 RUNNER = REPO_ROOT / "tools/libretro/run_core.py"
 SETTINGS = [
@@ -239,20 +240,31 @@ def test_the_beach_notice_on_beetle_is_the_painted_english(
                      tt.BEACH_CLUT, BEACH_BOARD, BEACH_ON_SCREEN)  # fmt: skip
 
 
-DIARY_MODE = [
-    "6500:0x800237E5=05", "6500:0x800237E0=0b", "6500:0x800237E4=0b",
-    "6500:0x80024728=01000000", "6500:0x800258E0=f4791180",
-]  # fmt: skip
-"""After the first dialogue, `mode_set(11)` done by hand (`tools/redux/book-pokes.lua`
-documents the five words): the desk with the diary open, the cursor on its good-night
-button. Level A's arena base is `0x801179F4` (`research/loading-and-memory.md`)."""
+FIELD = libretro_tool("field")
+"""Where the mode words, the diary's mode and its timings from `mode_set` are kept."""
+
+
+def mode_set_pokes(mode: int) -> list[str]:
+    """`mode_set(mode)` as `run_core.py --poke`s at `FIELD.MODE_SET_AT`, the first dialogue
+    (`tools/redux/book-pokes.lua` documents the five words). The mode before is the field's
+    (5) and the arena is Level A's, whose base is `0x801179F4`
+    (`research/loading-and-memory.md`): right for the desk's three modes."""
+    words = {
+        FIELD.G_MODE_PREV: "05", FIELD.G_MODE: f"{mode:02x}", FIELD.G_MODE_NEXT: f"{mode:02x}",
+        FIELD.G_CHANGE: "01000000", FIELD.G_ARENA: "f4791180",
+    }  # fmt: skip
+    return [f"{FIELD.MODE_SET_AT}:{addr:#x}={value}" for addr, value in words.items()]
+
+
+DIARY_MODE = mode_set_pokes(FIELD.DIARY_MODE)
+"""The desk with the diary open, the cursor on its good-night button."""
 DIARY_PAGE_ID = 0x8004612C
 """`g_diary_today`: the page tonight opens (`research/text-outside-events.md`)."""
 DIARY_PAGES = ("072", "064")
 """A generic page, and the page whose entry is longest (it fills all five lines)."""
-DIARY_PRESSES = [(7020, "CIRCLE"), (7320, "CIRCLE")]
+DIARY_PRESSES = [(FIELD.MODE_SET_AT + at, "CIRCLE") for at in FIELD.DIARY_PRESSES]
 """Good night -> "write the diary and sleep?" -> yes: tonight's page opens."""
-DIARY_SHOT = 7590
+DIARY_SHOT = FIELD.MODE_SET_AT + FIELD.DIARY_OPEN
 DIARY_ON_SCREEN = (53, 16)
 """Where the page lands (measured on this screen by matching the page's texels)."""
 DIARY_TOLERANCE = 24

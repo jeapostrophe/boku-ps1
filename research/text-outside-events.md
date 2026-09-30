@@ -185,7 +185,7 @@ one array is the "write the diary and sleep?" select.
   the "numerals missing" observation in [textures.md](textures.md).
 * The desk behind it is `Z_A0n.BIN` before 19:00, `Z_N0n.BIN` after.
 
-So the diary is wholly a texture job (README § "What gets translated", row 2): 94 pages plus
+So the diary is wholly a texture job (TECHNICAL § "What gets translated", row 2): 94 pages plus
 the date strips, no text arrays, no fragments.
 
 ## The insect and kite books

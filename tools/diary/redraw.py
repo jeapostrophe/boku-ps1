@@ -18,7 +18,7 @@ comparison sheet — every pixel that reaches a TIM is written by this file), an
 geometry is stated as constants that `measure` re-derives from the disc and checks.
 
 Nothing it writes is committed: every output is a diary page's own pixels, so it lands under
-the gitignored `work/diary/` and `build/diary/` (README principle 2).
+the gitignored `work/diary/` and `build/diary/` (TECHNICAL principle 2).
 
     uv run --no-project --with pillow python tools/diary/redraw.py measure
     uv run --no-project --with pillow python tools/diary/redraw.py render --page 001
