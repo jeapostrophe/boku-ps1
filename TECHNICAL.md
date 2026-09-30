@@ -22,8 +22,7 @@ exists are [README.md](README.md); the open work is [PLAN.md](PLAN.md).
   narration, bug sumo, voice-only lines in events — are subtitled in the band. The voices
   themselves stay Japanese.
 * **Where it is seen.** Each piece is confirmed on Beetle PSX (the core Mode One runs) wherever
-  play can reach it, most on PCSX-Redux too, and Jay plays the builds on DuckStation. Not yet done: a full
-  playthrough, confirmation on the release targets, and the release itself.
+  play can reach it, most on PCSX-Redux too, and Jay plays the builds on DuckStation.
 
 ## Principles
 
