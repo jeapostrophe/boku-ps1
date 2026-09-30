@@ -6,9 +6,6 @@ exists are [README.md](README.md); the open work is [PLAN.md](PLAN.md).
 
 ## Status
 
-**The whole game is translated and the build carries all of it; what is left is playing it,
-Jay's read of the script, and the release.**
-
 * **Text.** The game draws English left to right, proportionally, in its own glyph sheet, in a
   translucent three-line band under the scene, with speaker labels in the original's
   `Uncle「…」` form and choice menus as rows beside the game's own hand. Every event of the 31

@@ -16,11 +16,6 @@ Nothing is cut to fit. It is a patch, not the game: you need your own copy of th
 Made by [Jay McCarthy](https://jeapostrophe.github.io/) with Claude —
 [why](#why-i-made-this), and [how](#how-the-translation-is-made).
 
-<!-- UNRELEASED: delete this note, down to the next comment, when the first version is posted. -->
-**Not released yet.** The whole game is translated and is being played through; the first
-version will be posted on the Releases page when that is done.
-<!-- /UNRELEASED -->
-
 **[Get the patch](../../releases)** · [how to apply it](#getting-it) ·
 [which version do I have?](#which-version-do-i-have)
 

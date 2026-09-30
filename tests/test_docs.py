@@ -12,7 +12,6 @@ import pytest
 
 from boku import REPO_ROOT
 from boku.png import read as read_png
-from boku.release import VERSIONS_HEADING, listed_row, version_row, with_version_row
 from tests.libretro_tools import libretro_tool
 from tests.test_make_verbs import CITABLE, document, headings, tracked_files
 
@@ -26,8 +25,6 @@ PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tim")
 PICTURE_HOMES = (SHOTS_DIR + "/",)
 """Where a picture may be tracked (CLAUDE.md § "This repo is public"). An English redraw of a
 texture would be the other sanctioned kind; the build typesets those, so none is tracked."""
-UNRELEASED = "<!-- UNRELEASED"
-"""Opens the README's note that no version has been posted yet."""
 
 
 def targets(text: str) -> list[str]:
@@ -120,30 +117,3 @@ def test_a_build_without_the_movie_hook_is_refused_in_words(tmp_path):
         tool.movie_frame_counter(edits)
     with pytest.raises(tool.StepError, match="frame counter"):
         tool.movie_frame_counter(tmp_path / "absent.json")
-
-
-def says_unreleased_wrongly(readme: str) -> str | None:
-    """What is wrong between the README's not-yet-released note and its table of versions."""
-    rows = [line for line in readme.splitlines() if re.match(r"\| v[0-9]", line)]
-    if rows and UNRELEASED in readme:
-        return f"lists {rows[0].split('|')[1].strip()} and still says nothing is released"
-    if not rows and UNRELEASED not in readme:
-        return "lists no version and does not say that nothing is released yet"
-    return None
-
-
-def test_the_readme_says_nothing_is_released_exactly_while_its_table_is_empty():
-    """`./make.sh release-row` adds the first version; the note above the fold must go in the
-    same commit, and this is what says so."""
-    readme = document("README")
-    assert says_unreleased_wrongly(readme) is None, f"README, '{VERSIONS_HEADING}'"
-    patch = {"original": {"sha1": "a" * 40}, "result": {"sha1": "b" * 40}}
-    released = with_version_row(readme, version_row("9.9.9", patch))
-    assert listed_row(released, "v9.9.9")
-    if UNRELEASED in readme:
-        assert "v9.9.9" in says_unreleased_wrongly(released)
-        assert says_unreleased_wrongly(released.replace(UNRELEASED, "<!--")) is None
-    else:
-        assert "lists no version" in says_unreleased_wrongly(
-            re.sub(r"^\| v[0-9].*\n", "", readme, flags=re.M)
-        )

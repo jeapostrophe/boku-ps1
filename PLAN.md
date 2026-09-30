@@ -1030,8 +1030,8 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (Jay, 2026-09-25: "if Millennium Kitchen wants we'll remove it") — `release --no-ppf` /
       `publish-release --withdraw-ppf` remove it in one step. Left: create the GitHub repository
       and set `origin`; pick the first version, tag and push it; `./make.sh release`, then
-      `./make.sh release-row release/v<version>`, delete the README's UNRELEASED note and put
-      the video link at its VIDEO comment, commit and push README.md, then
+      `./make.sh release-row release/v<version>`, put the video link at the README's VIDEO
+      comment, commit and push README.md, then
       `./make.sh publish-release release/v<version> --yes` (`--draft` first if wanted). `REL-01`'s
       sentence on where it has been played is in `boku/release-notes.md`. Listing on romhack.ing /
       romhacking.net is optional and not worth bending anything for (romhack.ing withholds
@@ -1067,7 +1067,7 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       table, where it is played (now quoted into the release notes), the charter, how it was made,
       why Jay made it. Contributor content is `TECHNICAL.md`; `tests/test_make_verbs.py` checks
       section and principle citations against the document named; `tests/test_docs.py` checks
-      links, images and the unreleased note. Harmed (was): a player arriving from the link.
+      links and images; the README's not-yet-released note was removed at Jay's word (2026-09-30). Harmed (was): a player arriving from the link.
 - [x] **[DOC-01]** **README audited against what was built.** DONE 2026-09-25 (`19f2665`): Status
       describes the state, not 2026-09-20 counts; § "Using it" gives the prerequisites, the import
       step and the verbs by task (build-days, reader, lint-translation, mockup, coverage, textures
