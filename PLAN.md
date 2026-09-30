@@ -784,7 +784,8 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       "Bug sumo's bout"). Missed because they are 4bpp sprites in 8bpp TIMs and marks in atlases
       with one census note; a sweep of all 278 non-map TIMs at every CLUT and as 4bpp found one
       more, the kite HUD (`GFX-13`). On Beetle: `tests/test_real_texture_sumo.py`. Jay's look and
-      wording choices, each built as its default: decisions §§ 25–27. Harmed (was): the player,
+      wording choices, ruled 2026-09-30 as built: decisions §§ 25–27 (25a, 25.2a "Winning move",
+      26a, 27a). Harmed (was): the player,
       in every bout.
 - [ ] **[GFX-13]** **The kite-flying HUD's three labels are still Japanese** — wind direction, wind
       speed, altitude (`TBG00`/`TBG01` `0x1c`, 4bpp sprites; found by `GFX-12`'s sweep,
