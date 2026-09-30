@@ -787,20 +787,25 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       wording choices, ruled 2026-09-30 as built: decisions §§ 25–27 (25a, 25.2a "Winning move",
       26a, 27a). Harmed (was): the player,
       in every bout.
-- [ ] **[GFX-14]** **Bug sumo's move names: written as English sumo writes them, with a gloss.** Jay,
-      2026-09-30: English sumo coverage names the winning techniques in Japanese, so they stay
-      Japanese (option a) but in the standard one-word romanisation ("Oshidashi", "Uwatenage",
-      not "Oshi-dashi"), in the banner (`sumo.txt`) and `arrays.txt` `musi@2C` alike; and he wants
-      to consider a third banner line glossing each in English ("frontal push-out"), since the
-      banner has room. Mock up the gloss for his decision; the joke moves stay English. Harmed:
-      the player who does not know sumo.
-- [ ] **[GFX-13]** **The kite-flying HUD's three labels are still Japanese** — wind direction, wind
-      speed, altitude (`TBG00`/`TBG01` `0x1c`, 4bpp sprites; found by `GFX-12`'s sweep,
-      `research/textures-plan.md` § "What the census could not see"). Reach kite flying on Beetle,
-      measure the HUD, translate, prove. Harmed: the player flying a kite.
-
-## Movies
-
+- [x] **[GFX-14]** **Bug sumo's move names, as English sumo writes them.** DONE 2026-09-30
+      (`43ac1e6`): Jay ruled the Japanese names stay (English coverage uses them), in the standard
+      one-word form — the real techniques are one word, capitalised, in `sumo.txt` and `arrays.txt`
+      `musi@2C` alike (Gaburiyori, Uwatenage, Abisetaoshi — the game's misspelt 浴びせた押し read as
+      abise-taoshi; Ashihiki kept, not ashitori), held by `tests/test_texture_sumo.py`, proven on
+      Beetle (`tests/test_real_texture_sumo.py`). The English gloss he asked to consider is held
+      as `sumo@move.gloss-N` (glossary § 4b, sourced), not drawn: a third banner line does not fit
+      the texture page without moving the heading (about 30 MIPS words), and four glosses are
+      wider than a line — mocked up as decisions § 29 (29a name only, built; 29b heading, name,
+      gloss; 29c name over gloss). A b or c ruling is a new row. Harmed (was): the player who does
+      not know sumo.
+- [x] **[GFX-13]** **The kite-flying HUD's three labels.** DONE 2026-09-30 (`eee1d71`): Wind / Speed /
+      Altitude in the game's glyphs, `kite@hud.*` in `translation/textures/kite.txt`
+      (`boku/texture_kite.py`, `research/texture-recipes.md` § "The kite-flying HUD"); both packs'
+      sheets rebuilt, three `TAKO.OVL` records given the new cells, centred where the kanji were;
+      `TBG01` loads from hour 15 (`0x80028FC1`). The rest of the kite screen (△ menu, the crash
+      banner) was already English. On Beetle: `tests/test_real_texture_kite.py`, both packs.
+      Reviewed against the Japanese; Jay's wording: decisions § 28, built as 28a. Harmed (was):
+      the player flying a kite.
 - [x] **[FMV-01]** **The movie-subtitle mechanism.** RULED 2026-09-22 (Jay): **E2** — keep
       24-bit, composite the glyphs in software; the implementation is `FMV-04`. MEASURED
       2026-09-21 (`research/movies.md`):
