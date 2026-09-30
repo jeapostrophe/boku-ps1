@@ -982,15 +982,17 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       `tests/test_voice_only.py` holds the translated set equal to `voice-only.tsv`'s worded
       rows. `E1861.30`–`.32` and `E2305.0` repeat the English of the lines they replay
       (`E1861.0`–`.2`, `E2204.6`). Harmed (was): the player.
-- [ ] **[VO-09]** **The epilogues' last sentence outlives the picture.** Jay, 2026-09-30, from the
-      Summer Memories endings (`boku-finished-game.mcd`): in `OTI02` and `OTI03` the final subtitle
-      ("Those days of that summer", "Goodbye, 20th century") shows only briefly, after the still
-      has already given way to `tex@OTI`, so it is hard to read and looks stray. Wanted: the
-      reader's Clips view shows what the screen looks like through each ending (as the movies are
-      previewed) with each subtitle page's time on screen, so the timing can be adjusted; then the
-      timing fixed. Jay also confirmed the shortcut well's narration shows (an ordinary dialogue
-      line). Harmed: the player, at the last line of the game.
-
+- [x] **[VO-09]** **The epilogues' last sentence outlived the picture.** DONE 2026-09-30 (`f0e2774`):
+      Jay, from the Summer Memories endings. Pages shared the clip by length over its silent tail,
+      so every epilogue's last page was up with the production card (OTI02's and OTI03's only
+      then); and VO-03's block re-read had put the voice 42 vsyncs late against `ENDOTI`'s
+      pictures. Epilogue rows of `clips.txt` now time each page (from VAD), a timed last page comes
+      down by itself, the re-read seeks back to the clip (stock lead, 5 vsyncs), and lint and build
+      refuse a page up with the card or unreadably brief. The reader draws each page over its still
+      with a timeline; `./make.sh epilogue-review` measures all five on Beetle.
+      `research/event-scripts.md` § The epilogue's clock. Gates: `tests/test_clip_subs.py`,
+      `tests/test_real_clip_subtitle_beetle.py`; the whole Beetle suite passes after it (227).
+      Harmed (was): the player, at the last line of the game.
 ## Release
 
 - [x] **[REL-01]** **Confirm on the targets.** DONE 2026-09-25: Jay confirmed the release's
