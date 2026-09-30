@@ -51,9 +51,9 @@ def test_a_real_sumo_technique_is_one_word_as_english_sumo_writes_it():
 
 def test_the_strips_tile_one_page_in_reach_of_the_routine_that_draws_them():
     """`0x80036DE0` adds `u + w` and `v + h` in a byte, so a strip must end by texel 255; and
-    no two strips may share a texel."""
+    no two strips may share a texel. The 22 moves' strips are the whole first page."""
     seen: set[tuple[int, int]] = set()
-    for cell in range(ts.CELLS):
+    for cell in range(ts.MOVES):
         x, y, w, h = ts.cell_box(cell)
         assert x + w <= 255 and y + h <= 255, f"strip {cell} at {x, y} runs past a byte"
         points = set(paint.points((x, y, w, h)))
@@ -61,22 +61,88 @@ def test_the_strips_tile_one_page_in_reach_of_the_routine_that_draws_them():
         seen |= points
 
 
-def test_a_strip_is_bold_type_centred_with_room_for_its_edge():
-    ink = ts.strip(Blocks(), Entry("sumo@move.0", "ab", "t:1"))
-    x, y, w, h = paint.extent(ink)
-    assert (w, h) == (13, 9)  # two blocks, each made 6 wide, a column of air between them
-    assert abs((ts.CELL[0] - w) // 2 - x) <= 1 and y == ts.GLYPH_TOP + 2
+def test_the_heading_is_on_the_third_page_where_its_routine_places_it():
+    """The heading's patched words, traced in order (the few stores they make, from the
+    registers they load): its `u`, its `v`'s low byte and its page are `HEADING_BOX`'s, and
+    the box ends by texel 255. On the built overlay the whole routine is run by
+    `tests/test_real_texture_sumo.py`."""
+    regs, stored = {}, {}
+    for ram, _, word in sorted(ts.banner_code()):
+        if ram >= MOVE_ROUTINE:
+            break
+        op, rt, value = word >> 26, word >> 16 & 31, word & 0xFFFF
+        if op == 0x09 and word >> 21 & 31 == ts.ZERO:  # addiu $rt, $zero, value
+            regs[rt] = value
+        elif op == 0x29 and word >> 21 & 31 == ts.V0:  # sh $rt, value($v0)
+            stored[value] = regs[rt]
+    x, y, w, h = ts.HEADING_BOX
+    page = (ts.HEADING_PAGE_X - ts.PAGE_X) * 4  # 4bpp: four texels a VRAM halfword
+    assert (stored[0], stored[2] & 0xFF, stored[0x10]) == (x - page, y, ts.HEADING_PAGE_X)
+    assert x - page + w <= 255 and y + h <= 255
+    assert ts.HEADING_PAGE_X % 64 == 0, "a texture page starts on a multiple of 64"
+
+
+MOVE_ROUTINE = 0x800865F8
+
+
+def test_the_heading_is_centred_over_the_strips_as_a_strip_would_centre_it():
+    ink = ts.heading(Blocks(), Entry("sumo@move.heading", "abc", "t:1"))
+    as_strip = ts.strip(Blocks(), Entry("sumo@move.0", "abc", "t:1"))
+    assert ts.HEADING_X + paint.extent(ink)[0] == ts.STRIP_X + paint.extent(as_strip)[0]
+
+
+def test_a_name_with_a_gloss_is_two_lines_each_centred_with_room_for_its_edge():
+    name, gloss = Entry("sumo@move.0", "ab", "t:1"), Entry("sumo@move.gloss-0", "abcd", "t:2")
+    ink = ts.strip(Blocks(), name, gloss)
+    over = {(x, y) for x, y in ink if y < ts.GLOSS_TOP}
+    under = ink - over
+    for line, top, letters in ((over, ts.NAME_TOP, 2), (under, ts.GLOSS_TOP, 4)):
+        x, y, w, h = paint.extent(line)
+        assert (w, h) == (7 * letters - 1, 9)  # each block made 6 wide, a column of air between
+        assert abs((ts.CELL[0] - w) // 2 - x) <= 1 and y == top + 2
     edged = paint.grown(ink, 1, 1, 1, 1)
     assert all(0 <= px < ts.CELL[0] and 0 <= py < ts.CELL[1] for px, py in edged)
 
 
-def test_a_move_one_letter_too_long_for_its_strip_is_refused_not_cut():
+def test_a_name_with_no_gloss_sits_midway_between_the_two_lines():
+    alone = ts.strip(Blocks(), Entry("sumo@move.7", "ab", "t:1"))
+    both = ts.strip(Blocks(), Entry("sumo@move.0", "ab", "t:1"), Entry("g", "ab", "t:2"))
+    _, top, _, h = paint.extent(alone)
+    _, first, _, span = paint.extent(both)
+    assert abs((top + h / 2) - (first + span / 2)) <= 0.5
+
+
+@pytest.mark.parametrize("which", ["name", "gloss"])
+def test_a_line_one_letter_too_long_for_its_strip_is_refused_not_cut(which):
     """A block letter is 6 px bold and a column of air: n letters are 7n - 1 wide, and a
     strip holds its width less a pixel of edge each side."""
     most = (ts.CELL[0] - 2 + 1) // 7
-    ts.strip(Blocks(), Entry("sumo@move.0", "x" * most, "t:1"))
+
+    def lines(n):
+        name = "x" * (n if which == "name" else 1)
+        gloss = "x" * (n if which == "gloss" else 1)
+        return Entry("sumo@move.0", name, "t:1"), Entry("sumo@move.gloss-0", gloss, "t:2")
+
+    ts.strip(Blocks(), *lines(most))
     with pytest.raises(TextureTextError, match="nothing is cut to fit"):
-        ts.strip(Blocks(), Entry("sumo@move.0", "x" * (most + 1), "t:1"))
+        ts.strip(Blocks(), *lines(most + 1))
+
+
+class Reaching(Blocks):
+    """Blocks, but "q" hangs to the glyph cell's last row and "t" rises to its second."""
+
+    def ink(self, text):
+        drop = {"q": 1, "t": -1}
+        return {(x, y + drop.get(text[x // 6], 0)) for x, y in super().ink(text)}
+
+
+def test_a_gloss_whose_letters_would_touch_the_names_is_refused():
+    """A descender on the cell's last row and a capital on the next line's second leave no
+    row for the edge between them: refused, not drawn run together."""
+    ts.strip(Reaching(), Entry("sumo@move.0", "q", "t:1"), Entry("sumo@move.gloss-0", "a", "t:2"))
+    with pytest.raises(TextureTextError, match="touches the name over it"):
+        ts.strip(Reaching(), Entry("sumo@move.0", "q", "t:1"),
+                 Entry("sumo@move.gloss-0", "t", "t:2"))  # fmt: skip
 
 
 @pytest.mark.parametrize("dropped", ["move.20", "rank.king"])

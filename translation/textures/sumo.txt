@@ -11,11 +11,13 @@ sumo@rank.strong	Strong
 sumo@rank.king	King
 
 # --- the banner over the ring when a bout ends: a heading (決まり手, the move that decided
-# it) and the move under it, one line each. move.N is the game's own number for how the bout
-# ended. 1-19 are the moves of arrays.txt musi@2C.13-.31 in the same order and keep its wording
-# (real sumo techniques keep their Japanese names, one word as English sumo writes them, the
-# joke moves are translated -- glossary § 4b); a test holds the two files together. 0 is
-# 押し出し, the push-out; 20 is shown with no heading when both bugs go out; 21 is a bout won because the other bug ran out of stamina.
+# it) and the move under it; a real technique's gloss (below) is a third line under its name.
+# move.N is the game's own number for how the bout ended. 1-19 are the moves of arrays.txt
+# musi@2C.13-.31 in the same order and keep its wording (real sumo techniques keep their
+# Japanese names, one word as English sumo writes them, the joke moves are translated --
+# glossary § 4b); a test holds the two files together. 0 is 押し出し, the push-out; 20 is
+# shown with no heading when both bugs go out; 21 is a bout won because the other bug ran out
+# of stamina.
 sumo@move.heading	Winning move
 sumo@move.0	Oshidashi
 sumo@move.1	Buchikamashi
@@ -41,19 +43,21 @@ sumo@move.20	Both sides draw
 sumo@move.21	Stamina win
 
 # --- move.gloss-N: an English gloss for each move above that is a real sumo technique, whose
-# words glossary § 4b gives. Not drawn: PLAN GFX-14.
+# words glossary § 4b gives, drawn under its name (Jay, decisions § 29b, PLAN GFX-15). A line
+# holds 122 px in the game's glyphs made bold; 3, 4, 14 and 16 are Jay's shorter wording
+# (2026-09-30) for four that did not fit.
 sumo@move.gloss-0	frontal push-out
 sumo@move.gloss-1	head-first charge
 sumo@move.gloss-2	open-hand thrusts
-sumo@move.gloss-3	backward pivot throw
-sumo@move.gloss-4	bouncing force-out
+sumo@move.gloss-3	backward pivot
+sumo@move.gloss-4	bouncing force
 sumo@move.gloss-6	overarm throw
 sumo@move.gloss-8	hand pull-down
 sumo@move.gloss-9	rear foot sweep
 sumo@move.gloss-10	beltless arm throw
 sumo@move.gloss-11	frontal lift-out
 sumo@move.gloss-12	leg pull
-sumo@move.gloss-14	backward force-down
+sumo@move.gloss-14	backward pin
 sumo@move.gloss-15	frontal thrust-out
-sumo@move.gloss-16	forward force-down
+sumo@move.gloss-16	forward pin
 sumo@move.gloss-17	open-hand slap

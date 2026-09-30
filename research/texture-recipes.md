@@ -616,35 +616,53 @@ the rest unused.
   heading is at (163, 42) and the move at (142, 46) — (150, 46) for the draw. `0x800867DC`
   draws them through the executable's `0x80036DE0`, which emits the quad twice: subtracting
   white through an all-white CLUT at (256, 271), then adding the strip, both scaled by the
-  fade — so at full fade a strip's texels are on screen exactly, opaque. That routine adds
-  `u + w` and `v + h` **in a byte**: a strip must end by texel 255. The veil is a
+  fade — so at full fade a strip's texels are on screen exactly, opaque. That routine reads
+  `u, v, w, h` as halfwords and hands the GPU their low bytes, adding `u + w` and `v + h`
+  **in a byte**: a strip must end by texel 255. The veil is a
   half-transparent grey rectangle whose `x, y, w, h` are the four halfwords at `0x8007A308`
   (130, 35, 60, 140), drawn by `0x800866BC`.
 
 **What the recipe does.** English does not stand on end, so the banner is turned on its side
 (the alternative, the lettering turned a quarter as the settings chart's headings are, needs
-no code; Jay's decision page has both). The page is cleared and each strip set again as one
-horizontal line in a 124×20 cell, cells 0–10 down the page from (0, 0) and 11–22 from
-(128, 0): the game's glyphs, each letter emboldened with a column of air kept between
-letters (`boku.texture_closeups.emboldened`), in the white the lettering used most, every
-pixel round it in the darkest entry the page used. A line wider than 122 px is refused. The
-two routines keep their shape — retail steps `u` by the cell and picks `v` by the row; ours
-steps `v` and picks `u` — so the patch is sixteen words: the immediates for the cell's size
-and the places, and four `sh` offsets traded so the stepped value is stored to `v`, the
-picked one to `u`, and the draw's own place becomes its `y` (`banner_code`). The heading is
-drawn at (98, 85), the move at (98, 105), the draw alone at (98, 95), and the veil is
-(90, 80, 140, 50).
+no code; Jay's decision page has both). Each real technique is shown as its Japanese name over
+an English gloss, `sumo@move.gloss-N` (`GLOSSED`; Jay, decisions § 29b, PLAN `GFX-15`): three
+lines, heading, name, gloss. Every line is the game's glyphs, each letter emboldened with a
+column of air kept between letters (`boku.texture_closeups.emboldened`), centred, in the white
+the lettering used most, every pixel round it in the darkest entry the page used; a line wider
+than its strip less the edge (122 px, the heading 88) is refused, and so is a gloss whose
+letters would touch the name's.
 
-**A third line, measured (PLAN `GFX-14`).** Each real technique has an English gloss in
-`sumo.txt` (`sumo@move.gloss-N`, `GLOSSED`) that nothing draws. Drawing it under the name makes a
-move's strip two lines, 23 rows (a bold line is up to 10 rows, capital to descender, with a
-dark row above, between and below). Twenty-two of those take 506 of the page's two 256-row
-columns, so the heading could no longer share the page. The atlas's next page has a free
-corner of 97×96 texels at (599, 160), but the heading's routine stores its `u` and `v` from
-`$zero`, so moving it there rewrites that routine. Stepping the move by 23 rows needs one
-more shift-and-add than 20 does. The spare word comes from setting the height once, not once
-per column. Four glosses are also wider than a strip's 122 px. Leaving the heading out
-instead (two lines, name over gloss) needs only the move routine changed.
+* **The strips.** A bold line's ink is rows 1–10 of the glyphs' 12-row cell (all but `j`'s
+  dot, on row 0 — the refusal above), so two lines 11 rows apart keep one dark row between a
+  descender and a capital: a strip is 124×23, the
+  name's cell from row 0 and the gloss's from row 11. A move with no gloss (the five jokes, the
+  draw, the stamina win) has its name midway, its cell from row 6. The page is cleared and the
+  22 strips set down it in two columns, cells 0–10 from (0, 0) and 11–21 from (128, 0), 23
+  rows apart: 253 rows a column. `0x8007A2F0` is rewritten with each move's strip one earlier
+  than retail's, the heading's cell 0 having left the page.
+* **The heading** is one line, 90×12, in the free corner of the atlas's third page (canvas
+  (599, 160) to the bottom right at 4bpp, empty beside the portraits the 8bpp view shows) at
+  (602, 192): page `u` 90, `v` 192. Its routine stores `u` from `$a1`, the register that holds
+  its width, and `v` from `$v1` while it holds the page's x, 960, whose low byte is 192 — which
+  is why the heading is where it is.
+* **The code: 26 words of `MUSI.OVL`** (`banner_code`), each checked against retail's before
+  it is written. The heading's routine (`0x8008659C`) keeps its length: `0x800865A0`, which
+  zeroed `u`, loads 960 into `$v1`; `0x800865A8`/`AC` the width and height; `0x800865B0`
+  stores `$v1` as `v` and `0x800865B4` as the page's x, where retail placed `x`;
+  `0x800865B8` the heading's `y`; `0x800865C0`/`C4` load and store `x` where the page was;
+  `0x800865D4`, which zeroed `v`, stores `u` from `$a1`. The move's routine (`0x800865F8`):
+  `0x8008661C`, the branch's delay slot, sets the strip's height once for both columns;
+  `0x80086620` jumps the first column to `0x80086630`, its delay slot `0x80086624` zeroing
+  `u`; `0x8008662C` gives the second column `u` 128; `0x80086630`–`3C` compute the cell's `v`
+  as 24c − c (`c << 1`, plus c, `<< 3`, less c), where retail's three words made 20c; then, as GFX-12
+  made them, `0x80086648` stores the stepped value to `v`, `0x80086660` the picked one to
+  `u`, `0x8008664C`/`8C` the width, `0x80086670`/`74` the draw's and a move's `y`, stored as
+  `y` by `0x80086678`, and `0x80086684`/`88` the shared `x`. Data: the 22 bytes at
+  `0x8007A2F0` and the veil at `0x8007A308`.
+* **On screen** the heading is at (115, 89) and a move's strip at (98, 109), so the heading and
+  the name are exactly where GFX-12 drew them; the draw's strip is at (98, 99), centred in the
+  veil, and the veil is (90, 80, 140, 61), eleven rows taller, so the gloss has the room under
+  it the name had.
 
 ### The stamina plate
 
@@ -696,14 +714,20 @@ choose a rank, put the bug down, ring the gong, tap △ until the bout ends
 0x80.
 
 **Proof.** `tests/test_real_texture_sumo.py`: each strip, found through the import's own
-table, is exactly its move's English and the page holds nothing else; the plate's raised
-type is exactly the word, its frame the stock plate's, its old place blank; inside each ring
-the only chalk is the rank, and nothing outside the ring changed. On Beetle
-(`./make.sh emu-test`) a King bout shows every texel of the mark, the plate and both lines
-of the banner as rebuilt; the plate opens to 56; and the two records hold the strips' new
-places — without the sixteen words the heading's record is retail's and the test fails.
-`tests/test_texture_sumo.py` holds the layout (every strip ends by texel 255, no two share a
-texel), the banner's wording to the move-name array's, and each technique as one word.
+table, is exactly its move's name — over the gloss `sumo.txt` gives it, or alone midway — and
+the page holds nothing else; the heading is exactly its English, in texels that were free;
+the two routines, run on the built `MUSI.OVL` (`tests/mips.py`), fill the heading's record
+and each of the 22 moves' with its strip's box and place; utchari's first gloss is refused as
+too wide; the plate's raised type is exactly the word, its frame the stock plate's, its old
+place blank; inside each ring the only chalk is the rank, and nothing outside the ring
+changed. On Beetle (`./make.sh emu-test`) a King bout that ends in the push-out shows every
+texel of the mark, the plate, the heading and the strip, name and gloss, as rebuilt; the
+plate opens to 56; and the two records hold the new places — with the move's `y` word left
+at GFX-14's value the test fails on the record, and the strip's texels are 4 rows off on
+screen. `tests/test_texture_sumo.py` holds the layout (the 22 strips and the heading end by
+texel 255 and share none, the heading where its routine's registers put it and centred as a
+strip would be), the lines and the refusals, the banner's wording to the move-name array's,
+and each technique as one word.
 
 ## The kite-flying HUD — three labels over the compass and the numbers (PLAN `GFX-13`)
 

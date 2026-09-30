@@ -460,7 +460,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 17 | `tex@T_MEMORY.0` | album heading plate | 1 line |
 | 18 | `tex@M_S01000.0` | the bug-trading notebook's cover, "Bug // Trading // Notebook" | 3 lines |
 | 19 | `btn@MZKAN.back` | the insect book's stone "Back" (the same stone as every other; the wreath and pencils beside it carry no Japanese) | 1 word |
-| 20 | `sumo@plate.stamina`, `sumo@rank.*`, `sumo@move.*` | a bug-sumo bout: the stamina plate, the three rank marks, the banner's heading and 22 ways a bout ends | 27 strings |
+| 20 | `sumo@plate.stamina`, `sumo@rank.*`, `sumo@move.*` | a bug-sumo bout: the stamina plate, the three rank marks, the banner's heading, 22 ways a bout ends and 15 glosses | 42 strings |
 | 21 | `kite@hud.direction`, `.speed`, `.altitude` | the kite-flying HUD's three labels | 3 words |
 
 Rows 1–3 are **111 pages** and dwarf everything else; rows 11–19 are a few dozen short strings

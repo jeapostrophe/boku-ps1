@@ -330,7 +330,7 @@ Names of people, animals and settlements (Q4, Q5); *-kun / -chan / -san*; *Onee-
 Onii-chan, -neechan* (Q1); *itadakimasu, gochisōsama* (Q2); the cicadas and the singing insects
 by their Japanese names, while butterflies, beetles and dragonflies are English (Q6, glossary
 § 4a); the fish *iwana* and *yamame* (Q10.11); real sumo techniques in the bug-sumo move list
-(Q10.9; their glosses are held, not shown, PLAN `GFX-14`); *mizore* syrup (Q10.7); dishes
+(Q10.9; the banner glosses each in English, PLAN `GFX-15`); *mizore* syrup (Q10.7); dishes
 that English-language Japanese cooking already calls by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi, omurice,
 nikujaga, korokke*); *tanuki, tengu, oni, kappa* (as in *kappa-maki*), *jizō*, *yukata, futon,
 kotatsu, tanabata, tenkara*; invented words (but § 7's two spelled as English). Everything else is English — including

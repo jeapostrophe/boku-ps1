@@ -238,26 +238,28 @@ techniques keep their Japanese names, as English sumo broadcasting does, and are
 English sumo writes them — one word, no hyphen (the Japan Sumo Association's English pages give
 a bout's kimarite as "oshidashi", sumo.or.jp/En, checked 2026-09-30), capitalised on the
 banner as a name (Jay, 2026-09-30, PLAN `GFX-14`). Each has an English gloss (`sumo@move.gloss-N`
-in `translation/textures/sumo.txt`, not drawn): for the ten that are official kimarite, the
-English name the English Wikipedia's list of the JSA's 82 gives (after NHK World's "The
-Techniques of Sumo"), hyphenated as English nouns; for the rest a plain description.
+in `translation/textures/sumo.txt`), drawn on the banner under the name (Jay, 2026-09-30,
+decisions § 29b, PLAN `GFX-15`): for the ten that are official kimarite, the English name the
+English Wikipedia's list of the JSA's 82 gives (after NHK World's "The Techniques of Sumo"),
+hyphenated as English nouns; for the rest a plain description. Four of those were too wide
+for a line of the banner, and are Jay's shorter wording (2026-09-30), marked ‡.
 
 | game | written | gloss | note |
 |---|---|---|---|
 | 押し出し | Oshidashi | frontal push-out | kimarite; the banner only |
 | ぶちかまし | Buchikamashi | head-first charge | the tachiai charge, not a kimarite |
 | 突っ張り | Tsuppari | open-hand thrusts | not a kimarite |
-| うっちゃり | Utchari | backward pivot throw | kimarite |
-| がぶりより | Gaburiyori | bouncing force-out | not a kimarite (the win is *yorikiri*) |
+| うっちゃり | Utchari | backward pivot‡ | kimarite ("backward pivot throw" in the list) |
+| がぶりより | Gaburiyori | bouncing force‡ | not a kimarite (the win is *yorikiri*; first worded "bouncing force-out") |
 | 上手投げ | Uwatenage | overarm throw | kimarite |
 | 引き落とし | Hikiotoshi | hand pull-down | kimarite |
 | すそはらい | Susoharai | rear foot sweep | kimarite (裾払い) |
 | すくい投げ | Sukuinage | beltless arm throw | kimarite |
 | 吊り出し | Tsuridashi | frontal lift-out | kimarite |
 | 足引き | Ashihiki† | leg pull | the game's own: not 足取り *ashitori* (leg pick); the reading (*-hiki* or *-biki*) is unconfirmed |
-| 浴びせた押し | Abisetaoshi | backward force-down | the game's spelling of 浴びせ倒し, the kimarite |
+| 浴びせた押し | Abisetaoshi | backward pin‡ | the game's spelling of 浴びせ倒し, the kimarite ("backward force-down" in the list) |
 | 突き出し | Tsukidashi | frontal thrust-out | kimarite |
-| サバ折り | Sabaori | forward force-down | kimarite |
+| サバ折り | Sabaori | forward pin‡ | kimarite ("forward force-down" in the list) |
 | 張り手 | Harite | open-hand slap | not a kimarite |
 
 The jokes are translated —
