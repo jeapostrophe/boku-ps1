@@ -31,7 +31,7 @@ from boku.png import read as read_png
 from boku.texture_text import TextureTextError, ink_of, lines_of, read_entries
 from boku.textures import Texture
 from boku.tim import luminance, parse_exact
-from boku.typeset import FONT_SHEET_ID, GameFace, face_named
+from boku.typeset import face_named
 
 ENTRIES = {e.id.removeprefix(tb.FAMILY): e for e in read_entries().values()
            if e.family == tb.FAMILY}  # fmt: skip
@@ -47,11 +47,6 @@ def rebuilt(inv, patched: bytes, source) -> paint.Canvas:
 
 def box_of(button: tb.Button) -> paint.Box:
     return button.placed
-
-
-@pytest.fixture(scope="module")
-def game(texture_inventory) -> GameFace:
-    return GameFace.from_sheet(texture_inventory.get(FONT_SHEET_ID).tim)
 
 
 def test_every_measured_button_has_its_english_tracked():

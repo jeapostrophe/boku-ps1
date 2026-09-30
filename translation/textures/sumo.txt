@@ -1,0 +1,41 @@
+# Bug sumo's bout (PLAN GFX-12). Format: translation/textures/README.md; what each is and where
+# it is drawn: boku/texture_sumo.py, research/texture-recipes.md § "Bug sumo's bout".
+
+# --- the plate between the two stamina bars (glossary § 4b: スタミナ stamina).
+sumo@plate.stamina	Stamina
+
+# --- the rank chalked on the desk beside the ring, the opponent's class: the rank board's
+# three rows (arrays.txt musi@358), and worded as they are.
+sumo@rank.weak	Weak
+sumo@rank.strong	Strong
+sumo@rank.king	King
+
+# --- the banner over the ring when a bout ends: a heading (決まり手, the move that decided
+# it) and the move under it, one line each. move.N is the game's own number for how the bout
+# ended. 1-19 are the moves of arrays.txt musi@2C.13-.31 in the same order and keep its wording
+# (real sumo techniques keep their Japanese names, the joke moves are translated -- glossary
+# § 4b); a test holds the two files together. 0 is 押し出し, the push-out; 20 is shown with no
+# heading when both bugs go out; 21 is a bout won because the other bug ran out of stamina.
+sumo@move.heading	Winning move
+sumo@move.0	Oshi-dashi
+sumo@move.1	Buchikamashi
+sumo@move.2	Tsuppari
+sumo@move.3	Utchari
+sumo@move.4	Gaburi-yori
+sumo@move.5	Fighting spirit
+sumo@move.6	Uwate-nage
+sumo@move.7	Brainbuster
+sumo@move.8	Hiki-otoshi
+sumo@move.9	Susoharai
+sumo@move.10	Sukui-nage
+sumo@move.11	Tsuri-dashi
+sumo@move.12	Ashi-hiki
+sumo@move.13	Flip-over
+sumo@move.14	Abise-taoshi
+sumo@move.15	Tsuki-dashi
+sumo@move.16	Saba-ori
+sumo@move.17	Harite
+sumo@move.18	Mantis Scissors
+sumo@move.19	Mantis Buster
+sumo@move.20	Both sides draw
+sumo@move.21	Stamina win

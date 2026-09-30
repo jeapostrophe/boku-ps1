@@ -74,6 +74,7 @@ from boku.packets import (
     surfaces_of,
 )
 from boku.png import SIGNATURE as PNG_SIGNATURE
+from boku.png import write_rgba
 from boku.reinsert import ByteEdit
 from boku.script_store import (
     Store,
@@ -83,9 +84,11 @@ from boku.script_store import (
     scene_dated_day,
     select_shape,
 )
+from boku.texture_paint import Canvas, View
+from boku.texture_sumo import VIEWS
 from boku.texture_text import FAMILIES, TEXTURE_TEXT_DIR, TextureTextError, patched_archive
 from boku.texture_text import read_entries as read_texture_entries
-from boku.textures import TextureError, inventory, to_png
+from boku.textures import Texture, TextureError, inventory, to_png
 from boku.tim import TimError, parse_exact
 from boku.translation import SampleScenes
 from boku.typeset import FONT_SHEET_ID, GameFace, TypesetError
@@ -110,6 +113,7 @@ TEXTURE_UNITS = {
     "signs.txt": "screens",
     "buttons.txt": "screens",
     "records.txt": "screens",
+    "sumo.txt": "sumo",
     "diary.txt": "diary",
     "books.txt": "books",
 }
@@ -122,6 +126,7 @@ UNIT_NAMES = {
     CLIPS_UNIT: ("Voice clips from code", "Clips"),
     MOVIES_UNIT: ("Movie subtitles", "Movies"),
     "screens": ("Screens and signs", "Screens and signs"),
+    "sumo": ("Bug sumo's bout", "Bug sumo"),
     "diary": ("The picture diary", "Diary"),
     "books": ("The encyclopedias", "Encyclopedias"),
 }
@@ -901,6 +906,7 @@ def texture_sections(
         groups.setdefault(entry.id.rsplit(".", 1)[0], []).append(entry)
     notes = notes_by_id(sorted(directory.glob("*.txt")))
     built: dict[str, tuple[list[str], list[Mark]]] = {}
+    viewed: dict[str, tuple[tuple[str, str], ...]] = {}
     try:
         archive = archive if archive is not None else Archive(Path(sources.disc_dir))
         inv = inv if inv is not None else inventory(archive)
@@ -933,6 +939,9 @@ def texture_sections(
             if blob is not None:
                 after = parse_exact(blob, texture.occurrences[0].file_offset)
                 walkthrough.files[f"img/{texture_id}.en.png"] = to_png(after)
+        for key in groups.keys() & VIEWS.keys():
+            if built[key][0]:  # the group built: its views stand for its whole atlases
+                viewed[key] = view_pictures(key, VIEWS[key], by_id, blob, walkthrough.files)
 
     def place(entry) -> tuple[str, int]:
         name, number = entry.where.rsplit(":", 1)
@@ -945,7 +954,7 @@ def texture_sections(
     ):
         name = place(members[0])[0]
         images, group_marks = built.get(key, ([], []))
-        pictures = tuple(
+        pictures = viewed.get(key) or tuple(
             (caption, path)
             for texture_id in images
             for caption, path in (
@@ -970,6 +979,34 @@ def texture_sections(
         unit_section(unit, "Textures", (Block(unit, "", tuple(items)),))
         for unit, items in by_unit.items()
     ]
+
+
+VIEW_GROUND = (96, 96, 112, 255)
+"""What a view shows where a sprite is transparent: white lettering has to stay readable."""
+
+
+def view_pictures(
+    key: str, views: Sequence[View], by_id, blob: bytes | None, files: dict[str, bytes]
+) -> tuple[tuple[str, str], ...]:
+    """A group's pictures as the game draws them (a family's `VIEWS`): each view's box of
+    the original and, if the edits applied, of the rebuilt image, added to `files`."""
+    pictures = []
+    for n, view in enumerate(views):
+        stock = by_id[view.texture]
+        sides = [("original", "ja", stock, view.original)]
+        if blob is not None:
+            tim = parse_exact(blob, stock.occurrences[0].file_offset)
+            sides.append(("English", "en", Texture(stock.id, stock.sha1, tim, ()), view.english))
+        for caption, tag, texture, (x0, y0, w, h) in sides:
+            canvas = Canvas(texture, drawn_4bpp=view.drawn_4bpp)
+            palette = canvas.palette(view.clut, view.chunk)
+            colours = (palette[canvas.at((x, y))] for y in range(y0, y0 + h)
+                       for x in range(x0, x0 + w))  # fmt: skip
+            rgba = b"".join(bytes(c if c[3] else VIEW_GROUND) for c in colours)
+            name = f"img/{key.replace('@', '-')}.{n}.{tag}.png"
+            files[name] = write_rgba(w, h, rgba)
+            pictures.append((caption, name))
+    return tuple(pictures)
 
 
 def build_group(family, archive, inv, face, members, spans, starts):

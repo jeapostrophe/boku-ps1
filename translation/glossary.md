@@ -238,9 +238,12 @@ techniques keep their Japanese names, as English sumo broadcasting does — *buc
 tsuppari, utchari, gaburi-yori, uwate-nage, hiki-otoshi, susoharai, sukui-nage, tsuri-dashi,
 ashi-hiki†, tsuki-dashi, saba-ori, harite, abise-taoshi†*; the jokes are translated —
 ブレンバスター Brainbuster, カマバサミ Mantis Scissors, カマバスター Mantis Buster, ひっくり返し
-Flip-over; state names (待機 Waiting, 休息 Resting, 前進 Advance, 後退 Retreat, 組み合う Grapple,
-共に押す Both pushing, 1P押し / 2P押し P1 pushing / P2 pushing, 気合 Fighting spirit…) are
-probably debug-only — *whether the player ever sees them is not established*.
+Flip-over, 気合 Fighting spirit (a way to win, on the banner); state names (待機 Waiting,
+休息 Resting, 前進 Advance, 後退 Retreat, 組み合う Grapple, 共に押す Both pushing, 1P押し / 2P押し
+P1 pushing / P2 pushing…, `.0`–`.12`) are debug-only. The array itself is never drawn: the
+player sees a move on **the banner** when a bout ends (`translation/textures/sumo.txt`,
+which must word moves as this array does): 決まり手 Winning move (the heading), 押し出し
+Oshi-dashi, 両者、引き分け Both sides draw, スタミナ勝ち Stamina win.
 
 ### 4c. Fishing (`exe@8003DA4C`, `exe@800462C8`…)
 

@@ -7,9 +7,10 @@ says what it is — and 2026-09-23, `GFX-09`: the beach notice is frontal, not a
 in both variants of its map, so it is **P** twice; and `GFX-10`: the epilogue's closing card is translated, **P**;
 and 2026-09-24, `GFX-08`: Saori's farewell note, the hunting-association board, the keep-out
 sign, the bug-trading notebook's cover and the cage's sprites (`MITIM`) are built
-programmatically, **P** — the counts below
-are now **147 P, 21 R, 0 S, 30 N** of 198; the tables keep the audit's original
-split.) This file assigns each of those 197 a **path**, and says where the English comes from.
+programmatically, **P**; and 2026-09-30, `GFX-12`: the kite HUD's labels, which the audit
+took for Latin, are Japanese, **P** and not yet built (§ "What the census could not see") —
+the counts below are now **149 P, 21 R, 0 S, 28 N** of 198; the tables keep the audit's
+original split.) This file assigns each of those 197 a **path**, and says where the English comes from.
 The per-image table is [`data/texture-plan.tsv`](data/texture-plan.tsv); it is generated from
 the census by `tools/textures/make_plan.py` (`./make.sh texture-plan`) whose rule table *is* the
 written record of what was looked at, so a census row can never silently lose its decision. The
@@ -264,6 +265,11 @@ question; it is noted here so the two sides do not both assume the other has it.
   close-up atlas with two action ovals in its corner, the same family as its siblings. These are
   multi-CLUT atlases: any rebuild must carry the per-region CLUT assignment, which lives in the
   drawing code and not in the TIM ([textures.md](textures.md) § Caveat).
+* `M_S01100` ×2 and `M_S01000` again — **what a bug-sumo bout draws**, which this audit never
+  listed (`GFX-12`, § "What the census could not see"): the winning-move banner's 23 strips
+  of brush lettering (`M_S01100` `0x164b4`, 4bpp), the stamina plate (`M_S01000`, 4bpp), and
+  the rank chalked on the desk — 弱 in `M_S01000`'s desk, 強 and キング as sprites in `M_S01100`
+  `0x14`. All **P**, built ([texture-recipes.md](texture-recipes.md) § "Bug sumo's bout").
 * `FS_WAL`, `PK_WAL`, `TK_WAL` — the census gave all three the same note, and only `FS_WAL`
   fits it (looked at 2026-09-22): field labels (size / average / largest / count) on flat pale
   plates, plus the bait and tackle names. `PK_WAL` and `TK_WAL` carry only frames, photographs
@@ -298,7 +304,10 @@ question; it is noted here so the two sides do not both assume the other has it.
   at (233, 105) — *corrected* 2026-09-23: it is a **P**, built with the other buttons
   ([texture-recipes.md](texture-recipes.md) § "Buttons").
 * `TBG00`, `TBG01` — the kite-flying HUD: at CLUT 0 the atlas is kite thumbnails plus
-  `1234567890`, `m`, `s`, `m/s`, a compass rose and a wind vane. All Latin and numerals.
+  `1234567890`, `m`, `s`, `m/s`, a compass rose and a wind vane. All Latin and numerals —
+  *corrected* 2026-09-30: the HUD is 4bpp sprites, and beside the digits are three 12 px
+  labels, 風向 / 風速 / 高度 (wind direction, wind speed, altitude). **P**, not built
+  (§ "What the census could not see").
 * `NIKKI_W` `0x005450` — *corrected* 2026-09-23: its header says 8bpp 28×184, and read that
   way it looks like a pull cord, a wreath, a mushroom and two pencils. The game draws it as
   **4bpp 56×184**: the pull cord, the diary desk's おやすみ ("good night") balloon, its stone
@@ -385,6 +394,40 @@ rest. The check that would close it outright is already on
 [text-outside-events.md](text-outside-events.md)'s emulator list — break on texture-page writes
 selecting the font page (VRAM x = 768) outside `glyph_draw` — and **has never been run**.
 
+## What the census could not see — and what a sweep for it found (PLAN `GFX-12`)
+
+Jay, 2026-09-30, from a bout: a stamina plate, a chalked rank and a winning-move banner, all
+Japanese, none in this plan. Three causes, each of which could hide more:
+
+1. **A 4bpp sprite inside a TIM whose header says 8bpp is noise in the census's picture.**
+   The census rendered every TIM once, at its header's depth, through CLUT 0; the banner's 23
+   strips and the stamina plate are 4bpp sprites cut from 8bpp atlases
+   ([texture-recipes.md](texture-recipes.md) § "Buttons", the trap). The button lanes had met
+   the trap and fixed the sprites they were looking for; nobody then looked at every 8bpp TIM
+   as 4bpp.
+2. **An atlas got one note.** `M_S01100` `0x14` shows 強 plainly at CLUT 0 and its census row
+   says "action buttons": the note came from the rule for its family, not from a list of what
+   is on it. This plan was written from those notes.
+3. **A `maybe` resolved through one CLUT.** `M_S01000`'s was resolved at CLUT 3 (the notebook
+   cover) and the desk under CLUT 1, where 弱 is chalked, was not looked at.
+
+**The sweep** (2026-09-30): every distinct TIM outside the map packs, the diary pages and
+the book spreads — 278 — was looked at through every CLUT *and* as 4bpp, and each piece of
+lettering checked against the recipes and this plan's **N** list. Besides the bout's three,
+it found:
+
+* **The kite-flying HUD's labels** — `TBG00` / `TBG01` `0x1c` (the same sheet in both), 4bpp
+  canvas x 260–349, y 140–151: 風向, 風速, 高度 beside the digits and the units (which read `m`
+  and `m/h` at 4bpp; the audit's `s` and `m/s` were read through the wrong depth).
+  Unbuilt: **P**, three labels, its own plan row.
+* **The title logo** — `T_TITLE` `0x14`, 4bpp canvas x 0–255, y 93–197, twice (face and
+  shadow): ぼくのなつやすみ. **N**: it is the game's name, as the title on the box is.
+* Nothing else: `M_S02000`'s balloons are in a pack nothing loads, `BOX`'s model-kit
+  packaging is greeked, and every other piece of Japanese is a recipe's or on the **N** list.
+
+Not swept again: the 426 map-pack images, which are true 8bpp backgrounds the census read at
+1:1 ([textures.md](textures.md) § "Coverage and open doubts").
+
 ## The new English text this creates
 
 All of it is new: **not one texture string has a line id today**. The translation files
@@ -416,6 +459,8 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 17 | `tex@T_MEMORY.0` | album heading plate | 1 line |
 | 18 | `tex@M_S01000.0` | the bug-trading notebook's cover, "Bug // Trading // Notebook" | 3 lines |
 | 19 | `btn@MZKAN.back` | the insect book's stone "Back" (the same stone as every other; the wreath and pencils beside it carry no Japanese) | 1 word |
+| 20 | `sumo@plate.stamina`, `sumo@rank.*`, `sumo@move.*` | a bug-sumo bout: the stamina plate, the three rank marks, the banner's heading and 22 ways a bout ends | 27 strings |
+| 21 | (none yet) | the kite-flying HUD's three labels — unbuilt | 3 words |
 
 Rows 1–3 are **111 pages** and dwarf everything else; rows 11–19 are a few dozen short strings
 that a single pass produces. The glossary already governs rows 2 and 3 (species and kite names)

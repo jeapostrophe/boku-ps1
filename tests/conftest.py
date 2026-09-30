@@ -81,6 +81,14 @@ def texture_inventory(archive: Archive) -> Inventory:
 
 
 @pytest.fixture(scope="session")
+def game(texture_inventory: Inventory):
+    """The game's own glyphs, decoded from the import's sheet: the face the textures are set in."""
+    from boku.typeset import FONT_SHEET_ID, GameFace
+
+    return GameFace.from_sheet(texture_inventory.get(FONT_SHEET_ID).tim)
+
+
+@pytest.fixture(scope="session")
 def texture_edits(archive: Archive, texture_inventory: Inventory):
     """Every edit the tracked texture English implies (`boku.texture_text.build_edits`)."""
     from boku.texture_text import build_edits

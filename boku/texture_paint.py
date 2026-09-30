@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 from boku.reinsert import ByteEdit
 from boku.textures import Texture, patches_for
@@ -266,10 +267,25 @@ class Canvas:
         return patches_for(self.texture, self.tim.with_indices(pixels))
 
 
+@dataclass(frozen=True)
+class View:
+    """A part of a texture as the game draws it, for showing it (`boku.reader`): the depth,
+    the CLUT and its 16 entries (`Canvas.palette`), and the box in the original and in the
+    rebuilt image."""
+
+    texture: str
+    drawn_4bpp: bool
+    clut: int
+    chunk: int
+    original: Box
+    english: Box
+
+
 __all__ = [
     "Box",
     "Canvas",
     "Ink",
+    "View",
     "bold",
     "dark_type",
     "extent",

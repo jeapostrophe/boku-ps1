@@ -29,7 +29,7 @@ from boku.png import read as read_png
 from boku.texture_text import read_entries
 from boku.textures import Texture
 from boku.tim import luminance, parse_exact
-from boku.typeset import FONT_SHEET_ID, GameFace, pixel_face, wrap
+from boku.typeset import pixel_face, wrap
 from tests.test_real_texture_text_beetle import FIELD, mode_set_pokes
 
 ENTRIES = read_entries()
@@ -38,11 +38,6 @@ ENTRIES = read_entries()
 def page_fields(namespace: str, n: int) -> dict[str, str]:
     prefix = f"{namespace}{n}."
     return {k.removeprefix(prefix): e.text for k, e in ENTRIES.items() if k.startswith(prefix)}
-
-
-@pytest.fixture(scope="module")
-def game(texture_inventory) -> GameFace:
-    return GameFace.from_sheet(texture_inventory.get(FONT_SHEET_ID).tim)
 
 
 def rebuilt(inv, patched: bytes, texture) -> paint.Canvas:

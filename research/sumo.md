@@ -220,7 +220,11 @@ writing a boy's offered bug to `0x8003DE18`, a cage-format record, before ○ on
   "Oni Stag Beetle" (94) and "Mantis" clear. A bug with no sex mark (the types outside the
   two tables at `0x80045B1C`) leaves x 271..285 empty before its number.
 * **The move names** (`musi@2C`, surfaces 25 and 26 of text-renderer.md) are never shown
-  in retail: `0x80085580`, the side-by-side pair, is called only from `MUSI`'s update under
+  in retail **as text**: what a bout shows when it ends is a banner of brush lettering, a
+  texture with a strip for each of these moves and three ways to end a bout that the array
+  does not have (`translation/textures/sumo.txt`, which keeps the array's wording;
+  [texture-recipes.md](texture-recipes.md) § "Bug sumo's bout"). Of the array's two
+  walkers, `0x80085580`, the side-by-side pair, is called only from `MUSI`'s update under
   `0x80025938 == 1`, a word nothing but `sw zero` at `0x80011FF0` stores
   (vwf-prototype.md § "The quiz rate"), and `0x80085240`, the other, has no `jal`, `j`,
   data word or `lui` pair in `MUSI` or the executable. The same holds for the debug
@@ -229,6 +233,6 @@ writing a boy's offered bug to `0x8003DE18`, a cage-format record, before ○ on
   but the build writes nothing for the array: its English stays in `arrays.txt`, the retail
   bytes stay, the lint reports each row as `unreachable` and coverage leaves them out
   (`boku.arrays.UNREACHABLE`, 2026-09-24; 690 bytes of relocation room freed). **Reopen**
-  when a retail path is found that shows them: then drop the entry and the array moves and
-  draws as before.
+  when a retail path is found that draws the array: then drop the entry and the array moves
+  and draws as before.
 

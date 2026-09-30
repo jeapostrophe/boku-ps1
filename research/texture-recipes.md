@@ -1,4 +1,4 @@
-# Texture recipes — English typeset into textures at build time (PLAN `GFX-07`, `GFX-08`, `GFX-09`)
+# Texture recipes — English typeset into textures at build time (PLAN `GFX-07`, `GFX-08`, `GFX-09`, `GFX-12`)
 
 [textures-plan.md](textures-plan.md) chose a path for every image with Japanese in its
 pixels. This file is the **P** path as built: how `boku build --textures` turns the tracked
@@ -578,3 +578,118 @@ has a drop shadow, and so does the English. The numbers are the game's (MUSI `FU
 exactly its English, in its face, once, with nothing of the Japanese; on Beetle the fishing
 record (a card with the rod and three fish), the single card and the pair (a card with an
 offer) show every texel of every label as rebuilt, and the stock image fails.
+
+## Bug sumo's bout — the banner, the stamina plate, the rank mark (PLAN `GFX-12`)
+
+`boku/texture_sumo.py`; the English is `sumo@<part>.<key>` in
+`translation/textures/sumo.txt`. Three things a bout draws from the desk's textures, none of
+which the census saw ([textures-plan.md](textures-plan.md) § "What the census could not see").
+Measured on Beetle, 2026-09-30, by walking the ordering table in a RAM dump at each moment of
+a bout (`g_ot` `0x8002593C`) and reading the primitives' texture pages, CLUTs and corners.
+
+**Where the desk's textures are.** `M_S01000` `0x17d24` is uploaded at VRAM (320, 0) and
+`M_S01100` `0x14` at (320, 272): the two halves of the desk, both drawn through the CLUT at
+row 241, which is `M_S01000`'s CLUT 1 and `M_S01100` `0x14`'s CLUT 0 — the same 256 entries.
+`M_S01100` `0x164b4` is at (832, 0), its six CLUTs at rows 245–250. A 4bpp sprite cut from
+`M_S01000` uses the page at (448, 0), so its `u` is its canvas x less 512
+(`Canvas(drawn_4bpp=True)`, § "Buttons").
+
+### The winning-move banner
+
+When a bout ends the ring is veiled by a grey band and two strips of white brush lettering
+fade in over it: the heading 決まり手 and how the bout ended. The strips are 4bpp sprites in
+the first 256×256 page of `M_S01100` `0x164b4` — that page holds nothing else — drawn
+through CLUT 2's third 16 entries (VRAM (288, 247)): entry 1 white, 2–7 greys, 8 near black,
+the rest unused.
+
+* **Retail's page**: 20-texel columns of vertical lettering, eleven from row 0 (143 tall; the
+  heading is the first, drawn 128 tall) and twelve from row 144 (111 tall).
+* **Which strip.** How the bout ended is a number 0–21 (`0x8008EFC0`), and `MUSI.OVL`'s 22
+  bytes at `0x8007A2F0` give its strip: 0 → 20 (押し出し, the push-out), 1–8 → 1–8 and 9–17 →
+  11–19 (the seventeen moves of `musi@2C.13`–`.29`, in order), 18 → 21 and 19 → 10 (the two
+  mantis moves, `musi@2C.30`, `.31`), 20 → 9 (両者、引き分け, a draw — shown alone, with no
+  heading), 21 → 22 (スタミナ勝ち, won on stamina). So the banner is what retail shows in
+  place of the move-name array, which nothing draws ([sumo.md](sumo.md) § "The desk's text").
+* **How it is drawn.** `0x8008659C` fills the heading's record at `0x8008F2D8` and
+  `0x800865F8` the move's at `0x8008F2F8`: halfwords `u, v, w, h, x, y, drawn w, drawn h`,
+  then the texture page (832, 0) and the CLUT, and at `+0x18` how far it has faded in. The
+  heading is at (163, 42) and the move at (142, 46) — (150, 46) for the draw. `0x800867DC`
+  draws them through the executable's `0x80036DE0`, which emits the quad twice: subtracting
+  white through an all-white CLUT at (256, 271), then adding the strip, both scaled by the
+  fade — so at full fade a strip's texels are on screen exactly, opaque. That routine adds
+  `u + w` and `v + h` **in a byte**: a strip must end by texel 255. The veil is a
+  half-transparent grey rectangle whose `x, y, w, h` are the four halfwords at `0x8007A308`
+  (130, 35, 60, 140), drawn by `0x800866BC`.
+
+**What the recipe does.** English does not stand on end, so the banner is turned on its side
+(the alternative, the lettering turned a quarter as the settings chart's headings are, needs
+no code; Jay's decision page has both). The page is cleared and each strip set again as one
+horizontal line in a 124×20 cell, cells 0–10 down the page from (0, 0) and 11–22 from
+(128, 0): the game's glyphs, each letter emboldened with a column of air kept between
+letters (`boku.texture_closeups.emboldened`), in the white the lettering used most, every
+pixel round it in the darkest entry the page used. A line wider than 122 px is refused. The
+two routines keep their shape — retail steps `u` by the cell and picks `v` by the row; ours
+steps `v` and picks `u` — so the patch is sixteen words: the immediates for the cell's size
+and the places, and four `sh` offsets traded so the stepped value is stored to `v`, the
+picked one to `u`, and the draw's own place becomes its `y` (`banner_code`). The heading is
+drawn at (98, 85), the move at (98, 105), the draw alone at (98, 95), and the veil is
+(90, 80, 140, 50).
+
+### The stamina plate
+
+The HUD of a fight is five quads from 28-byte records in `MUSI.OVL` (`s16 x, y` at +2,
+`u8 u, v` at +6, `s16` drawn `w, h` at +8, `u8` texture `w, h` at +0xC and +0xE, then the
+texture page and CLUT), drawn by `0x800828C0` through the executable's `0x80036BEC`: the left
+bar's fill `0x80079DB0`, the right bar's `0x80079DCC`, the plate `0x80079DE8`, the left
+frame `0x80079E04` and the right `0x80079E20`. All are 4bpp sprites of `M_S01000` through
+CLUT 0 (the frames and the plate through its second 16 entries, the fills its first). The
+plate is 36×20 at canvas (592, 193): a framed brown face, 31×15 from (2, 2), with スタミナ
+raised on it in tan over a darker shadow.
+
+The HUD slides in closed, then opens: a counter at `0x8008F284` falls by one a frame from
+0xA0 to a floor of 0x8C while the plate's drawn width (`0x8008F286`) rises by two, to 40, and
+the bars part with it — so retail draws the plate's 36 texels 40 wide. At rest the left frame
+is at x 40, the plate at 136, the right frame and fill at 180, all at y 130.
+
+**What the recipe does.** *Stamina* in the game's glyphs is 46 px and the face holds 31, so
+the plate is widened by 20 texels (the pair of columns at its centre repeated, its face
+cleared to the ground first), set down at canvas (652, 210) — texels no sprite used — and its
+old place cleared. The word is raised in the entry the Japanese's light pixels used most,
+over a shadow one pixel down and right in the entry its dark ones did. The plate's record
+takes the new `u, v` and width, and the plate is drawn as wide as it is: the counter's floor
+drops by 8 (`slti` at `0x80082954`, the `addiu` at `0x80082C0C`), so the plate opens to 56
+over 28 frames, and each bar's resting place moves out by 8 (the three `addiu`s at
+`0x80082C4C`, `0x80082CCC`, `0x80082CF0`; the two right-hand records' `x`). The slide-in
+starts where retail's does.
+
+### The rank mark
+
+Left of the ring the opponent's rank is chalked on the desk in a ring of chalk, a stick of
+chalk lying across its top right: 弱, 強 or キング. Each is a 64×56 drawing at 8bpp. 弱 is
+painted into the desk itself, `M_S01000` (200, 27); the other two are sprites of `M_S01100`
+`0x14`, at (256, 133) and (256, 77), drawn over it at screen (10, 27) with the desk scrolled
+to the ring (`0x8008EFC8` the rank). The three rings are three different drawings.
+
+**What the recipe does.** Per mark, an ellipse that the ring's inner edge follows is measured
+by hand (`RANK_MARKS`); inside it, and outside the stick's box, every pixel lighter than the
+desk's wood (chalk and its dust) is refilled from the nearest wood, and the rank is written
+at the ellipse's centre in the game's glyphs, emboldened, each pixel in the chalk of one of
+the old writing's own pixels so the word is as uneven as the ring. The ring, the stick and
+the desk are untouched. A word that does not fit inside the ring is refused (*Strong*, 45 px,
+is a pixel inside the ellipse at each end; twice as tall it does not fit).
+
+**Reaching them.** The card with the mantis beaten (`shortcut-open`, slot 3 of
+`boku-bug-sumo.mcd`): at the desk take a bug out, go to the ring, LEFT to the rank board and
+choose a rank, put the bug down, ring the gong, tap △ until the bout ends
+([sumo.md](sumo.md) § "Reaching a bout"). The banner is up once both records' fades read
+0x80.
+
+**Proof.** `tests/test_real_texture_sumo.py`: each strip, found through the import's own
+table, is exactly its move's English and the page holds nothing else; the plate's raised
+type is exactly the word, its frame the stock plate's, its old place blank; inside each ring
+the only chalk is the rank, and nothing outside the ring changed. On Beetle
+(`./make.sh emu-test`) a King bout shows every texel of the mark, the plate and both lines
+of the banner as rebuilt; the plate opens to 56; and the two records hold the strips' new
+places — without the sixteen words the heading's record is retail's and the test fails.
+`tests/test_texture_sumo.py` holds the layout (every strip ends by texel 255, no two share a
+texel), and the banner's wording to the move-name array's.

@@ -223,8 +223,8 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
         "config_draw) but the value panel is texture",
     ),
     (
-        r"^_DATA_(SUB\.BIN__002050|M_S01100\.BIN__|M_S02000\.BIN__|MZ00\.BIN__|MZ02\.BIN__|SAMP\.BIN__)",
-        8,
+        r"^_DATA_(SUB\.BIN__002050|M_S02000\.BIN__|MZ00\.BIN__|MZ02\.BIN__|SAMP\.BIN__)",
+        6,
         "P",
         "action-button ovals (back / look / net / ...) and UI plates",
         "new (~12 button words)",
@@ -232,14 +232,38 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
         "per-region CLUT assignment (textures.md caveat). Not touched by TXT-05",
     ),
     (
+        r"^_DATA_M_S01100\.BIN__000014$",
+        1,
+        "P",
+        "the bug-sumo desk's right half: its stone 'back' button, and a bout's rank marks "
+        "'strong' and 'King', chalked in a ring",
+        "new (1 button word, 2 ranks)",
+        "the stone is a 4bpp sprite; the two marks are 8bpp sprites plainly visible at CLUT 0, "
+        "missed until GFX-12 because the atlas had one note (research/texture-recipes.md Bug "
+        "sumo's bout)",
+    ),
+    (
+        r"^_DATA_M_S01100\.BIN__0164b4$",
+        1,
+        "P",
+        "the bug-sumo desk's sprites: speech-balloon buttons, the trade plate, the Close board, "
+        "the notebook's record card, and a bout's winning-move banner",
+        "new (~9 button words, 5 card labels, 23 banner lines)",
+        "its first 256x256 page is the banner's 23 strips of brush lettering, 4bpp sprites the "
+        "8bpp view shows as noise -- missed until GFX-12 (research/texture-recipes.md Bug "
+        "sumo's bout)",
+    ),
+    (
         r"^_DATA_M_S01000\.BIN__017d24$",
         1,
         "P",
-        "'bug trading notebook' cover, marker lettering on a spiral notepad",
-        "new (3 lines)",
+        "'bug trading notebook' cover, marker lettering on a spiral notepad; a bout's stamina "
+        "plate and its 'weak' rank mark",
+        "new (3 lines, 1 plate word, 1 rank)",
         "census maybe RESOLVED at CLUT 3: hand-lettered marker on a tan notepad on the bug-sumo "
         "desk. P by Jay's ruling (2026-09-24, GFX-08 G8-NB b): the marker painted out, the "
-        "English in the game's glyphs (research/texture-recipes.md marker signs)",
+        "English in the game's glyphs (research/texture-recipes.md marker signs). The plate is "
+        "a 4bpp sprite and the mark is chalked on the desk at CLUT 1: both missed until GFX-12",
     ),
     (
         r"^_DATA_M_S01001\.BIN__",
@@ -289,11 +313,12 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
     (
         r"^_DATA_TBG0[01]\.BIN__",
         2,
-        "N",
-        "none",
-        "-",
-        "census maybe RESOLVED at CLUT 0: the kite HUD atlas is kite thumbnails plus "
-        "'1234567890', m, s, m/s, a compass rose and a wind vane -- all Latin/numeral",
+        "P",
+        "kite-flying HUD labels: wind direction / wind speed / altitude",
+        "new (3 labels)",
+        "NOT BUILT. At CLUT 0 the atlas is kite thumbnails, Latin and numerals, which is how "
+        "the audit resolved it as N; the HUD is 4bpp sprites the 8bpp view shows as noise, and "
+        "three of them are 12 px kanji labels beside the digits (GFX-12's sweep, 2026-09-30)",
     ),
     (
         r"^_DATA_NIKKI_W\.BIN__005450$",

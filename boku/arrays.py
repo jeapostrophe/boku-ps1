@@ -273,9 +273,9 @@ import each resolves to the catalogue's own address, and every reference
 
 UNREACHABLE: dict[str, str] = {
     "musi@2C": (
-        "bug sumo's move names are never drawn in retail (research/sumo.md § The desk's "
-        "text); the build leaves the retail bytes. Reopen when a retail path is found that "
-        "shows them"
+        "bug sumo's move-name array is never drawn in retail (research/sumo.md § The desk's "
+        "text): a bout shows the move as a banner texture, translation/textures/sumo.txt. The "
+        "build leaves the retail bytes. Reopen when a retail path is found that draws the array"
     ),
     "exe@code:80037698": (
         "specimen_label_draw has no caller in any image (research/text-outside-events.md) "

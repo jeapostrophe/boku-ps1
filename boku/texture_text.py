@@ -810,6 +810,13 @@ def records(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entr
     return texture_records.records(archive, inv, face, entries)
 
 
+def sumo_bout(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Bug sumo's stamina plate, rank marks and winning-move banner (`boku.texture_sumo`)."""
+    from boku import texture_sumo
+
+    return texture_sumo.sumo(archive, inv, face, entries)
+
+
 def closeup_note(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
     """Saori's farewell note (`boku.texture_closeups`)."""
     from boku import texture_closeups
@@ -836,6 +843,7 @@ FAMILIES: Mapping[str, Family] = {
     "tex@OTI": credits_strip,
     "btn@": buttons,
     "rec@": records,
+    "sumo@": sumo_bout,
     "mzkan@": insect_book,
     "tzkan@": kite_book,
 }

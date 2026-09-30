@@ -236,5 +236,11 @@ one correct for the wooden desk and one correct for the photograph printed on th
   something is visibly there and unread.
 * Text drawn by the renderer over a texture (the diary's day number is the proven case) is not
   visible to this census at all. A texture that looks blank here may carry text in game.
+* **A 4bpp sprite inside a TIM whose header says 8bpp is noise here**, and a multi-CLUT atlas
+  was judged through CLUT 0 with one note for the whole image. Bug sumo's banner, stamina
+  plate and rank marks, and the kite HUD's labels, were missed that way; the non-map TIMs have
+  since been looked at through every CLUT and as 4bpp
+  ([textures-plan.md](textures-plan.md) § "What the census could not see"). The census table
+  itself is as it was read then.
 * FMV frames (`__STR/*.IKI`) are not TIMs and nothing here covers them; their subtitles are
   [movies.md](movies.md) (TECHNICAL § "What gets translated", row 3).

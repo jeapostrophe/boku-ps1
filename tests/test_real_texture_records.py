@@ -27,16 +27,11 @@ from boku import texture_text as tt
 from boku.png import read as read_png
 from boku.texture_text import ink_of, read_entries
 from boku.tim import luminance
-from boku.typeset import FONT_SHEET_ID, GameFace, face_named
+from boku.typeset import face_named
 from tests.test_real_texture_buttons import check_on_screen, check_texels, rebuilt
 
 ENTRIES = {e.id.removeprefix(tr.FAMILY): e for e in read_entries().values()
            if e.family == tr.FAMILY}  # fmt: skip
-
-
-@pytest.fixture(scope="module")
-def game(texture_inventory) -> GameFace:
-    return GameFace.from_sheet(texture_inventory.get(FONT_SHEET_ID).tim)
 
 
 CASES = [(m, c) for m, r in tr.RECORDS.items() for c in r.copies]
