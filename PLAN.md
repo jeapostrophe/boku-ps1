@@ -774,6 +774,12 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       Copyright / Sony Computer Entertainment Inc." in the game's glyphs; `M28`'s scrolling
       credits are video and stay Japanese. Proven on Beetle on the ending route
       (`tests/test_real_credits_card.py`, `research/texture-recipes.md` § `OTI0n`).
+- [ ] **[GFX-12]** **Bug sumo's match textures are still Japanese.** Jay, 2026-09-30, from a bout on
+      `boku-bug-sumo.mcd` slot 3: the stamina plate between the bars, the chalked ring mark on the
+      desk, and the winning-move banner shown at the result (vertical brush lettering on a grey
+      band) — none in `research/textures-plan.md`, the decisions page or the reader's textures.
+      Find every such texture the bout draws (each winning move's banner, a loss's), plan and
+      translate them, and say why the census missed them. Harmed: the player, in every bout.
 
 ## Movies
 
@@ -958,6 +964,14 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       `tests/test_voice_only.py` holds the translated set equal to `voice-only.tsv`'s worded
       rows. `E1861.30`–`.32` and `E2305.0` repeat the English of the lines they replay
       (`E1861.0`–`.2`, `E2204.6`). Harmed (was): the player.
+- [ ] **[VO-09]** **The epilogues' last sentence outlives the picture.** Jay, 2026-09-30, from the
+      Summer Memories endings (`boku-finished-game.mcd`): in `OTI02` and `OTI03` the final subtitle
+      ("Those days of that summer", "Goodbye, 20th century") shows only briefly, after the still
+      has already given way to `tex@OTI`, so it is hard to read and looks stray. Wanted: the
+      reader's Clips view shows what the screen looks like through each ending (as the movies are
+      previewed) with each subtitle page's time on screen, so the timing can be adjusted; then the
+      timing fixed. Jay also confirmed the shortcut well's narration shows (an ordinary dialogue
+      line). Harmed: the player, at the last line of the game.
 
 ## Release
 
@@ -1010,6 +1024,13 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       (and Up-diagonals) also holds ✕, folded in Rust (`ControlLayout::apply_throttle`), the toggle
       state held in Swift; unit-tested. On-device checks are retro-trainer PLAN § Next session.
       Harmed (was): Jay, playing on Mode One's controller.
+- [ ] **[DOC-02]** **README for the player.** Jay, 2026-09-30: the README is the project's public
+      face (linked from his site and X) and is "extremely technical". Revise it to be
+      user-focused — what it is, screenshots of each kind of translated screen (title menu, a
+      subtitled movie, a conversation, a book page, bug or kite screen), how to get and apply
+      it, which version you have, why Jay made it (his words), a video link (TBA) — and move the
+      technical content into its own document(s), every citation following it. Harmed: a player
+      arriving from the link.
 - [x] **[DOC-01]** **README audited against what was built.** DONE 2026-09-25 (`19f2665`): Status
       describes the state, not 2026-09-20 counts; § "Using it" gives the prerequisites, the import
       step and the verbs by task (build-days, reader, lint-translation, mockup, coverage, textures
