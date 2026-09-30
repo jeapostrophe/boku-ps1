@@ -13,7 +13,7 @@ string into lines, and only where the file's comment for that texture says it ma
 else the build refuses it rather than drawing the slashes. The id is
 `tex@<member>.<key>` for a single texture's strings (`tex@T_TITLE.0`); the bulk families are
 `nikki@NIKKI_nnn`, `btn@<member>.<key>`, `rec@<member>.<key>`, `mzkan@<page>.<field>`,
-`tzkan@<page>.<field>` and `sumo@<part>.<key>`.
+`tzkan@<page>.<field>`, `sumo@<part>.<key>` and `kite@hud.<key>`.
 An id may appear once across all the files.
 
 A string is set in the game's own glyphs unless its texture says otherwise (a button whose
@@ -35,6 +35,7 @@ and what the build does to it, is `research/texture-recipes.md`.
 | [buttons.txt](buttons.txt) | the stone "Back" buttons, the speech-balloon buttons, the attendance card's labels, and the insect cage's two buttons and "rare" badge (`btn@<member>.<key>`) | PLAN `GFX-07`, `GFX-08` |
 | [records.txt](records.txt) | labels beside numbers the game draws: the fishing record, the bug-trading notebook's card (`rec@<member>.<key>`) | PLAN `GFX-07` |
 | [sumo.txt](sumo.txt) | a bug-sumo bout: the stamina plate, the rank chalked on the desk, the winning-move banner (`sumo@<part>.<key>`) | PLAN `GFX-12` |
+| [kite.txt](kite.txt) | kite flying's HUD: the three labels over its compass and its numbers (`kite@hud.<key>`) | PLAN `GFX-13` |
 | [books.txt](books.txt) | the insect book and the kite book, one row per field of a page (`mzkan@<n>.<field>`, `tzkan@<n>.<field>`) | PLAN `GFX-06` |
 | [diary.txt](diary.txt) | the picture diary, one entry per page id (`nikki@NIKKI_nnn`), every page but the dummy `NIKKI_000` | PLAN `GFX-04`, `TRN-04` |
 

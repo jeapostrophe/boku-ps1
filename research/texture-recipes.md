@@ -693,3 +693,56 @@ of the banner as rebuilt; the plate opens to 56; and the two records hold the st
 places — without the sixteen words the heading's record is retail's and the test fails.
 `tests/test_texture_sumo.py` holds the layout (every strip ends by texel 255, no two share a
 texel), and the banner's wording to the move-name array's.
+
+## The kite-flying HUD — three labels over the compass and the numbers (PLAN `GFX-13`)
+
+`boku/texture_kite.py`; the English is `kite@hud.<key>` in `translation/textures/kite.txt`.
+Found by `GFX-12`'s sweep ([textures-plan.md](textures-plan.md) § "What the census could not
+see"). Measured on Beetle, 2026-09-30, from the ordering table of a RAM dump with a kite up.
+
+**The sheet.** Kite flying (`TAKO.OVL`, mode 6) loads one of two packs, file
+`0xF0 | (hour >= 15)` (`0x8007A1A4`, the hour the byte at `0x80028FC1`): `TBG00` by day,
+`TBG01` from 15:00. `0x8007F800` uploads a pack's three TIMs: child `0x1c` to VRAM (320, 0)
+with its CLUTs at (256, 240), the other two — the backdrop — to (832, 0) and (320, 272). Child `0x1c`'s header says 8bpp 240×240; its left 110 columns are
+an 8bpp picture, the panel Boku stands in, which differs between the packs (CLUT 1, drawn at
+the screen's corner), and from canvas x 256 as 4bpp it is the same sheet in both, the
+texture page at VRAM (384, 0), so a sprite's `u` is its canvas x less 256: the kite reels
+(rows 0–119), the digits `1234567890` (row 120, 12 texels each), then on row 136 the three
+labels 風向, 風速, 高度 in 32-texel sprites and the units `m` and `m/h`, and under them the
+compass and its needle. The labels, digits and units are drawn through the CLUT's first 16
+entries: 0–6 white to grey, 7 and 8 transparent, 9 near black. Right of the units (canvas
+x 400–479, rows 120–151) and of the needle the sheet is entry 0 throughout, and no record of
+the HUD points there.
+
+**How it is drawn.** Every HUD sprite is a 22-byte record in `TAKO.OVL` — a `u16` (1 in the
+labels', 0 in the last unit's, which is drawn all the same), `s16 x, y`, `u8 u, v`,
+`u16 w, h`, then the texture page's and the CLUT's VRAM places — handed to the executable's
+`0x800368C8`. `0x8007A510` draws the three labels from
+`0x80079A8C` (at x 143, 188 and 265, y 190) and `0x8007A480` the three units from
+`0x80079A48`; the digits are drawn beside them at y 205. On screen 風向 stands to the right
+of the compass, 風速 over the wind's speed (`4.0m/h`) and 高度 over the kite's height
+(`22 m`); the length of line let out, bottom left, has a reel for its label.
+
+**What the recipe does.** On both sheets the strip the Japanese was in (canvas
+(256, 136, 96, 16)) is cleared to its transparent entry and each label is set in a cell of
+its own in the game's glyphs — the white the Japanese used most, every texel round it in the
+strip's darkest entry, capitals standing on the row the kanji stood on. A cell is as wide as
+the screen has room for with the label kept centred where the Japanese was: direction 32
+texels where it was, speed 40 from canvas x 288, altitude 48 at (400, 136) in the free
+texels. Each record takes its cell's `u` and width and an `x` that keeps its centre. A label
+that with a texel of edge all round does not fit its cell is refused.
+
+**Reaching it.** `mode_set(6)` by hand after a new game's first dialogue
+(`tests/test_real_texture_buttons.py`'s `mode`, the arena level B): the kite is up and the
+HUD drawn within 300 frames, with no kite owned; the hour byte set to 15 with it loads
+`TBG01`. The desk's "Fly a Kite" opens only the list of kites owned, not a flight. Besides
+the three labels the screen draws only renderer text — △'s menu `tako@4` and the crash
+banner ([vwf-prototype.md](vwf-prototype.md) § "The banners") — English in the days build.
+
+**Proof.** `tests/test_real_texture_kite.py`: on both sheets each cell is exactly its label
+with its edge, nothing is left of the strip outside the cells, and no other texel changed;
+each record holds its cell and keeps retail's centre. On Beetle (`./make.sh emu-test`), once
+over each pack (the panel on screen must be that pack's), every opaque texel of the three
+cells is on screen where its record puts it — with the records left as retail's the speed
+label fails it. `tests/test_texture_kite.py` holds the layout — no two cells share a texel or
+take a unit's, no two labels overlap on screen — and the narrowest fit and refusal.

@@ -18,9 +18,8 @@ Jay's read of the script, and the release.**
   relocated, never cut.
 * **Textures.** Every image that carries Japanese has a ruled path
   ([research/textures-plan.md](research/textures-plan.md)); the picture diary, the two
-  encyclopedias, the title and menu plates, the buttons, the records, the signs and bug sumo's
-  bout are set in English at build time from your import. One piece is found and not built:
-  the kite-flying HUD's three labels.
+  encyclopedias, the title and menu plates, the buttons, the records, the signs, bug sumo's
+  bout and the kite-flying HUD are set in English at build time from your import.
 * **Movies and voices.** The narrated movies and the theme song are subtitled inside the video
   frames; the voice clips with no text on the disc — the five epilogues, the first night's
   narration, bug sumo, voice-only lines in events — are subtitled in the band. The voices

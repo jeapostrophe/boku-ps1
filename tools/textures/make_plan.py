@@ -316,9 +316,10 @@ RULES: list[tuple[str, int, str, str, str, str]] = [
         "P",
         "kite-flying HUD labels: wind direction / wind speed / altitude",
         "new (3 labels)",
-        "NOT BUILT. At CLUT 0 the atlas is kite thumbnails, Latin and numerals, which is how "
-        "the audit resolved it as N; the HUD is 4bpp sprites the 8bpp view shows as noise, and "
-        "three of them are 12 px kanji labels beside the digits (GFX-12's sweep, 2026-09-30)",
+        "At CLUT 0 the atlas is kite thumbnails, Latin and numerals, which is how the audit "
+        "resolved it as N; the HUD is 4bpp sprites the 8bpp view shows as noise, and three of "
+        "them are 12 px kanji labels beside the digits (GFX-12's sweep, 2026-09-30). Built as "
+        "GFX-13 (research/texture-recipes.md The kite-flying HUD)",
     ),
     (
         r"^_DATA_NIKKI_W\.BIN__005450$",

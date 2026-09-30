@@ -265,6 +265,7 @@ the pond. Iwana and yamame are what English-speaking tenkara anglers call them.
 | 連凧 | Kite Train | many kites on one line |
 | 似顔絵凧 | Boku Kite | literally "likeness kite"; it is Boku's face, so named for him (Jay, 2026-09-27) |
 | 凧上げ / 楽しい凧百科 / 墜落！ | kite-flying / *The Fun Encyclopedia of Kites* / Crashed! | `tako@440` is 4 fixed cells, vertical |
+| 風向 / 風速 / 高度 | Wind / Speed / Altitude | the kite HUD's labels (`translation/textures/kite.txt`) |
 | 希少昆虫図鑑 | *Field Guide to Rare Insects* | the bookshelf menu `E0022.0` |
 
 ### 4e. Items (`exe@80046214.*`) and menus

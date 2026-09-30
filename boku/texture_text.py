@@ -79,6 +79,12 @@ def read_entries(directory: Path = TEXTURE_TEXT_DIR) -> dict[str, Entry]:
     return entries
 
 
+def family_entries(family: str, directory: Path = TEXTURE_TEXT_DIR) -> dict[str, Entry]:
+    """The tracked strings of `family` (`sumo@`, `tex@OTI`), by what follows its name."""
+    return {e.id[len(family) :].removeprefix("."): e
+            for e in read_entries(directory).values() if e.family == family}  # fmt: skip
+
+
 # --- shared by the recipes below -------------------------------------------------------------
 
 
@@ -147,6 +153,20 @@ def filled_from_nearest(
         )
 
 
+def overlay_edit(
+    archive: Archive, overlay: str, ram: int, fmt: str, old: tuple, new: tuple, reason: str
+) -> ByteEdit:
+    """`new` for `old` (both packed as `fmt`) at RAM address `ram` of `overlay`, refused if
+    the import does not hold `old`."""
+    at = archive.overlay_offset(overlay, ram)
+    before = struct.pack(fmt, *old)
+    if archive.boku[at : at + len(before)] != before:
+        raise TextureTextError(
+            f"{overlay} at {ram:#x} is not the {before.hex()} this recipe was measured on"
+        )
+    return ByteEdit(ARCHIVE_NAME, at, before, struct.pack(fmt, *new), reason)
+
+
 def rows_of(mask: paint.Ink) -> list[paint.Box]:
     """The boxes of `mask`'s lines: runs of rows that carry ink, split at empty rows."""
     ys = sorted({y for _, y in mask})
@@ -179,6 +199,23 @@ def stacked(inks: Sequence[paint.Ink], gap: int) -> paint.Ink:
         out |= {(x + (widest - w) // 2, dy + y) for x, dy in ink}
         y += h + gap
     return out
+
+
+def centred_across(
+    entry: Entry, ink: paint.Ink, size: tuple[int, int], top: int, where: str
+) -> paint.Ink:
+    """`ink` placed in a box of `size` (w, h): centred across it, its glyph cell's top on row
+    `top`; refused unless it and a texel of edge all round it are inside the box."""
+    x, _, w, _ = paint.extent(ink)
+    dx = (size[0] - w) // 2 - x
+    placed = {(px + dx, py + top) for px, py in ink}
+    ex, ey, ew, eh = paint.extent(paint.grown(placed, 1, 1, 1, 1))
+    if ex < 0 or ey < 0 or ex + ew > size[0] or ey + eh > size[1]:
+        raise TextureTextError(
+            f"{entry.where}: {entry.text!r} with its edge is {ew}x{eh} px from row {ey} and "
+            f"{where} holds {size[0]}x{size[1]}; nothing is cut to fit (README)"
+        )
+    return placed
 
 
 def centred(ink: paint.Ink, on: paint.Box) -> tuple[int, int]:
@@ -817,6 +854,13 @@ def sumo_bout(archive: Archive, inv: Inventory, face: Face, entries: Sequence[En
     return texture_sumo.sumo(archive, inv, face, entries)
 
 
+def kite_hud(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
+    """Kite flying's three HUD labels (`boku.texture_kite`)."""
+    from boku import texture_kite
+
+    return texture_kite.kite(archive, inv, face, entries)
+
+
 def closeup_note(archive: Archive, inv: Inventory, face: Face, entries: Sequence[Entry]):
     """Saori's farewell note (`boku.texture_closeups`)."""
     from boku import texture_closeups
@@ -844,6 +888,7 @@ FAMILIES: Mapping[str, Family] = {
     "btn@": buttons,
     "rec@": records,
     "sumo@": sumo_bout,
+    "kite@": kite_hud,
     "mzkan@": insect_book,
     "tzkan@": kite_book,
 }

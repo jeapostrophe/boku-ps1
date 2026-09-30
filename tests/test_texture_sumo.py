@@ -12,10 +12,9 @@ import pytest
 from boku import REPO_ROOT
 from boku import texture_paint as paint
 from boku import texture_sumo as ts
-from boku.texture_text import Entry, TextureTextError, read_entries
+from boku.texture_text import Entry, TextureTextError, family_entries
 
-ENTRIES = {e.id.removeprefix(ts.FAMILY): e for e in read_entries().values()
-           if e.family == ts.FAMILY}  # fmt: skip
+ENTRIES = family_entries(ts.FAMILY)
 
 
 class Blocks:

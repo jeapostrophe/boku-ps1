@@ -16,12 +16,11 @@ each built whole or refused, each on a texture the bug-sumo desk loads:
 
 from __future__ import annotations
 
-import struct
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 
 from boku import texture_paint as paint
-from boku.archive import ARCHIVE_NAME, Archive
+from boku.archive import Archive
 from boku.reinsert import ByteEdit
 from boku.textures import Inventory
 from boku.tim import luminance
@@ -29,7 +28,8 @@ from boku.typeset import Face
 
 from boku.texture_closeups import emboldened  # isort: skip
 from boku.texture_text import (  # isort: skip
-    Entry, TextureTextError, centred, filled_from_nearest, fits, found, ink_of, outlined,
+    Entry, TextureTextError, centred, centred_across, filled_from_nearest, fits, found, ink_of,
+    outlined, overlay_edit,
 )  # fmt: skip
 
 FAMILY = "sumo@"
@@ -142,24 +142,14 @@ def _words(archive: Archive, words: Iterable[tuple[int, int, int]]) -> list[Byte
 
 
 def _edit(archive: Archive, ram: int, fmt: str, old: tuple, new: tuple) -> ByteEdit:
-    """`new` for `old` at `ram` of `MUSI.OVL`, refused if the import does not hold `old`."""
-    at = archive.overlay_offset(OVERLAY, ram)
-    before = struct.pack(fmt, *old)
-    if archive.boku[at : at + len(before)] != before:
-        raise TextureTextError(
-            f"{OVERLAY} at {ram:#x} is not the {before.hex()} this recipe was measured on"
-        )
-    return ByteEdit(ARCHIVE_NAME, at, before, struct.pack(fmt, *new), REASON)
+    return overlay_edit(archive, OVERLAY, ram, fmt, old, new, REASON)
 
 
 def strip(face: Face, entry: Entry) -> paint.Ink:
     """A strip's lettering, relative to the strip's corner: the English with each letter made
     bold, centred across the strip, a pixel left all round it for its edge."""
     text = emboldened(face, entry, entry.text, False)
-    x, _, w, _ = paint.extent(text)
-    fits(entry, paint.grown(text, 1, 0, 1, 0), (0, 0, *CELL), "a strip of the banner")
-    dx = (CELL[0] - w) // 2 - x
-    return {(x + dx, y + GLYPH_TOP) for x, y in text}
+    return centred_across(entry, text, CELL, GLYPH_TOP, "a strip of the banner")
 
 
 def banner(archive: Archive, inv: Inventory, face: Face, text: dict[str, Entry]):

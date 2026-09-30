@@ -29,8 +29,7 @@ from boku.textures import Texture
 from boku.tim import luminance, parse_exact
 from boku.typeset import FONT_SHEET_ID, GameFace
 
-ENTRIES = {e.id.removeprefix("tex@OTI."): e for e in tt.read_entries().values()
-           if e.family == "tex@OTI"}  # fmt: skip
+ENTRIES = tt.family_entries("tex@OTI")
 
 
 def rebuilt(inv, patched: bytes) -> paint.Canvas:

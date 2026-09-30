@@ -88,8 +88,9 @@ from boku.script_store import (
     scene_dated_day,
     select_shape,
 )
+from boku.texture_kite import VIEWS as KITE_VIEWS
 from boku.texture_paint import Canvas, View
-from boku.texture_sumo import VIEWS
+from boku.texture_sumo import VIEWS as SUMO_VIEWS
 from boku.texture_text import FAMILIES, TEXTURE_TEXT_DIR, TextureTextError, patched_archive
 from boku.texture_text import read_entries as read_texture_entries
 from boku.textures import Texture, TextureError, inventory, to_png
@@ -119,11 +120,15 @@ TEXTURE_UNITS = {
     "buttons.txt": "screens",
     "records.txt": "screens",
     "sumo.txt": "sumo",
+    "kite.txt": "kite",
     "diary.txt": "diary",
     "books.txt": "books",
 }
 """The unit each texture file's strings are walked and given a state under; a file not
 named here is a unit of its own, by its stem (and `read_status` must then give it a row)."""
+
+VIEWS = {**SUMO_VIEWS, **KITE_VIEWS}
+"""The groups shown as the game draws them, not as whole atlases (`view_pictures`)."""
 
 UNIT_NAMES = {
     SHARED_UNIT: ("Any day", "Any day"),
@@ -132,6 +137,7 @@ UNIT_NAMES = {
     MOVIES_UNIT: ("Movie subtitles", "Movies"),
     "screens": ("Screens and signs", "Screens and signs"),
     "sumo": ("Bug sumo's bout", "Bug sumo"),
+    "kite": ("Kite flying's HUD", "Kite flying"),
     "diary": ("The picture diary", "Diary"),
     "books": ("The encyclopedias", "Encyclopedias"),
 }

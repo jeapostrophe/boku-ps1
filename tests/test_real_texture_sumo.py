@@ -25,13 +25,12 @@ from boku import texture_paint as paint
 from boku import texture_sumo as ts
 from boku.png import read as read_png
 from boku.texture_closeups import emboldened
-from boku.texture_text import Entry, TextureTextError, ink_of, read_entries
+from boku.texture_text import Entry, TextureTextError, family_entries, ink_of
 from boku.tim import luminance
 from tests.test_real_sumo_bout import _card
-from tests.test_real_texture_buttons import check_texels, rebuilt
+from tests.test_real_texture_buttons import assert_edged, check_texels, rebuilt
 
-ENTRIES = {e.id.removeprefix(ts.FAMILY): e for e in read_entries().values()
-           if e.family == ts.FAMILY}  # fmt: skip
+ENTRIES = family_entries(ts.FAMILY)
 BANNER = ts.VIEWS[f"{ts.FAMILY}move"][0]
 PLATE = ts.VIEWS[f"{ts.FAMILY}plate"][0]
 MARKS = dict(zip(ts.RANK_MARKS, ts.VIEWS[f"{ts.FAMILY}rank"], strict=True))
@@ -52,15 +51,10 @@ def test_each_strip_is_its_moves_english_and_the_page_holds_nothing_else(
     palette = canvas.palette(BANNER.clut, BANNER.chunk)
     expected: paint.Ink = set()
     for key, cell in ts.cells(archive).items():
-        x0, _, w, _ = box = ts.cell_box(cell)
+        box = ts.cell_box(cell)
         drawn = {p for p in paint.points(box) if canvas.at(p)}
-        white = {p for p in drawn if luminance(palette[canvas.at(p)]) > 200}
-        assert paint.normalised(white) == bold(game, f"move.{key}"), f"move.{key} in strip {cell}"
-        left, _, width, _ = paint.extent(white)
-        assert abs((left - x0) - (x0 + w - left - width)) <= 1, f"move.{key} is not centred"
-        edge = drawn - white
-        assert edge == paint.grown(white, 1, 1, 1, 1) - white, f"move.{key}: its edge"
-        assert {luminance(palette[canvas.at(p)]) < 60 for p in edge} == {True}
+        assert_edged(canvas, palette, drawn, box, bold(game, f"move.{key}"),
+                     f"move.{key} in strip {cell}")  # fmt: skip
         expected |= drawn
     page = paint.points((0, 0, ts.PAGE, ts.PAGE))
     assert {p for p in page if canvas.at(p)} == expected, "lettering outside the strips"

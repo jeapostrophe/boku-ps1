@@ -306,8 +306,8 @@ question; it is noted here so the two sides do not both assume the other has it.
 * `TBG00`, `TBG01` — the kite-flying HUD: at CLUT 0 the atlas is kite thumbnails plus
   `1234567890`, `m`, `s`, `m/s`, a compass rose and a wind vane. All Latin and numerals —
   *corrected* 2026-09-30: the HUD is 4bpp sprites, and beside the digits are three 12 px
-  labels, 風向 / 風速 / 高度 (wind direction, wind speed, altitude). **P**, not built
-  (§ "What the census could not see").
+  labels, 風向 / 風速 / 高度 (wind direction, wind speed, altitude). **P**, built 2026-09-30
+  ([texture-recipes.md](texture-recipes.md) § "The kite-flying HUD").
 * `NIKKI_W` `0x005450` — *corrected* 2026-09-23: its header says 8bpp 28×184, and read that
   way it looks like a pull cord, a wreath, a mushroom and two pencils. The game draws it as
   **4bpp 56×184**: the pull cord, the diary desk's おやすみ ("good night") balloon, its stone
@@ -419,7 +419,8 @@ it found:
 * **The kite-flying HUD's labels** — `TBG00` / `TBG01` `0x1c` (the same sheet in both), 4bpp
   canvas x 260–349, y 140–151: 風向, 風速, 高度 beside the digits and the units (which read `m`
   and `m/h` at 4bpp; the audit's `s` and `m/s` were read through the wrong depth).
-  Unbuilt: **P**, three labels, its own plan row.
+  **P**, three labels, built as PLAN `GFX-13`
+  ([texture-recipes.md](texture-recipes.md) § "The kite-flying HUD").
 * **The title logo** — `T_TITLE` `0x14`, 4bpp canvas x 0–255, y 93–197, twice (face and
   shadow): ぼくのなつやすみ. **N**: it is the game's name, as the title on the box is.
 * Nothing else: `M_S02000`'s balloons are in a pack nothing loads, `BOX`'s model-kit
@@ -460,7 +461,7 @@ ids are in use: `translation/textures/` holds them and `boku build --textures` t
 | 18 | `tex@M_S01000.0` | the bug-trading notebook's cover, "Bug // Trading // Notebook" | 3 lines |
 | 19 | `btn@MZKAN.back` | the insect book's stone "Back" (the same stone as every other; the wreath and pencils beside it carry no Japanese) | 1 word |
 | 20 | `sumo@plate.stamina`, `sumo@rank.*`, `sumo@move.*` | a bug-sumo bout: the stamina plate, the three rank marks, the banner's heading and 22 ways a bout ends | 27 strings |
-| 21 | (none yet) | the kite-flying HUD's three labels — unbuilt | 3 words |
+| 21 | `kite@hud.direction`, `.speed`, `.altitude` | the kite-flying HUD's three labels | 3 words |
 
 Rows 1–3 are **111 pages** and dwarf everything else; rows 11–19 are a few dozen short strings
 that a single pass produces. The glossary already governs rows 2 and 3 (species and kite names)

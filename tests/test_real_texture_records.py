@@ -25,13 +25,12 @@ from boku import texture_paint as paint
 from boku import texture_records as tr
 from boku import texture_text as tt
 from boku.png import read as read_png
-from boku.texture_text import ink_of, read_entries
+from boku.texture_text import family_entries, ink_of
 from boku.tim import luminance
 from boku.typeset import face_named
 from tests.test_real_texture_buttons import check_on_screen, check_texels, rebuilt
 
-ENTRIES = {e.id.removeprefix(tr.FAMILY): e for e in read_entries().values()
-           if e.family == tr.FAMILY}  # fmt: skip
+ENTRIES = family_entries(tr.FAMILY)
 
 
 CASES = [(m, c) for m, r in tr.RECORDS.items() for c in r.copies]

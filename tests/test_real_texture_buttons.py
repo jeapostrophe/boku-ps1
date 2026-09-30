@@ -28,13 +28,12 @@ from boku import texture_buttons as tb
 from boku import texture_paint as paint
 from boku import texture_text as tt
 from boku.png import read as read_png
-from boku.texture_text import TextureTextError, ink_of, lines_of, read_entries
+from boku.texture_text import TextureTextError, ink_of, lines_of
 from boku.textures import Texture
 from boku.tim import luminance, parse_exact
 from boku.typeset import face_named
 
-ENTRIES = {e.id.removeprefix(tb.FAMILY): e for e in read_entries().values()
-           if e.family == tb.FAMILY}  # fmt: skip
+ENTRIES = tt.family_entries(tb.FAMILY)
 
 
 def rebuilt(inv, patched: bytes, source) -> paint.Canvas:
@@ -413,6 +412,23 @@ def check_texels(shot, inv, patched: bytes, source, clut: int, chunk: int, point
             wrong.append((x, y, seen))
     assert changed > at_least, f"{what}: the build changed too few texels where the check looked"
     assert wrong == [], f"{what}: {len(wrong)} of {compared} texels differ, first {wrong[:5]}"
+
+
+WHITE, DARK = 200, 60
+"""Luminance over which a texel of outlined type is its white, and under which its edge."""
+
+
+def assert_edged(canvas: paint.Canvas, palette, drawn, box: paint.Box, ink, what: str) -> None:
+    """`drawn` (the lettered texels of `box`) is `ink`, normalised, in white, with a dark edge
+    on all eight sides, centred across `box`: type set by `texture_text.outlined`."""
+    white = {p for p in drawn if luminance(palette[canvas.at(p)]) > WHITE}
+    assert paint.normalised(white) == ink, f"{what}: not its English"
+    x0, _, w, _ = box
+    left, _, width, _ = paint.extent(white)
+    assert abs((left - x0) - (x0 + w - left - width)) <= 1, f"{what}: not centred"
+    edge = drawn - white
+    assert edge == paint.grown(white, 1, 1, 1, 1) - white, f"{what}: its edge"
+    assert all(luminance(palette[canvas.at(p)]) < DARK for p in edge), f"{what}: a pale edge"
 
 
 MITIM = "_DATA_MITIM.BIN__000000"

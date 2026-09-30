@@ -157,8 +157,9 @@ usage: ./make.sh <verb> [arguments]
   emu-test [pytest arguments]   the tests that boot an emulator (minutes each; skipped by
                                 `test`): the movie, voice-only and native-clip subtitle
                                 gates on PCSX-Redux, and on Beetle PSX the English title
-                                menu, buttons, the generated-save boot, the bug-sumo bout and
-                                the native-clip subtitles reached as play reaches them
+                                menu, buttons, the generated-save boot, the bug-sumo bout, the
+                                kite-flying HUD and the native-clip subtitles reached as
+                                play reaches them
   lint                          ruff check + format check
   smoke [image.cue]             boot image.cue (default disc/image.cue) on both
                                 headless emulator gates -- PCSX-Redux and Beetle PSX
@@ -428,6 +429,7 @@ case "$verb" in
             tests/test_real_texture_text_beetle.py tests/test_real_texture_buttons.py \
             tests/test_real_texture_books.py tests/test_real_credits_card.py \
             tests/test_real_texture_records.py tests/test_real_texture_sumo.py \
+            tests/test_real_texture_kite.py \
             tests/test_real_save_boot.py tests/test_real_sumo_bout.py \
             tests/test_real_voice_subtitle.py tests/test_real_clip_subtitle.py \
             tests/test_real_clip_subtitle_beetle.py tests/test_real_sumo_voice.py "$@"

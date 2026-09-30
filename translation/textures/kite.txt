@@ -1,0 +1,14 @@
+# Kite flying's HUD (PLAN GFX-13). Format: translation/textures/README.md; how each is drawn:
+# boku/texture_kite.py, research/texture-recipes.md § "The kite-flying HUD".
+
+# --- the three labels along the bottom of the screen while a kite is up. direction (風向,
+# wind direction) stands beside a compass whose needle is the wind; speed (風速, wind speed) is
+# over a number in m/h; altitude (高度) is over the kite's height in m. direction and speed are
+# neighbours on one row, so the row reads "Wind Speed" over the number with the compass
+# beside it, and the compass draws the direction. The three are instrument words in the
+# Japanese (高度, not 高さ), so altitude, not height. The unit m/h is the game's own drawing and
+# stays. A label is one line in the game's glyphs; one too wide for its cell is refused, and
+# the refusal says how much room there is.
+kite@hud.direction	Wind
+kite@hud.speed	Speed
+kite@hud.altitude	Altitude
