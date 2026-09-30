@@ -787,12 +787,16 @@ trial) → `PIPE` → `TRN-08` → `TRN` → `GFX` → `REL`. `RSH` informs all 
       wording choices, ruled 2026-09-30 as built: decisions §§ 25–27 (25a, 25.2a "Winning move",
       26a, 27a). Harmed (was): the player,
       in every bout.
-- [ ] **[GFX-15]** **Bug sumo's banner: the move's English gloss on a third line.** Jay, 2026-09-30,
-      decisions § 29: **29b** — heading, name, gloss — with his shorter glosses for the four too
-      wide: utchari "backward pivot", gaburiyori "bouncing force", abisetaoshi "backward pin",
-      sabaori "forward pin". Build it (the heading's routine and the strip step, `GFX-14`'s
-      measurements in `research/texture-recipes.md`), prove on Beetle. Harmed: the player who
-      does not know sumo.
+- [x] **[GFX-15]** **Bug sumo's banner: the move's English gloss on a third line.** DONE 2026-09-30
+      (`e7c66d9`): Jay's 29b (decisions § 29) — each real technique's banner shows "Winning move",
+      its name and its gloss (`sumo@move.gloss-N`, with his shorter "backward pivot", "bouncing
+      force", "backward pin", "forward pin"); moves with no gloss sit midway. The strips are
+      124×23 on the banner's page and the heading moved to the atlas's third page: 26 `MUSI.OVL`
+      words plus the move table and the veil (`research/texture-recipes.md` § "The winning-move
+      banner"). The gloss sits 11 rows under the name, one closer than the mock-up, since 12 does
+      not fit the page. Proven: the patched routines run for all 22 ways a bout ends, and on
+      Beetle a King bout ending in Oshidashi shows "frontal push-out" texel for texel
+      (`tests/test_real_texture_sumo.py`). Harmed (was): the player who does not know sumo.
 - [x] **[GFX-14]** **Bug sumo's move names, as English sumo writes them.** DONE 2026-09-30
       (`43ac1e6`): Jay ruled the Japanese names stay (English coverage uses them), in the standard
       one-word form — the real techniques are one word, capitalised, in `sumo.txt` and `arrays.txt`
