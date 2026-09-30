@@ -635,6 +635,17 @@ picked one to `u`, and the draw's own place becomes its `y` (`banner_code`). The
 drawn at (98, 85), the move at (98, 105), the draw alone at (98, 95), and the veil is
 (90, 80, 140, 50).
 
+**A third line, measured (PLAN `GFX-14`).** Each real technique has an English gloss in
+`sumo.txt` (`sumo@move.gloss-N`, `GLOSSED`) that nothing draws. Drawing it under the name makes a
+move's strip two lines, 23 rows (a bold line is up to 10 rows, capital to descender, with a
+dark row above, between and below). Twenty-two of those take 506 of the page's two 256-row
+columns, so the heading could no longer share the page. The atlas's next page has a free
+corner of 97×96 texels at (599, 160), but the heading's routine stores its `u` and `v` from
+`$zero`, so moving it there rewrites that routine. Stepping the move by 23 rows needs one
+more shift-and-add than 20 does. The spare word comes from setting the height once, not once
+per column. Four glosses are also wider than a strip's 122 px. Leaving the heading out
+instead (two lines, name over gloss) needs only the move routine changed.
+
 ### The stamina plate
 
 The HUD of a fight is five quads from 28-byte records in `MUSI.OVL` (`s16 x, y` at +2,
@@ -692,7 +703,7 @@ the only chalk is the rank, and nothing outside the ring changed. On Beetle
 of the banner as rebuilt; the plate opens to 56; and the two records hold the strips' new
 places — without the sixteen words the heading's record is retail's and the test fails.
 `tests/test_texture_sumo.py` holds the layout (every strip ends by texel 255, no two share a
-texel), and the banner's wording to the move-name array's.
+texel), the banner's wording to the move-name array's, and each technique as one word.
 
 ## The kite-flying HUD — three labels over the compass and the numbers (PLAN `GFX-13`)
 

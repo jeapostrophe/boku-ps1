@@ -373,24 +373,25 @@ musi@2C.12	(unlabelled)	MAX pushed
 musi@2C.13	(unlabelled)	Buchikamashi
 musi@2C.14	(unlabelled)	Tsuppari
 musi@2C.15	(unlabelled)	Utchari
-musi@2C.16	(unlabelled)	Gaburi-yori
+musi@2C.16	(unlabelled)	Gaburiyori
 musi@2C.17	(unlabelled)	Fighting spirit
-musi@2C.18	(unlabelled)	Uwate-nage
+musi@2C.18	(unlabelled)	Uwatenage
 musi@2C.19	(unlabelled)	Brainbuster
-musi@2C.20	(unlabelled)	Hiki-otoshi
+musi@2C.20	(unlabelled)	Hikiotoshi
 musi@2C.21	(unlabelled)	Susoharai
-musi@2C.22	(unlabelled)	Sukui-nage
-musi@2C.23	(unlabelled)	Tsuri-dashi
-musi@2C.24	(unlabelled)	Ashi-hiki
+musi@2C.22	(unlabelled)	Sukuinage
+musi@2C.23	(unlabelled)	Tsuridashi
+musi@2C.24	(unlabelled)	Ashihiki
 musi@2C.25	(unlabelled)	Flip-over
-musi@2C.26	(unlabelled)	Abise-taoshi
-musi@2C.27	(unlabelled)	Tsuki-dashi
-musi@2C.28	(unlabelled)	Saba-ori
+musi@2C.26	(unlabelled)	Abisetaoshi
+musi@2C.27	(unlabelled)	Tsukidashi
+musi@2C.28	(unlabelled)	Sabaori
 musi@2C.29	(unlabelled)	Harite
 musi@2C.30	(unlabelled)	Mantis Scissors
 musi@2C.31	(unlabelled)	Mantis Buster
-# NOTE musi@2C: real sumo techniques keep their Japanese names; the joke moves are translated
-#   (glossary § 4b). .0-.12 are states, probably debug-only.
+# NOTE musi@2C: real sumo techniques keep their Japanese names, one word as English sumo
+#   writes them; the joke moves are translated (glossary § 4b). .0-.12 are states, probably
+#   debug-only.
 
 # --- musi@348: bug-sumo button hint
 musi@348.0	(unlabelled)	{G:47}: tap your bug

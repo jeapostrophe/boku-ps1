@@ -90,7 +90,9 @@ SETTLED BY CHARTER as a Japanese-ism that English can hold.
 ## 3. Romanisation — SETTLED (Q9, 2026-09-20)
 
 * **System:** modified Hepburn. *Shirabe*, *Tsukiyono*, *Sagi-no-sato*; syllabic n as *n*
-  (*kanpai*, not *kampai*); particle *no* hyphenated inside place names.
+  (*kanpai*, not *kampai*); particle *no* hyphenated inside place names. A term English
+  already writes its own way is written that way: sumo techniques as one word, *Oshidashi*,
+  *Uwatenage* (glossary § 4b; Jay, 2026-09-30).
 * **Long vowels in game text: unmarked, and no macron glyphs are added to the font.** *Yusaku*,
   *Ryujin*, *Ken-bo*, *gochisosama*. Jay: *"I don't think we need it if it isn't in the
   text."* The game's font sheet has plain A–Z / a–z (`research/font.md`), no macron letters,
@@ -328,8 +330,8 @@ Names of people, animals and settlements (Q4, Q5); *-kun / -chan / -san*; *Onee-
 Onii-chan, -neechan* (Q1); *itadakimasu, gochisōsama* (Q2); the cicadas and the singing insects
 by their Japanese names, while butterflies, beetles and dragonflies are English (Q6, glossary
 § 4a); the fish *iwana* and *yamame* (Q10.11); real sumo techniques in the bug-sumo move list
-(Q10.9); *mizore* syrup (Q10.7); dishes that English-language Japanese cooking already calls
-by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi, omurice,
+(Q10.9; their glosses are held, not shown, PLAN `GFX-14`); *mizore* syrup (Q10.7); dishes
+that English-language Japanese cooking already calls by name (*tonkatsu, karaage, gyoza, katsudon, oyakodon, tempura, sashimi, sushi, omurice,
 nikujaga, korokke*); *tanuki, tengu, oni, kappa* (as in *kappa-maki*), *jizō*, *yukata, futon,
 kotatsu, tanabata, tenkara*; invented words (but § 7's two spelled as English). Everything else is English — including
 *satoyama*, rendered by sense (Q10.8; Jay, 2026-09-21: "somewhere this rural" where the father

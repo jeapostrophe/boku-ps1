@@ -42,6 +42,13 @@ def test_the_banners_moves_are_worded_as_the_move_names_array_words_them():
     assert {move: ENTRIES[f"move.{move}"].text for move in shared} == shared
 
 
+def test_a_real_sumo_technique_is_one_word_as_english_sumo_writes_it():
+    """One word, capitalised (glossary § 4b). The techniques are the moves with a gloss, and
+    `arrays.txt` is held to the same words by the test above."""
+    names = {move: ENTRIES[f"move.{move}"].text for move in ts.GLOSSED}
+    assert {m: n for m, n in names.items() if not re.fullmatch(r"[A-Z][a-z]+", n)} == {}
+
+
 def test_the_strips_tile_one_page_in_reach_of_the_routine_that_draws_them():
     """`0x80036DE0` adds `u + w` and `v + h` in a byte, so a strip must end by texel 255; and
     no two strips may share a texel."""

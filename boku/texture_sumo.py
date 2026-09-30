@@ -45,6 +45,10 @@ PAGE = 256
 
 MOVES = 22
 """The ways a bout can end (`HOW_IT_ENDED`), each a byte of `CELL_TABLE` naming its strip."""
+GLOSSED = (0, 1, 2, 3, 4, 6, 8, 9, 10, 11, 12, 14, 15, 16, 17)
+"""The ways a bout ends that are real sumo techniques, named in Japanese (glossary § 4b). Each
+has an English gloss, `move.gloss-<move>`, which the banner does not draw: whether it should
+is Jay's (PLAN `GFX-14`)."""
 CELL_TABLE = 0x8007A2F0
 HOW_IT_ENDED = 0x8008EFC0
 HEADING_CELL = 0
@@ -343,11 +347,15 @@ def rank_marks(archive: Archive, inv: Inventory, face: Face, text: dict[str, Ent
 
 # --- the family --------------------------------------------------------------------------------
 
+
 Recipe = Callable[[Archive, Inventory, Face, dict[str, Entry]], list[ByteEdit]]
 PARTS: dict[str, tuple[tuple[str, ...], Recipe]] = {
     "plate": (("stamina",), plate),
     "rank": (tuple(RANK_MARKS), rank_marks),
-    "move": (("heading", *(str(move) for move in range(MOVES))), banner),
+    "move": (
+        ("heading", *(str(move) for move in range(MOVES)), *(f"gloss-{m}" for m in GLOSSED)),
+        banner,
+    ),
 }
 """The family's parts: each one's keys (`sumo@<part>.<key>`) and the recipe that builds it."""
 KEYS = tuple(f"{part}.{key}" for part, (keys, _) in PARTS.items() for key in keys)

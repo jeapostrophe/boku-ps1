@@ -234,16 +234,40 @@ ibis (*toki* — Saori's example of what publicity does to a rare animal, `E6000
 虫交換 bug trading; キング / キング戦 King / a King match; 弱い・強い・キング Weak / Strong / King
 (`musi@358`, fixed 3 × 3 cells); △で虫をたたく "△: tap your bug" (`musi@348`, 7 cells); 勝 / 敗
 W / L (immediate glyphs, `exe@code:800377F8`). Move names (`musi@2C.0`–`.31`): real sumo
-techniques keep their Japanese names, as English sumo broadcasting does — *buchikamashi,
-tsuppari, utchari, gaburi-yori, uwate-nage, hiki-otoshi, susoharai, sukui-nage, tsuri-dashi,
-ashi-hiki†, tsuki-dashi, saba-ori, harite, abise-taoshi†*; the jokes are translated —
+techniques keep their Japanese names, as English sumo broadcasting does, and are written as
+English sumo writes them — one word, no hyphen (the Japan Sumo Association's English pages give
+a bout's kimarite as "oshidashi", sumo.or.jp/En, checked 2026-09-30), capitalised on the
+banner as a name (Jay, 2026-09-30, PLAN `GFX-14`). Each has an English gloss (`sumo@move.gloss-N`
+in `translation/textures/sumo.txt`, not drawn): for the ten that are official kimarite, the
+English name the English Wikipedia's list of the JSA's 82 gives (after NHK World's "The
+Techniques of Sumo"), hyphenated as English nouns; for the rest a plain description.
+
+| game | written | gloss | note |
+|---|---|---|---|
+| 押し出し | Oshidashi | frontal push-out | kimarite; the banner only |
+| ぶちかまし | Buchikamashi | head-first charge | the tachiai charge, not a kimarite |
+| 突っ張り | Tsuppari | open-hand thrusts | not a kimarite |
+| うっちゃり | Utchari | backward pivot throw | kimarite |
+| がぶりより | Gaburiyori | bouncing force-out | not a kimarite (the win is *yorikiri*) |
+| 上手投げ | Uwatenage | overarm throw | kimarite |
+| 引き落とし | Hikiotoshi | hand pull-down | kimarite |
+| すそはらい | Susoharai | rear foot sweep | kimarite (裾払い) |
+| すくい投げ | Sukuinage | beltless arm throw | kimarite |
+| 吊り出し | Tsuridashi | frontal lift-out | kimarite |
+| 足引き | Ashihiki† | leg pull | the game's own: not 足取り *ashitori* (leg pick); the reading (*-hiki* or *-biki*) is unconfirmed |
+| 浴びせた押し | Abisetaoshi | backward force-down | the game's spelling of 浴びせ倒し, the kimarite |
+| 突き出し | Tsukidashi | frontal thrust-out | kimarite |
+| サバ折り | Sabaori | forward force-down | kimarite |
+| 張り手 | Harite | open-hand slap | not a kimarite |
+
+The jokes are translated —
 ブレンバスター Brainbuster, カマバサミ Mantis Scissors, カマバスター Mantis Buster, ひっくり返し
 Flip-over, 気合 Fighting spirit (a way to win, on the banner); state names (待機 Waiting,
 休息 Resting, 前進 Advance, 後退 Retreat, 組み合う Grapple, 共に押す Both pushing, 1P押し / 2P押し
 P1 pushing / P2 pushing…, `.0`–`.12`) are debug-only. The array itself is never drawn: the
 player sees a move on **the banner** when a bout ends (`translation/textures/sumo.txt`,
 which must word moves as this array does): 決まり手 Winning move (the heading), 押し出し
-Oshi-dashi, 両者、引き分け Both sides draw, スタミナ勝ち Stamina win.
+Oshidashi, 両者、引き分け Both sides draw, スタミナ勝ち Stamina win.
 
 ### 4c. Fishing (`exe@8003DA4C`, `exe@800462C8`…)
 
