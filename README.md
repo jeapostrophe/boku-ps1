@@ -31,7 +31,7 @@ The patched game, running on Beetle PSX.
 
 ## Video
 
-[![Watch the video](https://img.youtube.com/vi/m1jHBkPIDw4/maxresdefault.jpg)](https://www.youtube.com/watch?v=m1jHBkPIDw4)
+[Watch the video](https://www.youtube.com/watch?v=m1jHBkPIDw4)
 
 ## Getting it
 
