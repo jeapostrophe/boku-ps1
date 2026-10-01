@@ -1028,11 +1028,10 @@ a still plus the credits line texture (`research/data/texture-census.tsv` `credi
       plain instructions (extract CHD → hash → patch), credits (README § "Related work") and a
       plain statement of how the translation was made; the PPF is a separate, optional download
       (Jay, 2026-09-25: "if Millennium Kitchen wants we'll remove it") — `release --no-ppf` /
-      `publish-release --withdraw-ppf` remove it in one step. Left: create the GitHub repository
-      and set `origin`; pick the first version, tag and push it; `./make.sh release`, then
-      `./make.sh release-row release/v<version>`, put the video link at the README's VIDEO
-      comment, commit and push README.md, then
-      `./make.sh publish-release release/v<version> --yes` (`--draft` first if wanted). `REL-01`'s
+      `publish-release --withdraw-ppf` remove it in one step. v1 cut 2026-09-30 (tag `v1`,
+      `fe807a34`; patched SHA-1 `3ab94dcb…`), its README row pushed, and posted to GitHub as a
+      draft (Jay's call). Left: Jay publishes the draft and makes `jeapostrophe/boku-ps1` public
+      (private at v1, Jay's call); the video link goes at the README's VIDEO comment. `REL-01`'s
       sentence on where it has been played is in `boku/release-notes.md`. Listing on romhack.ing /
       romhacking.net is optional and not worth bending anything for (romhack.ing withholds
       machine-assisted translations from web download; Jay, 2026-09-20: the scene's view of AI is

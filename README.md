@@ -52,13 +52,14 @@ unpatched disc instead; the release says how.
 
 ## Which version do I have?
 
-Take the SHA-1 of your patched image — the `.bin` the patch wrote, not the `.cue` or a `.chd`
+Take the SHA-1 of your patched image — the `.img` the patch wrote, not the `.cue` or a `.chd`
 made from it (`shasum -a 1`, `sha1sum`, or `certutil -hashfile <file> SHA1`) — and find it in
 the right-hand column. The xdelta and the PPF of a version make the same image. The middle
 column is the dump that version patches.
 
 | version | your dump's SHA-1, before patching | the patched image's SHA-1 |
 |---|---|---|
+| v1 | `5959bf7d9835d0a60aeb0143e2d0fc564bfea9fa` | `3ab94dcb5338bd17a8cf848d931efc0476fc9aa4` |
 
 A version is listed here as it is published.
 
