@@ -106,7 +106,7 @@ improve it are welcome.
 ## Why I made this
 
 I've known about *Boku no Natsuyasumi* for about 15 years, since Ray Barnholt talked about it
-on his podcast, No More Whoppers. Then I bought every issue of his magazine, SCROLL, as it came
+on his podcast, [No More Whoppers](https://nomorewhoppers.libsyn.com/). Then I bought every issue of his magazine, SCROLL, as it came
 out; [SCROLL 10](https://scroll.vg/issues/10/) (June 25, 2013) is all about the Boku games.
 
 It has been on my list of things to play "once I learned Japanese well enough", but that never
@@ -116,7 +116,7 @@ was just not giving me the nostalgic feeling that I wanted.
 Then I decided to choose a project to test Claude's multilingual and assembly understanding,
 and went with this... and it worked out!
 
-— Jay McCarthy
+— Jay McCarthy, September 2026
 
 ## Related work and credit
 
