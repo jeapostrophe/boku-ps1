@@ -153,7 +153,7 @@ that reads the game needs them, and nothing they write is ever committed.
 | retake the README's screenshots | `./make.sh screenshots` (the built image on Beetle → `docs/screenshots/`) |
 | test | `./make.sh test`, `./make.sh lint`; `./make.sh emu-test` for the tests that boot an emulator |
 | make a patch | `./make.sh patch --modified build/days/image.img` (PPF + xdelta + both sides' hashes into `build/patch/`); `./make.sh apply-patch DUMP PATCH --out FILE` applies one, checking both hashes. |
-| cut a release | tag `v<version>` and push it, then `./make.sh release` (the xdelta download and the optional PPF one, each a zip, into `release/v<version>/`; `--no-ppf` for none), `./make.sh release-row release/v<version>` (its row in README § "Which version do I have?"; commit and push README.md) and `./make.sh publish-release release/v<version> --yes` |
+| cut a release | tag `v<version>` and push it, then `./make.sh release` (the xdelta download and the optional PPF one, each a zip, into `release/v<version>/`; `--no-ppf` for none; beside them the patched disc, and in `release/v0/` the dump, each as image, `.cue` and `.chd` to check by hand), `./make.sh release-row release/v<version>` (its row in README § "Which version do I have?"; commit and push README.md) and `./make.sh publish-release release/v<version> --yes` |
 | play on Mode One | `./make.sh export-to-mode-one` (packs `build/days` as Mode One's `boku.chd` and pins its SHA-1; then rebuild Mode One) |
 
 ## Layout
@@ -185,7 +185,8 @@ work/       (ignored)  scratch, and everything derived from the game: translator
                        mock-ups, the reader, saves, decoded movies and voices, review pages
 build/      (ignored)  the renderer's edit set (vwf/), the days build (days/), the patch (patch/),
                        and what the lower-level verbs write (trial/, image/)
-release/    (ignored)  cut releases, one release/v<version>/ each (./make.sh release)
+release/    (ignored)  cut releases, one release/v<version>/ each, with the patched disc as
+                       image, .cue and .chd; release/v0/ the dump the same way (./make.sh release)
 ```
 
 ## Delivery

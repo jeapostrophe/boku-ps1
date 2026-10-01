@@ -76,7 +76,9 @@ usage: ./make.sh <verb> [arguments]
                                 base, the .cue and the notes into release/v<version>/
                                 (v<version> is HEAD's tag, else a snapshot named by git
                                 describe) -- the xdelta in one zip, the PPF in its own
-                                (--no-ppf: no PPF) -- and apply each patch back
+                                (--no-ppf: no PPF) -- and apply each patch back; beside
+                                them the patched disc as image, .cue and .chd, and the
+                                dump the same way in release/v0/ (--base-chd: your .chd)
                                 (uv run boku release --help)
   release-row DIR               write the tagged release DIR's two SHA-1s into README.md's
                                 "Which version do I have?" table, from the zip it posts;

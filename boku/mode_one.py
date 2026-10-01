@@ -11,8 +11,7 @@ SHA-1 is pinned in its compiled-in index, so `./make.sh export-to-mode-one`:
    entry for Boku (`boku()` in `src/one/index.rs`) includes at compile time.
 
 The pin is the `.chd` file's own SHA-1 (what Mode One's `RomLibrary` hashes), so it is
-taken after packing. `chdman createcd` is deterministic for a given chdman: the same 659 MB
-image packed twice gave byte-identical CHDs (chdman 0.283, 2026-09-25).
+taken after packing (`boku.chd`, which also says the pack is deterministic).
 
 The pin moves only once the disc it names is in place, and a failed pack leaves the
 previous disc and pin untouched, so Mode One is never pinned to a file it does not have.
@@ -23,15 +22,14 @@ from __future__ import annotations
 
 import argparse
 import os
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 from boku.build import CUE_NAME
+from boku.chd import ChdError, create_cd
 from boku.importer import sha1_of
 from boku.reader import BUILD_ID_NAME, DEFAULT_BUILD_DIR, build_id
 
-CHDMAN = "chdman"
 MODE_ONE_ENV = "BOKU_MODE_ONE"
 # Where this project already says Mode One lives (CLAUDE.md, research/tooling-setup.md).
 DEFAULT_MODE_ONE = Path.home() / "Dev" / "retro-trainer"
@@ -66,26 +64,11 @@ def export_to_mode_one(build: Path, mode_one: Path) -> Exported:
 
     chd = mode_one / ROM_FILE
     chd.parent.mkdir(parents=True, exist_ok=True)
-    partial = chd.with_name(f".{chd.stem}.partial.chd")
     try:
-        try:
-            subprocess.run(
-                [CHDMAN, "createcd", "-f", "-i", str(cue), "-o", str(partial)],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-        except FileNotFoundError as error:
-            raise ModeOneError(
-                f"{CHDMAN} is not on PATH; `brew install rom-tools` has it"
-            ) from error
-        except subprocess.CalledProcessError as error:
-            said = error.stderr.strip() or error.stdout.strip()
-            raise ModeOneError(f"{CHDMAN} createcd failed on {cue}:\n{said}") from error
-        sha1 = sha1_of(partial)
-        partial.replace(chd)
-    finally:
-        partial.unlink(missing_ok=True)
+        create_cd(cue, chd)
+    except ChdError as error:
+        raise ModeOneError(str(error)) from error
+    sha1 = sha1_of(chd)
 
     staged = pin.with_name(f".{pin.name}.partial")
     staged.write_text(f"{sha1}\n")

@@ -22,6 +22,7 @@ import pytest
 from boku import REPO_ROOT
 from boku.build import CUE_NAME, CUE_TEXT, IMAGE_NAME, cue_text
 from boku.build import MANIFEST_NAME as BUILD_MANIFEST
+from boku.chd import ChdError, extract_cd
 from boku.coverage import (
     BUILD_ID_NAME,
     REFUSED_FIELD,
@@ -29,6 +30,8 @@ from boku.coverage import (
     SOURCE_SHA1_FIELD,
     WRITTEN_FIELD,
 )
+from boku.disc import RAW_SECTOR_SIZE
+from boku.importer import sha1_of
 from boku.packets import markdown_sections
 from boku.patchfile import (
     _CONVERT,
@@ -39,6 +42,7 @@ from boku.patchfile import (
     patch_stem,
 )
 from boku.release import (
+    BASE_DIR,
     BASE_NAME,
     BUILD_ARGS_NAME,
     MAIN,
@@ -55,6 +59,7 @@ from boku.release import (
     assemble_release,
     github_repo,
     main_publish,
+    main_release,
     main_release_row,
     publish_command,
     readme_section,
@@ -62,7 +67,9 @@ from boku.release import (
     revision,
     version_row,
     with_version_row,
+    write_base_discs,
 )
+from tests.test_mode_one import needs_chdman
 from tests.test_patchfile import IMAGE_SIZE, needs_xdelta3
 
 TRACKED_INPUTS = ("README.md", NOTES_TEMPLATE, PPF_NOTES_TEMPLATE, STATUS_PATH)
@@ -161,6 +168,8 @@ def make_build(repo: Path, base: Path, built: Path, *, dirty: bool = False, args
 def assemble(
     repo: Path, base: Path, build: Path, base_sha1: str | None = None, *, ppf: bool = True
 ) -> Path:
+    if shutil.which("chdman") is None:  # a release packs its disc
+        pytest.skip("chdman is not on PATH (brew install rom-tools)")
     return assemble_release(
         repo=repo,
         base=base,
@@ -521,6 +530,146 @@ def test_a_ppf_that_does_not_reproduce_the_build_is_not_released(repo, images, m
     with pytest.raises(ReleaseRefused, match=r"\.ppf does not"):
         assemble(repo, base, build)
     assert not (repo / "release" / "v0.2.0").exists()
+
+
+# ---------------------------------------------------------------------------
+# The discs beside a release, to check by hand
+
+BASE_CHD = f"{Path(BASE_NAME).stem}.chd"
+
+
+@pytest.fixture
+def discs(tmp_path) -> tuple[Path, Path]:
+    """`images`, but whole raw sectors, which is all chdman packs."""
+    original = random.Random(13).randbytes(RAW_SECTOR_SIZE * 24)
+    modified = bytearray(original)
+    modified[0x9800 : 0x9800 + 300] = bytes(b ^ 0xFF for b in original[0x9800 : 0x9800 + 300])
+    base, built = tmp_path / "disc-base.img", tmp_path / "disc-built.img"
+    base.write_bytes(original)
+    built.write_bytes(bytes(modified))
+    return base, built
+
+
+def unpacked_sha1(chd: Path, tmp_path: Path) -> str:
+    """The SHA-1 of the raw image `chdman extractcd` gives back from `chd`."""
+    return sha1_of(extract_cd(chd, tmp_path / f"unpacked-{chd.stem}.img"))
+
+
+def pack_uncompressed(image: Path, chd: Path) -> Path:
+    """`image` as a .chd that `create_cd`, which compresses, would never write."""
+    cue = image.with_suffix(".cue")
+    cue.write_text(cue_text(image.name))
+    subprocess.run(
+        ["chdman", "createcd", "-f", "-i", str(cue), "-o", str(chd), "-c", "none"],
+        check=True,
+        capture_output=True,
+    )
+    return chd
+
+
+@needs_xdelta3
+def test_a_release_holds_the_patched_disc_as_image_cue_and_chd(repo, discs, tmp_path):
+    base, built = discs
+    git(repo, "tag", "v0.2.0")
+    out = assemble(repo, base, make_build(repo, base, built))
+
+    patch = contract(out / MAIN.directory)
+    image = out / patch["result"]["name"]
+    stem = image.stem
+    assert sha1_of(image) == sha1_of(built)
+    assert (out / f"{stem}.cue").read_text() == (out / MAIN.directory / f"{stem}.cue").read_text()
+    assert unpacked_sha1(out / f"{stem}.chd", tmp_path) == sha1_of(built)
+
+
+@needs_xdelta3
+def test_a_disc_that_does_not_pack_leaves_no_release(repo, discs, monkeypatch):
+    """The disc is staged with the downloads: a release without it is never published."""
+    base, built = discs
+    git(repo, "tag", "v0.2.0")
+
+    def fails(cue, chd):
+        raise ChdError("chdman is not on PATH")
+
+    monkeypatch.setattr("boku.release.create_cd", fails)
+    with pytest.raises(ReleaseRefused, match="chdman"):
+        assemble(repo, base, make_build(repo, base, built))
+    assert not (repo / "release" / "v0.2.0").exists()
+
+
+@needs_chdman
+def test_v0_holds_the_dump_its_cue_and_a_chd_packed_from_it(discs, tmp_path):
+    base, _ = discs
+    v0 = write_base_discs(base, tmp_path / "release", None, base_sha1=sha1_of(base))
+
+    assert v0 == (tmp_path / "release" / BASE_DIR).resolve()
+    assert sha1_of(v0 / BASE_NAME) == sha1_of(base)
+    assert (v0 / f"{Path(BASE_NAME).stem}.cue").read_text() == cue_text(BASE_NAME)
+    assert unpacked_sha1(v0 / BASE_CHD, tmp_path) == sha1_of(base)
+
+
+@needs_chdman
+def test_a_given_chd_of_the_dump_replaces_a_packed_one_byte_for_byte(discs, tmp_path):
+    """Jay, 2026-09-30: v0 holds "a copy of the original" .chd. The one given here is one
+    chdman's defaults would not write, so a re-pack could not pass for the copy."""
+    base, _ = discs
+    sha1 = sha1_of(base)
+    root = tmp_path / "release"
+    packed = write_base_discs(base, root, None, base_sha1=sha1) / BASE_CHD
+    given = pack_uncompressed(base, tmp_path / "given.chd")
+    assert given.read_bytes() != packed.read_bytes(), "the test cannot tell a copy from a pack"
+
+    v0 = write_base_discs(base, root, given, base_sha1=sha1)
+    assert v0 is not None
+    assert (v0 / BASE_CHD).read_bytes() == given.read_bytes()
+    assert sha1_of(v0 / BASE_NAME) == sha1
+    assert write_base_discs(base, root, given, base_sha1=sha1) is None, "rewritten again"
+
+
+def test_a_base_that_is_not_the_dump_writes_no_v0(discs, tmp_path):
+    base, _ = discs
+    with pytest.raises(ReleaseRefused, match="not the Redump dump"):
+        write_base_discs(base, tmp_path / "release", None, base_sha1="0" * 40)
+    assert not (tmp_path / "release" / BASE_DIR).exists()
+
+
+@needs_chdman
+def test_a_given_chd_of_another_disc_is_refused(discs, tmp_path):
+    base, built = discs
+    wrong = pack_uncompressed(built, tmp_path / "wrong.chd")
+    with pytest.raises(ReleaseRefused, match=r"wrong\.chd"):
+        write_base_discs(base, tmp_path / "release", wrong, base_sha1=sha1_of(base))
+    assert not (tmp_path / "release" / BASE_DIR).exists()
+
+
+def test_an_existing_v0_is_kept(discs, tmp_path):
+    """The dump never changes, so v0 is written once: a later release copies nothing."""
+    base, _ = discs
+    v0 = tmp_path / "release" / BASE_DIR
+    v0.mkdir(parents=True)
+    (v0 / "mine.txt").write_text("x")
+    assert write_base_discs(base, tmp_path / "release", None, base_sha1=sha1_of(base)) is None
+    assert sorted(p.name for p in v0.iterdir()) == ["mine.txt"]
+
+
+def test_a_v0_tag_is_refused_since_v0_is_the_dump(repo, images):
+    base, built = images
+    git(repo, "tag", BASE_DIR)
+    with pytest.raises(ReleaseRefused, match=BASE_DIR):
+        assemble(repo, base, make_build(repo, base, built))
+
+
+@needs_chdman
+@needs_xdelta3
+def test_the_release_verb_writes_both_versions_discs(repo, discs):
+    """`boku release` itself, not just its parts."""
+    base, built = discs
+    git(repo, "tag", "v0.2.0")
+    build = make_build(repo, base, built)
+    root = repo / "release"
+    assert main_release(repo, base, build, root, preflight=False, base_sha1=sha1_of(base)) == 0
+
+    assert (root / "v0.2.0" / f"{patch_stem('0.2.0')}.chd").is_file()
+    assert sha1_of(root / BASE_DIR / BASE_NAME) == sha1_of(base)
 
 
 # ---------------------------------------------------------------------------

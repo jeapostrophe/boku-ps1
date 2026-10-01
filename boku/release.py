@@ -15,7 +15,13 @@ then `assemble_release` turns that build into `release/v<version>/`:
   under their real names. The zips are the assets: GitHub renames an asset whose name has
   spaces or brackets, and `PATCH.json`, `README.txt` and the `.cue` all name the files;
 * `RELEASE.json`, what `boku publish-release` reads: version, tag, commit and each
-  asset's SHA-1.
+  asset's SHA-1;
+* the patched disc, to check by hand and never posted (Jay, 2026-09-30): the image -- the
+  main download's patch applied to the base, what a player following the notes holds --
+  its `.cue` and a `.chd`, staged with the rest.
+
+Beside the versions, `release/v0/` (`BASE_DIR`) holds the dump they all patch, as the
+same three files (`write_base_discs`). It is the original game: `release/` stays ignored.
 
 Every patch is then applied to the base through `boku.patchfile.apply_patch`, from its own
 directory -- the path a player's `boku apply-patch` takes, against the `PATCH.json` that
@@ -48,6 +54,7 @@ files by it.
 
 from __future__ import annotations
 
+import filecmp
 import json
 import re
 import shlex
@@ -62,6 +69,7 @@ from string import Template
 from boku import REPO_ROOT
 from boku.build import IMAGE_NAME, cue_text
 from boku.build import MANIFEST_NAME as BUILD_MANIFEST
+from boku.chd import ChdError, create_cd, extract_cd
 from boku.coverage import BUILD_ID_NAME, CoverageError, Manifest
 from boku.importer import IMAGE_SHA1, sha1_of
 from boku.packets import markdown_sections
@@ -115,6 +123,8 @@ PPF = Download("ppf", FORMAT_PPF, "-ppf")
 NOTES_PATH = Path(MAIN.directory) / NOTES_NAME
 STATUS_PATH = STATUS_FILE.relative_to(REPO_ROOT)
 TAG_PREFIX = "v"
+#: release/v0/: the dump every version patches (`write_base_discs`).
+BASE_DIR = f"{TAG_PREFIX}0"
 PLAYED_HEADING = "Where it is played"
 HOW_MADE_HEADING = "How the translation is made"
 CREDITS_HEADING = "Related work and credit"
@@ -385,9 +395,12 @@ def _bundle(directory: Path, bundle: Path, folder: str, stamp: int) -> None:
             archive.writestr(info, path.read_bytes(), compresslevel=9)
 
 
-def _prove(directory: Path, base: Path, built_sha1: str, bundle: Path) -> None:
+def _prove(
+    directory: Path, base: Path, built_sha1: str, bundle: Path, keep: Path | None = None
+) -> None:
     """Apply the download's patch as a player's `boku apply-patch` would -- against the
-    `PATCH.json` beside it, alone -- and read its zip back."""
+    `PATCH.json` beside it, alone -- and read its zip back. The patched image is moved to
+    `keep` when given, else deleted."""
     produced = directory.parent / ".release-proof.img"
     contract = json.loads((directory / MANIFEST_NAME).read_text(encoding="utf-8"))
     try:
@@ -401,12 +414,30 @@ def _prove(directory: Path, base: Path, built_sha1: str, bundle: Path) -> None:
                     f"{entry['file']} does not reproduce the built image: applied to the "
                     f"base it gives sha1 {result.sha1}, the build is {built_sha1}"
                 )
+        if keep is not None:
+            produced.replace(keep)
     finally:
         produced.unlink(missing_ok=True)
     with zipfile.ZipFile(bundle) as archive:
         broken = archive.testzip()
         if broken is not None:
             raise ReleaseRefused(f"{bundle.name} reads back corrupt at {broken}")
+
+
+def _check_base(base: Path, base_sha1: str) -> None:
+    actual = sha1_of(base)
+    if actual != base_sha1:
+        raise ReleaseRefused(
+            f"{base} is not the Redump dump a release is made against: sha1 "
+            f"{actual}, expected {base_sha1} (research/disc-recon.md § 'The dump')"
+        )
+
+
+def _write_cue(directory: Path, image_name: str) -> Path:
+    """The `.cue` for `directory / image_name`, beside it under its stem."""
+    cue = directory / f"{Path(image_name).stem}.cue"
+    cue.write_text(cue_text(image_name), encoding="utf-8")
+    return cue
 
 
 def assemble_release(
@@ -424,12 +455,7 @@ def assemble_release(
     section."""
     require_clean_tree(repo)
     made = revision(repo)
-    actual_base = sha1_of(base)
-    if actual_base != base_sha1:
-        raise ReleaseRefused(
-            f"{base} is not the Redump dump a release is made against: sha1 "
-            f"{actual_base}, expected {base_sha1} (research/disc-recon.md § 'The dump')"
-        )
+    _check_base(base, base_sha1)
     image, build_manifest = _built_image(build_dir, made, base_sha1)
     built_sha1 = sha1_of(image)
     if built_sha1 != build_manifest.result_sha1:
@@ -446,6 +472,8 @@ def assemble_release(
     readme = (repo / README_PATH).read_text(encoding="utf-8")
 
     out_dir = out_root / f"{TAG_PREFIX}{made.version}"
+    if out_dir.name == BASE_DIR:
+        raise ReleaseRefused(f"{BASE_DIR} names the dump's directory beside the releases")
     try:
         check_out_dir(out_dir, manifest_name=RELEASE_MANIFEST, what="release")
     except StagingRefused as error:
@@ -484,14 +512,21 @@ def assemble_release(
         (stage / NOTES_PATH).write_text(notes, encoding="utf-8")
         commit_time = int(_git(repo, "show", "-s", "--format=%ct", made.commit))
         assets = []
+        disc = stage / patch["result"]["name"]
         for download in downloads:
             bundle = stage / download.asset(made.version)
             directory = stage / download.directory
             _bundle(directory, bundle, f"{stem}{download.suffix}", commit_time)
-            _prove(directory, base, built_sha1, bundle)
+            _prove(directory, base, built_sha1, bundle, keep=disc if download is MAIN else None)
             assets.append(
                 {"file": bundle.name, "size": bundle.stat().st_size, "sha1": sha1_of(bundle)}
             )
+        # The disc a player following the notes holds, to check by hand; never posted.
+        cue = _write_cue(stage, disc.name)
+        try:
+            create_cd(cue, cue.with_suffix(".chd"))
+        except ChdError as error:
+            raise ReleaseRefused(str(error)) from error
         manifest = {
             "format": RELEASE_FORMAT,
             "version": made.version,
@@ -507,8 +542,50 @@ def assemble_release(
     return out_dir.resolve()
 
 
+def write_base_discs(
+    base: Path, out_root: Path, base_chd: Path | None, *, base_sha1: str
+) -> Path | None:
+    """Write `out_root/v0/`: the dump as `BASE_NAME`, its `.cue`, and as a `.chd` either
+    `base_chd` copied as is -- once it extracts to the dump -- or one packed from `base`.
+
+    The dump never changes, so a v0 already there is kept (returning `None`) unless
+    `base_chd` is given and differs from v0's `.chd`."""
+    out_dir = out_root / BASE_DIR
+    chd_name = f"{Path(BASE_NAME).stem}.chd"
+    if out_dir.exists() and (
+        base_chd is None or filecmp.cmp(out_dir / chd_name, base_chd, shallow=False)
+    ):
+        return None
+    _check_base(base, base_sha1)
+    try:
+        check_out_dir(out_dir, manifest_name=BASE_NAME, what="dump's discs")
+    except StagingRefused as error:
+        raise ReleaseRefused(str(error)) from error
+    with staged(out_dir, suffix="writing") as stage:
+        image = stage / BASE_NAME
+        cue = _write_cue(stage, BASE_NAME)
+        try:
+            if base_chd is None:
+                shutil.copyfile(base, image)
+                create_cd(cue, stage / chd_name)
+            else:
+                if sha1_of(extract_cd(base_chd, image)) != base_sha1:
+                    raise ReleaseRefused(f"{base_chd} does not extract to the dump {base}")
+                shutil.copyfile(base_chd, stage / chd_name)
+        except ChdError as error:
+            raise ReleaseRefused(str(error)) from error
+    return out_dir.resolve()
+
+
 def main_release(
-    repo: Path, base: Path, build_dir: Path, out_root: Path, preflight: bool, ppf: bool = True
+    repo: Path,
+    base: Path,
+    build_dir: Path,
+    out_root: Path,
+    preflight: bool,
+    ppf: bool = True,
+    base_chd: Path | None = None,
+    base_sha1: str = IMAGE_SHA1,
 ) -> int:
     try:
         if preflight:
@@ -517,17 +594,28 @@ def main_release(
             kind = f"tag {made.tag}" if made.tag else "a snapshot (no version tag on HEAD)"
             print(f"release v{made.version} of {made.commit[:8]}, {kind}")
             return 0
+        # The dump's discs first: a --base-chd of another disc is refused before the build
+        # is patched and packed, not after.
+        dump = write_base_discs(base, out_root, base_chd, base_sha1=base_sha1)
         out = assemble_release(
-            repo=repo, base=base, build_dir=build_dir, out_root=out_root, ppf=ppf
+            repo=repo,
+            base=base,
+            build_dir=build_dir,
+            out_root=out_root,
+            base_sha1=base_sha1,
+            ppf=ppf,
         )
     except (ReleaseRefused, OSError, ValueError) as error:
         print(f"boku release: {error}")
         return 1
     manifest = json.loads((out / RELEASE_MANIFEST).read_text(encoding="utf-8"))
-    print(f"wrote {out}/")
-    for path in sorted(out.rglob("*")):
-        if path.is_file():
-            print(f"  {path.relative_to(out)}  {path.stat().st_size:,} bytes")
+    for directory in (out, dump) if dump else (out,):
+        print(f"wrote {directory}/")
+        for path in sorted(directory.rglob("*")):
+            if path.is_file():
+                print(f"  {path.relative_to(directory)}  {path.stat().st_size:,} bytes")
+    if dump is None:
+        print(f"kept {out_root / BASE_DIR}/, the dump's discs")
     if manifest["tag"]:
         print(
             f"then: ./make.sh release-row {out}, commit README.md and push it, and ./make.sh "

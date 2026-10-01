@@ -14,7 +14,6 @@ import shutil
 
 import pytest
 
-from boku import mode_one as module
 from boku.build import CUE_NAME, CUE_TEXT, IMAGE_NAME
 from boku.mode_one import PIN_FILE, ROM_FILE, ModeOneError, export_to_mode_one
 from boku.reader import BUILD_ID_NAME
@@ -101,7 +100,7 @@ def test_a_failed_pack_keeps_the_old_disc_and_the_old_pin(build, mode_one, tmp_p
     dies = tmp_path / "chdman-dies"
     dies.write_text('#!/bin/sh\nwhile [ "$1" != -o ]; do shift; done\necho half > "$2"\nexit 1\n')
     dies.chmod(0o755)
-    monkeypatch.setattr(module, "CHDMAN", str(dies))
+    monkeypatch.setattr("boku.chd.CHDMAN", str(dies))
     with pytest.raises(ModeOneError, match="createcd failed"):
         export_to_mode_one(build, mode_one)
 

@@ -22,7 +22,8 @@ TODO.md
 # released through GitHub Releases, not tracked.
 /build/
 # Cut releases (REL-04, `./make.sh release`): the patches, the .cue, the notes and the zip
-# that `./make.sh publish-release` posts to GitHub Releases. Kept, never tracked.
+# that `./make.sh publish-release` posts to GitHub Releases, the patched disc, and in v0/
+# the original dump. Kept, never tracked.
 /release/
 # The harness's per-agent worktrees live inside the main checkout; `./make.sh release`
 # refuses an untracked file, and these are not the project's.

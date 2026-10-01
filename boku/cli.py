@@ -14,7 +14,13 @@ from boku.archive import DEFAULT_DISC_DIR
 from boku.build import DEFAULT_BUILD_NAME, DEFAULT_IMAGE, IMAGE_NAME, main_build
 from boku.coverage import add_arguments as add_coverage_arguments
 from boku.extract import SCRIPT_DIR_NAME, main_extract
-from boku.importer import DEFAULT_OUT_DIR, SOURCE_ENV_VAR, main_import
+from boku.importer import (
+    DEFAULT_OUT_DIR,
+    SOURCE_ENV_VAR,
+    ImportRefused,
+    main_import,
+    resolve_source,
+)
 from boku.lint import add_arguments as add_lint_arguments
 from boku.mode_one import add_arguments as add_mode_one_arguments
 from boku.movies import add_arguments as add_movies_arguments
@@ -25,6 +31,7 @@ from boku.patchfile import MANIFEST_NAME, main_apply_patch, main_patch
 from boku.reader import DEFAULT_BUILD_DIR
 from boku.reader import add_arguments as add_reader_arguments
 from boku.release import (
+    BASE_DIR,
     RELEASE_ROOT,
     VERSIONS_HEADING,
     main_publish,
@@ -43,6 +50,15 @@ from boku.trial import TRIAL_TEXT, main_trial, patch_words
 from boku.voice import add_arguments as add_voice_arguments
 
 DEFAULT_MODIFIED_IMAGE = TRIAL_OUT_DIR / IMAGE_NAME
+
+
+def _chd_source() -> Path | None:
+    """`$BOKU_DISC`, the import's source, when it is a .chd that is still there."""
+    try:
+        source = resolve_source(None)
+    except ImportRefused:
+        return None
+    return source if source.suffix.lower() == ".chd" else None
 
 
 def palette_number(text: str) -> int:
@@ -428,9 +444,19 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_false",
         help="no PPF download and no PPF section in the notes (boku.release says why)",
     )
+    release.add_argument(
+        "--base-chd",
+        type=Path,
+        default=_chd_source(),
+        metavar="CHD",
+        help=(
+            f"the .chd you imported, copied into {RELEASE_ROOT}/{BASE_DIR}/ (default: "
+            f"${SOURCE_ENV_VAR} if it is a .chd; else one is packed)"
+        ),
+    )
     release.set_defaults(
         run=lambda args: main_release(
-            REPO_ROOT, args.base, args.build, args.out, args.preflight, args.ppf
+            REPO_ROOT, args.base, args.build, args.out, args.preflight, args.ppf, args.base_chd
         )
     )
 

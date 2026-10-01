@@ -20,13 +20,13 @@ import hashlib
 import json
 import os
 import shutil
-import subprocess
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 from boku import staging
+from boku.chd import ChdError, extract_cd
 from boku.disc import RAW_SECTOR_SIZE, DirEntry, DiscError, DiscImage
 
 # The dump this project is built from. research/disc-recon.md § "The dump" is the one home
@@ -103,31 +103,13 @@ def image_from_cue(cue: Path) -> Path:
 
 def extract_chd(chd: Path, destination: Path) -> Path:
     """Run `chdman extractcd` to produce a raw image at `destination`. Returns it."""
-    chdman = shutil.which("chdman")
-    if chdman is None:
-        raise ImportRefused(
-            "chdman is not on PATH, and a .chd source needs it. It ships with MAME "
-            "(`brew install rom-tools` on macOS). Alternatively point this at an already "
-            "extracted .cue/.bin or raw image."
-        )
-    cue = destination.with_suffix(".cue")
     _note(f"chdman extractcd: {chd}")
-    completed = subprocess.run(
-        [chdman, "extractcd", "-i", str(chd), "-o", str(cue), "-ob", str(destination)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        tail = (completed.stderr or completed.stdout or "").strip().splitlines()
+    try:
+        return extract_cd(chd, destination)
+    except ChdError as error:
         raise ImportRefused(
-            f"chdman extractcd failed on {chd} (exit {completed.returncode}): "
-            + (tail[-1] if tail else "no output")
-        )
-    if not destination.is_file():
-        raise ImportRefused(f"chdman reported success but wrote no image at {destination}")
-    cue.unlink(missing_ok=True)
-    return destination
+            f"{error}\nAlternatively point this at an already extracted .cue/.bin or raw image."
+        ) from error
 
 
 def verify_image(path: Path, shown_as: Path | None = None) -> str:
