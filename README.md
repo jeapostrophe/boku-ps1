@@ -31,8 +31,7 @@ The patched game, running on Beetle PSX.
 
 ## Video
 
-<!-- VIDEO: replace the next line with the link to Jay's video when it is posted. -->
-**Coming soon** — a short video of the patch in play will be linked here.
+[![Watch the video](https://img.youtube.com/vi/m1jHBkPIDw4/maxresdefault.jpg)](https://www.youtube.com/watch?v=m1jHBkPIDw4)
 
 ## Getting it
 
@@ -57,9 +56,10 @@ made from it (`shasum -a 1`, `sha1sum`, or `certutil -hashfile <file> SHA1`) —
 the right-hand column. The xdelta and the PPF of a version make the same image. The middle
 column is the dump that version patches.
 
-| version | your dump's SHA-1, before patching | the patched image's SHA-1 |
-|---|---|---|
-| v1 | `5959bf7d9835d0a60aeb0143e2d0fc564bfea9fa` | `3ab94dcb5338bd17a8cf848d931efc0476fc9aa4` |
+| version | the image's SHA-1 |
+|---|---|
+| original | `5959bf7d9835d0a60aeb0143e2d0fc564bfea9fa`
+| v1 | `3ab94dcb5338bd17a8cf848d931efc0476fc9aa4` |
 
 A version is listed here as it is published.
 
