@@ -47,7 +47,7 @@ E0306.5	(voice only)
 # --- E0371-E0383: the thirteen ears of corn (A09, examine). No text.
 # --- E0391: A09 -- the corn field
 E0391.0	Uncle	Go on, Boku-kun, do your best.
-E0391.1	Uncle	We'll take care of the cleaning up. // Go on, kids, go and play, go and play.
+E0391.1	Uncle	We'll take care of the cleaning up. // Go on, go and play, go and play.
 # --- E0392: A09 -- the corn field
 E0392.0	Aunt	Phew... But what lovely weather! It makes me so happy!
 E0392.1	Aunt	Maybe tomorrow at lunch, I'll boil up a whole lot for you in a great big pot, // so look forward to it.
